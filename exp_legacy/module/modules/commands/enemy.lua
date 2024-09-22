@@ -3,8 +3,8 @@
     @commands Enemy
 ]]
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-require 'config.expcore.command_general_parse'
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+require("modules.exp_legacy.config.expcore.command_general_parse")
 
 Commands.new_command('kill-biters', {'expcom-enemy.description-kill'}, 'Kill all biters only')
 :set_flag('admin_only')

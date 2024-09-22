@@ -4,12 +4,12 @@
     @alias rocket_info
 ]]
 
-local Gui = require 'expcore.gui' --- @dep expcore.gui
-local Roles = require 'expcore.roles' --- @dep expcore.roles
-local Event = require 'utils.event' --- @dep utils.event
-local config = require 'config.gui.rockets' --- @dep config.gui.rockets
-local Colors = require 'utils.color_presets' --- @dep utils.color_presets
-local Rockets = require 'modules.control.rockets' --- @dep modules.control.rockets
+local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local config = require("modules.exp_legacy.config.gui.rockets") --- @dep config.gui.rockets
+local Colors = require("modules/exp_util/include/color")
+local Rockets = require("modules.exp_legacy.modules.control.rockets") --- @dep modules.control.rockets
 local format_time = _C.format_time --- @dep expcore.common
 
 local time_formats = {

@@ -4,14 +4,14 @@
     @alias readme
 ]]
 
-local Event = require 'utils.event' --- @dep utils.event
-local Gui = require 'expcore.gui' --- @dep expcore.gui
-local Roles = require 'expcore.roles' --- @dep expcore.roles
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-local PlayerData = require 'expcore.player_data' --- @dep expcore.player_data
-local External = require 'expcore.external' --- @dep expcore.external
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
+local External = require("modules.exp_legacy.expcore.external") --- @dep expcore.external
 local format_time = _C.format_time --- @dep expcore.common
-local format_number = require('util').format_number --- @dep util
+local format_number = require("util").format_number --- @dep util
 
 local tabs = {}
 local function Tab(caption, tooltip, element_define)

@@ -3,19 +3,19 @@
     @commands Protection
 ]]
 
-local Event = require 'utils.event' --- @dep utils.event
-local Global = require 'utils.global' --- @dep utils.global
-local Roles = require 'expcore.roles' --- @dep expcore.roles
-local Commands = require 'expcore.commands' --- @dep expcore.commands
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Storage = require("modules/exp_util/storage")
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
 local format_chat_player_name = _C.format_chat_player_name --- @dep expcore.common
-local EntityProtection = require 'modules.control.protection' --- @dep modules.control.protection
-local Selection = require 'modules.control.selection' --- @dep modules.control.selection
+local EntityProtection = require("modules.exp_legacy.modules.control.protection") --- @dep modules.control.protection
+local Selection = require("modules.exp_legacy.modules.control.selection") --- @dep modules.control.selection
 
 local SelectionProtectEntity = 'ProtectEntity'
 local SelectionProtectArea   = 'ProtectArea'
 
 local renders = {} -- Stores all renders for a player
-Global.register({
+Storage.register({
     renders = renders
 }, function(tbl)
     renders = tbl.renders

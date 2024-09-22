@@ -1,6 +1,6 @@
-local Gui = require 'utils.gui' --- @dep utils.gui
-local Model = require 'modules.gui.debug.model' --- @dep modules.gui.debug.model
-local Color = require 'utils.color_presets' --- @dep utils.color_presets
+local Gui = require("modules.exp_legacy.utils.gui") --- @dep utils.gui
+local Model = require("modules.exp_legacy.modules.gui.debug.model") --- @dep modules.gui.debug.model
+local Color = require("modules/exp_util/include/color")
 
 local dump = Model.dump
 
@@ -42,7 +42,7 @@ local ignore = {
     serpent = true,
     log = true,
     table_size = true,
-    global = true,
+    storage = true,
     remote = true,
     commands = true,
     settings = true,

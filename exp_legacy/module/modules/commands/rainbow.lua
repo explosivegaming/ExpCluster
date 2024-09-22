@@ -3,7 +3,7 @@
     @commands Rainbow
 ]]
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
 local format_chat_colour = _C.format_chat_colour --- @dep expcore.common
 
 local function step_component(c1, c2)

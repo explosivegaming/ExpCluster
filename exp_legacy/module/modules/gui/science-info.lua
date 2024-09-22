@@ -4,11 +4,11 @@
     @alias science_info
 ]]
 
-local Gui = require 'expcore.gui' --- @dep expcore.gui
-local Roles = require 'expcore.roles' --- @dep expcore.gui
-local Event = require 'utils.event' --- @dep utils.event
-local config = require 'config.gui.science' --- @dep config.gui.science
-local Production = require 'modules.control.production' --- @dep modules.control.production
+local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.gui
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local config = require("modules.exp_legacy.config.gui.science") --- @dep config.gui.science
+local Production = require("modules.exp_legacy.modules.control.production") --- @dep modules.control.production
 local format_time = _C.format_time --- @dep expcore.common
 
 local null_time_short = {'science-info.eta-time', format_time(0, {hours=true, minutes=true, seconds=true, time=true, null=true})}

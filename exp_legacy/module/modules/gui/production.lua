@@ -1,9 +1,9 @@
 ---- Production Data
 -- @gui Production
 
-local Gui = require 'expcore.gui' --- @dep expcore.gui
-local Event = require 'utils.event' --- @dep utils.event
-local Roles = require 'expcore.roles' --- @dep expcore.roles
+local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 
 local production_container
 

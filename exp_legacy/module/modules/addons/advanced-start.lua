@@ -1,8 +1,8 @@
 --- Adds a better method of player starting items based on production levels.
 -- @addon Advanced-Start
 
-local Event = require 'utils.event' --- @dep utils.event
-local config = require 'config.advanced_start' --- @dep config.advanced_start
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local config = require("modules.exp_legacy.config.advanced_start") --- @dep config.advanced_start
 local items = config.items
 
 Event.add(defines.events.on_player_created, function(event)
@@ -43,7 +43,7 @@ Event.on_init(function()
     remote.call('freeplay', 'set_skip_intro', config.skip_intro)
     if config.research_queue_from_start then
         for _, force in pairs(game.forces) do
-            force.research_queue_enabled = true
+            --force.research_queue_enabled = true
         end
     end
     if not config.disable_base_game_silo_script then

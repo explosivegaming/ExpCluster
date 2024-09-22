@@ -3,7 +3,7 @@
 @module Gui
 ]]
 
-local Event = require 'utils.event' --- @dep utils.event
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 
 local Gui = {
     --- The current highest uid that is being used by a define, will not increase during runtime
@@ -58,7 +58,7 @@ end
 --- Get where a function was defined as a string
 local function get_defined_at(level)
     local debug_info = debug.getinfo(level, "Sn")
-    local file_name = debug_info.source:match('^.+/currently%-playing/(.+)$'):sub(1, -5)
+    local file_name = debug_info.short_src:sub(10, -5)
     local func_name = debug_info.name or ("<anonymous:"..debug_info.linedefined..">")
     return file_name..":"..func_name
 end

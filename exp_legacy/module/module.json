@@ -6,6 +6,7 @@
 	"require": [
 	],
 	"dependencies": {
-		"clusterio": "*"
+		"clusterio": "*",
+		"exp_util": "*"
 	}
 }

@@ -1,10 +1,10 @@
 --- Stores if you use alt mode or not and auto applies it
 -- @data Alt-View
 
-local Event = require 'utils.event' ---@dep utils.event
+local Event = require("modules/exp_legacy/utils/event") ---@dep utils.event
 
 --- Stores the visible state of alt mode
-local PlayerData = require 'expcore.player_data' --- @dep expcore.player_data
+local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
 local UsesAlt = PlayerData.Settings:combine('UsesAlt')
 UsesAlt:set_default(false)
 UsesAlt:set_metadata{

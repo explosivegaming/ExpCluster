@@ -4,9 +4,9 @@
     @alias Protection
 ]]
 
-local Global = require 'utils.global' --- @dep utils.global
-local Event = require 'utils.event' --- @dep utils.event
-local config = require 'config.protection' --- @dep config.protection
+local Storage = require("modules/exp_util/storage")
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local config = require("modules.exp_legacy.config.protection") --- @dep config.protection
 local EntityProtection = {
     protected_entity_names = table.deep_copy(config.always_protected_names),
     protected_entity_types = table.deep_copy(config.always_protected_types),
@@ -36,17 +36,17 @@ end
 -- Require roles if a permission is assigned in the config
 local Roles
 if config.ignore_permission then
-    Roles = require 'expcore.roles' --- @dep expcore.roles
+    Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 end
 
------ Global Variables -----
+----- Storage Variables -----
 --- Variables stored in the global table
 
 local protected_entities = {} -- All entities which are protected
 local protected_areas = {} -- All areas which are protected
 local repeats = {} -- Stores repeat removals by players
 
-Global.register({
+Storage.register({
     protected_entities = protected_entities,
     protected_areas = protected_areas,
     repeats = repeats

@@ -3,10 +3,10 @@
     @commands Jail
 ]]
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-local Jail = require 'modules.control.jail' --- @dep modules.control.jail
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+local Jail = require("modules.exp_legacy.modules.control.jail") --- @dep modules.control.jail
 local format_chat_player_name = _C.format_chat_player_name --- @dep expcore.common
-require 'config.expcore.command_role_parse'
+require("modules.exp_legacy.config.expcore.command_role_parse")
 
 --- Puts a player into jail and removes all other roles.
 -- @command jail

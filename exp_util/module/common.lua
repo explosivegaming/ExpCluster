@@ -5,8 +5,6 @@
 ]]
 
 local assert = assert
---local getlocal = debug.getlocal
---local getupvalue = debug.getupvalue
 local getinfo = debug.getinfo
 local traceback = debug.traceback
 local floor = math.floor
@@ -14,7 +12,7 @@ local concat = table.concat
 
 local Common = {
     --- A large mapping of colour rgb values by their common name
-    color = require 'modules.exp_util.include.color'
+    color = require("modules/exp_util/include/color")
 }
 
 --- Raise an error if we are not in runtime
@@ -35,40 +33,50 @@ function Common.assert_not_closure(func)
     end
 end]]
 
+--- Check the type of a value, also considers LuaObject.object_name and metatable.__class
+--- Returns true when the check failed and an error should be raised
+local function check_type(value, type_name)
+	local value_type = type(value) --[[@as string]]
+	if value_type == "userdata" then
+		if type_name == "userdata" then
+			return false, value_type
+		end
+		value_type = value.object_name
+	elseif value_type == "table" then
+		if type_name == "table" then
+			return false, value_type
+		end
+		local mt = getmetatable(value)
+		if mt and mt.__class then
+			value_type = mt.__class
+		end
+	end
+	return value == nil or value_type ~= type_name, value_type
+end
+
 local assert_type_fmt = "%s expected to be of type %s but got %s"
 --- Raise an error if the type of a value is not as expected
 -- @param value The value to assert the type of
 -- @tparam string type_name The name of the type that value is expected to be
 -- @tparam[opt=Value] string value_name The name of the value being tested, this is included in the error message
 function Common.assert_type(value, type_name, value_name)
-    if value == nil or type(value) ~= type_name then
-        error(assert_type_fmt:format(value_name or "Value", type_name, type(value)), 2)
+	local failed, actual_type = check_type(value, type_name)
+    if failed then
+        error(assert_type_fmt:format(value_name or "Value", type_name, actual_type), 2)
     end
 end
 
 local assert_argument_fmt = "Bad argument #%d to %s; %s expected to be of type %s but got %s"
---[[--- Raise an error if the type of any argument is not as expected, can be costly, for frequent callers see assert_argument_type
--- @tparam string ... The type for each argument of the calling function
-function Common.assert_argument_types(...)
-    local arg_types = {...}
-    local info = getinfo(2, "nu")
-    for arg_index = 1, info.nparams do
-        local arg_name, arg_value = getlocal(2, arg_index)
-        if arg_types[arg_index] and (arg_value == nil or type(arg_value) ~= arg_types[arg_index]) then
-            error(assert_argument_fmt:format(arg_index, info.name or "<anonymous>", arg_name, arg_types[arg_index]), 2)
-        end
-    end
-end]]
-
 --- Raise an error if the type of any argument is not as expected, more performant than assert_argument_types, but requires more manual input
 -- @param arg_value The argument to assert the type of
 -- @tparam string type_name The name of the type that value is expected to be
 -- @tparam number arg_index The index of the argument being tested, this is included in the error message
 -- @tparam[opt=Argument] string arg_name The name of the argument being tested, this is included in the error message
 function Common.assert_argument_type(arg_value, type_name, arg_index, arg_name)
-    if arg_value == nil or type(arg_value) ~= type_name then
+	local failed, actual_type = check_type(arg_value, type_name)
+    if failed then
         local func_name = getinfo(2, "n").name or "<anonymous>"
-        error(assert_argument_fmt:format(arg_index, func_name, arg_name or "Argument", type_name), 2)
+        error(assert_argument_fmt:format(arg_index, func_name, arg_name or "Argument", type_name, actual_type), 2)
     end
 end
 
@@ -110,14 +118,14 @@ end
 -- @treturn string The relative filepath of the given stack frame
 function Common.safe_file_path(level)
     level = level or 1
-    return getinfo(level+1, 'S').source:match('^.+/currently%-playing/(.+)$'):sub(1, -5)
+    return getinfo(level+1, 'S').short_src:sub(10, -5)
 end
 
 --- Returns the name of your module, this assumes your module is stored within /modules (which it is for clustorio)
 -- @tparam[opt=1] number level The level of the stack to get the module of, a value of 1 is the caller of this function
 -- @treturn string The name of the module at the given stack frame
 function Common.get_module_name(level)
-    local file_within_module = getinfo((level or 1)+1, 'S').source:match('^.+/currently%-playing/modules/(.+)$'):sub(1, -5)
+    local file_within_module = getinfo((level or 1)+1, 'S').short_src:sub(18, -5)
     local next_slash = file_within_module:find("/")
     if next_slash then
         return file_within_module:sub(1, next_slash-1)
@@ -132,8 +140,8 @@ end
 -- @treturn string The name of the function at the given stack frame or provided as an argument
 function Common.get_function_name(func, raw)
 	local debug_info = getinfo(func, "Sn")
-	local safe_source = debug_info.source:match('^.+/currently%-playing/(.+)$')
-    local file_name = safe_source and safe_source:sub(1, -5) or debug_info.source
+	local safe_source = debug_info.source:find('__level__')
+    local file_name = safe_source == 1 and debug_info.short_src:sub(10, -5) or debug_info.source
     local func_name = debug_info.name or debug_info.linedefined
 	if raw then return file_name .. ":" .. func_name end
 	return "<" .. file_name .. ":" .. func_name .. ">"

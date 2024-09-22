@@ -1,16 +1,16 @@
 --- Makes trees which are marked for decon "decay" quickly to allow faster building
 -- @addon Tree-Decon
 
-local Event = require 'utils.event' --- @dep utils.event
-local Global = require 'utils.global' --- @dep utils.global
-local Roles = require 'expcore.roles' --- @dep expcore.roles
-local Gui = require 'expcore.gui' --- @dep expcore.gui
-local PlayerData = require 'expcore.player_data' --- @dep expcore.player_data
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Storage = require("modules/exp_util/storage")
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
+local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
 
--- Global queue used to store trees that need to be removed, also cache for player roles
+-- Storage queue used to store trees that need to be removed, also cache for player roles
 local cache = {}
 local tree_queue = { _head=0 }
-Global.register({tree_queue, cache}, function(tbl)
+Storage.register({tree_queue, cache}, function(tbl)
     tree_queue = tbl[1]
     cache = tbl[2]
 end)

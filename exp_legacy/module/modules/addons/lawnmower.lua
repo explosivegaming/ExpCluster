@@ -3,10 +3,10 @@
     @addon Lawnmower
 ]]
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-local Event = require 'utils.event' --- @dep utils.event
-local config = require 'config.lawnmower' --- @dep config.lawnmower
-require 'config.expcore.command_general_parse'
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local config = require("modules.exp_legacy.config.lawnmower") --- @dep config.lawnmower
+require("modules.exp_legacy.config.expcore.command_general_parse")
 
 Commands.new_command('lawnmower', {'expcom-lawnmower.description'}, 'Clean up biter corpse, decoratives and nuclear hole')
 :add_param('range', false, 'integer-range', 1, 200)

@@ -1,6 +1,6 @@
-local Gui = require 'utils.gui' --- @dep utils.gui
-local Model = require 'modules.gui.debug.model' --- @dep modules.gui.debug.model
-local Color = require 'utils.color_presets' --- @dep utils.color_presets
+local Gui = require("modules.exp_legacy.utils.gui") --- @dep utils.gui
+local Model = require("modules.exp_legacy.modules.gui.debug.model") --- @dep modules.gui.debug.model
+local Color = require("modules/exp_util/include/color")
 
 local dump = Model.dump
 local dump_text = Model.dump_text
@@ -16,7 +16,7 @@ local right_panel_name = Gui.uid_name()
 local input_text_box_name = Gui.uid_name()
 local refresh_name = Gui.uid_name()
 
-Public.name = 'global'
+Public.name = 'storage'
 
 function Public.show(container)
     local main_flow = container.add {type = 'flow', direction = 'horizontal'}
@@ -25,7 +25,7 @@ function Public.show(container)
     local left_panel_style = left_panel.style
     left_panel_style.width = 300
 
-    for key, _ in pairs(global) do
+    for key, _ in pairs(storage) do
         if not ignore[key] then
             local header =
                 left_panel.add({type = 'flow'}).add {type = 'label', name = header_name, caption = tostring(key)}
@@ -90,10 +90,10 @@ Gui.on_click(
         element.style.font_color = Color.orange
         data.selected_header = element
 
-        input_text_box.text = concat {"global['", key, "']"}
+        input_text_box.text = concat {"storage['", key, "']"}
         input_text_box.style.font_color = Color.black
 
-        local content = dump(global[key]) or 'nil'
+        local content = dump(storage[key]) or 'nil'
         right_panel.text = content
     end
 )

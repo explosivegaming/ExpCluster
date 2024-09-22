@@ -3,8 +3,8 @@
     @commands Toggle Friendly Fire
 ]]
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-require 'config.expcore.command_general_parse'
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+require("modules.exp_legacy.config.expcore.command_general_parse")
 
 -- For Modded Server Use
 Commands.new_command('toggle-friendly-fire', {'expcom-ff.description'}, 'Toggle friendly fire')

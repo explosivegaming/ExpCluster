@@ -1,8 +1,8 @@
 --- Makes polution look much nice of the map, ie not one big red mess
 -- @addon Pollution-Grading
 
-local Event = require 'utils.event' --- @dep utils.event
-local config = require 'config.pollution_grading' --- @dep config.pollution_grading
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local config = require("modules.exp_legacy.config.pollution_grading") --- @dep config.pollution_grading
 
 local delay = config.update_delay * 3600 -- convert from minutes to ticks
 Event.on_nth_tick(delay, function()

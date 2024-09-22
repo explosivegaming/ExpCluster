@@ -1,13 +1,22 @@
 --- This file defines the different triggers for the chat bot
 -- @config Chat-Reply
 
-local Async = require 'expcore.async'
-local format_time = _C.format_time --- @dep expcore.common
+local ExpUtil = require("modules/exp_util")
+local Async = require("modules/exp_util/async")
 
--- eg Async(async_message, is_command or player, message)
-local async_message = Async.register(function(player, message)
-    if player == true then game.print(message) else player.print(message) end
+local send_message_async =
+Async.register(function(player, message)
+    if player == true then
+        game.print(message)
+    else
+        player.print(message)
+    end
 end)
+
+local afk_time_units = {
+    minutes = true,
+    seconds = true,
+}
 
 -- luacheck:ignore 212/player 212/is_command
 return {
@@ -37,7 +46,7 @@ return {
                     max = next_player
                 end
             end
-            return {'chat-bot.afk', max.name, format_time(max.afk_time, {minutes = true, seconds = true, long = true})}
+            return {'chat-bot.afk', max.name, ExpUtil.format_locale_time(max.afk_time, "long", afk_time_units)}
         end,
         ['players'] = function(_player, _is_command)
             return {'chat-bot.players', #game.players}
@@ -74,46 +83,46 @@ return {
         end,
         ['makepopcorn'] = function(player, _is_command)
             local timeout = math.floor(180*(math.random()+0.5))
-            Async(async_message, true, {'chat-bot.reply', {'chat-bot.get-popcorn-1'}})
-            Async.wait(timeout, async_message, true, {'chat-bot.reply', {'chat-bot.get-popcorn-2', player.name}})
+            send_message_async(true, {'chat-bot.reply', {'chat-bot.get-popcorn-1'}})
+            send_message_async:start_after(timeout, true, {'chat-bot.reply', {'chat-bot.get-popcorn-2', player.name}})
         end,
         ['passsomesnaps'] = function(player, _is_command)
             local timeout = math.floor(180*(math.random()+0.5))
-            Async(async_message, player, {'chat-bot.reply', {'chat-bot.get-snaps-1'}})
-            Async.wait(timeout, async_message, true, {'chat-bot.reply', {'chat-bot.get-snaps-2', player.name}})
-            Async.wait(timeout*(math.random()+0.5), async_message, true, {'chat-bot.reply', {'chat-bot.get-snaps-3', player.name}})
+            send_message_async(player, {'chat-bot.reply', {'chat-bot.get-snaps-1'}})
+            send_message_async:start_after(timeout, true, {'chat-bot.reply', {'chat-bot.get-snaps-2', player.name}})
+            send_message_async:start_after(timeout*(math.random()+0.5), true, {'chat-bot.reply', {'chat-bot.get-snaps-3', player.name}})
         end,
         ['makecocktail'] = function(player, _is_command)
             local timeout = math.floor(180*(math.random()+0.5))
-            Async(async_message, true, {'chat-bot.reply', {'chat-bot.get-cocktail-1'}})
-            Async.wait(timeout, async_message, true, {'chat-bot.reply', {'chat-bot.get-cocktail-2', player.name}})
-            Async.wait(timeout*(math.random()+0.5), async_message, true, {'chat-bot.reply', {'chat-bot.get-cocktail-3', player.name}})
+            send_message_async(true, {'chat-bot.reply', {'chat-bot.get-cocktail-1'}})
+            send_message_async:start_after(timeout, true, {'chat-bot.reply', {'chat-bot.get-cocktail-2', player.name}})
+            send_message_async:start_after(timeout*(math.random()+0.5), true, {'chat-bot.reply', {'chat-bot.get-cocktail-3', player.name}})
         end,
         ['makecoffee'] = function(player, _is_command)
             local timeout = math.floor(180*(math.random()+0.5))
-            Async(async_message, true, {'chat-bot.reply', {'chat-bot.make-coffee-1'}})
-            Async.wait(timeout, async_message, true, {'chat-bot.reply', {'chat-bot.make-coffee-2', player.name}})
+            send_message_async(true, {'chat-bot.reply', {'chat-bot.make-coffee-1'}})
+            send_message_async:start_after(timeout, true, {'chat-bot.reply', {'chat-bot.make-coffee-2', player.name}})
         end,
         ['orderpizza'] = function(player, _is_command)
             local timeout = math.floor(180*(math.random()+0.5))
-            Async(async_message, true, {'chat-bot.reply', {'chat-bot.order-pizza-1'}})
-            Async.wait(timeout, async_message, true, {'chat-bot.reply', {'chat-bot.order-pizza-2', player.name}})
-            Async.wait(timeout*(math.random()+0.5), async_message, true, {'chat-bot.reply', {'chat-bot.order-pizza-3', player.name}})
+            send_message_async(true, {'chat-bot.reply', {'chat-bot.order-pizza-1'}})
+            send_message_async:start_after(timeout, true, {'chat-bot.reply', {'chat-bot.order-pizza-2', player.name}})
+            send_message_async:start_after(timeout*(math.random()+0.5), true, {'chat-bot.reply', {'chat-bot.order-pizza-3', player.name}})
         end,
         ['maketea'] = function(player, _is_command)
             local timeout = math.floor(180*(math.random()+0.5))
-            Async(async_message, true, {'chat-bot.reply', {'chat-bot.make-tea-1'}})
-            Async.wait(timeout, async_message, true, {'chat-bot.reply', {'chat-bot.make-tea-2', player.name}})
+            send_message_async(true, {'chat-bot.reply', {'chat-bot.make-tea-1'}})
+            send_message_async:start_after(timeout, true, {'chat-bot.reply', {'chat-bot.make-tea-2', player.name}})
         end,
         ['meadplease'] = function(player, _is_command)
             local timeout = math.floor(180*(math.random()+0.5))
-            Async(async_message, true, {'chat-bot.reply', {'chat-bot.get-mead-1'}})
-            Async.wait(timeout, async_message, true, {'chat-bot.reply', {'chat-bot.get-mead-2', player.name}})
+            send_message_async(true, {'chat-bot.reply', {'chat-bot.get-mead-1'}})
+            send_message_async:start_after(timeout, true, {'chat-bot.reply', {'chat-bot.get-mead-2', player.name}})
         end,
         ['passabeer'] = function(player, _is_command)
             local timeout = math.floor(180*(math.random()+0.5))
-            Async(async_message, true, {'chat-bot.reply', {'chat-bot.get-beer-1'}})
-            Async.wait(timeout, async_message, true, {'chat-bot.reply', {'chat-bot.get-beer-2', player.name}})
+            send_message_async(true, {'chat-bot.reply', {'chat-bot.get-beer-1'}})
+            send_message_async:start_after(timeout, true, {'chat-bot.reply', {'chat-bot.get-beer-2', player.name}})
         end
     }
 }

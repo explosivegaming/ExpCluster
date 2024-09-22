@@ -1,7 +1,7 @@
 --- Allows the FAGC clientside bot to receive information about bans and unbans and propagate that information to other servers
 -- @addon FAGC
 
-local Event = require 'utils.event' --- @dep utils.event
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 
 -- Clear the file on startup to minimize its size
 Event.on_init(function()

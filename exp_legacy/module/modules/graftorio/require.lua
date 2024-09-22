@@ -1,11 +1,11 @@
-local Commands = require("expcore.commands")
-local config = require("config.graftorio")
-local statics = require("modules.graftorio.statics")
-local general = require("modules.graftorio.general")
+local Commands = require("modules.exp_legacy.expcore.commands")
+local config = require("modules.exp_legacy.config.graftorio")
+local statics = require("modules.exp_legacy.modules.graftorio.statics")
+local general = require("modules.exp_legacy.modules.graftorio.general")
 local forcestats = nil
 
 if config.modules.forcestats then
-	forcestats = require("modules.graftorio.forcestats")
+	forcestats = require("modules.exp_legacy.modules.graftorio.forcestats")
 end
 
 Commands.new_command("collectdata", "Collect data for RCON usage")

@@ -185,7 +185,6 @@ end)
 
 ]]
 
-local Game = require 'utils.game' --- @dep utils.game
 local player_return, write_json = _C.player_return, _C.write_json --- @dep expcore.common
 local trace = debug.traceback
 
@@ -392,20 +391,13 @@ local commands = Commands.get()
 
 ]]
 function Commands.get(player)
-    player = Game.get_player_from_any(player)
-
-    if not player then
-        return Commands.commands
-    end
-
+    if not player then return Commands.commands end
     local allowed = {}
-
     for name, command_data in pairs(Commands.commands) do
         if Commands.authorize(player, name) then
             allowed[name] = command_data
         end
     end
-
     return allowed
 end
 
@@ -425,7 +417,6 @@ function Commands.search(keyword, player)
     local custom_commands = Commands.get(player)
     local matches = {}
     keyword = keyword:lower()
-
     -- Loops over custom commands
     for name, command_data in pairs(custom_commands) do
         -- combines name help and aliases into one message to be searched
@@ -435,7 +426,6 @@ function Commands.search(keyword, player)
             matches[name] = command_data
         end
     end
-
     -- Loops over the names of game commands
     for name, description in pairs(commands.game_commands) do
         if name:lower():match(keyword) then
@@ -448,7 +438,6 @@ function Commands.search(keyword, player)
             }
         end
     end
-
     return matches
 end
 
@@ -480,9 +469,7 @@ function Commands.new_command(name, help, descr)
     }, {
         __index = Commands._prototype
     })
-
     Commands.commands[name] = command
-
     return command
 end
 

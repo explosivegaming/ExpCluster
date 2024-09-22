@@ -3,11 +3,11 @@
     @commands Reports
 ]]
 
-local Roles = require 'expcore.roles' --- @dep expcore.roles
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-local Reports = require 'modules.control.reports' --- @dep modules.control.reports
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+local Reports = require("modules.exp_legacy.modules.control.reports") --- @dep modules.control.reports
 local format_chat_player_name = _C.format_chat_player_name--- @dep expcore.common
-require 'config.expcore.command_general_parse'
+require("modules.exp_legacy.config.expcore.command_general_parse")
 
 --- Print a message to all players who match the value of admin
 local function print_to_players(admin, message)

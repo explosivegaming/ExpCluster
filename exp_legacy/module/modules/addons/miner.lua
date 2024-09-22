@@ -1,10 +1,9 @@
-local Event = require 'utils.event_core' --- @dep utils.event_core
-local Global = require 'utils.global' --- @dep utils.global
-local config = require 'config.miner' --- @dep config.miner
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event_core
+local Storage = require("modules/exp_util/storage")
+local config = require("modules.exp_legacy.config.miner") --- @dep config.miner
 
 local miner_data = {}
-
-Global.register(miner_data, function(tbl)
+Storage.register(miner_data, function(tbl)
     miner_data = tbl
 end)
 

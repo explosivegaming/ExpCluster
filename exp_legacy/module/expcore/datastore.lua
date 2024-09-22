@@ -146,7 +146,7 @@ PlayerData.Statistics:combine('JoinCount')
 
 ]]
 
-local Event = require 'utils.event' --- @dep utils.event
+local Storage = require("modules/exp_util/storage")
 
 local DatastoreManager = {}
 local Datastores = {}
@@ -156,9 +156,8 @@ local copy = table.deep_copy
 local trace = debug.traceback
 
 --- Save datastores in the global table
-global.datastores = Data
-Event.on_load(function()
-    Data = global.datastores
+Storage.register(Data, function(tbl)
+    Data = tbl
     for datastoreName, datastore in pairs(Datastores) do
         datastore.data = Data[datastoreName]
     end
@@ -187,7 +186,7 @@ local ExampleData = Datastore.connect('ExampleData', true) -- saveToDisk
 ]]
 function DatastoreManager.connect(datastoreName, saveToDisk, autoSave, propagateChanges)
     if Datastores[datastoreName] then return Datastores[datastoreName] end
-    if _LIFECYCLE ~= _STAGE.control then
+    if package.lifecycle ~= package.lifecycle_stage.control then
         -- Only allow this function to be called during the control stage
         error('New datastore connection can not be created during runtime', 2)
     end

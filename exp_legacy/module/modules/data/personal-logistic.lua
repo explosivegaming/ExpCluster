@@ -1,5 +1,5 @@
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-local config = require 'config.personal_logistic' --- @dep config.personal-logistic
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+local config = require("modules.exp_legacy.config.personal_logistic") --- @dep config.personal-logistic
 
 local pl = {}
 

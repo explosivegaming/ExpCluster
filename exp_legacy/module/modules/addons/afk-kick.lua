@@ -1,25 +1,25 @@
 --- Kicks players when all players on the server are afk
 -- @addon afk-kick
 
-local Event = require 'utils.event' --- @dep utils.event
-local Global = require 'utils.global' --- @dep utils.global
-local config = require 'config.afk_kick' --- @dep config.afk_kick
-local Async = require 'expcore.async' --- @dep expcore.async
+local Async = require("modules/exp_util/async")
+local Storage = require("modules/exp_util/storage")
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local config = require("modules.exp_legacy.config.afk_kick") --- @dep config.afk_kick
 
 --- Optional roles require
 local Roles
 if config.active_role then
-    Roles = require 'expcore.roles'
+    Roles = require("modules.exp_legacy.expcore.roles")
 end
 
 --- Globals
 local primitives = { last_active = 0 }
-Global.register(primitives, function(tbl)
+Storage.register(primitives, function(tbl)
     primitives = tbl
 end)
 
 --- Kicks an afk player, used to add a delay so the gui has time to appear
-local kick_player =
+local kick_player_async =
 Async.register(function(player)
     if game.tick - primitives.last_active < config.kick_time then return end -- Safety Catch
     game.kick_player(player, 'AFK while no active players on the server')
@@ -54,7 +54,7 @@ Event.on_nth_tick(config.update_time, function()
         }.location = { x=res.width*(0.5 - 0.11*uis), y=res.height*(0.5 - 0.14*uis) }
 
         -- Kick the player, some delay needed because network delay
-        Async.wait(10, kick_player, player)
+        kick_player_async:start_after(10, player)
     end
 end)
 

@@ -4,8 +4,8 @@
 @alias Common
 ]]
 
-local Colours = require 'utils.color_presets' --- @dep utils.color_presets
-local Game = require 'utils.game' --- @dep utils.game
+local Colours = require("modules/exp_util/include/color")
+local Game = require("modules.exp_legacy.utils.game") --- @dep utils.game
 
 local Common = {}
 
@@ -138,18 +138,9 @@ end
 --- Will raise an error if called during runtime
 -- @usage error_if_runtime()
 function Common.error_if_runtime()
-    if _LIFECYCLE == 8 then
+    if package.lifecycle == 8 then
         local function_name = debug.getinfo(2, 'n').name or '<anon>'
         error(function_name..' can not be called during runtime', 3)
-    end
-end
-
---- Will raise an error if the function is a closure
--- @usage error_if_runetime_closure(func)
-function Common.error_if_runetime_closure(func)
-    if _LIFECYCLE == 8 and Debug.is_closure(func) then
-        local function_name = debug.getinfo(2, 'n').name or '<anon>'
-        error(function_name..' can not be called during runtime with a closure', 3)
     end
 end
 
@@ -255,7 +246,7 @@ local file_path = get_file_path()
 ]]
 function Common.get_file_path(offset)
     offset = offset or 0
-    return debug.getinfo(offset+2, 'S').source:match('^.+/currently%-playing/(.+)$'):sub(1, -5)
+    return debug.getinfo(offset+2, 'S').short_src:sub(10, -5)
 end
 
 --[[-- Converts a table to an enum

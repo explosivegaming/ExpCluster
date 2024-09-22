@@ -4,7 +4,7 @@
 @alias External
 
 @usage-- Printing all server to chat
-local External = require 'expcore.external' --- @dep expcore.external
+local External = require("modules.exp_legacy.expcore.external") --- @dep expcore.external
 
 local message = 'id: %s name: %s version: %s status: %s'
 for server_id, server in pairs(External.get_servers()) do
@@ -29,11 +29,11 @@ end
 
 ]]
 function External.valid()
-    if global.ext == nil then return false end
-    if ext == global.ext and var == ext.var then
+    if storage.ext == nil then return false end
+    if ext == storage.ext and var == ext.var then
         return var ~= nil
     else
-        ext = global.ext
+        ext = storage.ext
         var = ext.var
         return var ~= nil
     end

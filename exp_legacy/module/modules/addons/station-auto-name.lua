@@ -1,7 +1,7 @@
 ---LuaPlayerBuiltEntityEventFilters
 ---Events.set_event_filter(defines.events.on_built_entity, {{filter = "name", name = "fast-inserter"}})
-local Event = require 'utils.event' --- @dep utils.event
-local config = require 'config.station_auto_name' --- @dep config.chat_reply
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local config = require("modules.exp_legacy.config.station_auto_name") --- @dep config.chat_reply
 
 --Credit to Cooldude2606 for using his lua magic to make this function.
 local directions = {

@@ -1,7 +1,7 @@
 
-local Event = require 'utils.event' --- @dep utils.event
-local Global = require 'utils.global' --- @dep utils.global
-local Gui = require 'expcore.gui' --- @dep expcore.gui
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Storage = require("modules/exp_util/storage")
+local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
 
 ----- Locals -----
 local follow_label -- Gui constructor
@@ -9,8 +9,8 @@ local following = {}
 local spectating = {}
 local Public = {}
 
------ Global data -----
-Global.register({
+----- Storage data -----
+Storage.register({
     following = following,
     spectating = spectating
 }, function(tbl)

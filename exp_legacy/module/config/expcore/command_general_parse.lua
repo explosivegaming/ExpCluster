@@ -19,7 +19,7 @@ see ./expcore/commands.lua for more details
     surface
 ]]
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
 
 -- luacheck:ignore 212/player
 Commands.add_parse('boolean',function(input, player)

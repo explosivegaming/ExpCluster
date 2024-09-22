@@ -3,7 +3,7 @@
 @module Gui
 ]]
 
-local Gui = require 'expcore.gui.prototype'
+local Gui = require("modules.exp_legacy.expcore.gui.prototype")
 local mod_gui = require 'mod-gui' --- @dep mod-gui
 
 local toolbar_button_size = 36
@@ -107,7 +107,7 @@ end
 function Gui.inject_top_flow_order(provider)
     Gui.get_top_flow_order = provider
     local debug_info = debug.getinfo(2, "Sn")
-    local file_name = debug_info.source:match('^.+/currently%-playing/(.+)$'):sub(1, -5)
+    local file_name = debug_info.short_src:sub(10, -5)
     local func_name = debug_info.name or ("<anonymous:"..debug_info.linedefined..">")
     Gui._top_flow_order_src = file_name..":"..func_name
 end

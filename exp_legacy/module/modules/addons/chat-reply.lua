@@ -1,9 +1,9 @@
 --- Adds auto replies to chat messages; as well as chat commands
 -- @addon Chat-Reply
 
-local Event = require 'utils.event' --- @dep utils.event
-local Roles = require 'expcore.roles' --- @dep expcore.roles
-local config = require 'config.chat_reply' --- @dep config.chat_reply
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
+local config = require("modules.exp_legacy.config.chat_reply") --- @dep config.chat_reply
 
 Event.add(defines.events.on_console_chat, function(event)
     local player_index = event.player_index

@@ -21,9 +21,9 @@ Warps.make_warp_tag(warp_id)
 
 ]]
 
-local Datastore = require 'expcore.datastore' --- @dep expcore.datastore
-local Global = require 'utils.global' --- @dep utils.global
-local config = require 'config.gui.warps' --- @dep config.warps
+local Datastore = require("modules.exp_legacy.expcore.datastore") --- @dep expcore.datastore
+local Storage = require("modules/exp_util/storage")
+local config = require("modules.exp_legacy.config.gui.warps") --- @dep config.warps
 
 --- Stores all data for the warp system
 local WrapData = Datastore.connect('WrapData')
@@ -31,10 +31,10 @@ WrapData:set_serializer(function(raw_key) return raw_key.warp_id end)
 
 local Warps = {}
 
--- Global lookup table for force name to task ids
+-- Storage lookup table for force name to task ids
 local force_warps = {_uid=1}
 ---@cast force_warps table<string, { spawn: string, [number]: string }>
-Global.register(force_warps, function(tbl)
+Storage.register(force_warps, function(tbl)
     force_warps = tbl
 end)
 

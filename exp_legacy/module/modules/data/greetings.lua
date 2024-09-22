@@ -1,12 +1,12 @@
 --- Greets players on join
 -- @data Greetings
 
-local config = require 'config.join_messages' --- @dep config.join_messages
-local Commands = require 'expcore.commands' ---@dep expcore.commands
-require 'config.expcore.command_general_parse'
+local config = require("modules.exp_legacy.config.join_messages") --- @dep config.join_messages
+local Commands = require("modules.exp_legacy.expcore.commands") ---@dep expcore.commands
+require("modules.exp_legacy.config.expcore.command_general_parse")
 
 --- Stores the join message that the player have
-local PlayerData = require 'expcore.player_data' --- @dep expcore.player_data
+local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
 local CustomMessages = PlayerData.Settings:combine('JoinMessage')
 CustomMessages:set_metadata{
     permission = 'command/join-message'
@@ -26,7 +26,7 @@ end)
 --- Set your custom join message
 -- @command join-message
 -- @tparam string message The custom join message that will be used
-Commands.new_command('join-message', {'expcom-join-message.description-msg'}, 'Sets your custom join message')
+Commands.new_command('join-message', 'Sets your custom join message')
 :add_param('message', false, 'string-max-length', 255)
 :enable_auto_concat()
 :register(function(player, message)
@@ -35,7 +35,7 @@ Commands.new_command('join-message', {'expcom-join-message.description-msg'}, 'S
     return {'join-message.message-set'}
 end)
 
-Commands.new_command('join-message-clear', {'expcom-join-message.description-clr'}, 'Clear your join message')
+Commands.new_command('join-message-clear', 'Clear your join message')
 :register(function(player)
     if not player then return end
     CustomMessages:remove(player)

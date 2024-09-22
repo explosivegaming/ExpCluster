@@ -1,8 +1,7 @@
-local Gui = require 'utils.gui' --- @dep utils.gui
-local Global = require 'utils.global' --- @dep utils.global
-local Token = require 'utils.token' --- @dep utils.token
-local Color = require 'utils.color_presets' --- @dep utils.color_presets
-local Model = require 'modules.gui.debug.model' --- @dep modules.gui.debug.model
+local Gui = require("modules.exp_legacy.utils.gui") --- @dep utils.gui
+local Storage = require("modules/exp_util/storage")
+local Color = require("modules/exp_util/include/color")
+local Model = require("modules.exp_legacy.modules.gui.debug.model") --- @dep modules.gui.debug.model
 
 local dump = Model.dump
 local dump_text = Model.dump_text
@@ -16,7 +15,7 @@ local right_panel_name = Gui.uid_name()
 local input_text_box_name = Gui.uid_name()
 local refresh_name = Gui.uid_name()
 
-Public.name = 'Global'
+Public.name = 'Storage'
 
 function Public.show(container)
     local main_flow = container.add {type = 'flow', direction = 'horizontal'}
@@ -25,8 +24,8 @@ function Public.show(container)
     local left_panel_style = left_panel.style
     left_panel_style.width = 300
 
-    for token_id, token_name in pairs(Global.names) do
-        local header = left_panel.add({type = 'flow'}).add {type = 'label', name = header_name, caption = token_name}
+    for token_id in pairs(Storage.registered) do
+        local header = left_panel.add({type = 'flow'}).add {type = 'label', name = header_name, caption = token_id}
         Gui.set_data(header, token_id)
     end
 
@@ -86,10 +85,10 @@ Gui.on_click(
         element.style.font_color = Color.orange
         data.selected_header = element
 
-        input_text_box.text = concat {'global.tokens[', token_id, ']'}
+        input_text_box.text = concat {'storage.exp_storage[', token_id, ']'}
         input_text_box.style.font_color = Color.black
 
-        local content = dump(Token.get_global(token_id)) or 'nil'
+        local content = dump(storage.exp_storage[token_id]) or 'nil'
         right_panel.text = content
     end
 )

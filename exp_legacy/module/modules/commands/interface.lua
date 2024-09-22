@@ -3,8 +3,8 @@
     @commands Interface
 ]]
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-local Global = require 'utils.global' --- @dep utils.global
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+local Storage = require("modules/exp_util/storage")
 
 -- modules that are loaded into the interface env to be accessed
 local interface_modules = {
@@ -13,7 +13,6 @@ local interface_modules = {
     ['Group'] = 'expcore.permission_groups',
     ['Roles'] = 'expcore.roles',
     ['Gui'] = 'expcore.gui',
-    ['Async'] = 'expcore.async',
     ['Datastore'] = 'expcore.datastore',
     ['External'] = 'expcore.external'
 }
@@ -27,7 +26,7 @@ end
 
 local interface_env = {} -- used as a persistent sandbox for interface commands
 local interface_callbacks = {} -- saves callbacks which can load new values per use
-Global.register(interface_env, function(tbl)
+Storage.register(interface_env, function(tbl)
     interface_env = tbl
 end)
 

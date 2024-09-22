@@ -1,6 +1,6 @@
-local Event = require 'utils.event' --- @dep utils.event
-local Global = require 'utils.global' --- @dep utils.global
-local config = require 'config.advanced_start' --- @dep config.advanced_start
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Storage = require("modules/exp_util/storage")
+local config = require("modules.exp_legacy.config.advanced_start") --- @dep config.advanced_start
 local use_silo_script = not config.disable_base_game_silo_script
 
 local util = require("util")
@@ -10,8 +10,8 @@ if use_silo_script then
 end
 
 local global = {}
-Global.register(global, function(tbl)
-    global = tbl
+Storage.register(global, function(tbl)
+  global = tbl
 end)
 
 local created_items = function()

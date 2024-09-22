@@ -1,19 +1,19 @@
 
-local Event = require 'utils.event' ---@dep utils.event
-local Global = require 'utils.global' ---@dep utils.global
-local config = require 'config.statistics' ---@dep config.statistics
+local Event = require("modules/exp_legacy/utils/event") ---@dep utils.event
+local Storage = require("modules/exp_util/storage") ---@dep utils.global
+local config = require("modules.exp_legacy.config.statistics") ---@dep config.statistics
 local format_time = _C.format_time
 local floor = math.floor
 local afk_required = 5*3600 -- 5 minutes
 
 --- Stores players who have been created, required to avoid loss of data
 local new_players = {}
-Global.register(new_players, function(tbl)
+Storage.register(new_players, function(tbl)
     new_players = tbl
 end)
 
 --- Stores the statistics on a player
-local PlayerData = require 'expcore.player_data' --- @dep expcore.player_data
+local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
 local AllPlayerData = PlayerData.All
 local Statistics = PlayerData.Statistics
 Statistics:set_metadata{

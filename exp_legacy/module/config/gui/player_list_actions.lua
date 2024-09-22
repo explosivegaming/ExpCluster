@@ -5,12 +5,12 @@
 -- the key used for the name of the button is the permission name used by the role system;
 -- @config Player-List
 
-local Gui = require 'expcore.gui' --- @dep expcore.gui
-local Roles = require 'expcore.roles' --- @dep expcore.roles
-local Reports = require 'modules.control.reports' --- @dep modules.control.reports
-local Warnings = require 'modules.control.warnings' --- @dep modules.control.warnings
-local Jail = require 'modules.control.jail' --- @dep modules.control.jail
-local Colors = require 'utils.color_presets' --- @dep utils.color_presets
+local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
+local Reports = require("modules.exp_legacy.modules.control.reports") --- @dep modules.control.reports
+local Warnings = require("modules.exp_legacy.modules.control.warnings") --- @dep modules.control.warnings
+local Jail = require("modules.exp_legacy.modules.control.jail") --- @dep modules.control.jail
+local Colors = require("modules/exp_util/include/color")
 local format_chat_player_name = _C.format_chat_player_name --- @dep expcore.common
 
 local SelectedPlayer, SelectedAction

@@ -3,9 +3,9 @@
     @commands LastLocation
 ]]
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
 local format_chat_player_name = _C.format_chat_player_name --- @dep expcore.common
-require 'config.expcore.command_general_parse'
+require("modules.exp_legacy.config.expcore.command_general_parse")
 
 --- Get the last location of a player.
 -- @command last-location

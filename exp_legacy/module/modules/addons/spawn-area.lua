@@ -1,12 +1,12 @@
 --- Adds a custom spawn area with chests and afk turrets
 -- @addon Spawn-Area
 
-local Global = require 'utils.global' --- @dep utils.global
-local Event = require 'utils.event' --- @dep utils.event
-local config = require 'config.spawn_area' --- @dep config.spawn_area
+local Storage = require("modules/exp_util/storage")
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local config = require("modules.exp_legacy.config.spawn_area") --- @dep config.spawn_area
 
 local turrets = config.turrets.locations
-Global.register(turrets, function(tbl)
+Storage.register(turrets, function(tbl)
     turrets = tbl
 end)
 

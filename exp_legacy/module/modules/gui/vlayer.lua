@@ -4,13 +4,13 @@
     @alias vlayer_container
 ]]
 
-local Gui = require 'expcore.gui' --- @dep expcore.gui
-local Roles = require 'expcore.roles' --- @dep expcore.roles
-local Event = require 'utils.event' --- @dep utils.event
-local format_number = require('util').format_number --- @dep util
-local config = require 'config.vlayer' --- @dep config.vlayer
-local vlayer = require 'modules.control.vlayer'
-local Selection = require 'modules.control.selection' --- @dep modules.control.selection
+local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local format_number = require("util").format_number --- @dep util
+local config = require("modules.exp_legacy.config.vlayer") --- @dep config.vlayer
+local vlayer = require("modules.exp_legacy.modules.control.vlayer")
+local Selection = require("modules.exp_legacy.modules.control.selection") --- @dep modules.control.selection
 local SelectionConvertArea = 'VlayerConvertChest'
 
 --- Align an aabb to the grid by expanding it

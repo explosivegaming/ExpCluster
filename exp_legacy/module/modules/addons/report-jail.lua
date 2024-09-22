@@ -1,9 +1,9 @@
 --- When a player is reported, the player is automatically jailed if the combined playtime of the reporters exceeds the reported player
 -- @addon report-jail
 
-local Event = require 'utils.event' ---@dep utils.event
-local Jail = require 'modules.control.jail' ---@dep modules.control.jail
-local Reports = require 'modules.control.reports' --- @dep modules.control.reports
+local Event = require("modules/exp_legacy/utils/event") ---@dep utils.event
+local Jail = require("modules.exp_legacy.modules.control.jail") ---@dep modules.control.jail
+local Reports = require("modules.exp_legacy.modules.control.reports") --- @dep modules.control.reports
 local format_chat_player_name = _C.format_chat_player_name --- @dep expcore.common
 
 --- Returns the playtime of the reporter. Used when calculating the total playtime of all reporters

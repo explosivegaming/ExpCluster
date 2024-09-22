@@ -4,8 +4,8 @@
 -- then use :allow{} and :disallow{} to specify certain actions to allow/disallow
 -- @config Permission-Groups
 
---local Event = require 'utils.event' -- @dep utils.event
-local Permission_Groups = require 'expcore.permission_groups' --- @dep expcore.permission_groups
+--local Event = require("modules/exp_legacy/utils/event") -- @dep utils.event
+local Permission_Groups = require("modules.exp_legacy.expcore.permission_groups") --- @dep expcore.permission_groups
 
 Permission_Groups.new_group('Admin')
 :allow_all()
@@ -60,7 +60,7 @@ Permission_Groups.new_group('Standard')
     'admin_action', -- trusted
     'change_programmable_speaker_alert_parameters', -- standard
     'drop_item',
-    'set_auto_launch_rocket'
+    'change_rocket_silo_mode'
 }
 
 Permission_Groups.new_group('Guest')
@@ -81,7 +81,7 @@ Permission_Groups.new_group('Guest')
     'admin_action', -- trusted
     'change_programmable_speaker_alert_parameters', -- standard
     'drop_item',
-    'set_auto_launch_rocket',
+    'change_rocket_silo_mode',
     'change_programmable_speaker_parameters', -- guest
     'change_train_stop_station',
     --'deconstruct',
@@ -89,10 +89,10 @@ Permission_Groups.new_group('Guest')
     'remove_train_station',
     'reset_assembling_machine',
     'rotate_entity',
-    'use_artillery_remote',
+    --'use_artillery_remote', -- not in 2.0
     'launch_rocket',
     'cancel_research',
-    'activate_cut',
+    --'activate_cut', -- not in 2.0
     'flush_opened_entity_fluid',
     'flush_opened_entity_specific_fluid'
 }

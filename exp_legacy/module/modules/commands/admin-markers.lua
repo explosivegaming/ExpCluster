@@ -3,15 +3,15 @@
     @commands Admin-Markers
 ]]
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-local Global = require 'utils.global' --- @dep utils.global
-local Event = require 'utils.event' --- @dep utils.event
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+local Storage = require("modules/exp_util/storage")
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 
 local admins = {} -- Stores all players in admin marker mode
 local markers = {} -- Stores all admin markers
 
---- Global variables
-Global.register({
+--- Storage variables
+Storage.register({
     admins = admins,
     markers = markers
 }, function(tbl)

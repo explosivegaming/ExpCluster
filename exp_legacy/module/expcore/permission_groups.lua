@@ -24,9 +24,9 @@ Permission_Groups.new_group('Restricted') -- this defines a new group called "Re
 ]]
 
 
-local Game = require 'utils.game' --- @dep utils.game
-local Event = require 'utils.event' --- @dep utils.event
-local Async = require 'expcore.async' --- @dep expcore.async
+local Game = require("modules.exp_legacy.utils.game") --- @dep utils.game
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Async = require("modules/exp_util/async")
 
 local Permissions_Groups = {
     groups={}, -- store for the different groups that are created
@@ -34,18 +34,18 @@ local Permissions_Groups = {
 }
 
 -- Async function to add players to permission groups
-local add_to_permission_group =
+local add_to_permission_group_async =
 Async.register(function(permission_group, player)
     permission_group.add_player(player)
 end)
-Permissions_Groups.async_token_add_to_permission_group = add_to_permission_group
+Permissions_Groups.add_to_permission_group_async = add_to_permission_group_async
 
 -- Async function to remove players from permission groups
-local remove_from_permission_group =
+local remove_from_permission_group_async =
 Async.register(function(permission_group, player)
     permission_group.remove_player(player)
 end)
-Permissions_Groups.async_token_remove_from_permission_group = remove_from_permission_group
+Permissions_Groups.remove_from_permission_group_async = remove_from_permission_group_async
 
 --- Getters.
 -- Functions that get permission groups
@@ -286,7 +286,7 @@ function Permissions_Groups._prototype:add_player(player)
     player = Game.get_player_from_any(player)
     local group = self:get_raw()
     if not group or not player then return false end
-    Async(add_to_permission_group, group, player)
+    add_to_permission_group_async(group, player)
     return true
 end
 
@@ -302,7 +302,7 @@ function Permissions_Groups._prototype:remove_player(player)
     player = Game.get_player_from_any(player)
     local group = self:get_raw()
     if not group or not player then return false end
-    Async(remove_from_permission_group, group, player)
+    remove_from_permission_group_async(group, player)
     return true
 end
 

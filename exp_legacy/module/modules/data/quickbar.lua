@@ -3,11 +3,11 @@
     @data Quickbar
 ]]
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-local config = require 'config.preset_player_quickbar' --- @dep config.preset_player_quickbar
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+local config = require("modules.exp_legacy.config.preset_player_quickbar") --- @dep config.preset_player_quickbar
 
 --- Stores the quickbar filters for a player
-local PlayerData = require 'expcore.player_data' --- @dep expcore.player_data
+local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
 local PlayerFilters = PlayerData.Settings:combine('QuickbarFilters')
 PlayerFilters:set_metadata{
     permission = 'command/save-quickbar',
@@ -41,7 +41,7 @@ local ignoredItems = {
 
 --- Saves your quickbar preset to the script-output folder
 -- @command save-quickbar
-Commands.new_command('save-quickbar', {'expcom-quickbar.description'}, 'Saves your quickbar preset items to file')
+Commands.new_command('save-quickbar', 'Saves your Quickbar preset items to file')
 :add_alias('save-toolbar')
 :register(function(player)
     local filters = {}

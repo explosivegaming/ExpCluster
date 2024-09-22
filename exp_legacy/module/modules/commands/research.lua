@@ -1,10 +1,10 @@
-local Global = require 'utils.global' --- @dep utils.global
-local Event = require 'utils.event' --- @dep utils.event
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-local config = require 'config.research' --- @dep config.research
+local Storage = require("modules/exp_util/storage")
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+local config = require("modules.exp_legacy.config.research") --- @dep config.research
 
 local research = {}
-Global.register(research, function(tbl)
+Storage.register(research, function(tbl)
     research = tbl
 end)
 

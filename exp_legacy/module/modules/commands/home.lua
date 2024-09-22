@@ -3,12 +3,12 @@
     @commands Home
 ]]
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-local Global = require 'utils.global' --- @dep utils.global
-require 'config.expcore.command_general_parse'
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+local Storage = require("modules/exp_util/storage")
+require("modules.exp_legacy.config.expcore.command_general_parse")
 
 local homes = {}
-Global.register(homes, function(tbl)
+Storage.register(homes, function(tbl)
     homes = tbl
 end)
 

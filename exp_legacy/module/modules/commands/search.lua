@@ -3,11 +3,11 @@
     @commands InventorySearch
 ]]
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-local format_number = require('util').format_number --- @dep util
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+local format_number = require("util").format_number --- @dep util
 local format_chat_player_name = _C.format_chat_player_name --- @dep expcore.common
 local format_time = _C.format_time
-require 'config.expcore.command_general_parse'
+require("modules.exp_legacy.config.expcore.command_general_parse")
 
 --- Input parse for items by name
 local function item_parse(input, _, reject)

@@ -1,12 +1,12 @@
-local Global = require 'utils.global' --- @dep utils.global
-local Event = require 'utils.event' --- @dep expcore.gui
+local Storage = require("modules/exp_util/storage")
+local Event = require("modules/exp_legacy/utils/event") --- @dep expcore.gui
 local mod_gui = require 'mod-gui' --- @dep mod-gui
 
 local Gui = {}
 local data = {}
 local uid = 0
 
-Global.register(
+Storage.register(
     data,
     function(tbl)
         data = tbl

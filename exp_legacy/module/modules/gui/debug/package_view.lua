@@ -1,6 +1,6 @@
-local Gui = require 'utils.gui' --- @dep utils.gui
-local Color = require 'utils.color_presets' --- @dep utils.color_presets
-local Model = require 'modules.gui.debug.model' --- @dep modules.gui.debug.model
+local Gui = require("modules.exp_legacy.utils.gui") --- @dep utils.gui
+local Color = require("modules/exp_util/include/color")
+local Model = require("modules.exp_legacy.modules.gui.debug.model") --- @dep modules.gui.debug.model
 
 local dump_function = Model.dump_function
 local loaded = _G.package.loaded
@@ -19,7 +19,6 @@ local ignore = {
     serpent = true,
     ['overrides.math'] = true,
     util = true,
-    ['overrides.inspect'] = true,
     ['mod-gui'] = true
 }
 

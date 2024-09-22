@@ -4,9 +4,9 @@
     @alias vlayer
 ]]
 
-local Global = require 'utils.global' --- @dep utils.global
-local Event = require 'utils.event' --- @dep utils.event
-local config = require 'config.vlayer' --- @dep config.vlayer
+local Storage = require("modules/exp_util/storage")
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local config = require("modules.exp_legacy.config.vlayer") --- @dep config.vlayer
 local move_items_stack = _C.move_items_stack
 
 local mega = 1000000
@@ -35,7 +35,7 @@ local vlayer_data = {
     surface = table.deep_copy(config.surface)
 }
 
-Global.register(vlayer_data, function(tbl)
+Storage.register(vlayer_data, function(tbl)
     vlayer_data = tbl
 end)
 

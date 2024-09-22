@@ -3,10 +3,10 @@
     @commands Kill
 ]]
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-local Roles = require 'expcore.roles' --- @dep expcore.roles
-require 'config.expcore.command_general_parse'
-require 'config.expcore.command_role_parse'
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
+require("modules.exp_legacy.config.expcore.command_general_parse")
+require("modules.exp_legacy.config.expcore.command_role_parse")
 
 --- Kills yourself or another player.
 -- @command kill

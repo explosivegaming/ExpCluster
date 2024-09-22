@@ -1,4 +1,4 @@
-local Event = require 'utils.event'
+local Event = require("modules/exp_legacy/utils/event")
 
 local controllers_with_inventory = {
 	[defines.controllers.character] = true,

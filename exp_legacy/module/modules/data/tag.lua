@@ -3,14 +3,14 @@
     @data Tag
 ]]
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-local Roles = require 'expcore.roles' --- @dep expcore.roles
-require 'config.expcore.command_general_parse'
-require 'config.expcore.command_role_parse'
-require 'config.expcore.command_color_parse'
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
+require("modules.exp_legacy.config.expcore.command_general_parse")
+require("modules.exp_legacy.config.expcore.command_role_parse")
+require("modules.exp_legacy.config.expcore.command_color_parse")
 
 --- Stores the tag for a player
-local PlayerData = require 'expcore.player_data' --- @dep expcore.player_data
+local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
 local PlayerTags = PlayerData.Settings:combine('Tag')
 local PlayerTagColors = PlayerData.Settings:combine('TagColor')
 PlayerTags:set_metadata{
@@ -49,7 +49,7 @@ end)
 --- Sets your player tag.
 -- @command tag
 -- @tparam string tag the tag that will be after the name, there is a max length
-Commands.new_command('tag', {'expcom-tag.description'}, 'Sets your player tag.')
+Commands.new_command('tag', 'Sets your player tag.')
 :add_param('tag', false, 'string-max-length', 20)
 :enable_auto_concat()
 :register(function(player, tag)
@@ -69,7 +69,7 @@ end)
 --- Clears your tag. Or another player if you are admin.
 -- @command tag-clear
 -- @tparam[opt=self] LuaPlayer player the player to remove the tag from, nil will apply to self
-Commands.new_command('tag-clear', {'expcom-tag.description-clear'}, 'Clears your tag. Or another player if you are admin.')
+Commands.new_command('tag-clear', 'Clears your tag. Or another player if you are admin.')
 :add_param('player', true, 'player-role')
 :set_defaults{player=function(player)
     return player -- default is the user using the command
@@ -78,11 +78,9 @@ end}
     if action_player.index == player.index then
         -- no player given so removes your tag
         PlayerTags:remove(action_player)
-
     elseif Roles.player_allowed(player, 'command/clear-tag/always') then
         -- player given and user is admin so clears that player's tag
         PlayerTags:remove(action_player)
-
     else
         -- user is not admin and tried to clear another users tag
         return Commands.error{'expcore-commands.unauthorized'}

@@ -1,9 +1,9 @@
 --- Disable new players from having certain items in their inventory, most commonly nukes
 -- @addon Nukeprotect
 
-local Event = require 'utils.event'          --- @dep utils.event
-local Roles = require 'expcore.roles'        --- @dep expcore.roles
-local config = require 'config.nukeprotect'  --- @dep config.nukeprotect
+local Event = require("modules/exp_legacy/utils/event")          --- @dep utils.event
+local Roles = require("modules.exp_legacy.expcore.roles")        --- @dep expcore.roles
+local config = require("modules.exp_legacy.config.nukeprotect")  --- @dep config.nukeprotect
 local move_items_stack = _C.move_items_stack --- @dep expcore.common
 
 

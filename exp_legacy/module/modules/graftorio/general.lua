@@ -1,5 +1,5 @@
-local Event = require("utils.event")
-local Global = require("utils.global")
+local Event = require("modules/exp_legacy/utils/event")
+local Storage = require("modules/exp_util/storage")
 
 local lib = {}
 
@@ -7,7 +7,7 @@ lib.data = {
 	output = {}
 }
 
-Global.register(lib.data, function(tbl)
+Storage.register(lib.data, function(tbl)
 	lib.data = tbl
 end)
 

@@ -4,8 +4,8 @@
 ]]
 
 local copy_items_stack = _C.copy_items_stack --- @dep expcore.common
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-require 'config.expcore.command_general_parse'
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+require("modules.exp_legacy.config.expcore.command_general_parse")
 
 Commands.new_command('clear-item-on-ground', {'expcom-surface-clearing.description-ci'}, 'Clear Item On Ground')
 :add_param('range', false, 'integer-range', 1, 1000)

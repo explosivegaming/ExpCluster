@@ -3,13 +3,13 @@
     @commands Connect
 ]]
 
-local Async = require 'expcore.async' --- @dep expcore.async
-local External = require 'expcore.external' --- @dep expcore.external
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-require 'config.expcore.command_role_parse'
+local Async = require("modules/exp_util/async")
+local External = require("modules.exp_legacy.expcore.external") --- @dep expcore.external
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+require("modules.exp_legacy.config.expcore.command_role_parse")
 local concat = table.concat
 
-local request_connection = Async.register(External.request_connection)
+local request_connection_async = Async.register(External.request_connection)
 
 local function get_server_id(server)
     local current_server = External.get_current_server()

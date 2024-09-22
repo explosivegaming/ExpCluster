@@ -1,13 +1,13 @@
 ---- module pd
 -- @gui PlayerData
 
-local Gui = require 'expcore.gui' --- @dep expcore.gui
-local Roles = require 'expcore.roles' --- @dep expcore.roles
-local Event = require 'utils.event' --- @dep utils.event
-local PlayerData = require 'expcore.player_data' --- @dep expcore.player_data
-require 'modules.data.statistics'
+local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
+require("modules.exp_legacy.modules.data.statistics")
 local format_time = _C.format_time --- @dep expcore.common
-local format_number = require('util').format_number --- @dep util
+local format_number = require("util").format_number --- @dep util
 
 local pd_container
 local label_width = {

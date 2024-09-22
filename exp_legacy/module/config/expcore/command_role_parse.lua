@@ -7,10 +7,10 @@
     player-role-alive
 ]]
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-local Roles = require 'expcore.roles' --- @dep expcore.roles
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local auto_complete = _C.auto_complete --- @dep expcore.common
-require 'config.expcore.command_general_parse'
+require("modules.exp_legacy.config.expcore.command_general_parse")
 
 -- luacheck:ignore 212/player
 Commands.add_parse('role',function(input, player, reject)

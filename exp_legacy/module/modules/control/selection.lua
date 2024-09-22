@@ -4,8 +4,8 @@
     @alias Selection
 ]]
 
-local Event = require 'utils.event' --- @dep utils.event
-local Global = require 'utils.global' --- @dep utils.global
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Storage = require("modules/exp_util/storage")
 local Selection = {
     events = {
         --- When a player enters selection mode
@@ -24,7 +24,7 @@ local Selection = {
 local selection_tool = { name='selection-tool' }
 
 local selections = {}
-Global.register({
+Storage.register({
     selections = selections
 }, function(tbl)
     selections = tbl.selections

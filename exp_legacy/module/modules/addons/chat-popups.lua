@@ -2,11 +2,11 @@
 -- also displays a ping above users who are named in the message
 -- @addon Chat-Popups
 
-local Game = require 'utils.game' --- @dep utils.game
-local Event = require 'utils.event' --- @dep utils.event
-local config = require 'config.popup_messages' --- @dep config.popup_messages
+local FloatingText = require("modules/exp_util/floating_text")
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local config = require("modules.exp_legacy.config.popup_messages") --- @dep config.popup_messages
 
-local send_text = Game.print_player_floating_text -- (player_index, text, color)
+local send_text = FloatingText.print_as_player -- (player, text)
 
 Event.add(defines.events.on_console_chat, function(event)
     if not event.player_index or event.player_index < 1 then return end
@@ -18,7 +18,7 @@ Event.add(defines.events.on_console_chat, function(event)
 
     -- Sends the message as text above them
     if config.show_player_messages then
-        send_text(player.index, {'chat-popup.message', player.name, event.message}, player.chat_color)
+        send_text(player, {'chat-popup.message', player.name, event.message})
     end
 
     if not config.show_player_mentions then return end
@@ -30,7 +30,7 @@ Event.add(defines.events.on_console_chat, function(event)
     for _, mentioned_player in pairs(game.connected_players) do
         if mentioned_player.index ~= player.index then
             if search_string:find(mentioned_player.name:lower(), 1, true) then
-                send_text(mentioned_player.index, {'chat-popup.ping', player.name}, player.chat_color)
+                send_text(mentioned_player, {'chat-popup.ping', player.name})
             end
         end
     end

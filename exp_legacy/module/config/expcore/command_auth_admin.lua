@@ -3,7 +3,7 @@
 -- either way you can change the requirements to be "admin" if you wanted to
 -- @config Commands-Auth-Admin
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
 
 -- luacheck:ignore 212/command
 Commands.add_authenticator(function(player, command, tags, reject)

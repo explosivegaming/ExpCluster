@@ -5,7 +5,7 @@
 
     @usage
     -- import the module from the control modules
-    local Production = require 'modules.control.production' --- @dep modules.control.production
+    local Production = require("modules.exp_legacy.modules.control.production") --- @dep modules.control.production
 
     -- This will return the less precise index from the one given
     -- this means that one_second will return one_minute or ten_hours will return fifty_hours
@@ -32,8 +32,8 @@
 
 ]]
 
-local Colors = require 'utils.color_presets' --- @dep utils.color_presets
-local format_number = require('util').format_number --- @dep util
+local Colors = require("modules/exp_util/include/color")
+local format_number = require("util").format_number --- @dep util
 
 local precision_index = defines.flow_precision_index
 local Production = {}

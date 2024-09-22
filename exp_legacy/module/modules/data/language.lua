@@ -1,8 +1,8 @@
 --- Stores the language used to join the server
 -- @data Language
 
-local Event = require 'utils.event' ---@dep utils.event
-local PlayerData = require 'expcore.player_data' --- @dep expcore.player_data
+local Event = require("modules/exp_legacy/utils/event") ---@dep utils.event
+local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
 local LocalLanguage = PlayerData.Statistics:combine('LocalLanguage')
 LocalLanguage:set_default("Unknown")
 

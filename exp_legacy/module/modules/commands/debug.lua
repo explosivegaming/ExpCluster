@@ -3,8 +3,8 @@
     @commands Debug
 ]]
 
-local DebugView = require 'modules.gui.debug.main_view' --- @dep modules.gui.debug.main_view
-local Commands = require 'expcore.commands' --- @dep expcore.commands
+local DebugView = require("modules.exp_legacy.modules.gui.debug.main_view") --- @dep modules.gui.debug.main_view
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
 
 --- Opens the debug pannel for viewing tables.
 -- @command debug

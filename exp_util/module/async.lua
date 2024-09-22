@@ -12,16 +12,16 @@ end
 local setAdminAsync = Async.register(setAdmin)
 setAdminAsync(game.players[1], true)
 
-@usage-- Functions stored in global table
+@usage-- Functions stored in storage table
 -- This can be used to create run time configurable callbacks, although this is not recommended
-global.myCallback = Async.register(function()
+storage.myCallback = Async.register(function()
     game.print("I got called!")
 end)
 
 -- The function can be called just like any other function
-global.myCallback()
+storage.myCallback()
 
-@usage-- Creating singleton tasks (best used with global data)
+@usage-- Creating singleton tasks (best used with storage data)
 -- This allows you to split large tasks across multiple ticks to prevent lag
 local myTask = Async.register(function(remainingWork)
     game.print("Working... " .. remainingWork)
@@ -68,7 +68,7 @@ fillTableAsync({}, "foo", 10) -- Puts 10 lots of foo into the table
 ]]
 
 local Clustorio = require("modules/clusterio/api")
-local ExpUtil = require("modules.exp_util.common") --- @dep exp_util.common
+local ExpUtil = require("modules/exp_util/common")
 
 local Async = {
     status = {}, -- Stores the allowed return types from a async function
@@ -286,10 +286,10 @@ local function on_tick()
 end
 
 --- On load, check the queue status and update the pressure values
-local function on_load()
-	if global.exp_async_next == nil then return end
-    async_next = global.exp_async_next
-	async_queue = global.exp_async_queue
+function Async.on_load()
+	if storage.exp_async_next == nil then return end
+    async_next = storage.exp_async_next
+	async_queue = storage.exp_async_queue
     for _, pending in ipairs(async_next) do
         local count = Async._queue_pressure[pending.id]
 		if count == nil then
@@ -310,17 +310,15 @@ local function on_load()
     end
 end
 
---- On server startup initialise the global data
-local function on_server_startup()
-	if global.exp_async_next == nil then
-		global.exp_async_next = {}
-		global.exp_async_queue = {}
+--- On server startup initialise the storage data
+function Async.on_init()
+	if storage.exp_async_next == nil then
+		storage.exp_async_next = {}
+		storage.exp_async_queue = {}
 	end
-	on_load()
+	Async.on_load()
 end
 
-Async.on_load = on_load
-Async.on_init = on_server_startup
 Async.events[defines.events.on_tick] = on_tick
-Async.events[Clustorio.events.on_server_startup] = on_server_startup
+Async.events[Clustorio.events.on_server_startup] = Async.on_init
 return Async

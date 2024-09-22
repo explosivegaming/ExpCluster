@@ -1,9 +1,9 @@
 ---- module surveillance
 -- @gui surveillance
 
-local Gui = require 'expcore.gui' --- @dep expcore.gui
-local Roles = require 'expcore.roles' --- @dep expcore.roles
-local Event = require 'utils.event' --- @dep utils.event
+local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 
 local cctv_player =
 Gui.element(function(definition, parent, player_list)

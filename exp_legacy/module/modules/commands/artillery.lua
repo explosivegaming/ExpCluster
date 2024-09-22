@@ -3,9 +3,9 @@
     @commands Artillery
 ]]
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-require 'config.expcore.command_general_parse'
-local Selection = require 'modules.control.selection' --- @dep modules.control.selection
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+require("modules.exp_legacy.config.expcore.command_general_parse")
+local Selection = require("modules.exp_legacy.modules.control.selection") --- @dep modules.control.selection
 local SelectionArtyArea = 'ArtyArea'
 
 local function location_break(player, pos)

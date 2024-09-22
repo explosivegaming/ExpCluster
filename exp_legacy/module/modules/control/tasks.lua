@@ -10,8 +10,8 @@ Tasks.update_task(task_id, 'We need more iron!', game.player.name)
 
 ]]
 
-local Datastore = require 'expcore.datastore' --- @dep expcore.datastore
-local Global = require 'utils.global' --- @dep utils.global
+local Datastore = require("modules.exp_legacy.expcore.datastore") --- @dep expcore.datastore
+local Storage = require("modules/exp_util/storage")
 
 --- Stores all data for the warp gui
 local TaskData = Datastore.connect('TaskData')
@@ -19,9 +19,9 @@ TaskData:set_serializer(function(raw_key) return raw_key.task_id end)
 
 local Tasks = {}
 
--- Global lookup table for force name to task ids
+-- Storage lookup table for force name to task ids
 local force_tasks = {_uid=1}
-Global.register(force_tasks, function(tbl)
+Storage.register(force_tasks, function(tbl)
     force_tasks = tbl
 end)
 

@@ -1,4 +1,4 @@
-local general = require("modules.graftorio.general")
+local general = require("modules.exp_legacy.modules.graftorio.general")
 
 local lib = {}
 

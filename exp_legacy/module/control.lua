@@ -8,20 +8,13 @@ log('[START] -----| Explosive Gaming Scenario Loader |-----')
 log('[INFO] Setting up lua environment')
 
 -- Require the global overrides
-require 'overrides.stages' -- Data stages used in factorio, often used to test for runtime
-require 'overrides.print' -- Overrides the _G.print function
-require 'overrides.math' -- Omitting the math library is a very bad idea
-require 'overrides.table' -- Adds alot more functions to the table module
-global.version = require 'overrides.version' -- The current version for exp gaming scenario
-inspect = require 'overrides.inspect' -- Used to covert any value into human readable string
-Debug = require 'overrides.debug' -- Global Debug module
-_C = require 'expcore.common' -- _C is used to store lots of common functions expected to be used
-_CHEATS = false
-_DEBUG = false
+require("modules.exp_legacy.overrides.table") -- Adds alot more functions to the table module
+storage.version = require("modules.exp_legacy.overrides.version") -- The current version for exp gaming scenario
+_C = require("modules.exp_legacy.expcore.common") -- _C is used to store lots of common functions expected to be used
 
 -- Please go to config/file_loader.lua to edit the files that are loaded
 log('[INFO] Reading loader config')
-local files = require 'config._file_loader'
+local files = require("modules.exp_legacy.config._file_loader")
 
 -- Error handler for loading files
 local errors = {}
@@ -44,14 +37,14 @@ local total_file_count = string.format('%3d', #files)
 for index, path in pairs(files) do
     currently_loading = path
     log(string.format('[INFO] Loading file %3d/%s (%s)', index, total_file_count, path))
-    xpcall(require, error_handler, path)
+    xpcall(require, error_handler, "modules.exp_legacy." .. path)
 end
-
--- Override the default require; require can no longer load new scripts
-log('[INFO] Require Overwrite! No more requires can be made!')
-require 'overrides.require'
 
 -- Logs all errors again to make it make it easy to find
 log('[INFO] All files loaded with '..error_count..' errors:')
 for _, error in ipairs(errors) do log(error) end
 log('[END] -----| Explosive Gaming Scenario Loader |-----')
+
+--- Register all event handlers via clusterio
+local Event = require("modules/exp_legacy/utils/event")
+return Event.real_handlers

@@ -1,9 +1,9 @@
 --- Makes markers on the map where places have died and reclaims items if not recovered
 -- @addon Death-Logger
 
-local Event = require 'utils.event' --- @dep utils.event
-local Global = require 'utils.global' --- @dep utils.global
-local config = require 'config.death_logger' --- @dep config.death_logger
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Storage = require("modules/exp_util/storage")
+local config = require("modules.exp_legacy.config.death_logger") --- @dep config.death_logger
 local format_time, move_items = _C.format_time, _C.move_items_stack --- @dep expcore.common
 
 -- Max amount of ticks a corpse can be alive
@@ -13,7 +13,7 @@ local deaths = {
     archive={} -- deaths moved here after body is gone
     --{player_name='Cooldude2606', time_of_death='15H 15M', position={x=0, y=0}, corpse=LuaEntity, tag=LuaCustomChartTag}
 }
-Global.register(deaths, function(tbl)
+Storage.register(deaths, function(tbl)
     deaths = tbl
 end)
 

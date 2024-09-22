@@ -1,6 +1,6 @@
-local Event = require("utils.event")
-local general = require("modules.graftorio.general")
-local config = require("config.graftorio")
+local Event = require("modules/exp_legacy/utils/event")
+local general = require("modules.exp_legacy.modules.graftorio.general")
+local config = require("modules.exp_legacy.config.graftorio")
 
 local lib = {}
 

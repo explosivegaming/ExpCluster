@@ -3,8 +3,8 @@
     @commands Bot Queue
 ]]
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-require 'config.expcore.command_general_parse'
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+require("modules.exp_legacy.config.expcore.command_general_parse")
 
 Commands.new_command('bot-queue-get', {'expcom-bot-queue.description-get'}, 'Get bot queue')
 :set_flag('admin_only')

@@ -3,9 +3,9 @@
     @commands Roles
 ]]
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-local Roles = require 'expcore.roles' --- @dep expcore.roles
-local Colours = require 'utils.color_presets' --- @dep utils.color_presets
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
+local Colours = require("modules/exp_util/include/color")
 local format_chat_player_name, format_chat_colour_localized = _C.format_chat_player_name, _C.format_chat_colour_localized
 
 --- Assigns a role to a player
@@ -68,12 +68,10 @@ Commands.new_command('list-roles', {'expcom-roles.description-list-roles'}, 'Lis
         local role_name = format_chat_colour_localized(role.name, colour)
         if index == 1 then
             message = {'expcom-roles.list', role_name}
-
             if player then
                 local player_name_colour = format_chat_player_name(player)
                 message = {'expcom-roles.list-player', player_name_colour, role_name}
             end
-
         else
             message = {'expcom-roles.list-element', message, role_name}
         end

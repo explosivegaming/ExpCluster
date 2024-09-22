@@ -1,10 +1,10 @@
 --- When a player walks around the tiles under them will degrade over time, the same is true when entites are built
 -- @addon Scorched-Earth
 
-local Event = require 'utils.event' --- @dep utils.event
-local Global = require 'utils.global' --- @dep utils.global
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Storage = require("modules/exp_util/storage")
 local print_grid_value, clear_flying_text = _C.print_grid_value, _C.clear_flying_text --- @dep expcore.common
-local config = require 'config.scorched_earth' --- @dep config.scorched_earth
+local config = require("modules.exp_legacy.config.scorched_earth") --- @dep config.scorched_earth
 
 -- Loops over the config and finds the wile which has the highest value for strength
 local max_strength = 0
@@ -16,7 +16,7 @@ end
 
 -- Used for debugging the degrade chances
 local debug_players = {}
-Global.register(debug_players, function(tbl)
+Storage.register(debug_players, function(tbl)
     debug_players = tbl
 end)
 

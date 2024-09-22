@@ -3,14 +3,14 @@
     @commands Help
 ]]
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-local Global = require 'utils.global' --- @dep utils.global
-require 'config.expcore.command_general_parse'
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+local Storage = require("modules/exp_util/storage")
+require("modules.exp_legacy.config.expcore.command_general_parse")
 
 local results_per_page = 5
 
 local search_cache = {}
-Global.register(search_cache, function(tbl)
+Storage.register(search_cache, function(tbl)
     search_cache = tbl
 end)
 
@@ -25,7 +25,6 @@ Commands.new_command('search-help', {'expcom-chelp.description'}, 'Searches for 
 :set_defaults{keyword='', page=1}
 :register(function(player, keyword, page)
     local player_index = player and player.index or 0
-
     -- if keyword is a number then treat it as page number
     if tonumber(keyword) then
         page = math.floor(tonumber(keyword))
@@ -45,7 +44,6 @@ Commands.new_command('search-help', {'expcom-chelp.description'}, 'Searches for 
         local current_page = 1
         local page_count = 0
         local commands = Commands.search(keyword, player)
-
         -- loops other all commands returned by search, includes game commands
         for _, command_data in pairs(commands) do
             -- if the number of results if greater than the number already added then it moves onto a new page
@@ -54,7 +52,6 @@ Commands.new_command('search-help', {'expcom-chelp.description'}, 'Searches for 
                 current_page = current_page + 1
                 table.insert(pages, {})
             end
-
             -- adds the new command to the page
             page_count = page_count + 1
             found = found + 1
@@ -67,7 +64,6 @@ Commands.new_command('search-help', {'expcom-chelp.description'}, 'Searches for 
                 alias_format
             })
         end
-
         -- adds the result to the cache
         search_cache[player_index] = {
             keyword=keyword:lower(),
@@ -91,7 +87,6 @@ Commands.new_command('search-help', {'expcom-chelp.description'}, 'Searches for 
         Commands.print({'expcom-chelp.footer', found, page, #pages}, 'cyan')
         return Commands.error{'expcom-chelp.out-of-range', page}
     end
-
     -- blocks command complete message
     return Commands.success
 end)

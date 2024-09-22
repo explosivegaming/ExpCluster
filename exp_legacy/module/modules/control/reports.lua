@@ -5,7 +5,7 @@
 
     @usage
     -- import the module from the control modules
-    local Reports = require 'modules.control.reports' --- @dep modules.control.reports
+    local Reports = require("modules.exp_legacy.modules.control.reports") --- @dep modules.control.reports
 
     -- This will place a report on "MrBiter" (must be a valid player) the report will have been made
     -- by "Cooldude2606" (must be the player name) with the reason 'Liking biters too much' this can be
@@ -24,8 +24,8 @@
 
 ]]
 
-local Game = require 'utils.game' --- @dep utils.game
-local Global = require 'utils.global' --- @dep utils.global
+local Game = require("modules.exp_legacy.utils.game") --- @dep utils.game
+local Storage = require("modules/exp_util/storage")
 
 local valid_player = Game.get_player_from_any
 
@@ -50,7 +50,7 @@ local Reports = {
 }
 
 local user_reports = Reports.user_reports
-Global.register(user_reports, function(tbl)
+Storage.register(user_reports, function(tbl)
     Reports.user_reports = tbl
     user_reports = Reports.user_reports
 end)

@@ -5,7 +5,7 @@
 
     @usage
     -- import the module from the control modules
-    local Warnings = require 'modules.control.warnings' --- @dep modules.control.warnings
+    local Warnings = require("modules.exp_legacy.modules.control.warnings") --- @dep modules.control.warnings
 
     -- This will add a warning to the player
     Warnings.add_warning('MrBiter', 'Cooldude2606', 'Killed too many biters')
@@ -21,15 +21,15 @@
     Warnings.clear_warnings('MrBiter', 'Cooldude2606')
 ]]
 
-local Event = require 'utils.event' --- @dep utils.event
-local Game = require 'utils.game' --- @dep utils.game
-local Global = require 'utils.global' --- @dep utils.global
-local config = require 'config.warnings' --- @dep config.warnings
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Game = require("modules.exp_legacy.utils.game") --- @dep utils.game
+local Storage = require("modules/exp_util/storage")
+local config = require("modules.exp_legacy.config.warnings") --- @dep config.warnings
 
 local valid_player = Game.get_player_from_any
 
 --- Stores the quickbar filters for a player
-local PlayerData = require 'expcore.player_data' --- @dep expcore.player_data
+local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
 local PlayerWarnings = PlayerData.Required:combine('Warnings')
 PlayerWarnings:set_metadata{
     stringify = function(value)
@@ -75,7 +75,7 @@ local Warnings = {
 }
 
 local user_script_warnings = Warnings.user_script_warnings
-Global.register(user_script_warnings, function(tbl)
+Storage.register(user_script_warnings, function(tbl)
     Warnings.user_script_warnings = tbl
     user_script_warnings = tbl
 end)

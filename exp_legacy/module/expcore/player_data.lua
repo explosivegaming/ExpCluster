@@ -3,7 +3,7 @@
 @core PlayerData
 
 @usage-- Adding a colour setting for players
-local PlayerData = require 'expcore.player_data'
+local PlayerData = require("modules.exp_legacy.expcore.player_data")
 local PlayerColors = PlayerData.Settings:combine('Color')
 
 -- Set the players color when their data is loaded
@@ -19,8 +19,8 @@ PlayerColors:on_save(function(player_name, _)
 end)
 
 @usage-- Add a playtime statistic for players
-local Event = require 'utils.event'
-local PlayerData = require 'expcore.player_data'
+local Event = require("modules/exp_legacy/utils/event")
+local PlayerData = require("modules.exp_legacy.expcore.player_data")
 local Playtime = PlayerData.Statistics:combine('Playtime')
 
 -- When playtime reaches an hour interval tell the player and say thanks
@@ -41,11 +41,11 @@ end)
 
 ]]
 
-local Event = require 'utils.event' --- @dep utils.event
-local Async = require 'expcore.async' --- @dep expcore.async
-local Datastore = require 'expcore.datastore' --- @dep expcore.datastore
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-require 'config.expcore.command_general_parse' --- @dep config.expcore.command_general_parse
+local Async = require("modules/exp_util/async")
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Datastore = require("modules.exp_legacy.expcore.datastore") --- @dep expcore.datastore
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+require("modules.exp_legacy.config.expcore.command_general_parse") --- @dep config.expcore.command_general_parse
 
 --- Common player data that acts as the root store for player data
 local PlayerData = Datastore.connect('PlayerData', true) -- saveToDisk
@@ -86,7 +86,8 @@ Commands.new_command('save-data', 'Writes all your player data to a file on your
 end)
 
 --- Async function called after 5 seconds with no player data loaded
-local check_data_loaded = Async.register(function(player)
+local check_data_loaded_async =
+Async.register(function(player)
     local player_data = PlayerData:get(player)
     if not player_data or not player_data.valid then
         player.print{'expcore-data.data-failed'}
@@ -127,7 +128,7 @@ end)
 --- Load player data when they join
 Event.add(defines.events.on_player_joined_game, function(event)
     local player = game.players[event.player_index]
-    Async.wait(300, check_data_loaded, player)
+    check_data_loaded_async:start_after(300, player)
     PlayerData:raw_set(player.name)
     PlayerData:request(player)
 end)

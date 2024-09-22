@@ -1,5 +1,5 @@
-local Gui = require "expcore.gui" --- @dep expcore.gui
-local PlayerData = require 'expcore.player_data' --- @dep expcore.player_data
+local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
 
 -- Used to store the state of the toolbar when a player leaves
 local ToolbarState = PlayerData.Settings:combine('ToolbarState')

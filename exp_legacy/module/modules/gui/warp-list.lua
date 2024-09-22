@@ -4,14 +4,14 @@
     @alias warp_list
 ]]
 
-local Gui = require 'expcore.gui' --- @dep expcore.gui
-local Datastore = require 'expcore.datastore' --- @dep expcore.datastore
-local Global = require 'utils.global' --- @dep utils.global
-local Event = require 'utils.event' --- @dep utils.event
-local Roles = require 'expcore.roles' --- @dep expcore.roles
-local Colors = require 'utils.color_presets' --- @dep utils.color_presets
-local config = require 'config.gui.warps' --- @dep config.gui.warps
-local Warps = require 'modules.control.warps' --- @dep modules.control.warps
+local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local Datastore = require("modules.exp_legacy.expcore.datastore") --- @dep expcore.datastore
+local Storage = require("modules/exp_util/storage")
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
+local Colors = require("modules/exp_util/include/color")
+local config = require("modules.exp_legacy.config.gui.warps") --- @dep config.gui.warps
+local Warps = require("modules.exp_legacy.modules.control.warps") --- @dep modules.control.warps
 local format_time, player_return = _C.format_time, _C.player_return --- @dep expcore.common
 
 --- Stores all data for the warp gui
@@ -24,7 +24,7 @@ PlayerCooldown:set_default(0)
 
 --- Table that stores a boolean value of weather to keep the warp gui open
 local keep_gui_open = {}
-Global.register(keep_gui_open, function(tbl)
+Storage.register(keep_gui_open, function(tbl)
     keep_gui_open = tbl
 end)
 

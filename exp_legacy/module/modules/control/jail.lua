@@ -5,7 +5,7 @@
 
     @usage
     -- import the module from the control modules
-    local Jail = require 'modules.control.jail' --- @dep modules.control.jail
+    local Jail = require("modules.exp_legacy.modules.control.jail") --- @dep modules.control.jail
 
     -- This will move 'MrBiter' to the jail role and remove all other roles from them
     -- the player name and reason are only so they can be included in the event for user feedback
@@ -16,8 +16,8 @@
     Jail.unjail_player('MrBiter', 'Cooldude2606')
 ]]
 
-local Roles = require 'expcore.roles' --- @dep expcore.roles
-local Game = require 'utils.game' --- @dep utils.game
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
+local Game = require("modules.exp_legacy.utils.game") --- @dep utils.game
 
 local valid_player = Game.get_player_from_any
 local assign_roles = Roles.assign_player

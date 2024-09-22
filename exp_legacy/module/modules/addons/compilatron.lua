@@ -1,11 +1,10 @@
 --- Adds a compilatron that walks around the spawn area; adapted from redmew code
 -- @addon Compilatron
 
-local Event = require 'utils.event' --- @dep utils.event
-local Global = require 'utils.global' --- @dep utils.global
-local Task = require 'utils.task' --- @dep utils.task
-local Token = require 'utils.token' --- @dep utils.token
-local config = require 'config.compilatron' --- @dep config.compilatron
+local Async = require("modules/exp_util/async")
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Storage = require("modules/exp_util/storage")
+local config = require("modules.exp_legacy.config.compilatron") --- @dep config.compilatron
 local messages = config.messages
 local locations = config.locations
 
@@ -14,7 +13,7 @@ local Public = {
     current_messages={}
 }
 
-Global.register({
+Storage.register({
     compilatrons = Public.compilatrons,
     current_messages = Public.current_messages
 }, function(tbl)
@@ -22,20 +21,21 @@ Global.register({
     Public.current_messages = tbl.current_messages
 end)
 
---- This will re-create the speech bubble after it de-spawns called with set_timeout
-local callback =
-    Token.register(
-    function(data)
-        local ent = data.ent
-        local name = data.name
-        local msg_number = data.msg_number
-        local message =
-            ent.surface.create_entity(
-            {name = 'compi-speech-bubble', text = messages[name][msg_number], position = {0, 0}, source = ent}
-        )
-        Public.current_messages[name] = {message = message, msg_number = msg_number}
-    end
-)
+local speech_bubble_async =
+Async.register(function(data)
+    local message = 
+    data.entity.surface.create_entity{
+        name = 'compi-speech-bubble',
+        text = messages[data.name][data.msg_number],
+        source = data.entity,
+        position = {0, 0},
+    }
+
+    Public.current_messages[data.name] = {
+        message = message,
+        msg_number = data.msg_number
+    }
+end)
 
 --- This will move the messages onto the next message in the loop
 local function circle_messages()
@@ -57,7 +57,7 @@ local function circle_messages()
             msg_number = 1
         end
         -- this calls the callback above to re-spawn the message after some time
-        Task.set_timeout_in_ticks(300, callback, {ent = ent, name = name, msg_number = msg_number})
+        speech_bubble_async:start_after(300, {ent = ent, name = name, msg_number = msg_number})
     end
 end
 

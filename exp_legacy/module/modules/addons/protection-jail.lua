@@ -1,15 +1,15 @@
 --- When a player triggers protection multiple times they are automatically jailed
 -- @addon protection-jail
 
-local Event = require 'utils.event' ---@dep utils.event
-local Global = require 'utils.global' ---@dep utils.global
-local Jail = require 'modules.control.jail' ---@dep modules.control.jail
-local Protection = require 'modules.control.protection' --- @dep modules.control.protection
+local Event = require("modules/exp_legacy/utils/event") ---@dep utils.event
+local Storage = require("modules/exp_util/storage") ---@dep utils.global
+local Jail = require("modules.exp_legacy.modules.control.jail") ---@dep modules.control.jail
+local Protection = require("modules.exp_legacy.modules.control.protection") --- @dep modules.control.protection
 local format_chat_player_name = _C.format_chat_player_name --- @dep expcore.common
 
 --- Stores how many times the repeat violation was triggered
 local repeat_count = {}
-Global.register(repeat_count, function(tbl)
+Storage.register(repeat_count, function(tbl)
     repeat_count = tbl
 end)
 

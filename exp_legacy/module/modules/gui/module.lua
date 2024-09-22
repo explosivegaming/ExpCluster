@@ -1,11 +1,11 @@
 ---- module inserter
 -- @gui Module
 
-local Gui = require 'expcore.gui' --- @dep expcore.gui
-local Event = require 'utils.event' --- @dep utils.event
-local Roles = require 'expcore.roles' --- @dep expcore.roles
-local config = require 'config.module' --- @dep config.module
-local Selection = require 'modules.control.selection' --- @dep modules.control.selection
+local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
+local config = require("modules.exp_legacy.config.module") --- @dep config.module
+local Selection = require("modules.exp_legacy.modules.control.selection") --- @dep modules.control.selection
 local SelectionModuleArea = 'ModuleArea'
 
 --- align an aabb to the grid by expanding it

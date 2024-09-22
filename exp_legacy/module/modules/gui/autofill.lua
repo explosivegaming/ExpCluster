@@ -4,19 +4,19 @@
     @alias autofill
 ]]
 
-local Game = require 'utils.game' -- @dep utils.game
-local Gui = require 'expcore.gui' -- @dep expcore.gui
-local Roles = require 'expcore.roles' -- @dep expcore.gui
-local Global = require 'utils.global' -- @dep utils.global
-local config = require 'config.gui.autofill' -- @dep config.gui.autofill
-local Event = require 'utils.event' -- @dep utils.event
-local table = require 'overrides.table' -- @dep overrides.table
+local FloatingText = require("modules/exp_util/floating_text")
+local Gui = require("modules.exp_legacy.expcore.gui") -- @dep expcore.gui
+local Roles = require("modules.exp_legacy.expcore.roles") -- @dep expcore.gui
+local Storage = require("modules/exp_util/storage") -- @dep utils.global
+local config = require("modules.exp_legacy.config.gui.autofill") -- @dep config.gui.autofill
+local Event = require("modules/exp_legacy/utils/event") -- @dep utils.event
+local table = require("modules.exp_legacy.overrides.table") -- @dep overrides.table
 
-local print_text = Game.print_floating_text -- (surface, position, text, color)
+local print_text = FloatingText.print -- (surface, position, text, color)
 
 --- Table that stores if autofill is enabled or not
 local autofill_player_settings = {}
-Global.register(autofill_player_settings, function(tbl)
+Storage.register(autofill_player_settings, function(tbl)
     autofill_player_settings = tbl
 end)
 

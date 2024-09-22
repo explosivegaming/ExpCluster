@@ -1,7 +1,7 @@
 --- This file contains all the different settings for the autofill system and gui
 -- @config Autofill
 
-local table = require 'overrides.table' -- @dep overrides.table
+local table = require("modules.exp_legacy.overrides.table") -- @dep overrides.table
 
 local config = {
 	-- General config

@@ -3,7 +3,7 @@
 @module Gui
 ]]
 
-local Gui = require 'expcore.gui.prototype'
+local Gui = require("modules.exp_legacy.expcore.gui.prototype")
 
 --- Helper Functions.
 -- @section helperFunctions

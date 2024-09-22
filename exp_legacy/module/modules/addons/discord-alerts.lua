@@ -1,10 +1,10 @@
 --- Sends alert messages to our discord server when certain events are triggered
 -- @addon Discord-Alerts
 
-local Event = require 'utils.event' --- @dep utils.event
-local Colors = require 'utils.color_presets' --- @dep utils.color_presets
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Colors = require("modules/exp_util/include/color")
 local write_json, format_time = _C.write_json, _C.format_time --- @dep expcore.common
-local config = require 'config.discord_alerts' --- @dep config.discord_alerts
+local config = require("modules.exp_legacy.config.discord_alerts") --- @dep config.discord_alerts
 
 local playtime_format = {hours = true, minutes = true, short = true, string = true}
 
@@ -96,7 +96,7 @@ end
 
 --- Repeated protected entity mining
 if config.entity_protection then
-    local EntityProtection = require 'modules.control.protection' --- @dep modules.control.protection
+    local EntityProtection = require("modules.exp_legacy.modules.control.protection") --- @dep modules.control.protection
     Event.add(EntityProtection.events.on_repeat_violation, function(event)
         local player_name = get_player_name(event)
         emit_event{
@@ -112,7 +112,7 @@ end
 
 --- Reports added and removed
 if config.player_reports then
-    local Reports = require 'modules.control.reports' --- @dep modules.control.reports
+    local Reports = require("modules.exp_legacy.modules.control.reports") --- @dep modules.control.reports
     Event.add(Reports.events.on_player_reported, function(event)
         local player_name, by_player_name = get_player_name(event)
         emit_event{
@@ -141,7 +141,7 @@ end
 
 --- Warnings added and removed
 if config.player_warnings then
-    local Warnings = require 'modules.control.warnings' --- @dep modules.control.warnings
+    local Warnings = require("modules.exp_legacy.modules.control.warnings") --- @dep modules.control.warnings
     Event.add(Warnings.events.on_warning_added, function(event)
         local player_name, by_player_name = get_player_name(event)
         local player = game.get_player(player_name)
@@ -171,7 +171,7 @@ end
 
 --- When a player is jailed or unjailed
 if config.player_jail then
-    local Jail = require 'modules.control.jail'
+    local Jail = require("modules.exp_legacy.modules.control.jail")
     Event.add(Jail.events.on_player_jailed, function(event)
         local player_name, by_player_name = get_player_name(event)
         emit_event{

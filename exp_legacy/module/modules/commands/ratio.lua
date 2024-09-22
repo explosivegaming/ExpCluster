@@ -1,6 +1,6 @@
 
 
-local Commands = require 'expcore.commands'
+local Commands = require("modules.exp_legacy.expcore.commands")
 
 local function Modules(moduleInventory) -- returns the multiplier of the modules
       local effect1 = moduleInventory.get_item_count("productivity-module") -- type 1

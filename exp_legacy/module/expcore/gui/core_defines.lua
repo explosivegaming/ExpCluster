@@ -3,8 +3,8 @@
 @module Gui
 ]]
 
-local Gui = require 'expcore.gui.prototype'
-local Event = require 'utils.event'
+local Gui = require("modules.exp_legacy.expcore.gui.prototype")
+local Event = require("modules/exp_legacy/utils/event")
 
 --- Core Defines.
 -- @section coreDefines

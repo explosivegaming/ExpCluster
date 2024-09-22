@@ -1,7 +1,7 @@
-local Gui = require 'utils.gui' --- @dep utils.gui
-local Datastore = require 'expcore.datastore' --- @dep expcore.datastore
-local Color = require 'utils.color_presets' --- @dep utils.color_presets
-local Model = require 'modules.gui.debug.model' --- @dep modules.gui.debug.model
+local Gui = require("modules.exp_legacy.utils.gui") --- @dep utils.gui
+local Datastore = require("modules.exp_legacy.expcore.datastore") --- @dep expcore.datastore
+local Color = require("modules/exp_util/include/color")
+local Model = require("modules.exp_legacy.modules.gui.debug.model") --- @dep modules.gui.debug.model
 
 local dump = Model.dump
 local concat = table.concat

@@ -3,14 +3,14 @@
     @data Bonus
 ]]
 
-local Roles = require 'expcore.roles' --- @dep expcore.roles
-local Event = require 'utils.event' --- @dep utils.event
-local config = require 'config.bonus' --- @dep config.bonuses
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-require 'config.expcore.command_general_parse'
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local config = require("modules.exp_legacy.config.bonus") --- @dep config.bonuses
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+require("modules.exp_legacy.config.expcore.command_general_parse")
 
 -- Stores the bonus for the player
-local PlayerData = require 'expcore.player_data' --- @dep expcore.player_data
+local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
 local PlayerBonus = PlayerData.Settings:combine('Bonus')
 PlayerBonus:set_default(0)
 PlayerBonus:set_metadata{

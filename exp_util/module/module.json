@@ -3,7 +3,7 @@
 	"load": [
 		"include/package.lua",
 		"include/require.lua",
-		"global.lua",
+		"storage.lua",
 		"async.lua"
 	],
 	"require": [

@@ -3,8 +3,8 @@
     @commands Set game speed
 ]]
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-require 'config.expcore.command_general_parse'
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+require("modules.exp_legacy.config.expcore.command_general_parse")
 
 Commands.new_command('game-speed', {'expcom-speed.description'}, 'Set game speed')
 :add_param('amount', 'number-range', 0.2, 8)

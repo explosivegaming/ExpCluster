@@ -2,9 +2,9 @@
     @addon Logging
 ]]
 
-local Event = require 'utils.event' --- @dep utils.event
-local config = require 'config.logging' --- @dep config.logging
-local config_res = require 'config.research' --- @dep config.research
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local config = require("modules.exp_legacy.config.logging") --- @dep config.logging
+local config_res = require("modules.exp_legacy.config.research") --- @dep config.research
 
 local function add_log(data)
 	game.write_file(config.file_name, data, true, 0)

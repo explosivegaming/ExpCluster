@@ -3,9 +3,9 @@
     @commands Spectate
 ]]
 
-local Spectate = require 'modules.control.spectate' --- @dep modules.control.spectate
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-require 'config.expcore.command_general_parse'
+local Spectate = require("modules.exp_legacy.modules.control.spectate") --- @dep modules.control.spectate
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+require("modules.exp_legacy.config.expcore.command_general_parse")
 
 --- Toggles spectator mode for the caller
 -- @command spectate
@@ -13,7 +13,6 @@ Commands.new_command('spectate', {'expcom-spectate.description-spectate'}, 'Togg
 :register(function(player)
     if Spectate.is_spectating(player) then
         Spectate.stop_spectate(player)
-
     else
         Spectate.start_spectate(player)
     end

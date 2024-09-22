@@ -1,16 +1,16 @@
-local Gui = require 'utils.gui' --- @dep utils.gui
-local Color = require 'utils.color_presets' --- @dep utils.color_presets
+local Gui = require("modules.exp_legacy.utils.gui") --- @dep utils.gui
+local Color = require("modules/exp_util/include/color")
 
 local Public = {}
 
 local pages = {
-    require 'modules.gui.debug.redmew_global_view',
-    require 'modules.gui.debug.expcore_datastore_view',
-    require 'modules.gui.debug.expcore_gui_view',
-    require 'modules.gui.debug.global_view',
-    require 'modules.gui.debug.package_view',
-    require 'modules.gui.debug._g_view',
-    require 'modules.gui.debug.event_view'
+    require("modules.exp_legacy.modules.gui.debug.redmew_global_view"),
+    require("modules.exp_legacy.modules.gui.debug.expcore_datastore_view"),
+    require("modules.exp_legacy.modules.gui.debug.expcore_gui_view"),
+    require("modules.exp_legacy.modules.gui.debug.global_view"),
+    require("modules.exp_legacy.modules.gui.debug.package_view"),
+    require("modules.exp_legacy.modules.gui.debug._g_view"),
+    require("modules.exp_legacy.modules.gui.debug.event_view")
 }
 
 local main_frame_name = Gui.uid_name()

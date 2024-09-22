@@ -1,15 +1,15 @@
 --- research gui
 -- @gui Research
 
-local Gui = require 'expcore.gui' --- @dep expcore.gui
-local Global = require 'utils.global' --- @dep utils.global
-local Event = require 'utils.event' --- @dep utils.event
-local Roles = require 'expcore.roles' --- @dep expcore.roles
-local config = require 'config.research' --- @dep config.research
+local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local Storage = require("modules/exp_util/storage")
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
+local config = require("modules.exp_legacy.config.research") --- @dep config.research
 local format_time = _C.format_time --- @dep expcore.common
 
 local research = {}
-Global.register(research, function(tbl)
+Storage.register(research, function(tbl)
     research = tbl
 end)
 

@@ -1,8 +1,8 @@
 --- This is the main config file for the role system; file includes defines for roles and role flags and default values
 -- @config Roles
 
-local Roles = require 'expcore.roles' --- @dep expcore.roles
-local PlayerData = require 'expcore.player_data' --- @dep expcore.player_data
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
+local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
 local Statistics = PlayerData.Statistics
 
 --- Role flags that will run when a player changes roles

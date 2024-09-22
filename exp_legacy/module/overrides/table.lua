@@ -400,7 +400,7 @@ function table.binary_search(t, target)
 end
 
 -- add table-related functions that exist in base factorio/util to the 'table' table
-require 'util'
+require("util")
 
 --- Similar to serpent.block, returns a string with a pretty representation of a table.
 -- Notice: This method is not appropriate for saving/restoring tables. It is meant to be used by the programmer mainly while debugging a program.
@@ -410,7 +410,7 @@ require 'util'
 -- process is a function which allow altering the passed object before transforming it into a string.
 -- A typical way to use it would be to remove certain values so that they don't appear at all.
 -- return <string> the prettied table
-table.inspect = require 'overrides.inspect' --- @dep overrides.inspect
+table.inspect = require("modules/exp_util/include/inspect") --- @dep overrides.inspect
 
 --- Takes a table and returns the number of entries in the table. (Slower than #table, faster than iterating via pairs)
 table.size = table_size

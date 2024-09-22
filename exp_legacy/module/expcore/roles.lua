@@ -108,12 +108,12 @@ Roles.define_role_order{
 
 ]]
 
-local Game = require 'utils.game' --- @dep utils.game
-local Global = require 'utils.global' --- @dep utils.global
-local Event = require 'utils.event' --- @dep utils.event
-local Groups = require 'expcore.permission_groups' --- @dep expcore.permission_groups
-local Async = require 'expcore.async' --- @dep expcore.async
-local Colours = require 'utils.color_presets' --- @dep utils.color_presets
+local Async = require("modules/exp_util/async")
+local Storage = require("modules/exp_util/storage")
+local Game = require("modules.exp_legacy.utils.game") --- @dep utils.game
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Groups = require("modules.exp_legacy.expcore.permission_groups") --- @dep expcore.permission_groups
+local Colours = require("modules/exp_util/include/color")
 local write_json = _C.write_json --- @dep expcore.common
 
 local Roles = {
@@ -134,7 +134,10 @@ local Roles = {
 }
 
 --- When global is loaded it will have the metatable re-assigned to the roles
-Global.register({ Roles.config.players, Roles.config.deferred_roles }, function(tbl)
+Storage.register({
+    Roles.config.players,
+    Roles.config.deferred_roles
+}, function(tbl)
     Roles.config.players = tbl[1]
     Roles.config.deferred_roles = tbl[2]
 end)
@@ -652,7 +655,6 @@ end)
 
 ]]
 function Roles.define_flag_trigger(name, callback)
-    _C.error_if_runtime()
     Roles.config.flags[name] = Async.register(callback)
 end
 
@@ -1076,9 +1078,9 @@ end
 local function role_update(event)
     local player = game.players[event.player_index]
     -- Updates flags given to the player
-    for flag, async_token in pairs(Roles.config.flags) do
+    for flag, async_function in pairs(Roles.config.flags) do
         local state = Roles.player_has_flag(player, flag)
-        Async(async_token, player, state)
+        async_function(player, state)
     end
     -- Updates the players permission group
     local highest = Roles.get_player_highest_role(player)
@@ -1086,7 +1088,7 @@ local function role_update(event)
         if highest.permission_group[1] then
             local group = game.permissions.get_group(highest.permission_group[2])
             if group then
-                Async(Groups.async_token_add_to_permission_group, group, player)
+                Groups.add_to_permission_group_async(group, player)
             end
         else
             Groups.set_player_group(player, highest.permission_group)

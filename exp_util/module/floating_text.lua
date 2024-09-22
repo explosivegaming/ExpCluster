@@ -25,7 +25,7 @@ end
 ]]
 
 local FloatingText = {}
-FloatingText.color = require("modules.exp_util.include.color")
+FloatingText.color = require("modules/exp_util/include/color")
 
 --- Print Messages.
 -- Short lived messages that last at most a few seconds

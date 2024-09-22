@@ -2,11 +2,11 @@
 -- this config adds Commands.disable and Commands.enable to enable and disable commands for all users
 -- @config Commands-Auth-Runtime-Disable
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
-local Global = require 'utils.global' --- @dep utils.global
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+local Storage = require("modules/exp_util/storage")
 
 local disabled_commands = {}
-Global.register(disabled_commands, function(tbl)
+Storage.register(disabled_commands, function(tbl)
     disabled_commands = tbl
 end)
 

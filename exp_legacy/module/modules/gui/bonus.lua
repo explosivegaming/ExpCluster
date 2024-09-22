@@ -3,13 +3,11 @@
     @alias bonus_container
 ]]
 
-local Gui = require 'expcore.gui' --- @dep expcore.gui
-local Roles = require 'expcore.roles' --- @dep expcore.roles
-local Event = require 'utils.event' --- @dep utils.event
-local config = require 'config.bonus' --- @dep config.bonus
-local vlayer = require 'modules.control.vlayer'
-
-local format_number = require('util').format_number --- @dep util
+local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local config = require("modules.exp_legacy.config.bonus") --- @dep config.bonus
+local format_number = require("util").format_number --- @dep util
 local bonus_container
 
 local function bonus_gui_pts_needed(player)

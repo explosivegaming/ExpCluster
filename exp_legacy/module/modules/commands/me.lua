@@ -3,7 +3,7 @@
     @commands Me
 ]]
 
-local Commands = require 'expcore.commands' --- @dep expcore.commands
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
 
 --- Sends an action message in the chat
 -- @command me
