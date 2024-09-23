@@ -1,0 +1,30 @@
+{
+	"name": "exp_legacy",
+	"version": "0.1.0",
+	"description": "Example Description. Package. Change me in package.json",
+	"main": "dist/node/index.js",
+	"scripts": {
+		"prepare": "tsc --build"
+	},
+	"engines": {
+		"node": ">=18"
+	},
+	"peerDependencies": {
+		"@clusterio/lib": "workspace:*"
+	},
+	"devDependencies": {
+		"typescript": "^5.5.3",
+		"@types/node": "^20.4.5",
+		"@clusterio/lib": "workspace:*"
+	},
+	"dependencies": {
+		"@sinclair/typebox": "^0.30.4"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"keywords": [
+		"clusterio",
+		"factorio"
+	]
+}

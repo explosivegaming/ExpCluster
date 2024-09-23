@@ -1,0 +1,11 @@
+{
+	"name": "exp_legacy",
+	"load": [
+		"control.lua"
+	],
+	"require": [
+	],
+	"dependencies": {
+		"clusterio": "*"
+	}
+}
