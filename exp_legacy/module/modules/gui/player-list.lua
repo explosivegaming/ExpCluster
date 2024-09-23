@@ -27,7 +27,7 @@ config.set_datastores(SelectedPlayer, SelectedAction)
 local open_action_bar =
 Gui.element{
     type = 'sprite-button',
-    sprite = 'utility/expand_dots_white',
+    sprite = 'utility/expand_dots',
     tooltip = {'player-list.open-action-bar'},
     style = 'frame_button',
     name = Gui.unique_static_name

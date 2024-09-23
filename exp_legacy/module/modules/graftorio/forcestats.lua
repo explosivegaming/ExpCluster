@@ -6,74 +6,77 @@ local lib = {}
 
 lib.collect_production = function()
 	for _, force in pairs(game.forces) do
-		---@class ItemStats
-		---@field count number
+		general.data.output[force.name].production = {}
+		for _, surface in pairs(game.surfaces) do
+			---@class ItemStats
+			---@field count number
 
-		---@class ProductionStatistics
-		---@field item_input table<string, ItemStats>
-		---@field item_output table<string, ItemStats>
-		---@field fluid_input table<string, ItemStats>
-		---@field fluid_output table<string, ItemStats>
-		---@field kill_input table<string, ItemStats>
-		---@field kill_output table<string, ItemStats>
-		---@field build_input table<string, ItemStats>
-		---@field build_output table<string, ItemStats>
-		local stats = {
-			item_input = {},
-			item_output = {},
-			fluid_input = {},
-			fluid_output = {},
-			kill_input = {},
-			kill_output = {},
-			build_input = {},
-			build_output = {},
-		}
+			---@class ProductionStatistics
+			---@field item_input table<string, ItemStats>
+			---@field item_output table<string, ItemStats>
+			---@field fluid_input table<string, ItemStats>
+			---@field fluid_output table<string, ItemStats>
+			---@field kill_input table<string, ItemStats>
+			---@field kill_output table<string, ItemStats>
+			---@field build_input table<string, ItemStats>
+			---@field build_output table<string, ItemStats>
+			local stats = {
+				item_input = {},
+				item_output = {},
+				fluid_input = {},
+				fluid_output = {},
+				kill_input = {},
+				kill_output = {},
+				build_input = {},
+				build_output = {},
+			}
 
-		for name, count in pairs(force.item_production_statistics.input_counts) do
-			local itemstats = stats.item_input[name] or {}
-			itemstats.count = count
-			stats.item_input[name] = itemstats
-		end
-		for name, count in pairs(force.item_production_statistics.output_counts) do
-			local itemstats = stats.item_output[name] or {}
-			itemstats.count = count
-			stats.item_output[name] = itemstats
-		end
+			for name, count in pairs(force.get_item_production_statistics(surface).input_counts) do
+				local itemstats = stats.item_input[name] or {}
+				itemstats.count = count
+				stats.item_input[name] = itemstats
+			end
+			for name, count in pairs(force.get_item_production_statistics(surface).output_counts) do
+				local itemstats = stats.item_output[name] or {}
+				itemstats.count = count
+				stats.item_output[name] = itemstats
+			end
 
-		for name, count in pairs(force.fluid_production_statistics.input_counts) do
-			local fluidstats = stats.fluid_input[name] or {}
-			fluidstats.count = count
-			stats.fluid_input[name] = fluidstats
-		end
-		for name, count in pairs(force.fluid_production_statistics.output_counts) do
-			local fluidstats = stats.fluid_output[name] or {}
-			fluidstats.count = count
-			stats.fluid_output[name] = fluidstats
-		end
+			for name, count in pairs(force.get_fluid_production_statistics(surface).input_counts) do
+				local fluidstats = stats.fluid_input[name] or {}
+				fluidstats.count = count
+				stats.fluid_input[name] = fluidstats
+			end
+			for name, count in pairs(force.get_fluid_production_statistics(surface).output_counts) do
+				local fluidstats = stats.fluid_output[name] or {}
+				fluidstats.count = count
+				stats.fluid_output[name] = fluidstats
+			end
 
-		for name, count in pairs(force.kill_count_statistics.input_counts) do
-			local killstats = stats.kill_input[name] or {}
-			killstats.count = count
-			stats.kill_input[name] = killstats
-		end
-		for name, count in pairs(force.kill_count_statistics.output_counts) do
-			local killstats = stats.kill_output[name] or {}
-			killstats.count = count
-			stats.kill_output[name] = killstats
-		end
+			for name, count in pairs(force.get_kill_count_statistics(surface).input_counts) do
+				local killstats = stats.kill_input[name] or {}
+				killstats.count = count
+				stats.kill_input[name] = killstats
+			end
+			for name, count in pairs(force.get_kill_count_statistics(surface).output_counts) do
+				local killstats = stats.kill_output[name] or {}
+				killstats.count = count
+				stats.kill_output[name] = killstats
+			end
 
-		for name, count in pairs(force.entity_build_count_statistics.input_counts) do
-			local buildstats = stats.build_input[name] or {}
-			buildstats.count = count
-			stats.build_input[name] = buildstats
-		end
-		for name, count in pairs(force.entity_build_count_statistics.output_counts) do
-			local buildstats = stats.build_output[name] or {}
-			buildstats.count = count
-			stats.build_output[name] = buildstats
-		end
+			for name, count in pairs(force.get_entity_build_count_statistics(surface).input_counts) do
+				local buildstats = stats.build_input[name] or {}
+				buildstats.count = count
+				stats.build_input[name] = buildstats
+			end
+			for name, count in pairs(force.get_entity_build_count_statistics(surface).output_counts) do
+				local buildstats = stats.build_output[name] or {}
+				buildstats.count = count
+				stats.build_output[name] = buildstats
+			end
 
-		general.data.output[force.name].production = stats
+			general.data.output[force.name].production[surface.name] = stats
+		end
 	end
 end
 

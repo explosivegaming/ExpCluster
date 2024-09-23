@@ -18,7 +18,7 @@ Event.add(defines.events.on_player_created, function(event)
     -- spawn items
     for item, callback in pairs(items) do
         if type(callback) == 'function' then
-            local stats = player.force.item_production_statistics
+            local stats = player.force.get_item_production_statistics(player.surface)
             local made = stats.get_input_count(item)
             local success, count = pcall(callback, made, stats.get_input_count, player)
             count = math.floor(count)

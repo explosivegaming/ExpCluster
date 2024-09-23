@@ -114,8 +114,9 @@ local no_tasks_found =
         local center =
             header.add {
             type = "flow",
-            style = "centering_horizontal_flow"
         }
+        center.style.vertical_align = "center"
+        center.style.horizontal_align = "center"
         center.style.horizontally_stretchable = true
         center.add {
             name = "header_label",
@@ -156,7 +157,7 @@ local subfooter_label =
         return parent.add {
             name = "footer_label",
             type = "label",
-            style = "heading_1_label",
+            style = "frame_title",
             caption = caption
         }
     end
@@ -240,7 +241,7 @@ local task_view_edit_button =
     Gui.element {
     type = "button",
     name = Gui.unique_static_name,
-    caption = {"", "[img=utility/rename_icon_normal] ", {"task-list.edit"}},
+    caption = {"", "[img=utility/rename_icon] ", {"task-list.edit"}},
     tooltip = {"task-list.edit-tooltip"},
     style = "shortcut_bar_button"
 }:style(Styles.footer_button):on_click(
@@ -257,8 +258,8 @@ local task_view_edit_button =
 local task_view_close_button =
 Gui.element{
 	type = "sprite-button",
-	sprite = "utility/collapse_dark",
-	hovered_sprite = "utility/collapse",
+	sprite = "utility/collapse",
+    style = "frame_action_button",
 	tooltip = {"task-list.close-tooltip"}
 }
 :style(Styles.sprite22):on_click(

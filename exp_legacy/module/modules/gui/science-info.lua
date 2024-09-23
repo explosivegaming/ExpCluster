@@ -299,7 +299,7 @@ Gui.element(function(definition, parent)
             type = 'label',
             caption = null_time_short,
             tooltip = null_time_long,
-            style = 'heading_1_label'
+            style = 'frame_title'
         }
 
         -- Update the eta

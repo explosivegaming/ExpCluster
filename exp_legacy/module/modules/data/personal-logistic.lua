@@ -27,7 +27,7 @@ function pl.pl(type, target, amount)
         return
     end
 
-    local stats = target.force.item_production_statistics
+    local stats = target.force.get_item_production_statistics(target.surface)
 
     for k, v in pairs(config.request) do
         local v_min = math.ceil(v.min * amount)

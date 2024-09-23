@@ -423,9 +423,10 @@ end
 local toggle_section =
 Gui.element{
 	type = 'sprite-button',
-	sprite = 'utility/expand_dark',
+	sprite = 'utility/expand',
 	hovered_sprite = 'utility/expand',
 	tooltip = {'rocket-info.toggle-section-tooltip'},
+	style = "frame_action_button",
 	name = Gui.unique_static_name
 }
 :style(Gui.sprite_style(20))
@@ -434,12 +435,10 @@ Gui.element{
 	local flow_name = header_flow.caption
 	local flow = header_flow.parent.parent[flow_name]
 	if Gui.toggle_visible_state(flow) then
-        element.sprite = 'utility/collapse_dark'
-        element.hovered_sprite = 'utility/collapse'
+        element.sprite = 'utility/collapse'
         element.tooltip = {'rocket-info.toggle-section-collapse-tooltip'}
 	else
-        element.sprite = 'utility/expand_dark'
-        element.hovered_sprite = 'utility/expand'
+        element.sprite = 'utility/expand'
         element.tooltip = {'rocket-info.toggle-section-tooltip'}
 	end
 end)
@@ -523,7 +522,7 @@ end)
 
 --- Button on the top flow used to toggle the container
 -- @element toggle_rocket_info
-Gui.left_toolbar_button('item/satellite', {'rocket-info.main-tooltip'}, rocket_list_container, function(player)
+Gui.left_toolbar_button('item/rocket-silo', {'rocket-info.main-tooltip'}, rocket_list_container, function(player)
     return Roles.player_allowed(player, 'gui/rocket-info')
 end)
 

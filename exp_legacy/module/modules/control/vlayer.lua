@@ -573,7 +573,7 @@ local function handle_circuit_interfaces()
 
             -- Set the item signals based on stored items
             for item_name, count in pairs(vlayer_data.storage.items) do
-                if game.item_prototypes[item_name] and count > 0 then
+                if prototypes.item[item_name] and count > 0 then
                     circuit_oc.set_signal(signal_index, {signal={type='item', name=item_name}, count=count})
                     signal_index = signal_index + 1
                     if signal_index > max_signals then

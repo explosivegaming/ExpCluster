@@ -32,8 +32,8 @@ end
 local prod_module_names = {}
 
 local function get_module_name()
-    for name, item in pairs(game.item_prototypes) do
-        if item.module_effects and item.module_effects.productivity and item.module_effects.productivity.bonus > 0 then
+    for name, item in pairs(prototypes.item) do
+        if item.module_effects and item.module_effects.productivity and item.module_effects.productivity > 0 then
             prod_module_names[#prod_module_names + 1] = name
         end
     end
@@ -124,7 +124,7 @@ Selection.on_selection(SelectionModuleArea, function(event)
                 ['p'] = {}
             }
 
-            for j=1, game.entity_prototypes[mma].module_inventory_size, 1 do
+            for j=1, prototypes.entity[mma].module_inventory_size, 1 do
                 local mmo = scroll_table['module_mm_' .. i .. '_' .. j].elem_value
 
                 if mmo then
@@ -161,7 +161,7 @@ local function row_set(player, element)
 
     if scroll_table[element .. '0'].elem_value then
         for i=1, config.module_slot_max do
-            if i <= game.entity_prototypes[scroll_table[element .. '0'].elem_value].module_inventory_size then
+            if i <= prototypes.entity[scroll_table[element .. '0'].elem_value].module_inventory_size then
                 if config.machine[scroll_table[element .. '0'].elem_value].prod then
                     scroll_table[element .. i].elem_filters = elem_filter.prod
 

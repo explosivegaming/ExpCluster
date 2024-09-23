@@ -15,12 +15,12 @@ local function item_parse(input, _, reject)
     local lower_input = input:lower():gsub(' ', '-')
 
     -- Simple Case - internal name is given
-    local item = game.item_prototypes[lower_input]
+    local item = prototypes.item[lower_input]
     if item then return item end
 
     -- Second Case - rich text is given
     local item_name = input:match('%[item=([0-9a-z-]+)%]')
-    item = game.item_prototypes[item_name]
+    item = prototypes.item[item_name]
     if item then return item end
 
     -- No item found, we do not attempt to search all prototypes as this will be expensive

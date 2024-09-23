@@ -81,14 +81,15 @@ Gui.element(function(_, parent, server_id, wrong_version)
     local flow = parent.add{ name = server_id, type = 'flow' }
     local button = flow.add{
         type = 'sprite-button',
-        sprite = 'utility/circuit_network_panel_white', --- network panel white, warning white, download white
-        hovered_sprite = 'utility/circuit_network_panel_black', --- network panel black, warning black, download black
-        tooltip = {'readme.servers-connect-'..status, wrong_version}
+        sprite = 'utility/circuit_network_panel',
+        hovered_sprite = 'utility/circuit_network_panel',
+        tooltip = {'readme.servers-connect-'..status, wrong_version},
+        style = "frame_action_button"
     }
 
     if status == 'Offline' or status == 'Current' then
         button.enabled = false
-        button.sprite = 'utility/circuit_network_panel_black'
+        button.sprite = 'utility/circuit_network_panel'
     elseif status == 'Version' then
         button.enabled = false
         button.sprite = 'utility/shuffle'
@@ -119,9 +120,9 @@ Gui.element(function(_, parent)
 
     -- Set up the top flow with logos
     local top_flow = container.add{ type='flow' }
-    top_flow.add{ type='sprite', sprite='file/modules/gui/logo.png' }
+    top_flow.add{ type='sprite', sprite='file/modules/exp_legacy/modules/gui/logo.png' }
     local top_vertical_flow = top_flow.add{ type='flow', direction='vertical' }
-    top_flow.add{ type='sprite', sprite='file/modules/gui/logo.png' }
+    top_flow.add{ type='sprite', sprite='file/modules/exp_legacy/modules/gui/logo.png' }
     top_vertical_flow.style.horizontal_align = 'center'
 
     -- Add the title and description to the top flow
@@ -415,7 +416,7 @@ Gui.element(function(definition, parent)
     local left_side =
     left_alignment.add{
         type = 'frame',
-        style = 'frame_without_right_side'
+        style = 'character_gui_left_side'
     }
     left_side.style.vertically_stretchable = true
     left_side.style.padding = 0

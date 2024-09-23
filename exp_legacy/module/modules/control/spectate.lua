@@ -110,7 +110,7 @@ Gui.element(function(definition, parent, target)
 
     local label = parent.add{
         type = 'label',
-        style = 'heading_1_label',
+        style = 'frame_title',
         caption = 'Following '..target.name..'.\nClick here or press esc to stop following.',
         name = definition.name
     }

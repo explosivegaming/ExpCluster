@@ -115,7 +115,7 @@ Gui.element{
         radius =  config.standard_proximity_radius + 2.5,
         position = position,
         collision_mask = {
-            'item-layer', 'object-layer', 'player-layer', 'water-tile'
+            'item', 'object', 'player', 'water_tile'
         }
     }
     -- Remove 1 because that is the current player
@@ -256,8 +256,8 @@ end)
     -- Required fields to make it squashable and strechable.
     minimal_width = 10,
     maximal_width = 300,
-    horizontally_squashable = "on",
-    horizontally_stretchable = "on",
+    horizontally_squashable = true,
+    horizontally_stretchable = true,
     -- Other styling
     height = 22,
     padding = -2,
@@ -336,7 +336,7 @@ end)
 local edit_warp_button =
 Gui.element{
     type = 'sprite-button',
-    sprite = 'utility/rename_icon_normal',
+    sprite = 'utility/rename_icon',
     tooltip = {'warp-list.edit-tooltip-none'},
     style = 'shortcut_bar_button',
     name = Gui.unique_static_name

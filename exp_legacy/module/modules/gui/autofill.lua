@@ -31,9 +31,9 @@ end
 local toggle_section =
 Gui.element{
 	type = 'sprite-button',
-	sprite = 'utility/expand_dark',
-	hovered_sprite = 'utility/expand',
+	sprite = 'utility/expand',
 	tooltip = {'autofill.toggle-section-tooltip'},
+    style = "frame_action_button",
     name = Gui.unique_static_name
 }
 :style(Gui.sprite_style(20))
@@ -42,12 +42,10 @@ Gui.element{
 	local flow_name = header_flow.caption
 	local flow = header_flow.parent.parent[flow_name]
 	if Gui.toggle_visible_state(flow) then
-        element.sprite = 'utility/collapse_dark'
-        element.hovered_sprite = 'utility/collapse'
+        element.sprite = 'utility/collapse'
         element.tooltip = {'autofill.toggle-section-collapse-tooltip'}
 	else
-        element.sprite = 'utility/expand_dark'
-        element.hovered_sprite = 'utility/expand'
+        element.sprite = 'utility/expand'
         element.tooltip = {'autofill.toggle-section-tooltip'}
     end
 end)

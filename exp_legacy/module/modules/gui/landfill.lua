@@ -11,7 +11,7 @@ local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local rolling_stocks = {}
 
 local function landfill_init()
-    for name, _ in pairs(game.get_filtered_entity_prototypes({{filter = 'rolling-stock'}})) do
+    for name, _ in pairs(prototypes.get_entity_filtered{{filter = 'rolling-stock'}}) do
         rolling_stocks[name] = true
     end
 end
@@ -103,9 +103,10 @@ local function landfill_gui_add_landfill(blueprint)
 		if not (rolling_stocks[ent.name] or ent.name == 'offshore-pump') then
             -- curved rail, special
             if  ent.name ~= 'curved-rail' then
-                local box = game.entity_prototypes[ent.name].collision_box or game.entity_prototypes[ent.name].selection_box
+                local proto = prototypes.entity[ent.name]
+                local box = proto.collision_box or proto.selection_box
 
-                if game.entity_prototypes[ent.name].collision_mask['ground-tile'] == nil then
+                if proto.collision_mask['ground-tile'] == nil then
                     if ent.direction then
                         if ent.direction ~= defines.direction.north then
                             box = rotate_bounding_box(box)

@@ -353,6 +353,7 @@ for index, element_define in ipairs(Gui.top_elements) do
         if prev_handler then prev_handler(player, element, event) end -- Kind of hacky but works
         local frame = Gui.get_left_element(player, toolbar_container)
         if not frame then return end -- Gui might not be loaded yet
+        if not frame.container then log(frame.name) log(frame.parent.name) end
         local button = frame.container.scroll.list[element_define.name][element_define.name]
         local toolbar_button = Gui.get_top_element(player, element_define)
         copy_style(toolbar_button, button)

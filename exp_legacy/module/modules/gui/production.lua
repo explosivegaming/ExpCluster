@@ -130,7 +130,7 @@ end)
 Event.on_nth_tick(60, function()
     for _, player in pairs(game.connected_players) do
         local frame = Gui.get_left_element(player, production_container)
-        local stat = player.force.item_production_statistics
+        local stat = player.force.get_item_production_statistics(player.surface)
         local precision_value = precision[frame.container['production_st'].disp.table['production_0_e'].selected_index]
         local table = frame.container['production_st'].disp.table
 
@@ -139,8 +139,8 @@ Event.on_nth_tick(60, function()
             local item = table[production_prefix .. '_e'].elem_value
 
             if item then
-                local add = stat.get_flow_count{name=item, input=true, precision_index=precision_value, count=false} / 60
-                local minus = stat.get_flow_count{name=item, input=false, precision_index=precision_value, count=false} / 60
+                local add = math.floor(stat.get_flow_count{name=item, category="input", precision_index=precision_value, count=false} / 6) / 10
+                local minus = math.floor(stat.get_flow_count{name=item, category="output", precision_index=precision_value, count=false} / 6) / 10
                 local sum = add - minus
 
                 table[production_prefix .. '_1'].caption = format_n(add)

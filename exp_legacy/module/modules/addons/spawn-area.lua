@@ -143,7 +143,7 @@ local function spawn_area(surface, position)
     local fill_tile = surface.get_tile(position).name
 
     -- Make sure a non water tile is used for each tile
-    if surface.get_tile(position).collides_with('player-layer') then fill_tile = 'landfill' end
+    if surface.get_tile(position).collides_with('player') then fill_tile = 'landfill' end
     if decon_tile == nil then decon_tile = fill_tile end
 
     local tiles_to_make = {}
@@ -156,7 +156,7 @@ local function spawn_area(surface, position)
             if dst < tr2 then
                 -- If it is inside the decon radius always set the tile
                 table.insert(tiles_to_make, {name=decon_tile, position=pos})
-            elseif dst < fr2 and surface.get_tile(pos).collides_with('player-layer') then
+            elseif dst < fr2 and surface.get_tile(pos).collides_with('player') then
                 -- If it is inside the fill radius only set the tile if it is water
                 table.insert(tiles_to_make, {name=fill_tile, position=pos})
             end

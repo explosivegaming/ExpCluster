@@ -7,6 +7,7 @@ local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local config = require("modules.exp_legacy.config.bonus") --- @dep config.bonus
+local vlayer = require("modules.exp_legacy.modules.control.vlayer")
 local format_number = require("util").format_number --- @dep util
 local bonus_container
 
