@@ -6,29 +6,12 @@ local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep ex
 local LocalLanguage = PlayerData.Statistics:combine("LocalLanguage")
 LocalLanguage:set_default("Unknown")
 
---- Creates translation request on_load of a player
-LocalLanguage:on_load(function(player_name, _)
-  local player = game.players[player_name]
-  player.request_translation{ "language.local-language" }
-end)
+local function set_locale(event)
+    local player = game.players[event.player_index]
+    LocalLanguage:set(player, player.locale)
+end
 
---- Resolves translation request for language setting
-Event.add(defines.events.on_string_translated, function(event)
-  -- Check if event.localised_string is a table
-  -- Check if the translation request was for language setting
-  if type(event.localised_string) ~= "table" or event.localised_string[1] ~= "language.local-language" then
-    return
-  end
-
-  -- Check if the translation request was succesful
-  local player = game.players[event.player_index]
-  if not event.translated then
-    player.print("Could not detect your language settings")
-    -- Raise error
-    return
-  end
-
-  -- Change LocalLanguage value for the player to the recognized one
-  local language = event.result
-  LocalLanguage:set(player, language)
-end)
+--- Set the players language when they join and change language
+Event.add(defines.events.on_player_created, set_locale)
+Event.add(defines.events.on_player_joined_game, set_locale)
+Event.add(defines.events.on_player_locale_changed, set_locale)

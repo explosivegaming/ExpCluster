@@ -33,7 +33,7 @@
     "nameStyle.config": {
         "local_name_style": [{
             "type" : "pattern",
-            "param": "_?_?(\\w+)",
+            "param": "_?_?(\\w+)?",
             "$1": "snake_case"
         }],
         "module_local_name_style": [{
