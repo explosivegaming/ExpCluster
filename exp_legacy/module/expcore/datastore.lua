@@ -169,8 +169,8 @@ end)
 --- Metatable used on datastores
 DatastoreManager.metatable = {
     __index = function(self, key) return rawget(self.children, key) or rawget(Datastore, key) end,
-    __newidnex = function(_, _, _) error('Datastore can not be modified', 2) end,
-    __call = function(self, ...) return self:get(...) end
+    __newidnex = function(_, _, _) error("Datastore can not be modified", 2) end,
+    __call = function(self, ...) return self:get(...) end,
 }
 
 --[[-- Make a new datastore connection, if a connection already exists then it is returned
@@ -188,7 +188,7 @@ function DatastoreManager.connect(datastoreName, saveToDisk, autoSave, propagate
     if Datastores[datastoreName] then return Datastores[datastoreName] end
     if package.lifecycle ~= package.lifecycle_stage.control then
         -- Only allow this function to be called during the control stage
-        error('New datastore connection can not be created during runtime', 2)
+        error("New datastore connection can not be created during runtime", 2)
     end
 
     local new_datastore = {
@@ -202,7 +202,7 @@ function DatastoreManager.connect(datastoreName, saveToDisk, autoSave, propagate
         children = {},
         metadata = {},
         events = {},
-        data = {}
+        data = {},
     }
 
     Data[datastoreName] = new_datastore.data
@@ -220,7 +220,7 @@ local BarData = Datastore.combine('ExampleData', 'Bar')
 
 ]]
 function DatastoreManager.combine(datastoreName, subDatastoreName)
-    local datastore = assert(Datastores[datastoreName], 'Datastore not found '..tostring(datastoreName))
+    local datastore = assert(Datastores[datastoreName], "Datastore not found " .. tostring(datastoreName))
     return datastore:combine(subDatastoreName)
 end
 
@@ -235,27 +235,23 @@ Datastore.ingest('request', 'ExampleData', 'TestKey', 'Foo')
 
 ]]
 function DatastoreManager.ingest(action, datastoreName, key, valueJson)
-    local datastore = assert(Datastores[datastoreName], 'Datastore ingest error, Datastore not found '..tostring(datastoreName))
-    assert(type(action) == 'string', 'Datastore ingest error, Action is not a string got: '..type(action))
-    assert(type(key) == 'string', 'Datastore ingest error, Key is not a string got: '..type(key))
+    local datastore = assert(Datastores[datastoreName], "Datastore ingest error, Datastore not found " .. tostring(datastoreName))
+    assert(type(action) == "string", "Datastore ingest error, Action is not a string got: " .. type(action))
+    assert(type(key) == "string", "Datastore ingest error, Key is not a string got: " .. type(key))
 
-    if action == 'remove' then
+    if action == "remove" then
         datastore:raw_set(key)
-
-    elseif action == 'message' then
+    elseif action == "message" then
         local success, value = pcall(game.json_to_table, valueJson)
         if not success or value == nil then value = tonumber(valueJson) or valueJson end
-        datastore:raise_event('on_message', key, value)
-
-    elseif action == 'propagate' or action == 'request' then
+        datastore:raise_event("on_message", key, value)
+    elseif action == "propagate" or action == "request" then
         local success, value = pcall(game.json_to_table, valueJson)
         if not success or value == nil then value = tonumber(valueJson) or valueJson end
         local old_value = datastore:raw_get(key)
-        value = datastore:raise_event('on_load', key, value, old_value)
+        value = datastore:raise_event("on_load", key, value, old_value)
         datastore:set(key, value)
-
     end
-
 end
 
 --[[-- Debug, Use to get all datastores, or return debug info on a datastore
@@ -270,7 +266,7 @@ local debug_info = Datastore.debug('ExampleData')
 ]]
 function DatastoreManager.debug(datastoreName)
     if not datastoreName then return Datastores end
-    local datastore = assert(Datastores[datastoreName], 'Datastore not found '..tostring(datastoreName))
+    local datastore = assert(Datastores[datastoreName], "Datastore not found " .. tostring(datastoreName))
     return datastore:debug()
 end
 
@@ -308,11 +304,13 @@ function Datastore:debug()
     end
 
     local children = {}
-    for name in pairs(self.children) do children[#children+1] = name end
+    for name in pairs(self.children) do children[#children + 1] = name end
+
     if #children > 0 then debug_info.children = children end
 
     local events = {}
     for name, handlers in pairs(self.events) do events[name] = #handlers end
+
     if next(events) then debug_info.events = events end
 
     if next(self.metadata) then debug_info.metadata = self.metadata end
@@ -334,7 +332,7 @@ function Datastore:raw_get(key, fromChild)
     local data = self.data
     if self.parent then
         data = self.parent:raw_get(key, true)
-        key  = self.value_name
+        key = self.value_name
     end
     local value = data[key]
     if value ~= nil then return value end
@@ -360,7 +358,7 @@ function Datastore:raw_set(key, value)
     end
 end
 
-local function serialize_error(err) error('An error ocurred in a datastore serializer: '..trace(err)) end
+local function serialize_error(err) error("An error ocurred in a datastore serializer: " .. trace(err)) end
 --[[-- Internal, Return the serialized key
 @tparam any rawKey The key that needs to be serialized, if it is already a string then it is returned
 @treturn string The key after it has been serialized
@@ -370,8 +368,8 @@ key = self:serialize(key)
 
 ]]
 function Datastore:serialize(rawKey)
-    if type(rawKey) == 'string' then return rawKey end
-    assert(self.serializer, 'Datastore does not have a serializer and received non string key')
+    if type(rawKey) == "string" then return rawKey end
+    assert(self.serializer, "Datastore does not have a serializer and received non string key")
     local success, key = xpcall(self.serializer, serialize_error, rawKey)
     return success and key or nil
 end
@@ -389,11 +387,11 @@ self:write_action('save', 'TestKey', 'Foo')
 
 ]]
 function Datastore:write_action(action, key, value)
-    local data = {action, self.name, key}
+    local data = { action, self.name, key }
     if value ~= nil then
-        data[4] = type(value) == 'table' and game.table_to_json(value) or value
+        data[4] = type(value) == "table" and game.table_to_json(value) or value
     end
-    game.write_file('ext/datastore.out', table.concat(data, ' ')..'\n', true, 0)
+    game.write_file("ext/datastore.out", table.concat(data, " ") .. "\n", true, 0)
 end
 
 ----- Datastore Local
@@ -409,7 +407,7 @@ local BarData = ExampleData:combine('Bar')
 
 ]]
 function Datastore:combine(subDatastoreName)
-    local new_datastore = DatastoreManager.connect(self.name..'.'..subDatastoreName)
+    local new_datastore = DatastoreManager.connect(self.name .. "." .. subDatastoreName)
     self.children[subDatastoreName] = new_datastore
     new_datastore.value_name = subDatastoreName
     new_datastore.serializer = self.serializer
@@ -431,7 +429,7 @@ end)
 
 ]]
 function Datastore:set_serializer(callback)
-    assert(type(callback) == 'function', 'Callback must be a function')
+    assert(type(callback) == "function", "Callback must be a function")
     self.serializer = callback
 end
 
@@ -501,7 +499,7 @@ function Datastore:set(key, value)
     else
         self:raw_set(key, value)
     end
-    self:raise_event('on_update', key, value, old_value)
+    self:raise_event("on_update", key, value, old_value)
     if self.auto_save then self:save(key) end
     return value
 end
@@ -521,7 +519,7 @@ function Datastore:increment(key, delta)
     return self:set(key, value + (delta or 1))
 end
 
-local function update_error(err) log('An error occurred in datastore update:\n\t'..trace(err)) end
+local function update_error(err) log("An error occurred in datastore update:\n\t" .. trace(err)) end
 --[[-- Use a function to update the value locally, will trigger on_update then on_save, save_to_disk and auto_save is required for on_save
 @tparam any key The key that you want to apply the update to, must be a string unless a serializer is set
 @tparam function callback The function that will be used to update the value at this key
@@ -546,7 +544,7 @@ function Datastore:update(key, callback)
     elseif raw_value == nil then
         self:set(key, value)
     else
-        self:raise_event('on_update', key, value, old_value)
+        self:raise_event("on_update", key, value, old_value)
         if self.auto_save then self:save(key) end
     end
 end
@@ -563,12 +561,12 @@ function Datastore:remove(key)
     key = self:serialize(key)
     local old_value = self:raw_get(key)
     self:raw_set(key)
-    self:raise_event('on_update', key, nil, old_value)
-    if self.save_to_disk then self:write_action('remove', key) end
+    self:raise_event("on_update", key, nil, old_value)
+    if self.save_to_disk then self:write_action("remove", key) end
     if self.parent and self.parent.auto_save then return self.parent:save(key) end
 end
 
-local function filter_error(err) log('An error ocurred in a datastore filter:\n\t'..trace(err)) end
+local function filter_error(err) log("An error ocurred in a datastore filter:\n\t" .. trace(err)) end
 --[[-- Internal, Used to filter elements from a table
 @tparam table tbl The table that will have the filter applied to it
 @tparam[opt] function callback The function that will be used as a filter, if none giving then the provided table is returned
@@ -587,6 +585,7 @@ local function filter(tbl, callback)
         local success, add = xpcall(callback, filter_error, key, value)
         if success and add then rtn[key] = value end
     end
+
     return rtn
 end
 
@@ -613,6 +612,7 @@ function Datastore:get_all(callback)
         for key, value in pairs(self.parent:get_all()) do
             data[key] = value[value_name]
         end
+
         return filter(data, callback)
     end
 end
@@ -635,7 +635,7 @@ function Datastore:update_all(callback)
         if success and new_value ~= nil then
             self:set(key, new_value)
         else
-            self:raise_event('on_update', key, value, old_value)
+            self:raise_event("on_update", key, value, old_value)
             if self.auto_save then self:save(key) end
         end
     end
@@ -655,7 +655,7 @@ ExampleData:request('TestKey')
 function Datastore:request(key)
     if self.parent then return self.parent:request(key) end
     key = self:serialize(key)
-    self:write_action('request', key)
+    self:write_action("request", key)
 end
 
 --[[-- Save a value to an external source, will trigger on_save before data is saved, save_to_disk must be set to true
@@ -670,8 +670,8 @@ function Datastore:save(key)
     if self.parent then self.parent:save(key) end
     if not self.save_to_disk then return end
     key = self:serialize(key)
-    local value  = self:raise_event('on_save', key, copy(self:raw_get(key)))
-    local action = self.propagate_changes and 'propagate' or 'save'
+    local value = self:raise_event("on_save", key, copy(self:raw_get(key)))
+    local action = self.propagate_changes and "propagate" or "save"
     self:write_action(action, key, value)
 end
 
@@ -686,7 +686,7 @@ ExampleData:unload('TestKey')
 function Datastore:unload(key)
     if self.parent then return self.parent:unload(key) end
     key = self:serialize(key)
-    self:raise_event('on_unload', key, copy(self:raw_get(key)))
+    self:raise_event("on_unload", key, copy(self:raw_get(key)))
     self:save(key)
     self:raw_set(key)
 end
@@ -702,7 +702,7 @@ ExampleData:message('TestKey', 'Foo')
 ]]
 function Datastore:message(key, message)
     key = self:serialize(key)
-    self:write_action('message', key, message)
+    self:write_action("message", key, message)
 end
 
 --[[-- Save all the keys in the datastore, optional filter callback
@@ -746,7 +746,7 @@ end
 ----- Events
 -- @section events
 
-local function event_error(err) log('An error ocurred in a datastore event handler:\n\t'..trace(err)) end
+local function event_error(err) log("An error ocurred in a datastore event handler:\n\t" .. trace(err)) end
 --[[-- Internal, Raise an event on this datastore
 @tparam string event_name The name of the event to raise for this datastore
 @tparam string key The key that this event is being raised for
@@ -761,11 +761,11 @@ value = self:raise_event('on_save', key, value)
 ]]
 function Datastore:raise_event(event_name, key, value, old_value, source)
     -- Raise the event for the children of this datastore
-    if source ~= 'child' and next(self.children) then
-        if type(value) ~= 'table' then value = {} end
+    if source ~= "child" and next(self.children) then
+        if type(value) ~= "table" then value = {} end
         for value_name, child in pairs(self.children) do
             local old_child_value = old_value and old_value[value_name] or nil
-            value[value_name] = child:raise_event(event_name, key, value[value_name], old_child_value, 'parent')
+            value[value_name] = child:raise_event(event_name, key, value[value_name], old_child_value, "parent")
         end
     end
 
@@ -779,13 +779,13 @@ function Datastore:raise_event(event_name, key, value, old_value, source)
     end
 
     -- Raise the event for the parent of this datastore
-    if source ~= 'parent' and self.parent then
+    if source ~= "parent" and self.parent then
         local parent_value = self.parent:raw_get(key, true)
-        self.parent:raise_event(event_name, key, parent_value, parent_value, 'child')
+        self.parent:raise_event(event_name, key, parent_value, parent_value, "child")
     end
 
     -- If this is the save event and the table is empty then return nil
-    if event_name == 'on_save' and next(self.children) and not next(value) then return end
+    if event_name == "on_save" and next(self.children) and not next(value) then return end
     return value
 end
 
@@ -799,12 +799,12 @@ Datastore.on_load = event_factory('on_load')
 ]]
 local function event_factory(event_name)
     return function(self, callback)
-        assert(type(callback) == 'function', 'Handler must be a function')
+        assert(type(callback) == "function", "Handler must be a function")
         local handlers = self.events[event_name]
         if not handlers then
             self.events[event_name] = { callback }
         else
-            handlers[#handlers+1] = callback
+            handlers[#handlers + 1] = callback
         end
     end
 end
@@ -817,7 +817,7 @@ ExampleData:on_load(function(key, value)
     game.print('Test data loaded for: '..key)
 end)
 ]]
-Datastore.on_load = event_factory('on_load')
+Datastore.on_load = event_factory("on_load")
 
 --[[-- Register a callback that triggers before data is saved, returned value is saved externally
 @tparam function callback The handler that will be registered to the on_load event
@@ -827,7 +827,7 @@ ExampleData:on_save(function(key, value)
     game.print('Test data saved for: '..key)
 end)
 ]]
-Datastore.on_save = event_factory('on_save')
+Datastore.on_save = event_factory("on_save")
 
 --[[-- Register a callback that triggers before data is unloaded, returned value is ignored
 @tparam function callback The handler that will be registered to the on_load event
@@ -837,7 +837,7 @@ ExampleData:on_load(function(key, value)
     game.print('Test data unloaded for: '..key)
 end)
 ]]
-Datastore.on_unload = event_factory('on_unload')
+Datastore.on_unload = event_factory("on_unload")
 
 --[[-- Register a callback that triggers when a message is received, returned value is ignored
 @tparam function callback The handler that will be registered to the on_load event
@@ -847,7 +847,7 @@ ExampleData:on_message(function(key, value)
     game.print('Test data message for: '..key)
 end)
 ]]
-Datastore.on_message = event_factory('on_message')
+Datastore.on_message = event_factory("on_message")
 
 --[[-- Register a callback that triggers any time a value is changed, returned value is ignored
 @tparam function callback The handler that will be registered to the on_load event
@@ -857,7 +857,7 @@ ExampleData:on_update(function(key, value)
     game.print('Test data updated for: '..key)
 end)
 ]]
-Datastore.on_update = event_factory('on_update')
+Datastore.on_update = event_factory("on_update")
 
 ----- Module Return
 return DatastoreManager

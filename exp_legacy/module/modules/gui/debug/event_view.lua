@@ -13,7 +13,7 @@ local events_to_keep = 10
 
 -- Local vars
 local Public = {
-    name = 'Events'
+    name = "Events",
 }
 local name_lookup = {}
 
@@ -28,7 +28,7 @@ local last_events = {}
 storage.debug_event_view = {
     enabled = enabled,
     last_events = last_events,
-    filter = ''
+    filter = "",
 }
 
 function Public.on_open_debug()
@@ -42,7 +42,7 @@ function Public.on_open_debug()
 
         storage.debug_event_view = {
             enabled = enabled,
-            last_events = last_events
+            last_events = last_events,
         }
     end
 
@@ -65,7 +65,7 @@ local function event_callback(event)
     last_events[name][events_to_keep + 1] = nil
     event.name = nil
 
-    local str = format('%s (id = %s): %s', name, id, Model.dump(event))
+    local str = format("%s (id = %s): %s", name, id, Model.dump(event))
     game.print(str)
     log(str)
 end
@@ -95,13 +95,13 @@ table.sort(grid_builder)
 
 local function redraw_event_table(gui_table, filter)
     for _, event_name in pairs(grid_builder) do
-        if filter == '' or event_name:find(filter) then
+        if filter == "" or event_name:find(filter) then
             local index = events[event_name]
-            gui_table.add({type = 'flow'}).add {
+            gui_table.add{ type = "flow" }.add{
                 name = checkbox_name,
-                type = 'checkbox',
+                type = "checkbox",
                 state = enabled[index] or false,
-                caption = event_name
+                caption = event_name,
             }
         end
     end
@@ -110,18 +110,18 @@ end
 function Public.show(container)
     local filter = storage.debug_event_view.filter
 
-    local main_frame_flow = container.add({type = 'flow', direction = 'vertical'})
+    local main_frame_flow = container.add{ type = "flow", direction = "vertical" }
 
-    local filter_flow = main_frame_flow.add({type = 'flow', direction = 'horizontal'})
-    filter_flow.add({type = 'label', caption = 'filter'})
-    local filter_textfield = filter_flow.add({type = 'textfield', name = filter_name, text = filter})
-    local clear_button = filter_flow.add({type = 'button', name = clear_filter_name, caption = 'clear'})
+    local filter_flow = main_frame_flow.add{ type = "flow", direction = "horizontal" }
+    filter_flow.add{ type = "label", caption = "filter" }
+    local filter_textfield = filter_flow.add{ type = "textfield", name = filter_name, text = filter }
+    local clear_button = filter_flow.add{ type = "button", name = clear_filter_name, caption = "clear" }
 
-    local scroll_pane = main_frame_flow.add({type = 'scroll-pane'})
-    local gui_table = scroll_pane.add({type = 'table', column_count = 3, draw_horizontal_lines = true})
+    local scroll_pane = main_frame_flow.add{ type = "scroll-pane" }
+    local gui_table = scroll_pane.add{ type = "table", column_count = 3, draw_horizontal_lines = true }
 
     Gui.set_data(filter_textfield, gui_table)
-    Gui.set_data(clear_button, {gui_table = gui_table, filter_textfield = filter_textfield})
+    Gui.set_data(clear_button, { gui_table = gui_table, filter_textfield = filter_textfield })
 
     redraw_event_table(gui_table, filter)
 end
@@ -134,7 +134,7 @@ Gui.on_text_changed(
         local element = event.element
         local gui_table = Gui.get_data(element)
 
-        local filter = element.text:gsub(' ', '_')
+        local filter = element.text:gsub(" ", "_")
 
         storage.debug_event_view.filter = filter
         element.text = filter
@@ -152,11 +152,11 @@ Gui.on_click(
         local filter_textfield = data.filter_textfield
         local gui_table = data.gui_table
 
-        filter_textfield.text = ''
-        storage.debug_event_view.filter = ''
+        filter_textfield.text = ""
+        storage.debug_event_view.filter = ""
 
         gui_table.clear()
-        redraw_event_table(gui_table, '')
+        redraw_event_table(gui_table, "")
     end
 )
 

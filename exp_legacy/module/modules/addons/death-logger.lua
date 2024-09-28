@@ -7,11 +7,11 @@ local config = require("modules.exp_legacy.config.death_logger") --- @dep config
 local format_time, move_items = _C.format_time, _C.move_items_stack --- @dep expcore.common
 
 -- Max amount of ticks a corpse can be alive
-local corpse_lifetime = 60*60*15
+local corpse_lifetime = 60 * 60 * 15
 
 local deaths = {
-    archive={} -- deaths moved here after body is gone
-    --{player_name='Cooldude2606', time_of_death='15H 15M', position={x=0, y=0}, corpse=LuaEntity, tag=LuaCustomChartTag}
+    archive = {}, -- deaths moved here after body is gone
+    -- {player_name='Cooldude2606', time_of_death='15H 15M', position={x=0, y=0}, corpse=LuaEntity, tag=LuaCustomChartTag}
 }
 Storage.register(deaths, function(tbl)
     deaths = tbl
@@ -20,15 +20,15 @@ end)
 --- Creates a new death marker and saves it to the given death
 local function create_map_tag(death)
     local player = game.players[death.player_name]
-    local message = player.name..' died'
+    local message = player.name .. " died"
     if config.include_time_of_death then
-        local time = format_time(death.time_of_death, {hours=true, minutes=true, string=true})
-        message = message..' at '..time
+        local time = format_time(death.time_of_death, { hours = true, minutes = true, string = true })
+        message = message .. " at " .. time
     end
     death.tag = player.force.add_chart_tag(player.surface, {
-        position=death.position,
-        icon=config.map_icon,
-        text=message
+        position = death.position,
+        icon = config.map_icon,
+        text = message,
     })
 end
 
@@ -62,7 +62,7 @@ end
 -- when a player dies a new death is added to the records and a map marker is made
 Event.add(defines.events.on_player_died, function(event)
     local player = game.players[event.player_index]
-    local corpse = player.surface.find_entity('character-corpse', player.position)
+    local corpse = player.surface.find_entity("character-corpse", player.position)
     if config.use_chests_as_bodies then
         local items = corpse.get_inventory(defines.inventory.character_corpse)
         local chest = move_items(items, corpse.surface, corpse.position)
@@ -74,7 +74,7 @@ Event.add(defines.events.on_player_died, function(event)
         player_name = player.name,
         time_of_death = event.tick,
         position = player.position,
-        corpse = corpse
+        corpse = corpse,
     }
     if config.show_map_markers then
         create_map_tag(death)
@@ -84,11 +84,11 @@ Event.add(defines.events.on_player_died, function(event)
     -- Draw a light attached to the corpse with the player color
     if config.show_light_at_corpse then
         rendering.draw_light{
-            sprite = 'utility/light_medium',
+            sprite = "utility/light_medium",
             color = player.color,
             target = corpse,
             force = player.force,
-            surface = player.surface
+            surface = player.surface,
         }
     end
 end)
@@ -122,7 +122,7 @@ if config.show_line_to_corpse then
                     dash_length = 1,
                     gap_length = 1,
                     surface = player.surface,
-                    draw_on_ground = true
+                    draw_on_ground = true,
                 }
             end
         end
@@ -131,7 +131,7 @@ end
 
 -- every 5 min all bodies are checked for valid map tags
 if config.show_map_markers then
-    local check_period = 60*60*5 -- five minutes
+    local check_period = 60 * 60 * 5 -- five minutes
     Event.on_nth_tick(check_period, function()
         check_map_tags()
     end)
@@ -141,7 +141,7 @@ if config.auto_collect_bodies then
     Event.add(defines.events.on_character_corpse_expired, function(event)
         local corpse = event.corpse
         local items = corpse.get_inventory(defines.inventory.character_corpse)
-        move_items(items, corpse.surface, {x=0, y=0})
+        move_items(items, corpse.surface, { x = 0, y = 0 })
     end)
 end
 

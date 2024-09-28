@@ -30,7 +30,7 @@ local Storage = require("modules/exp_util/storage")
 local valid_player = Game.get_player_from_any
 
 local Reports = {
-    user_reports={}, -- stores all user reports, global table
+    user_reports = {}, -- stores all user reports, global table
     events = {
         --- When a player is reported
         -- @event on_player_reported
@@ -45,8 +45,8 @@ local Reports = {
         -- @tparam string removed_by_name the name of the player who removed the report
         -- @tparam number batch_count the number of reports removed in this batch, always one when not a batch
         -- @tparam number batch the index of this event in a batch, always one when not a batch
-        on_report_removed = script.generate_event_name()
-    }
+        on_report_removed = script.generate_event_name(),
+    },
 }
 
 local user_reports = Reports.user_reports
@@ -112,6 +112,7 @@ function Reports.count_reports(player, custom_count)
         for by_player_name, reason in pairs(reports) do
             ctn = ctn + custom_count(player, by_player_name, reason)
         end
+
         return ctn
     else
         return table_size(reports)
@@ -132,7 +133,7 @@ function Reports.report_player(player, by_player_name, reason)
     if not player then return end
     local player_name = player.name
 
-    if reason == nil or not reason:find("%S") then reason = 'No reason given' end
+    if reason == nil or not reason:find("%S") then reason = "No reason given" end
 
     local reports = user_reports[player_name]
     if not reports then
@@ -151,7 +152,7 @@ function Reports.report_player(player, by_player_name, reason)
         tick = game.tick,
         player_index = player.index,
         by_player_name = by_player_name,
-        reason = reason
+        reason = reason,
     })
 
     return true
@@ -171,7 +172,7 @@ local function report_removed_event(player, reported_by_name, removed_by_name, b
         reported_by_name = reported_by_name,
         removed_by_name = removed_by_name,
         batch_count = batch_count or 1,
-        batch = batch or 1
+        batch = batch or 1,
     })
 end
 

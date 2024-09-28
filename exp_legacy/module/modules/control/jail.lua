@@ -33,13 +33,13 @@ local Jail = {
         -- @tparam number player_index the index of the player who was jailed
         -- @tparam string by_player_name the name of the player who jailed the other player
         -- @tparam string reason the reason that the player was jailed
-        on_player_jailed=script.generate_event_name(),
+        on_player_jailed = script.generate_event_name(),
         --- When a player is unassigned from jail
         -- @event on_player_unjailed
         -- @tparam number player_index the index of the player who was unjailed
         -- @tparam string by_player_name the name of the player who unjailed the other player
-        on_player_unjailed=script.generate_event_name(),
-    }
+        on_player_unjailed = script.generate_event_name(),
+    },
 }
 
 --- Used to emit the jail related events
@@ -49,11 +49,11 @@ local Jail = {
 -- @tparam string reason the reason for the action (jail)
 local function event_emit(event, player, by_player_name, reason)
     script.raise_event(event, {
-        name=event,
-        tick=game.tick,
-        player_index=player.index,
-        by_player_name=by_player_name,
-        reason=reason
+        name = event,
+        tick = game.tick,
+        player_index = player.index,
+        by_player_name = by_player_name,
+        reason = reason,
     })
 end
 
@@ -65,7 +65,7 @@ end
 -- @tparam LuaPlayer player the player to check if they are in jail
 -- @treturn boolean whether the player is currently in jail
 function Jail.is_jailed(player)
-    return has_role(player, 'Jail')
+    return has_role(player, "Jail")
 end
 
 --- Moves a player to jail and removes all other roles
@@ -78,9 +78,9 @@ function Jail.jail_player(player, by_player_name, reason)
     if not player then return end
     if not by_player_name then return end
 
-    reason = reason or 'Non given.'
+    reason = reason or "Non given."
 
-    if has_role(player, 'Jail') then return end
+    if has_role(player, "Jail") then return end
     local roles = get_roles(player)
 
     player.walking_state = { walking = false, direction = player.walking_state.direction }
@@ -91,7 +91,7 @@ function Jail.jail_player(player, by_player_name, reason)
     player.repair_state = { repairing = false, position = player.repair_state.position }
 
     unassign_roles(player, roles, by_player_name, nil, true)
-    assign_roles(player, 'Jail', by_player_name, nil, true)
+    assign_roles(player, "Jail", by_player_name, nil, true)
     assign_roles(player, roles, by_player_name, nil, true)
 
     event_emit(Jail.events.on_player_jailed, player, by_player_name, reason)
@@ -108,9 +108,9 @@ function Jail.unjail_player(player, by_player_name)
     if not player then return end
     if not by_player_name then return end
 
-    if not has_role(player, 'Jail') then return end
+    if not has_role(player, "Jail") then return end
 
-    unassign_roles(player, 'Jail', by_player_name, nil, true)
+    unassign_roles(player, "Jail", by_player_name, nil, true)
 
     event_emit(Jail.events.on_player_unjailed, player, by_player_name)
 

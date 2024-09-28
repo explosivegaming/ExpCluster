@@ -14,13 +14,13 @@ local Datastore = require("modules.exp_legacy.expcore.datastore") --- @dep expco
 local Storage = require("modules/exp_util/storage")
 
 --- Stores all data for the warp gui
-local TaskData = Datastore.connect('TaskData')
+local TaskData = Datastore.connect("TaskData")
 TaskData:set_serializer(function(raw_key) return raw_key.task_id end)
 
 local Tasks = {}
 
 -- Storage lookup table for force name to task ids
-local force_tasks = {_uid=1}
+local force_tasks = { _uid = 1 }
 Storage.register(force_tasks, function(tbl)
     force_tasks = tbl
 end)
@@ -59,11 +59,11 @@ function Tasks.add_task(force_name, player_name, task_title, task_body)
     TaskData:set(task_id, {
         task_id = task_id,
         force_name = force_name,
-        title = task_title or '',
-        body = task_body or '',
-        last_edit_name = player_name or '<server>',
+        title = task_title or "",
+        body = task_body or "",
+        last_edit_name = player_name or "<server>",
         last_edit_time = game.tick,
-        currently_editing = {}
+        currently_editing = {},
     })
 
     return task_id

@@ -36,6 +36,11 @@
             "param": "_?_?(\\w+)",
             "$1": "snake_case"
         }],
+        "module_local_name_style": [{
+            "type" : "pattern",
+            "param": "_?_?(\\w+)",
+            "$1": "snake_case"
+        }, "pascal_case"],
         "function_param_name_style": [{
             "type" : "pattern",
             "param": "_?_?(\\w+)",

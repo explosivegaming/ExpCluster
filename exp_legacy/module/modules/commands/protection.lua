@@ -11,12 +11,12 @@ local format_chat_player_name = _C.format_chat_player_name --- @dep expcore.comm
 local EntityProtection = require("modules.exp_legacy.modules.control.protection") --- @dep modules.control.protection
 local Selection = require("modules.exp_legacy.modules.control.selection") --- @dep modules.control.selection
 
-local SelectionProtectEntity = 'ProtectEntity'
-local SelectionProtectArea   = 'ProtectArea'
+local SelectionProtectEntity = "ProtectEntity"
+local SelectionProtectArea = "ProtectArea"
 
 local renders = {} -- Stores all renders for a player
 Storage.register({
-    renders = renders
+    renders = renders,
 }, function(tbl)
     renders = tbl.renders
 end)
@@ -36,19 +36,19 @@ end
 --- Align an aabb to the grid by expanding it
 local function aabb_align_expand(aabb)
     return {
-        left_top = {x = math.floor(aabb.left_top.x), y = math.floor(aabb.left_top.y)},
-        right_bottom = {x = math.ceil(aabb.right_bottom.x), y = math.ceil(aabb.right_bottom.y)}
+        left_top = { x = math.floor(aabb.left_top.x), y = math.floor(aabb.left_top.y) },
+        right_bottom = { x = math.ceil(aabb.right_bottom.x), y = math.ceil(aabb.right_bottom.y) },
     }
 end
 
 --- Get the key used in protected_entities
 local function get_entity_key(entity)
-    return string.format('%i,%i', math.floor(entity.position.x), math.floor(entity.position.y))
+    return string.format("%i,%i", math.floor(entity.position.x), math.floor(entity.position.y))
 end
 
 --- Get the key used in protected_areas
 local function get_area_key(area)
-    return string.format('%i,%i', math.floor(area.left_top.x), math.floor(area.left_top.y))
+    return string.format("%i,%i", math.floor(area.left_top.x), math.floor(area.left_top.y))
 end
 
 --- Show a protected entity to a player
@@ -57,16 +57,16 @@ local function show_protected_entity(player, entity)
     if renders[player.index][key] then return end
     local rb = entity.selection_box.right_bottom
     local render_id = rendering.draw_sprite{
-        sprite = 'utility/notification',
+        sprite = "utility/notification",
         target = entity,
         target_offset = {
-            (rb.x-entity.position.x)*0.75,
-            (rb.y-entity.position.y)*0.75
+            (rb.x - entity.position.x) * 0.75,
+            (rb.y - entity.position.y) * 0.75,
         },
         x_scale = 2,
         y_scale = 2,
         surface = entity.surface,
-        players = { player }
+        players = { player },
     }
     renders[player.index][key] = render_id
 end
@@ -76,13 +76,13 @@ local function show_protected_area(player, surface, area)
     local key = get_area_key(area)
     if renders[player.index][key] then return end
     local render_id = rendering.draw_rectangle{
-        color = {1, 1, 0, 0.5},
+        color = { 1, 1, 0, 0.5 },
         filled = false,
         width = 3,
         left_top = area.left_top,
         right_bottom = area.right_bottom,
         surface = surface,
-        players = { player }
+        players = { player },
     }
     renders[player.index][key] = render_id
 end
@@ -96,29 +96,29 @@ end
 
 --- Toggles entity protection selection
 -- @command protect-entity
-Commands.new_command('protect-entity', {'expcom-protection.description-pe'}, 'Toggles entity protection selection, hold shift to remove protection')
-:add_alias('pe')
-:register(function(player)
-    if Selection.is_selecting(player, SelectionProtectEntity) then
-        Selection.stop(player)
-    else
-        Selection.start(player, SelectionProtectEntity)
-        return Commands.success{'expcom-protection.entered-entity-selection'}
-    end
-end)
+Commands.new_command("protect-entity", { "expcom-protection.description-pe" }, "Toggles entity protection selection, hold shift to remove protection")
+    :add_alias("pe")
+    :register(function(player)
+        if Selection.is_selecting(player, SelectionProtectEntity) then
+            Selection.stop(player)
+        else
+            Selection.start(player, SelectionProtectEntity)
+            return Commands.success{ "expcom-protection.entered-entity-selection" }
+        end
+    end)
 
 --- Toggles area protection selection
 -- @command protect-area
-Commands.new_command('protect-area', {'expcom-protection.description-pa'}, 'Toggles area protection selection, hold shift to remove protection')
-:add_alias('pa')
-:register(function(player)
-    if Selection.is_selecting(player, SelectionProtectArea) then
-        Selection.stop(player)
-    else
-        Selection.start(player, SelectionProtectArea)
-        return Commands.success{'expcom-protection.entered-area-selection'}
-    end
-end)
+Commands.new_command("protect-area", { "expcom-protection.description-pa" }, "Toggles area protection selection, hold shift to remove protection")
+    :add_alias("pa")
+    :register(function(player)
+        if Selection.is_selecting(player, SelectionProtectArea) then
+            Selection.stop(player)
+        else
+            Selection.start(player, SelectionProtectArea)
+            return Commands.success{ "expcom-protection.entered-area-selection" }
+        end
+    end)
 
 --- When an area is selected to add protection to entities
 Selection.on_selection(SelectionProtectEntity, function(event)
@@ -127,7 +127,8 @@ Selection.on_selection(SelectionProtectEntity, function(event)
         EntityProtection.add_entity(entity)
         show_protected_entity(player, entity)
     end
-    player.print{'expcom-protection.protected-entities', #event.entities}
+
+    player.print{ "expcom-protection.protected-entities", #event.entities }
 end)
 
 --- When an area is selected to remove protection from entities
@@ -137,7 +138,8 @@ Selection.on_alt_selection(SelectionProtectEntity, function(event)
         EntityProtection.remove_entity(entity)
         remove_render(player, get_entity_key(entity))
     end
-    player.print{'expcom-protection.unprotected-entities', #event.entities}
+
+    player.print{ "expcom-protection.unprotected-entities", #event.entities }
 end)
 
 --- When an area is selected to add protection to the area
@@ -147,12 +149,13 @@ Selection.on_selection(SelectionProtectArea, function(event)
     local player = game.get_player(event.player_index)
     for _, next_area in pairs(areas) do
         if aabb_area_enclosed(area, next_area) then
-            return player.print{'expcom-protection.already-protected'}
+            return player.print{ "expcom-protection.already-protected" }
         end
     end
+
     EntityProtection.add_area(event.surface, area)
     show_protected_area(player, event.surface, area)
-    player.print{'expcom-protection.protected-area'}
+    player.print{ "expcom-protection.protected-area" }
 end)
 
 --- When an area is selected to remove protection from the area
@@ -163,7 +166,7 @@ Selection.on_alt_selection(SelectionProtectArea, function(event)
     for _, next_area in pairs(areas) do
         if aabb_area_enclosed(next_area, area) then
             EntityProtection.remove_area(event.surface, next_area)
-            player.print{'expcom-protection.unprotected-area'}
+            player.print{ "expcom-protection.unprotected-area" }
             remove_render(player, get_area_key(next_area))
         end
     end
@@ -180,6 +183,7 @@ Event.add(Selection.events.on_player_selection_start, function(event)
     for _, entity in pairs(entities) do
         show_protected_entity(player, entity)
     end
+
     -- Show always protected entities by name
     if #EntityProtection.protected_entity_names > 0 then
         for _, entity in pairs(surface.find_entities_filtered{ name = EntityProtection.protected_entity_names, force = player.force }) do
@@ -205,11 +209,12 @@ Event.add(Selection.events.on_player_selection_end, function(event)
     for _, id in pairs(renders[event.player_index]) do
         if rendering.is_valid(id) then rendering.destroy(id) end
     end
+
     renders[event.player_index] = nil
 end)
 
 --- When there is a repeat offence print it in chat
 Event.add(EntityProtection.events.on_repeat_violation, function(event)
     local player_name = format_chat_player_name(event.player_index)
-    Roles.print_to_roles_higher('Regular', {'expcom-protection.repeat-offence', player_name, event.entity.localised_name, event.entity.position.x, event.entity.position.y})
+    Roles.print_to_roles_higher("Regular", { "expcom-protection.repeat-offence", player_name, event.entity.localised_name, event.entity.position.x, event.entity.position.y })
 end)

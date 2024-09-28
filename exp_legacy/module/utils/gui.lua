@@ -1,6 +1,6 @@
 local Storage = require("modules/exp_util/storage")
 local Event = require("modules/exp_legacy/utils/event") --- @dep expcore.gui
-local mod_gui = require 'mod-gui' --- @dep mod-gui
+local mod_gui = require "mod-gui" --- @dep mod-gui
 
 local Gui = {}
 local data = {}
@@ -15,7 +15,7 @@ Storage.register(
 
 function Gui.uid_name()
     uid = uid + 1
-    return "Redmew_"..uid
+    return "Redmew_" .. uid
 end
 
 -- Associates data with the LuaGuiElement. If data is nil then removes the data
@@ -85,43 +85,43 @@ end
 -- Can only have one handler per element name.
 -- Guarantees that the element and the player are valid when calling the handler.
 -- Adds a player field to the event table.
-Gui.on_checked_state_changed = handler_factory('on_gui_checked_state_changed')
+Gui.on_checked_state_changed = handler_factory("on_gui_checked_state_changed")
 
 -- Register a handler for the on_gui_click event for LuaGuiElements with element_name.
 -- Can only have one handler per element name.
 -- Guarantees that the element and the player are valid when calling the handler.
 -- Adds a player field to the event table.
-Gui.on_click = handler_factory('on_gui_click')
+Gui.on_click = handler_factory("on_gui_click")
 
 -- Register a handler for the on_gui_closed event for a custom LuaGuiElements with element_name.
 -- Can only have one handler per element name.
 -- Guarantees that the element and the player are valid when calling the handler.
 -- Adds a player field to the event table.
-Gui.on_custom_close = handler_factory('on_gui_closed')
+Gui.on_custom_close = handler_factory("on_gui_closed")
 
 -- Register a handler for the on_gui_elem_changed event for LuaGuiElements with element_name.
 -- Can only have one handler per element name.
 -- Guarantees that the element and the player are valid when calling the handler.
 -- Adds a player field to the event table.
-Gui.on_elem_changed = handler_factory('on_gui_elem_changed')
+Gui.on_elem_changed = handler_factory("on_gui_elem_changed")
 
 -- Register a handler for the on_gui_selection_state_changed event for LuaGuiElements with element_name.
 -- Can only have one handler per element name.
 -- Guarantees that the element and the player are valid when calling the handler.
 -- Adds a player field to the event table.
-Gui.on_selection_state_changed = handler_factory('on_gui_selection_state_changed')
+Gui.on_selection_state_changed = handler_factory("on_gui_selection_state_changed")
 
 -- Register a handler for the on_gui_text_changed event for LuaGuiElements with element_name.
 -- Can only have one handler per element name.
 -- Guarantees that the element and the player are valid when calling the handler.
 -- Adds a player field to the event table.
-Gui.on_text_changed = handler_factory('on_gui_text_changed')
+Gui.on_text_changed = handler_factory("on_gui_text_changed")
 
 -- Register a handler for the on_gui_value_changed event for LuaGuiElements with element_name.
 -- Can only have one handler per element name.
 -- Guarantees that the element and the player are valid when calling the handler.
 -- Adds a player field to the event table.
-Gui.on_value_changed = handler_factory('on_gui_value_changed')
+Gui.on_value_changed = handler_factory("on_gui_value_changed")
 
 --- Returns the flow where top elements can be added and will be effected by google visibility
 -- For the toggle to work it must be registed with Gui.allow_player_to_toggle_top_element_visibility(element_name)

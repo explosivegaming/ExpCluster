@@ -1,4 +1,4 @@
---luacheck:ignore global table
+-- luacheck:ignore global table
 local random = math.random
 local floor = math.floor
 local remove = table.remove
@@ -66,17 +66,18 @@ function table.array_insert(tbl, start_index, values)
     if start_index then
         local starting_length = #tbl
         local adding_length = #values
-        local move_to = start_index+adding_length+1
-        for offset = starting_length-start_index, 0, -1 do
-            tbl[move_to+offset] = tbl[starting_length+offset]
+        local move_to = start_index + adding_length + 1
+        for offset = starting_length - start_index, 0, -1 do
+            tbl[move_to + offset] = tbl[starting_length + offset]
         end
-        start_index = start_index-1
+
+        start_index = start_index - 1
     else
         start_index = #tbl
     end
 
     for offset, item in ipairs(values) do
-        tbl[start_index+offset] = item
+        tbl[start_index + offset] = item
     end
 
     return tbl
@@ -119,6 +120,7 @@ function table.get_key(t, e)
             return k
         end
     end
+
     return nil
 end
 
@@ -132,6 +134,7 @@ function table.get_index(t, e)
             return i
         end
     end
+
     return nil
 end
 
@@ -158,9 +161,10 @@ end
 -- @return the keys in the order given
 function table.extract_keys(tbl, ...)
     local values = {}
-    for _, key in pairs({...}) do
+    for _, key in pairs{ ... } do
         table.insert(values, tbl[key])
     end
+
     return table.unpack(values)
 end
 
@@ -177,7 +181,8 @@ function table.set(t, index, element)
         end
         i = i + 1
     end
-    error('Index out of bounds', 2)
+
+    error("Index out of bounds", 2)
 end
 
 --- Chooses a random entry from a table
@@ -249,7 +254,7 @@ function table.shuffle_table(t, rng)
     local rand = rng or math.random
     local iterations = #t
     if iterations == 0 then
-        error('Not a sequential table')
+        error("Not a sequential table")
         return
     end
     local j
@@ -265,19 +270,19 @@ end
 -- @param x one comparator operand
 -- @param y the other comparator operand
 -- @return true if x logically comes before y in a list, false otherwise
-local function sortFunc(x, y) --sorts tables with mixed index types.
+local function sortFunc(x, y) -- sorts tables with mixed index types.
     local tx = type(x)
     local ty = type(y)
     if tx == ty then
-        if type(x) == 'string' then
+        if type(x) == "string" then
             return string.lower(x) < string.lower(y)
         else
             return x < y
         end
-    elseif tx == 'number' then
-        return true --only x is a number and goes first
+    elseif tx == "number" then
+        return true -- only x is a number and goes first
     else
-        return false --only y is a number and goes first
+        return false -- only y is a number and goes first
     end
 end
 
@@ -290,7 +295,7 @@ function table.get_values(tbl, sorted, as_string)
     if not tbl then return {} end
     local valueset = {}
     local n = 0
-    if as_string then --checking as_string /before/ looping is faster
+    if as_string then -- checking as_string /before/ looping is faster
         for _, v in pairs(tbl) do
             n = n + 1
             valueset[n] = tostring(v)
@@ -316,7 +321,7 @@ function table.get_keys(tbl, sorted, as_string)
     if not tbl then return {} end
     local keyset = {}
     local n = 0
-    if as_string then --checking as_string /before/ looping is faster
+    if as_string then -- checking as_string /before/ looping is faster
         for k, _ in pairs(tbl) do
             n = n + 1
             keyset[n] = tostring(k)
@@ -338,13 +343,17 @@ end
 -- @treturn table the sorted table
 function table.alphanumsort(tbl)
     local o = table.get_keys(tbl)
-    local function padnum(d) local dec, n = string.match(d, "(%.?)0*(.+)")
-        return #dec > 0 and ("%.12f"):format(d) or ("%s%03d%s"):format(dec, #n, n) end
+    local function padnum(d)
+        local dec, n = string.match(d, "(%.?)0*(.+)")
+        return #dec > 0 and ("%.12f"):format(d) or ("%s%03d%s"):format(dec, #n, n)
+    end
     table.sort(o, function(a, b)
-        return tostring(a):gsub("%.?%d+", padnum)..("%3d"):format(#b)
-           < tostring(b):gsub("%.?%d+", padnum)..("%3d"):format(#a) end)
+        return tostring(a):gsub("%.?%d+", padnum) .. ("%3d"):format(#b)
+            < tostring(b):gsub("%.?%d+", padnum) .. ("%3d"):format(#a)
+    end)
     local _tbl = {}
     for _, k in pairs(o) do _tbl[k] = tbl[k] end
+
     return _tbl
 end
 
@@ -355,6 +364,7 @@ function table.keysort(tbl)
     local o = table.get_keys(tbl, true)
     local _tbl = {}
     for _, k in pairs(o) do _tbl[k] = tbl[k] end
+
     return _tbl
 end
 
@@ -375,7 +385,7 @@ end
   end
 ]]
 function table.binary_search(t, target)
-    --For some reason bit32.bnot doesn't return negative numbers so I'm using ~x = -1 - x instead.
+    -- For some reason bit32.bnot doesn't return negative numbers so I'm using ~x = -1 - x instead.
 
     local lower = 1
     local upper = #t

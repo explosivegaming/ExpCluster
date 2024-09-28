@@ -55,7 +55,7 @@ function Storage.register(tbl, callback)
 
     Storage.registered[name] = {
         init = tbl,
-        callback = callback
+        callback = callback,
     }
 end
 
@@ -63,16 +63,16 @@ end
 -- @tparam string name The name of the metatable to register, must be unique within your module
 function Storage.register_metatable(name, tbl)
     local module_name = ExpUtil.get_module_name(2)
-    script.register_metatable(module_name.."."..name, tbl)
+    script.register_metatable(module_name .. "." .. name, tbl)
 end
 
 --- Restore aliases on load, we do not need to initialise data during this event
 function Storage.on_load()
     local exp_storage = storage.exp_storage
-	if exp_storage == nil then return end
-	for name, info in pairs(Storage.registered) do
+    if exp_storage == nil then return end
+    for name, info in pairs(Storage.registered) do
         if exp_storage[name] ~= nil then
-			info.callback(exp_storage[name])
+            info.callback(exp_storage[name])
         end
     end
 end
@@ -94,7 +94,7 @@ function Storage.on_init()
 end
 
 Storage.events = {
-    [Clustorio.events.on_server_startup] = Storage.on_init
+    [Clustorio.events.on_server_startup] = Storage.on_init,
 }
 
 return Storage

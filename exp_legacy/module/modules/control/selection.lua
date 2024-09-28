@@ -18,14 +18,14 @@ local Selection = {
         -- @tparam number player_index the player index of the player who left selection mode
         -- @tparam string selection the name of the selection which ended
         on_player_selection_end = script.generate_event_name(),
-    }
+    },
 }
 
-local selection_tool = { name='selection-tool' }
+local selection_tool = { name = "selection-tool" }
 
 local selections = {}
 Storage.register({
-    selections = selections
+    selections = selections,
 }, function(tbl)
     selections = tbl.selections
 end)
@@ -42,7 +42,7 @@ function Selection.start(player, selection_name, single_use, ...)
             name = Selection.events.on_player_selection_end,
             tick = game.tick,
             player_index = player.index,
-            selection = selections[player.index].name
+            selection = selections[player.index].name,
         })
     end
 
@@ -51,7 +51,7 @@ function Selection.start(player, selection_name, single_use, ...)
         name = selection_name,
         arguments = { ... },
         single_use = single_use == true,
-        character = player.character
+        character = player.character,
     }
 
     -- Raise the event
@@ -59,7 +59,7 @@ function Selection.start(player, selection_name, single_use, ...)
         name = Selection.events.on_player_selection_start,
         tick = game.tick,
         player_index = player.index,
-        selection = selection_name
+        selection = selection_name,
     })
 
     -- Give a selection tool if one is not in use
@@ -86,7 +86,7 @@ function Selection.stop(player)
         name = Selection.events.on_player_selection_end,
         tick = game.tick,
         player_index = player.index,
-        selection = selection
+        selection = selection,
     })
 
     -- Remove the selection tool
@@ -146,7 +146,7 @@ end
 
 --- Stop selection if the selection tool is removed from the cursor
 Event.add(defines.events.on_player_cursor_stack_changed, function(event)
-    local player = game.get_player(event.player_index) ---@cast player -nil
+    local player = game.get_player(event.player_index) --- @cast player -nil
     if player.cursor_stack.is_selection_tool then return end
     Selection.stop(player)
 end)

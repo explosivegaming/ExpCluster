@@ -18,7 +18,7 @@ Event.add(defines.events.on_console_chat, function(event)
 
     -- Sends the message as text above them
     if config.show_player_messages then
-        send_text(player, {'chat-popup.message', player.name, event.message})
+        send_text(player, { "chat-popup.message", player.name, event.message })
     end
 
     if not config.show_player_mentions then return end
@@ -30,9 +30,8 @@ Event.add(defines.events.on_console_chat, function(event)
     for _, mentioned_player in pairs(game.connected_players) do
         if mentioned_player.index ~= player.index then
             if search_string:find(mentioned_player.name:lower(), 1, true) then
-                send_text(mentioned_player, {'chat-popup.ping', player.name})
+                send_text(mentioned_player, { "chat-popup.ping", player.name })
             end
         end
     end
-
 end)

@@ -4,7 +4,7 @@
 ]]
 
 local Gui = require("modules.exp_legacy.expcore.gui.prototype")
-local mod_gui = require 'mod-gui'
+local mod_gui = require "mod-gui"
 
 local hide_left_flow = Gui.core_defines.hide_left_flow.name
 
@@ -12,7 +12,7 @@ local hide_left_flow = Gui.core_defines.hide_left_flow.name
 -- @section leftFlow
 
 -- Triggered when a user changed the visibility of a left flow element by clicking a button
-Gui.events.on_visibility_changed_by_click = 'on_visibility_changed_by_click'
+Gui.events.on_visibility_changed_by_click = "on_visibility_changed_by_click"
 
 --- Contains the uids of the elements that will shown on the left flow and their join functions
 -- @table left_elements
@@ -68,7 +68,7 @@ function Gui.left_toolbar_button(sprite, tooltip, element_define, authenticator)
         button:raise_event{
             name = Gui.events.on_visibility_changed_by_click,
             element = Gui.get_top_element(player, button),
-            state = Gui.toggle_left_element(player, element_define)
+            state = Gui.toggle_left_element(player, element_define),
         }
     end)
 
@@ -90,8 +90,8 @@ function Gui.inject_left_flow_order(provider)
     Gui.get_left_flow_order = provider
     local debug_info = debug.getinfo(2, "Sn")
     local file_name = debug_info.short_src:sub(10, -5)
-    local func_name = debug_info.name or ("<anonymous:"..debug_info.linedefined..">")
-    Gui._left_flow_order_src = file_name..":"..func_name
+    local func_name = debug_info.name or ("<anonymous:" .. debug_info.linedefined .. ">")
+    Gui._left_flow_order_src = file_name .. ":" .. func_name
 end
 
 --[[-- Draw all the left elements onto the left flow, internal use only with on join
@@ -121,17 +121,17 @@ function Gui.draw_left_flow(player)
         end, debug.traceback)
 
         if not draw_success then
-            log('There as been an error with an element draw function: '..element_define.defined_at..'\n\t'..left_element)
+            log("There as been an error with an element draw function: " .. element_define.defined_at .. "\n\t" .. left_element)
             goto continue
         end
 
         -- Check if it should be open by default
         local open_on_join = element_define.open_on_join
-        local visible = type(open_on_join) == 'boolean' and open_on_join or false
-        if type(open_on_join) == 'function' then
+        local visible = type(open_on_join) == "boolean" and open_on_join or false
+        if type(open_on_join) == "function" then
             local success, err = xpcall(open_on_join, debug.traceback, player)
             if not success then
-                log('There as been an error with an open on join hander for a gui element:\n\t'..err)
+                log("There as been an error with an open on join hander for a gui element:\n\t" .. err)
                 goto continue
             end
             visible = err
@@ -166,7 +166,7 @@ function Gui.reorder_left_flow(player)
     -- Reorder the elements, index 1 is the core ui buttons so +1 is required
     for index, element_define in ipairs(flow_order) do
         local element = left_flow[element_define.name]
-        left_flow.swap_children(index+1, element.get_index_in_parent())
+        left_flow.swap_children(index + 1, element.get_index_in_parent())
     end
 end
 
@@ -188,6 +188,7 @@ function Gui.update_left_flow(player)
             return true
         end
     end
+
     hide_button.visible = false
     return false
 end
@@ -220,7 +221,7 @@ function Gui.hide_left_flow(player)
                 element_define.toolbar_button:raise_event{
                     name = Gui.events.on_visibility_changed_by_click,
                     element = button,
-                    state = false
+                    state = false,
                 }
             end
         end

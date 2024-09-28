@@ -45,7 +45,7 @@ end)
 add("string-options", function(input, _, options)
     local option = ExpUtil.auto_complete(options, input)
     if option == nil then
-        return invalid{"exp-commands-parse.string-options", table.concat(options, ", ")}
+        return invalid{ "exp-commands-parse.string-options", table.concat(options, ", ") }
     else
         return valid(option)
     end
@@ -55,7 +55,7 @@ end)
 add("string-key", function(input, _, map)
     local option = ExpUtil.auto_complete(map, input, true)
     if option == nil then
-        return invalid{"exp-commands-parse.string-options", table.concat(table.get_keys(map), ", ")}
+        return invalid{ "exp-commands-parse.string-options", table.concat(table.get_keys(map), ", ") }
     else
         return valid(option)
     end
@@ -64,7 +64,7 @@ end)
 --- A string with a maximum length, takes one argument which is the maximum length of a string
 add("string-max-length", function(input, _, maximum)
     if input:len() > maximum then
-        return invalid{"exp-commands-parse.string-max-length", maximum}
+        return invalid{ "exp-commands-parse.string-max-length", maximum }
     else
         return valid(input)
     end
@@ -74,7 +74,7 @@ end)
 add("number", function(input)
     local number = tonumber(input)
     if number == nil then
-        return invalid{"exp-commands-parse.number"}
+        return invalid{ "exp-commands-parse.number" }
     else
         return valid(number)
     end
@@ -84,7 +84,7 @@ end)
 add("integer", function(input)
     local number = tonumber(input)
     if number == nil then
-        return invalid{"exp-commands-parse.number"}
+        return invalid{ "exp-commands-parse.number" }
     else
         return valid(math.floor(number))
     end
@@ -96,7 +96,7 @@ add("number-range", function(input, _, minimum, maximum)
     if not success then
         return status, number
     elseif number < minimum or number > maximum then
-        return invalid{"exp-commands-parse.number-range", minimum, maximum}
+        return invalid{ "exp-commands-parse.number-range", minimum, maximum }
     else
         return valid(number)
     end
@@ -108,7 +108,7 @@ add("integer-range", function(input, _, minimum, maximum)
     if not success then
         return status, number
     elseif number < minimum or number > maximum then
-        return invalid{"exp-commands-parse.number-range", minimum, maximum}
+        return invalid{ "exp-commands-parse.number-range", minimum, maximum }
     else
         return valid(number)
     end
@@ -118,7 +118,7 @@ end)
 add("player", function(input)
     local player = game.get_player(input)
     if player == nil then
-        return invalid{"exp-commands-parse.player", input}
+        return invalid{ "exp-commands-parse.player", input }
     else
         return valid(player)
     end
@@ -130,7 +130,7 @@ add("player-online", function(input)
     if not success then
         return status, player
     elseif player.connected == false then
-        return invalid{"exp-commands-parse.player-online"}
+        return invalid{ "exp-commands-parse.player-online" }
     else
         return valid(player)
     end
@@ -142,7 +142,7 @@ add("player-alive", function(input)
     if not success then
         return status, player
     elseif player.character == nil or player.character.health <= 0 then
-        return invalid{"exp-commands-parse.player-alive"}
+        return invalid{ "exp-commands-parse.player-alive" }
     else
         return valid(player)
     end
@@ -152,7 +152,7 @@ end)
 add("force", function(input)
     local force = game.forces[input]
     if force == nil then
-        return invalid{"exp-commands-parse.force"}
+        return invalid{ "exp-commands-parse.force" }
     else
         return valid(force)
     end
@@ -162,7 +162,7 @@ end)
 add("surface", function(input)
     local surface = game.surfaces[input]
     if surface == nil then
-        return invalid{"exp-commands-parse.surface"}
+        return invalid{ "exp-commands-parse.surface" }
     else
         return valid(surface)
     end
@@ -172,7 +172,7 @@ end)
 add("color", function(input)
     local color = ExpUtil.auto_complete(Commands.color, input, true)
     if color == nil then
-        return invalid{"exp-commands-parse.color"}
+        return invalid{ "exp-commands-parse.color" }
     else
         return valid(color)
     end

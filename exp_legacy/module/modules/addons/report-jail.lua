@@ -1,8 +1,8 @@
 --- When a player is reported, the player is automatically jailed if the combined playtime of the reporters exceeds the reported player
 -- @addon report-jail
 
-local Event = require("modules/exp_legacy/utils/event") ---@dep utils.event
-local Jail = require("modules.exp_legacy.modules.control.jail") ---@dep modules.control.jail
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Jail = require("modules.exp_legacy.modules.control.jail") --- @dep modules.control.jail
 local Reports = require("modules.exp_legacy.modules.control.reports") --- @dep modules.control.reports
 local format_chat_player_name = _C.format_chat_player_name --- @dep expcore.common
 
@@ -22,7 +22,7 @@ Event.add(Reports.events.on_player_reported, function(event)
     -- player less than 30 min
     if (Reports.count_reports(player) > 1) and (total_playtime > math.max(player.online_time * 2, 108000)) then
         local player_name_color = format_chat_player_name(player)
-        Jail.jail_player(player, '<reports>', 'Reported by too many players, please wait for a moderator.')
-        game.print{'report-jail.jail', player_name_color}
+        Jail.jail_player(player, "<reports>", "Reported by too many players, please wait for a moderator.")
+        game.print{ "report-jail.jail", player_name_color }
     end
 end)

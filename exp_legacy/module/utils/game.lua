@@ -1,4 +1,3 @@
-
 local Color = require("modules/exp_util/include/color")
 local Game = {}
 
@@ -27,9 +26,9 @@ always true: game.players[name].name == name; game.players[index].index == index
 -- obj <number|string|LuaPlayer>
 function Game.get_player_from_any(obj)
     local o_type, p = type(obj)
-    if o_type == 'table' then
+    if o_type == "table" then
         p = obj
-    elseif o_type == 'string' or o_type == 'number' then
+    elseif o_type == "string" or o_type == "number" then
         p = game.players[obj]
     end
 

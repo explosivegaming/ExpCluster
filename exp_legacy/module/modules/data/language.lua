@@ -1,15 +1,15 @@
 --- Stores the language used to join the server
 -- @data Language
 
-local Event = require("modules/exp_legacy/utils/event") ---@dep utils.event
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
-local LocalLanguage = PlayerData.Statistics:combine('LocalLanguage')
+local LocalLanguage = PlayerData.Statistics:combine("LocalLanguage")
 LocalLanguage:set_default("Unknown")
 
 --- Creates translation request on_load of a player
 LocalLanguage:on_load(function(player_name, _)
   local player = game.players[player_name]
-  player.request_translation({"language.local-language"})
+  player.request_translation{ "language.local-language" }
 end)
 
 --- Resolves translation request for language setting

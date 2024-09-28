@@ -26,14 +26,14 @@ local Styles = {
     sprite22 = {
         height = 22,
         width = 22,
-        padding = -2
+        padding = -2,
     },
     footer_button = {
         height = 29,
         maximal_width = 268,
         horizontally_stretchable = true,
-        padding = -2
-    }
+        padding = -2,
+    },
 }
 
 --- If a player is allowed to use the edit buttons
@@ -81,242 +81,242 @@ end
 --- Button displayed in the header bar, used to add a new task
 -- @element add_new_task
 local add_new_task =
-    Gui.element {
-    type = "sprite-button",
-    sprite = "utility/add",
-    tooltip = {"task-list.add-tooltip"},
-    style = "tool_button",
-    name = Gui.unique_static_name
-}:style(Styles.sprite22):on_click(
-    function(player, _, _)
-        -- Disable editing
-        PlayerIsEditing:set(player, false)
-        -- Clear selected
-        PlayerSelected:set(player, nil)
-        -- Open task create footer
-        PlayerIsCreating:set(player, true)
-    end
-)
+    Gui.element{
+        type = "sprite-button",
+        sprite = "utility/add",
+        tooltip = { "task-list.add-tooltip" },
+        style = "tool_button",
+        name = Gui.unique_static_name,
+    }:style(Styles.sprite22):on_click(
+        function(player, _, _)
+            -- Disable editing
+            PlayerIsEditing:set(player, false)
+            -- Clear selected
+            PlayerSelected:set(player, nil)
+            -- Open task create footer
+            PlayerIsCreating:set(player, true)
+        end
+    )
 
 --- Header displayed when no tasks are in the task list
 -- @element no_tasks_found
 local no_tasks_found =
     Gui.element(
-    function(_, parent)
-        local header =
-            parent.add {
-            name = "no_tasks_found_element",
-            type = "frame",
-            style = "negative_subheader_frame"
-        }
-        header.style.horizontally_stretchable = true
-        -- Flow used for centering the content in the subheader
-        local center =
-            header.add {
-            type = "flow",
-        }
-        center.style.vertical_align = "center"
-        center.style.horizontal_align = "center"
-        center.style.horizontally_stretchable = true
-        center.add {
-            name = "header_label",
-            type = "label",
-            style = "bold_label",
-            caption = {"", "[img=utility/warning_white] ", {"task-list.no-tasks"}},
-            tooltip = {"task-list.no-tasks-tooltip"}
-        }
-        return header
-    end
-)
+        function(_, parent)
+            local header =
+                parent.add{
+                    name = "no_tasks_found_element",
+                    type = "frame",
+                    style = "negative_subheader_frame",
+                }
+            header.style.horizontally_stretchable = true
+            -- Flow used for centering the content in the subheader
+            local center =
+                header.add{
+                    type = "flow",
+                }
+            center.style.vertical_align = "center"
+            center.style.horizontal_align = "center"
+            center.style.horizontally_stretchable = true
+            center.add{
+                name = "header_label",
+                type = "label",
+                style = "bold_label",
+                caption = { "", "[img=utility/warning_white] ", { "task-list.no-tasks" } },
+                tooltip = { "task-list.no-tasks-tooltip" },
+            }
+            return header
+        end
+    )
 
 --- Frame element with the right styling
 -- @element subfooter_frame
 local subfooter_frame =
     Gui.element(
-    function(_, parent, name)
-        return parent.add {
-            type = "frame",
-            name = name,
-            direction = "vertical",
-            style = "subfooter_frame"
+        function(_, parent, name)
+            return parent.add{
+                type = "frame",
+                name = name,
+                direction = "vertical",
+                style = "subfooter_frame",
+            }
+        end
+    ):style
+        {
+            padding = 5,
+            use_header_filler = false,
+            horizontally_stretchable = true,
         }
-    end
-):style(
-    {
-        padding = 5,
-        use_header_filler = false,
-        horizontally_stretchable = true
-    }
-)
+
 
 --- Label element preset
 -- @element subfooter_label
 local subfooter_label =
     Gui.element(
-    function(_, parent, caption)
-        return parent.add {
-            name = "footer_label",
-            type = "label",
-            style = "frame_title",
-            caption = caption
-        }
-    end
-)
+        function(_, parent, caption)
+            return parent.add{
+                name = "footer_label",
+                type = "label",
+                style = "frame_title",
+                caption = caption,
+            }
+        end
+    )
 
 --- Action flow that contains action buttons
 -- @element subfooter_actions
 local subfooter_actions =
-    Gui.element {
-    type = "flow",
-    name = "actions"
-}
+    Gui.element{
+        type = "flow",
+        name = "actions",
+    }
 
 --- Button element with a flow around it to fix duplicate name inside of the scroll flow
 -- @element task_list_item
 local task_list_item =
     Gui.element(
-    function(definition, parent, task)
-        local flow = parent.add {
-            type = "flow",
-            name = "task-" .. task.task_id,
-            caption = task.task_id
-        }
+        function(definition, parent, task)
+            local flow = parent.add{
+                type = "flow",
+                name = "task-" .. task.task_id,
+                caption = task.task_id,
+            }
 
-        flow.style.horizontally_stretchable = true
+            flow.style.horizontally_stretchable = true
 
-        local button = flow.add {
-            name = definition.name,
-            type = "button",
-            style = "list_box_item",
-            caption = task.title,
-            tooltip = { "task-list.last-edit", task.last_edit_name, format_time(task.last_edit_time) }
-        }
+            local button = flow.add{
+                name = definition.name,
+                type = "button",
+                style = "list_box_item",
+                caption = task.title,
+                tooltip = { "task-list.last-edit", task.last_edit_name, format_time(task.last_edit_time) },
+            }
 
-        button.style.horizontally_stretchable = true
-        button.style.horizontally_squashable = true
+            button.style.horizontally_stretchable = true
+            button.style.horizontally_squashable = true
 
-        return button
-    end
-):on_click(
-    function(player, element, _)
-        local task_id = element.parent.caption
-        PlayerSelected:set(player, task_id)
-    end
-):static_name(Gui.unique_static_name)
+            return button
+        end
+    ):on_click(
+        function(player, element, _)
+            local task_id = element.parent.caption
+            PlayerSelected:set(player, task_id)
+        end
+    ):static_name(Gui.unique_static_name)
 
 --- Scrollable list of all tasks
 -- @element task_list
 local task_list =
     Gui.element(
-    function(_, parent)
-        local scroll_pane =
-            parent.add {
-            name = "scroll",
-            type = "scroll-pane",
-            direction = "vertical",
-            horizontal_scroll_policy = "never",
-            vertical_scroll_policy = "auto",
-            style = "scroll_pane_under_subheader"
-        }
-        scroll_pane.style.horizontally_stretchable = true
-        scroll_pane.style.padding = 0
-        scroll_pane.style.maximal_height = 224
+        function(_, parent)
+            local scroll_pane =
+                parent.add{
+                    name = "scroll",
+                    type = "scroll-pane",
+                    direction = "vertical",
+                    horizontal_scroll_policy = "never",
+                    vertical_scroll_policy = "auto",
+                    style = "scroll_pane_under_subheader",
+                }
+            scroll_pane.style.horizontally_stretchable = true
+            scroll_pane.style.padding = 0
+            scroll_pane.style.maximal_height = 224
 
-        local flow =
-            scroll_pane.add {
-            name = "task_list",
-            type = "flow",
-            direction = "vertical"
-        }
-        flow.style.vertical_spacing = 0
-        flow.style.horizontally_stretchable = true
+            local flow =
+                scroll_pane.add{
+                    name = "task_list",
+                    type = "flow",
+                    direction = "vertical",
+                }
+            flow.style.vertical_spacing = 0
+            flow.style.horizontally_stretchable = true
 
-        return flow
-    end
-)
+            return flow
+        end
+    )
 
 --- Button element inside the task view footer to start editing a task
 -- @element task_view_edit_button
 local task_view_edit_button =
-    Gui.element {
-    type = "button",
-    name = Gui.unique_static_name,
-    caption = {"", "[img=utility/rename_icon] ", {"task-list.edit"}},
-    tooltip = {"task-list.edit-tooltip"},
-    style = "shortcut_bar_button"
-}:style(Styles.footer_button):on_click(
-    function(player, _, _)
-        local selected = PlayerSelected:get(player)
-        PlayerIsEditing:set(player, true)
+    Gui.element{
+        type = "button",
+        name = Gui.unique_static_name,
+        caption = { "", "[img=utility/rename_icon] ", { "task-list.edit" } },
+        tooltip = { "task-list.edit-tooltip" },
+        style = "shortcut_bar_button",
+    }:style(Styles.footer_button):on_click(
+        function(player, _, _)
+            local selected = PlayerSelected:get(player)
+            PlayerIsEditing:set(player, true)
 
-        Tasks.set_editing(selected, player.name, true)
-    end
-)
+            Tasks.set_editing(selected, player.name, true)
+        end
+    )
 
 --- Button to close the task view footer
 -- @element task_view_close_button
 local task_view_close_button =
-Gui.element{
-	type = "sprite-button",
-	sprite = "utility/collapse",
-    style = "frame_action_button",
-	tooltip = {"task-list.close-tooltip"}
-}
-:style(Styles.sprite22):on_click(
-    function(player, _, _)
-        PlayerSelected:set(player, nil)
-    end
-)
+    Gui.element{
+        type = "sprite-button",
+        sprite = "utility/collapse",
+        style = "frame_action_button",
+        tooltip = { "task-list.close-tooltip" },
+    }
+    :style(Styles.sprite22):on_click(
+        function(player, _, _)
+            PlayerSelected:set(player, nil)
+        end
+    )
 
 --- Button to delete the task inside the task view footer
 -- @element task_view_delete_button
 local task_view_delete_button =
-    Gui.element {
-    type = "button",
-    name = Gui.unique_static_name,
-    caption = {"", "[img=utility/trash] ", {"task-list.delete"}},
-    tooltip = {"task-list.delete-tooltip"},
-    style = "shortcut_bar_button_red"
-}:style(Styles.footer_button):on_click(
-    function(player, _, _)
-        local selected = PlayerSelected:get(player)
-        PlayerSelected:set(player, nil)
-        Tasks.remove_task(selected)
-    end
-)
+    Gui.element{
+        type = "button",
+        name = Gui.unique_static_name,
+        caption = { "", "[img=utility/trash] ", { "task-list.delete" } },
+        tooltip = { "task-list.delete-tooltip" },
+        style = "shortcut_bar_button_red",
+    }:style(Styles.footer_button):on_click(
+        function(player, _, _)
+            local selected = PlayerSelected:get(player)
+            PlayerSelected:set(player, nil)
+            Tasks.remove_task(selected)
+        end
+    )
 
 --- Subfooter inside the tasklist container that holds all the elements for viewing a task
 -- @element task_view_footer
 local task_view_footer =
     Gui.element(
-    function(_, parent)
-        local footer = subfooter_frame(parent, "view")
-        local flow = footer.add{ type = "flow" }
-        subfooter_label(flow, {"task-list.view-footer-header"})
-        local alignment = Gui.alignment(flow)
-        task_view_close_button(alignment)
-        local title_label =
-            footer.add {
-            type = "label",
-            name = "title"
-        }
-        title_label.style.padding = 4
-        title_label.style.font = "default-bold"
-        title_label.style.single_line = false
-        local body_label =
-            footer.add {
-            type = "label",
-            name = "body"
-        }
-        body_label.style.padding = 4
-        body_label.style.single_line = false
+        function(_, parent)
+            local footer = subfooter_frame(parent, "view")
+            local flow = footer.add{ type = "flow" }
+            subfooter_label(flow, { "task-list.view-footer-header" })
+            local alignment = Gui.alignment(flow)
+            task_view_close_button(alignment)
+            local title_label =
+                footer.add{
+                    type = "label",
+                    name = "title",
+                }
+            title_label.style.padding = 4
+            title_label.style.font = "default-bold"
+            title_label.style.single_line = false
+            local body_label =
+                footer.add{
+                    type = "label",
+                    name = "body",
+                }
+            body_label.style.padding = 4
+            body_label.style.single_line = false
 
-        local action_flow = subfooter_actions(footer)
-        task_view_delete_button(action_flow)
-        task_view_edit_button(action_flow)
-        return footer
-    end
-)
+            local action_flow = subfooter_actions(footer)
+            task_view_delete_button(action_flow)
+            task_view_edit_button(action_flow)
+            return footer
+        end
+    )
 
 local message_pattern = "(.-)\n(.*)"
 
@@ -344,138 +344,138 @@ local task_create_confirm_button
 --- Textfield element used in both the task create and edit footers
 -- @element task_message_textfield
 local task_message_textfield =
-    Gui.element {
-    name = Gui.unique_static_name,
-    type = "text-box",
-    text = ""
-}:style(
-    {
-        maximal_width = 268,
-        minimal_height = 100,
-        horizontally_stretchable = true
-    }
-):on_text_changed(
-    function(player, element, _)
-        local isEditing = PlayerIsEditing:get(player)
-        local isCreating = PlayerIsCreating:get(player)
+    Gui.element{
+        name = Gui.unique_static_name,
+        type = "text-box",
+        text = "",
+    }:style
+        {
+            maximal_width = 268,
+            minimal_height = 100,
+            horizontally_stretchable = true,
+        }
+    :on_text_changed(
+        function(player, element, _)
+            local isEditing = PlayerIsEditing:get(player)
+            local isCreating = PlayerIsCreating:get(player)
 
-        local valid = string.len(element.text) > 5
+            local valid = string.len(element.text) > 5
 
-        if isCreating then
-            element.parent.actions[task_create_confirm_button.name].enabled = valid
-        elseif isEditing then
-            element.parent.actions[task_edit_confirm_button.name].enabled = valid
+            if isCreating then
+                element.parent.actions[task_create_confirm_button.name].enabled = valid
+            elseif isEditing then
+                element.parent.actions[task_edit_confirm_button.name].enabled = valid
+            end
         end
-    end
-)
+    )
 
 --- Button to confirm the changes inside the task edit footer
 -- @element task_edit_confirm_button
 task_edit_confirm_button =
-    Gui.element {
-    type = "button",
-    name = Gui.unique_static_name,
-    caption = {"", "[img=utility/check_mark] ", {"task-list.confirm"}},
-    tooltip = {"task-list.confirm-tooltip"},
-    style = "shortcut_bar_button_green"
-}:style(Styles.footer_button):on_click(
-    function(player, element, _)
-        local selected = PlayerSelected:get(player)
-        PlayerIsEditing:set(player, false)
-        local new_message = element.parent.parent[task_message_textfield.name].text
-        local parsed = parse_message(new_message)
-        Tasks.update_task(selected, player.name, parsed.title, parsed.body)
-        Tasks.set_editing(selected, player.name, nil)
-    end
-)
+    Gui.element{
+        type = "button",
+        name = Gui.unique_static_name,
+        caption = { "", "[img=utility/check_mark] ", { "task-list.confirm" } },
+        tooltip = { "task-list.confirm-tooltip" },
+        style = "shortcut_bar_button_green",
+    }:style(Styles.footer_button):on_click(
+        function(player, element, _)
+            local selected = PlayerSelected:get(player)
+            PlayerIsEditing:set(player, false)
+            local new_message = element.parent.parent[task_message_textfield.name].text
+            local parsed = parse_message(new_message)
+            Tasks.update_task(selected, player.name, parsed.title, parsed.body)
+            Tasks.set_editing(selected, player.name, nil)
+        end
+    )
 
 --- Button to discard the changes inside the task edit footer
 -- @element edit_task_discard_button
 local edit_task_discard_button =
-    Gui.element {
-    type = "button",
-    caption = {"", "[img=utility/close_black] ", {"task-list.discard"}},
-    tooltip = {"task-list.discard-tooltip"},
-    style = "shortcut_bar_button_red"
-}:style(Styles.footer_button):on_click(
-    function(player, _, _)
-        local selected = PlayerSelected:get(player)
-        Tasks.set_editing(selected, player.name, nil)
-        PlayerIsEditing:set(player, false)
-    end
-)
+    Gui.element{
+        type = "button",
+        caption = { "", "[img=utility/close_black] ", { "task-list.discard" } },
+        tooltip = { "task-list.discard-tooltip" },
+        style = "shortcut_bar_button_red",
+    }:style(Styles.footer_button):on_click(
+        function(player, _, _)
+            local selected = PlayerSelected:get(player)
+            Tasks.set_editing(selected, player.name, nil)
+            PlayerIsEditing:set(player, false)
+        end
+    )
 
 --- Subfooter inside the tasklist container that holds all the elements for editing a task
 -- @element task_edit_footer
 local task_edit_footer =
     Gui.element(
-    function(_, parent)
-        local footer = subfooter_frame(parent, "edit")
-        subfooter_label(footer, {"task-list.edit-footer-header"})
+        function(_, parent)
+            local footer = subfooter_frame(parent, "edit")
+            subfooter_label(footer, { "task-list.edit-footer-header" })
 
-        task_message_textfield(footer)
+            task_message_textfield(footer)
 
-        local action_flow = subfooter_actions(footer)
+            local action_flow = subfooter_actions(footer)
 
-        edit_task_discard_button(action_flow)
-        task_edit_confirm_button(action_flow)
+            edit_task_discard_button(action_flow)
+            task_edit_confirm_button(action_flow)
 
-        return footer
-    end
-)
+            return footer
+        end
+    )
 
 --- Button to confirm the changes inside the task create footer
 -- @element task_create_confirm_button
 task_create_confirm_button =
-    Gui.element {
-    type = "button",
-    name = Gui.unique_static_name,
-    caption = {"", "[img=utility/check_mark] ", {"task-list.confirm"}},
-    tooltip = {"task-list.confirm-tooltip"},
-    style = "shortcut_bar_button_green",
-    enabled = false
-}:style(Styles.footer_button):on_click(
-    function(player, element, _)
-        local message = element.parent.parent[task_message_textfield.name].text
-        PlayerIsCreating:set(player, false)
-        local parsed = parse_message(message)
-        local task_id = Tasks.add_task(player.force.name, player.name, parsed.title, parsed.body)
-        PlayerSelected:set(player, task_id)
-    end
-)
+    Gui.element{
+        type = "button",
+        name = Gui.unique_static_name,
+        caption = { "", "[img=utility/check_mark] ", { "task-list.confirm" } },
+        tooltip = { "task-list.confirm-tooltip" },
+        style = "shortcut_bar_button_green",
+        enabled = false,
+    }:style(Styles.footer_button):on_click(
+        function(player, element, _)
+            local message = element.parent.parent[task_message_textfield.name].text
+            PlayerIsCreating:set(player, false)
+            local parsed = parse_message(message)
+            local task_id = Tasks.add_task(player.force.name, player.name, parsed.title, parsed.body)
+            PlayerSelected:set(player, task_id)
+        end
+    )
 
 --- Button to discard the changes inside the task create footer
 -- @element task_create_discard_button
 local task_create_discard_button =
-    Gui.element {
-    type = "button",
-    caption = {"", "[img=utility/close_black] ", {"task-list.discard"}},
-    tooltip = {"task-list.discard-tooltip"},
-    style = "shortcut_bar_button_red"
-}:style(Styles.footer_button):on_click(
-    function(player, _, _)
-        PlayerIsCreating:set(player, false)
-    end
-)
+    Gui.element{
+        type = "button",
+        caption = { "", "[img=utility/close_black] ", { "task-list.discard" } },
+        tooltip = { "task-list.discard-tooltip" },
+        style = "shortcut_bar_button_red",
+    }:style(Styles.footer_button):on_click(
+        function(player, _, _)
+            PlayerIsCreating:set(player, false)
+        end
+    )
 
 --- Subfooter inside the tasklist container that holds all the elements to create a new task
 -- @element task_create_footer
 local task_create_footer =
     Gui.element(
-    function(_, parent)
-        local footer = subfooter_frame(parent, "create")
-        subfooter_label(footer, {"task-list.create-footer-header"})
+        function(_, parent)
+            local footer = subfooter_frame(parent, "create")
+            subfooter_label(footer, { "task-list.create-footer-header" })
 
-        task_message_textfield(footer)
+            task_message_textfield(footer)
 
-        local action_flow = subfooter_actions(footer)
+            local action_flow = subfooter_actions(footer)
 
-        task_create_discard_button(action_flow)
-        task_create_confirm_button(action_flow)
+            task_create_discard_button(action_flow)
+            task_create_confirm_button(action_flow)
 
-        return footer
-    end
-)
+            return footer
+        end
+    )
 
 --- Clear and repopulate the task list with all current tasks
 local repopulate_task_list = function(task_list_element)
@@ -498,48 +498,48 @@ end
 -- @element task_list_container
 local task_list_container =
     Gui.element(
-    function(definition, parent)
-        -- Draw the internal container
-        local container = Gui.container(parent, definition.name, 268)
-        container.style.maximal_width = 268
-        container.style.minimal_width = 268
+        function(definition, parent)
+            -- Draw the internal container
+            local container = Gui.container(parent, definition.name, 268)
+            container.style.maximal_width = 268
+            container.style.minimal_width = 268
 
-        -- Draw the header
-        local header = Gui.header(container, {"task-list.main-caption"}, {"task-list.sub-tooltip"}, true)
+            -- Draw the header
+            local header = Gui.header(container, { "task-list.main-caption" }, { "task-list.sub-tooltip" }, true)
 
-        -- Draw the new task button
-        local player = Gui.get_player_from_element(parent)
-        local add_new_task_element = add_new_task(header)
-        add_new_task_element.visible = check_player_permissions(player)
+            -- Draw the new task button
+            local player = Gui.get_player_from_element(parent)
+            local add_new_task_element = add_new_task(header)
+            add_new_task_element.visible = check_player_permissions(player)
 
-        -- Draw no task found element
-        no_tasks_found(container)
+            -- Draw no task found element
+            no_tasks_found(container)
 
-        -- Draw task list element
-        local task_list_element = task_list(container)
-        repopulate_task_list(task_list_element)
+            -- Draw task list element
+            local task_list_element = task_list(container)
+            repopulate_task_list(task_list_element)
 
-        local task_view_footer_element = task_view_footer(container)
-        local task_edit_footer_element = task_edit_footer(container)
-        local task_create_footer_element = task_create_footer(container)
-        task_view_footer_element.visible = false
-        task_edit_footer_element.visible = false
-        task_create_footer_element.visible = false
-        -- Return the external container
-        return container.parent
-    end
-):static_name(Gui.unique_static_name):add_to_left_flow(
-    function(player)
-        local task_ids = Tasks.get_force_task_ids(player.force.name)
-        return #task_ids > 0
-    end
-)
+            local task_view_footer_element = task_view_footer(container)
+            local task_edit_footer_element = task_edit_footer(container)
+            local task_create_footer_element = task_create_footer(container)
+            task_view_footer_element.visible = false
+            task_edit_footer_element.visible = false
+            task_create_footer_element.visible = false
+            -- Return the external container
+            return container.parent
+        end
+    ):static_name(Gui.unique_static_name):add_to_left_flow(
+        function(player)
+            local task_ids = Tasks.get_force_task_ids(player.force.name)
+            return #task_ids > 0
+        end
+    )
 
 --- Button on the top flow used to toggle the task list container
 -- @element toggle_left_element
 Gui.left_toolbar_button(
     "utility/not_enough_repair_packs_icon",
-    {"task-list.main-tooltip"},
+    { "task-list.main-tooltip" },
     task_list_container,
     function(player)
         return Roles.player_allowed(player, "gui/task-list")
@@ -567,7 +567,7 @@ local update_task = function(player, task_list_element, task_id)
         -- If the task exists update the caption and tooltip
         local button = flow[task_list_item.name]
         button.caption = task.title
-        button.tooltip = {"task-list.last-edit", task.last_edit_name, format_time(task.last_edit_time)}
+        button.tooltip = { "task-list.last-edit", task.last_edit_name, format_time(task.last_edit_time) }
     end
 end
 
@@ -602,9 +602,9 @@ local update_task_view_footer = function(player, task_id)
 
     local players_editing = table.get_keys(task.currently_editing)
     if #players_editing > 0 then
-        edit_button_element.tooltip = {"task-list.edit-tooltip", table.concat(players_editing, ", ")}
+        edit_button_element.tooltip = { "task-list.edit-tooltip", table.concat(players_editing, ", ") }
     else
-        edit_button_element.tooltip = {"task-list.edit-tooltip-none"}
+        edit_button_element.tooltip = { "task-list.edit-tooltip-none" }
     end
 end
 

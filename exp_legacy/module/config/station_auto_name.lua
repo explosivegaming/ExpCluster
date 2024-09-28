@@ -7,5 +7,5 @@ return {
         __x__
         __y__
     ]]
-    station_name = '[L] __icon__'
+    station_name = "[L] __icon__",
 }

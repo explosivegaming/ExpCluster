@@ -1,4 +1,4 @@
---luacheck:ignore global math
+-- luacheck:ignore global math
 
 local floor = math.floor
 local abs = math.abs

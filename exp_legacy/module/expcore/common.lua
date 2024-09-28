@@ -40,7 +40,7 @@ type_error(value, 'number', 'Value must be a number')
 
 ]]
 function Common.type_error(value, test_type, error_message, level)
-    level = level and level+1 or 2
+    level = level and level + 1 or 2
     return Common.type_check(value, test_type) or error(error_message, level)
 end
 
@@ -60,6 +60,7 @@ function Common.multi_type_check(value, test_types)
             return true
         end
     end
+
     return false
 end
 
@@ -75,7 +76,7 @@ multi_type_error('foo', {'string', 'table'}, 'Value must be a string or table')
 
 ]]
 function Common.multi_type_error(value, test_types, error_message, level)
-    level = level and level+1 or 2
+    level = level and level + 1 or 2
     return Common.mult_type_check(value, test_types) or error(error_message, level)
 end
 
@@ -95,12 +96,12 @@ validate_argument_type(value, 'number', 2, 'repeat_count')
 ]]
 function Common.validate_argument_type(value, test_type, param_number, param_name)
     if not Common.test_type(value, test_type) then
-        local function_name = debug.getinfo(2, 'n').name or '<anon>'
+        local function_name = debug.getinfo(2, "n").name or "<anon>"
         local error_message
         if param_name then
-            error_message = string.format('Bad argument #%d to %q; %q is of type %s expected %s', param_number, function_name, param_name, type(value), test_type)
+            error_message = string.format("Bad argument #%d to %q; %q is of type %s expected %s", param_number, function_name, param_name, type(value), test_type)
         else
-            error_message = string.format('Bad argument #%d to %q; argument is of type %s expected %s', param_number, function_name, type(value), test_type)
+            error_message = string.format("Bad argument #%d to %q; argument is of type %s expected %s", param_number, function_name, type(value), test_type)
         end
         return error(error_message, 3)
     end
@@ -123,12 +124,12 @@ validate_argument_type(value, {'string', 'table'}, 2, 'player')
 ]]
 function Common.validate_argument_multi_type(value, test_types, param_number, param_name)
     if not Common.multi_type_check(value, test_types) then
-        local function_name = debug.getinfo(2, 'n').name or '<anon>'
+        local function_name = debug.getinfo(2, "n").name or "<anon>"
         local error_message
         if param_name then
-            error_message = string.format('Bad argument #%2d to %q; %q is of type %s expected %s', param_number, function_name, param_name, type(value), table.concat(test_types, ' or '))
+            error_message = string.format("Bad argument #%2d to %q; %q is of type %s expected %s", param_number, function_name, param_name, type(value), table.concat(test_types, " or "))
         else
-            error_message = string.format('Bad argument #%2d to %q; argument is of type %s expected %s', param_number, function_name, type(value), table.concat(test_types, ' or '))
+            error_message = string.format("Bad argument #%2d to %q; argument is of type %s expected %s", param_number, function_name, type(value), table.concat(test_types, " or "))
         end
         return error(error_message, 3)
     end
@@ -139,8 +140,8 @@ end
 -- @usage error_if_runtime()
 function Common.error_if_runtime()
     if package.lifecycle == 8 then
-        local function_name = debug.getinfo(2, 'n').name or '<anon>'
-        error(function_name..' can not be called during runtime', 3)
+        local function_name = debug.getinfo(2, "n").name or "<anon>"
+        error(function_name .. " can not be called during runtime", 3)
     end
 end
 
@@ -171,7 +172,7 @@ local value = Common.resolve_value(self.defaut_value, self)
 
 ]]
 function Common.resolve_value(value, ...)
-    return value and type(value) == 'function' and value(...) or value
+    return value and type(value) == "function" and value(...) or value
 end
 
 --- Converts a varible into its boolean value, nil and false return false
@@ -190,8 +191,8 @@ end
 --- Returns a string for a number with comma seperators
 -- @usage comma_value(input_number)
 function Common.comma_value(n) -- credit http://richard.warburton.it
-    local left, num, right = string.match(n, '^([^%d]*%d)(%d*)(.-)$')
-    return left .. (num:reverse():gsub('(%d%d%d)', '%1, '):reverse()) .. right
+    local left, num, right = string.match(n, "^([^%d]*%d)(%d*)(.-)$")
+    return left .. (num:reverse():gsub("(%d%d%d)", "%1, "):reverse()) .. right
 end
 
 --[[-- Sets a table element to value while also returning value.
@@ -218,7 +219,7 @@ write_json('dump', tbl)
 
 ]]
 function Common.write_json(path, tbl)
-    game.write_file(path, game.table_to_json(tbl)..'\n', true, 0)
+    game.write_file(path, game.table_to_json(tbl) .. "\n", true, 0)
 end
 
 --[[-- Calls a require that will not error if the file is not found
@@ -232,8 +233,11 @@ local Module = opt_require 'expcore.common'
 ]]
 function Common.opt_require(path)
     local success, rtn = pcall(require, path)
-    if success then return rtn
-    else return nil, rtn end
+    if success then
+        return rtn
+    else
+        return nil, rtn
+    end
 end
 
 --[[-- Returns a desync safe file path for the current file
@@ -246,7 +250,7 @@ local file_path = get_file_path()
 ]]
 function Common.get_file_path(offset)
     offset = offset or 0
-    return debug.getinfo(offset+2, 'S').short_src:sub(10, -5)
+    return debug.getinfo(offset + 2, "S").short_src:sub(10, -5)
 end
 
 --[[-- Converts a table to an enum
@@ -264,18 +268,21 @@ local colors = enum{
 function Common.enum(tbl)
     local rtn = {}
     for k, v in pairs(tbl) do
-        if type(k) ~= 'number' then
-            rtn[v]=k
+        if type(k) ~= "number" then
+            rtn[v] = k
         end
     end
+
     for k, v in pairs(tbl) do
-        if type(k) == 'number' then
+        if type(k) == "number" then
             table.insert(rtn, v)
         end
     end
+
     for k, v in pairs(rtn) do
-        rtn[v]=k
+        rtn[v] = k
     end
+
     return rtn
 end
 
@@ -297,7 +304,7 @@ local key = auto_complete(tbl, "foo", true, true)
 
 ]]
 function Common.auto_complete(options, input, use_key, rtn_key)
-    if type(input) ~= 'string' then return end
+    if type(input) ~= "string" then return end
     input = input:lower()
     for key, value in pairs(options) do
         local check = use_key and key or value
@@ -319,7 +326,7 @@ local player_name = get_actor()
 
 ]]
 function Common.get_actor(player_name)
-    return game.player and game.player.name or player_name or '<server>'
+    return game.player and game.player.name or player_name or "<server>"
 end
 
 --[[-- Returns a message with valid chat tags to change its colour
@@ -333,8 +340,8 @@ local message = format_chat_colour('Hello, World!', { r=355, g=100, b=100 })
 ]]
 function Common.format_chat_colour(message, color)
     color = color or Colours.white
-    local color_tag = '[color='..math.round(color.r, 3)..', '..math.round(color.g, 3)..', '..math.round(color.b, 3)..']'
-    return string.format('%s%s[/color]', color_tag, message)
+    local color_tag = "[color=" .. math.round(color.r, 3) .. ", " .. math.round(color.g, 3) .. ", " .. math.round(color.b, 3) .. "]"
+    return string.format("%s%s[/color]", color_tag, message)
 end
 
 --[[-- Returns a message with valid chat tags to change its colour, using localization
@@ -348,8 +355,8 @@ local message = format_chat_colour_localized('Hello, World!', { r=355, g=100, b=
 ]]
 function Common.format_chat_colour_localized(message, color)
     color = color or Colours.white
-    color = math.round(color.r, 3)..', '..math.round(color.g, 3)..', '..math.round(color.b, 3)
-    return {'color-tag', color, message}
+    color = math.round(color.r, 3) .. ", " .. math.round(color.g, 3) .. ", " .. math.round(color.b, 3)
+    return { "color-tag", color, message }
 end
 
 --[[-- Returns the players name in the players color
@@ -363,7 +370,7 @@ local message = format_chat_player_name(game.player, true)
 ]]
 function Common.format_chat_player_name(player, raw_string)
     player = Game.get_player_from_any(player)
-    local player_name = player and player.name or '<Server>'
+    local player_name = player and player.name or "<Server>"
     local player_chat_colour = player and player.chat_color or Colours.white
     if raw_string then
         return Common.format_chat_colour(player_name, player_chat_colour)
@@ -388,37 +395,41 @@ player_return('Hello, World!', nil, player)
 
 ]]
 function Common.player_return(value, colour, player)
-    colour = Common.type_check(colour, 'table') and colour or Colours[colour] ~= Colours.white and Colours[colour] or Colours.white
+    colour = Common.type_check(colour, "table") and colour or Colours[colour] ~= Colours.white and Colours[colour] or Colours.white
     player = player or game.player
     -- converts the value to a string
     local returnAsString
-    if Common.type_check(value, 'table') or type(value) == 'userdata' then
-        if Common.type_check(value.__self, 'userdata') or type(value) == 'userdata' then
+    if Common.type_check(value, "table") or type(value) == "userdata" then
+        if Common.type_check(value.__self, "userdata") or type(value) == "userdata" then
             -- value is userdata
-            returnAsString = 'Cant Display Userdata'
-        elseif Common.type_check(value[1], 'string') and string.find(value[1], '.+[.].+') and not string.find(value[1], '%s') then
+            returnAsString = "Cant Display Userdata"
+        elseif Common.type_check(value[1], "string") and string.find(value[1], ".+[.].+") and not string.find(value[1], "%s") then
             -- value is a locale string
             returnAsString = value
-        elseif getmetatable(value) ~= nil and not tostring(value):find('table: 0x') then
+        elseif getmetatable(value) ~= nil and not tostring(value):find("table: 0x") then
             -- value has a tostring meta method
             returnAsString = tostring(value)
         else
             -- value is a table
-            returnAsString = table.inspect(value, {depth=5, indent=' ', newline='\n'})
+            returnAsString = table.inspect(value, { depth = 5, indent = " ", newline = "\n" })
         end
-    elseif Common.type_check(value, 'function') then
+    elseif Common.type_check(value, "function") then
         -- value is a function
-        returnAsString = 'Cant Display Functions'
-    else returnAsString = tostring(value) end
+        returnAsString = "Cant Display Functions"
+    else
+        returnAsString = tostring(value)
+    end
     -- returns to the player or the server
     if player then
         -- allows any valid player identifier to be used
         player = Game.get_player_from_any(player)
-        if not player then error('Invalid Player given to player_return', 2) end
+        if not player then error("Invalid Player given to player_return", 2) end
         -- plays a nice sound that is different to normal message sound
-        player.play_sound{path='utility/scenario_message'}
+        player.play_sound{ path = "utility/scenario_message" }
         player.print(returnAsString, colour)
-    else rcon.print(returnAsString) end
+    else
+        rcon.print(returnAsString)
+    end
 end
 
 --[[-- Formats tick into a clean format, denominations from highest to lowest
@@ -444,78 +455,78 @@ local time = format_time(18000, { hours=true, minutes=true, seconds=true, string
 function Common.format_time(ticks, options)
     -- Sets up the options
     options = options or {
-        days=false,
-        hours=true,
-        minutes=true,
-        seconds=false,
-        long=false,
-        time=false,
-        string=false,
-        null=false
+        days = false,
+        hours = true,
+        minutes = true,
+        seconds = false,
+        long = false,
+        time = false,
+        string = false,
+        null = false,
     }
     -- Basic numbers that are used in calculations
-    local max_days, max_hours, max_minutes, max_seconds = ticks/5184000, ticks/216000, ticks/3600, ticks/60
-    local days, hours = max_days, max_hours-math.floor(max_days)*24
-    local minutes, seconds = max_minutes-math.floor(max_hours)*60, max_seconds-math.floor(max_minutes)*60
+    local max_days, max_hours, max_minutes, max_seconds = ticks / 5184000, ticks / 216000, ticks / 3600, ticks / 60
+    local days, hours = max_days, max_hours - math.floor(max_days) * 24
+    local minutes, seconds = max_minutes - math.floor(max_hours) * 60, max_seconds - math.floor(max_minutes) * 60
     -- Handles overflow of disabled denominations
     local rtn_days, rtn_hours, rtn_minutes, rtn_seconds = math.floor(days), math.floor(hours), math.floor(minutes), math.floor(seconds)
     if not options.days then
-        rtn_hours = rtn_hours + rtn_days*24
+        rtn_hours = rtn_hours + rtn_days * 24
     end
     if not options.hours then
-        rtn_minutes = rtn_minutes + rtn_hours*60
+        rtn_minutes = rtn_minutes + rtn_hours * 60
     end
     if not options.minutes then
-        rtn_seconds = rtn_seconds + rtn_minutes*60
+        rtn_seconds = rtn_seconds + rtn_minutes * 60
     end
     -- Creates the null time format, does not work with long
     if options.null and not options.long then
-        rtn_days='--'
-        rtn_hours='--'
-        rtn_minutes='--'
-        rtn_seconds='--'
+        rtn_days = "--"
+        rtn_hours = "--"
+        rtn_minutes = "--"
+        rtn_seconds = "--"
     end
     -- Format options
-    local suffix = 'time-symbol-'
-    local suffix_2 = '-short'
+    local suffix = "time-symbol-"
+    local suffix_2 = "-short"
     if options.long then
-        suffix = ''
-        suffix_2 = ''
+        suffix = ""
+        suffix_2 = ""
     end
-    local div = options.string and ' ' or 'time-format.simple-format-tagged'
+    local div = options.string and " " or "time-format.simple-format-tagged"
     if options.time then
-        div = options.string and ':' or 'time-format.simple-format-div'
+        div = options.string and ":" or "time-format.simple-format-div"
         suffix = false
     end
     -- Adds formatting
     if suffix ~= false then
         if options.string then
             -- format it as a string
-            local long = suffix == ''
-            rtn_days = long and rtn_days..' days' or rtn_days..'d'
-            rtn_hours = long and rtn_hours..' hours' or rtn_hours..'h'
-            rtn_minutes = long and rtn_minutes..' minutes' or rtn_minutes..'m'
-            rtn_seconds = long and rtn_seconds..' seconds' or rtn_seconds..'s'
+            local long = suffix == ""
+            rtn_days = long and rtn_days .. " days" or rtn_days .. "d"
+            rtn_hours = long and rtn_hours .. " hours" or rtn_hours .. "h"
+            rtn_minutes = long and rtn_minutes .. " minutes" or rtn_minutes .. "m"
+            rtn_seconds = long and rtn_seconds .. " seconds" or rtn_seconds .. "s"
         else
-            rtn_days = {suffix..'days'..suffix_2, rtn_days}
-            rtn_hours = {suffix..'hours'..suffix_2, rtn_hours}
-            rtn_minutes = {suffix..'minutes'..suffix_2, rtn_minutes}
-            rtn_seconds = {suffix..'seconds'..suffix_2, rtn_seconds}
+            rtn_days = { suffix .. "days" .. suffix_2, rtn_days }
+            rtn_hours = { suffix .. "hours" .. suffix_2, rtn_hours }
+            rtn_minutes = { suffix .. "minutes" .. suffix_2, rtn_minutes }
+            rtn_seconds = { suffix .. "seconds" .. suffix_2, rtn_seconds }
         end
     elseif not options.null then
         -- weather string or not it has same format
-        rtn_days = string.format('%02d', rtn_days)
-        rtn_hours = string.format('%02d', rtn_hours)
-        rtn_minutes = string.format('%02d', rtn_minutes)
-        rtn_seconds = string.format('%02d', rtn_seconds)
+        rtn_days = string.format("%02d", rtn_days)
+        rtn_hours = string.format("%02d", rtn_hours)
+        rtn_minutes = string.format("%02d", rtn_minutes)
+        rtn_seconds = string.format("%02d", rtn_seconds)
     end
     -- The final return is construed
     local rtn
     local append = function(dom, value)
         if dom and options.string then
-            rtn = rtn and rtn..div..value or value
+            rtn = rtn and rtn .. div .. value or value
         elseif dom then
-            rtn = rtn and {div, rtn, value} or value
+            rtn = rtn and { div, rtn, value } or value
         end
     end
     append(options.days, rtn_days)
@@ -542,51 +553,52 @@ copy_items_stack(game.player.get_main_inventory().get_contents())
 
 ]]
 function Common.copy_items_stack(items, surface, position, radius, chest_type)
-	chest_type = chest_type or 'iron-chest'
-	surface = surface or game.surfaces[1]
-	if position and type(position) ~= 'table' then return end
-	if type(items) ~= 'table' then return end
-	-- Finds all entities of the given type
-	local p = position or {x=0, y=0}
-	local r = radius or 32
-	local entities = surface.find_entities_filtered{area={{p.x-r, p.y-r}, {p.x+r, p.y+r}}, name=chest_type} or {}
-	local count = #entities
-	local current = 1
-	-- Makes a new empty chest when it is needed
-	local function make_new_chest()
-			local pos = surface.find_non_colliding_position(chest_type, position, 32, 1)
-			local chest = surface.create_entity{name=chest_type, position=pos, force='neutral'}
-			table.insert(entities, chest)
-			count = count + 1
-			return chest
-	end
-	-- Function used to round robin the items into all chests
-	local function next_chest(item)
-			local chest = entities[current]
-			if count == 0 then return make_new_chest() end
-			if chest.get_inventory(defines.inventory.chest).can_insert(item) then
-					-- If the item can be inserted then the chest is returned
-					current = current+1
-					if current > count then current = 1 end
-					return chest
-			else
-					-- Other wise it is removed from the list
-					table.remove(entities, current)
-					count = count - 1
-			end
-	end
-	-- Inserts the items into the chests
-	local last_chest
-	for i=1,#items do
-			local item = items[i]
-			if item.valid_for_read then
-				local chest = next_chest(item)
-				if not chest or not chest.valid then return error(string.format('Cant move item %s to %s{%s, %s} no valid chest in radius', item.name, surface.name, p.x, p.y)) end
-				chest.insert(item)
-				last_chest = chest
-			end
-	end
-	return last_chest
+    chest_type = chest_type or "iron-chest"
+    surface = surface or game.surfaces[1]
+    if position and type(position) ~= "table" then return end
+    if type(items) ~= "table" then return end
+    -- Finds all entities of the given type
+    local p = position or { x = 0, y = 0 }
+    local r = radius or 32
+    local entities = surface.find_entities_filtered{ area = { { p.x - r, p.y - r }, { p.x + r, p.y + r } }, name = chest_type } or {}
+    local count = #entities
+    local current = 1
+    -- Makes a new empty chest when it is needed
+    local function make_new_chest()
+        local pos = surface.find_non_colliding_position(chest_type, position, 32, 1)
+        local chest = surface.create_entity{ name = chest_type, position = pos, force = "neutral" }
+        table.insert(entities, chest)
+        count = count + 1
+        return chest
+    end
+    -- Function used to round robin the items into all chests
+    local function next_chest(item)
+        local chest = entities[current]
+        if count == 0 then return make_new_chest() end
+        if chest.get_inventory(defines.inventory.chest).can_insert(item) then
+            -- If the item can be inserted then the chest is returned
+            current = current + 1
+            if current > count then current = 1 end
+            return chest
+        else
+            -- Other wise it is removed from the list
+            table.remove(entities, current)
+            count = count - 1
+        end
+    end
+    -- Inserts the items into the chests
+    local last_chest
+    for i = 1, #items do
+        local item = items[i]
+        if item.valid_for_read then
+            local chest = next_chest(item)
+            if not chest or not chest.valid then return error(string.format("Cant move item %s to %s{%s, %s} no valid chest in radius", item.name, surface.name, p.x, p.y)) end
+            chest.insert(item)
+            last_chest = chest
+        end
+    end
+
+    return last_chest
 end
 
 --[[-- Moves items to the position and stores them in the closest entity of the type given
@@ -603,23 +615,23 @@ move_items_stack(game.player.get_main_inventory())
 
 ]]
 function Common.move_items_stack(items, surface, position, radius, chest_type)
-	chest_type = chest_type or 'steel-chest'
-	surface = surface or game.surfaces[1]
+    chest_type = chest_type or "steel-chest"
+    surface = surface or game.surfaces[1]
 
-	if position and type(position) ~= 'table' then
+    if position and type(position) ~= "table" then
         return
     end
 
-	if type(items) ~= 'table' then
+    if type(items) ~= "table" then
         return
     end
 
-	-- Finds all entities of the given type
-	local p = position or {x=0, y=0}
-	local r = radius or 32
-	local entities = surface.find_entities_filtered{area={{p.x - r, p.y - r}, {p.x + r, p.y + r}}, name={chest_type, 'iron-chest'}} or {}
-	local count = #entities
-	local current = 0
+    -- Finds all entities of the given type
+    local p = position or { x = 0, y = 0 }
+    local r = radius or 32
+    local entities = surface.find_entities_filtered{ area = { { p.x - r, p.y - r }, { p.x + r, p.y + r } }, name = { chest_type, "iron-chest" } } or {}
+    local count = #entities
+    local current = 0
     local last_entity = nil
 
     -- ipairs does not work on LuaInventory
@@ -664,7 +676,7 @@ function Common.move_items_stack(items, surface, position, radius, chest_type)
                 ]]
 
                 local pos = surface.find_non_colliding_position(chest_type, p, r, 1, true)
-                last_entity = surface.create_entity{name=chest_type, position=pos, force='neutral'}
+                last_entity = surface.create_entity{ name = chest_type, position = pos, force = "neutral" }
 
                 count = count + 1
                 entities[count] = last_entity
@@ -675,63 +687,63 @@ function Common.move_items_stack(items, surface, position, radius, chest_type)
     end
 
     --[[
-	-- Makes a new empty chest when it is needed
-	local function make_new_chest()
-		local pos = surface.find_non_colliding_position(chest_type, position, 32, 1)
-		local chest = surface.create_entity{name=chest_type, position=pos, force='neutral'}
-		table.insert(entities, chest)
-		count = count + 1
+    -- Makes a new empty chest when it is needed
+    local function make_new_chest()
+        local pos = surface.find_non_colliding_position(chest_type, position, 32, 1)
+        local chest = surface.create_entity{name=chest_type, position=pos, force='neutral'}
+        table.insert(entities, chest)
+        count = count + 1
 
-		return chest
-	end
+        return chest
+    end
 
-	-- Function used to round robin the items into all chests
-	local function next_chest(item)
-		local chest = entities[current]
+    -- Function used to round robin the items into all chests
+    local function next_chest(item)
+        local chest = entities[current]
 
-		if count == 0 then
+        if count == 0 then
             return make_new_chest()
         end
 
-		if chest.get_inventory(defines.inventory.chest).can_insert(item) then
-			-- If the item can be inserted then the chest is returned
-			current = current + 1
-			if current > count then
+        if chest.get_inventory(defines.inventory.chest).can_insert(item) then
+            -- If the item can be inserted then the chest is returned
+            current = current + 1
+            if current > count then
                 current = 1
             end
 
-			return chest
+            return chest
 
-		else
-			-- Other wise it is removed from the list
-			table.remove(entities, current)
-		    count = count - 1
-		end
-	end
+        else
+            -- Other wise it is removed from the list
+            table.remove(entities, current)
+            count = count - 1
+        end
+    end
 
-	-- Inserts the items into the chests
-	local last_chest
+    -- Inserts the items into the chests
+    local last_chest
 
-	for i=1,#items do
-		local item = items[i]
+    for i=1,#items do
+        local item = items[i]
 
         if item.valid_for_read then
-			local chest = next_chest(item)
+            local chest = next_chest(item)
 
-			if not chest or not chest.valid then
+            if not chest or not chest.valid then
                 return error(string.format('Cant move item %s to %s{%s, %s} no valid chest in radius', item.name, surface.name, p.x, p.y))
             end
 
-			local empty_stack = chest.get_inventory(defines.inventory.chest).find_empty_stack(item.name)
+            local empty_stack = chest.get_inventory(defines.inventory.chest).find_empty_stack(item.name)
 
             if not empty_stack then
                 return error(string.format('Cant move item %s to %s{%s, %s} no valid chest in radius', item.name, surface.name, p.x, p.y))
             end
 
-			empty_stack.transfer_stack(item)
-			last_chest = chest
-		end
-	end
+            empty_stack.transfer_stack(item)
+            last_chest = chest
+        end
+    end
     return last_chest
     ]]
 
@@ -753,34 +765,34 @@ print_grid_value(0, game.player.surface, { x=0, y=0 })
 
 ]]
 function Common.print_grid_value(value, surface, position, scale, offset, immutable)
-    local is_string = type(value) == 'string'
+    local is_string = type(value) == "string"
     local color = Colours.white
     local text = value
 
-    if type(immutable) ~= 'boolean' then
+    if type(immutable) ~= "boolean" then
         immutable = false
     end
 
     if not is_string then
         scale = scale or 1
         offset = offset or 0
-        position = {x = position.x + offset, y = position.y + offset}
-        local r = math.clamp(-value/scale, 0, 1)
-        local g = math.clamp(1-math.abs(value)/scale, 0, 1)
-        local b = math.clamp(value/scale, 0, 1)
+        position = { x = position.x + offset, y = position.y + offset }
+        local r = math.clamp(-value / scale, 0, 1)
+        local g = math.clamp(1 - math.abs(value) / scale, 0, 1)
+        local b = math.clamp(value / scale, 0, 1)
 
-        color = { r = r, g = g, b = b}
+        color = { r = r, g = g, b = b }
 
         -- round at precision of 2
         text = math.floor(100 * value) * 0.01
 
         if (0 == text) then
-            text = '0.00'
+            text = "0.00"
         end
     end
 
     if not immutable then
-        local text_entity = surface.find_entity('flying-text', position)
+        local text_entity = surface.find_entity("flying-text", position)
 
         if text_entity then
             text_entity.text = text
@@ -790,10 +802,10 @@ function Common.print_grid_value(value, surface, position, scale, offset, immuta
     end
 
     surface.create_entity{
-        name = 'flying-text',
+        name = "flying-text",
         color = color,
         text = text,
-        position = position
+        position = position,
     }.active = false
 end
 
@@ -805,7 +817,7 @@ clear_flying_text(game.player.surface)
 
 ]]
 function Common.clear_flying_text(surface)
-    local entities = surface.find_entities_filtered{name ='flying-text'}
+    local entities = surface.find_entities_filtered{ name = "flying-text" }
     for _, entity in pairs(entities) do
         if entity and entity.valid then
             entity.destroy()

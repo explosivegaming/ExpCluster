@@ -1,7 +1,6 @@
 local Clustorio = require("modules/clusterio/api")
 local ExpUtil = require("modules/exp_util")
 
-
 local Event = {
     real_handlers = {
         events = {},
@@ -14,7 +13,7 @@ local Event = {
         on_nth_tick = {},
         on_init = nil,
         on_load = nil,
-    }
+    },
 }
 
 local function call_handlers_factory(handlers)
@@ -37,7 +36,7 @@ function Event.add(event_name, handler)
         Event.real_handlers.events[event_name] = call_handlers_factory(handlers)
     end
 
-    handlers[#handlers+1] = handler
+    handlers[#handlers + 1] = handler
 end
 
 function Event.on_nth_tick(tick, handler)
@@ -52,7 +51,7 @@ function Event.on_nth_tick(tick, handler)
         Event.real_handlers.on_nth_tick[tick] = call_handlers_factory(handlers)
     end
 
-    handlers[#handlers+1] = handler
+    handlers[#handlers + 1] = handler
 end
 
 function Event.on_init(handler)
@@ -66,7 +65,7 @@ function Event.on_init(handler)
         Event.real_handlers.on_init = call_handlers_factory(handlers)
     end
 
-    handlers[#handlers+1] = handler
+    handlers[#handlers + 1] = handler
     Event.add(Clustorio.events.on_server_startup, handler)
 end
 
@@ -81,7 +80,7 @@ function Event.on_load(handler)
         Event.real_handlers.on_load = call_handlers_factory(handlers)
     end
 
-    handlers[#handlers+1] = handler
+    handlers[#handlers + 1] = handler
 end
 
 return Event

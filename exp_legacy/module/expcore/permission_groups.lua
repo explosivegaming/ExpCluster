@@ -23,28 +23,27 @@ Permission_Groups.new_group('Restricted') -- this defines a new group called "Re
 
 ]]
 
-
 local Game = require("modules.exp_legacy.utils.game") --- @dep utils.game
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Async = require("modules/exp_util/async")
 
 local Permissions_Groups = {
-    groups={}, -- store for the different groups that are created
-    _prototype={} -- stores functions that are used on group instances
+    groups = {}, -- store for the different groups that are created
+    _prototype = {}, -- stores functions that are used on group instances
 }
 
 -- Async function to add players to permission groups
 local add_to_permission_group_async =
-Async.register(function(permission_group, player)
-    permission_group.add_player(player)
-end)
+    Async.register(function(permission_group, player)
+        permission_group.add_player(player)
+    end)
 Permissions_Groups.add_to_permission_group_async = add_to_permission_group_async
 
 -- Async function to remove players from permission groups
 local remove_from_permission_group_async =
-Async.register(function(permission_group, player)
-    permission_group.remove_player(player)
-end)
+    Async.register(function(permission_group, player)
+        permission_group.remove_player(player)
+    end)
 Permissions_Groups.remove_from_permission_group_async = remove_from_permission_group_async
 
 --- Getters.
@@ -61,11 +60,11 @@ Groups.new_group('Admin')
 ]]
 function Permissions_Groups.new_group(name)
     local group = setmetatable({
-        name=name,
-        actions={},
-        allow_all_actions=true
+        name = name,
+        actions = {},
+        allow_all_actions = true,
     }, {
-        __index= Permissions_Groups._prototype
+        __index = Permissions_Groups._prototype,
     })
     Permissions_Groups.groups[name] = group
     return group
@@ -149,7 +148,7 @@ group:set_action('toggle_map_editor', false)
 function Permissions_Groups._prototype:set_action(action, state)
     local input_action = defines.input_action[action]
     if input_action == nil then input_action = action end
-    assert(type(input_action) == 'number', tostring(action)..' is not a valid input action')
+    assert(type(input_action) == "number", tostring(action) .. " is not a valid input action")
     self.actions[input_action] = state
     return self
 end
@@ -165,12 +164,13 @@ group:allow{
 
 ]]
 function Permissions_Groups._prototype:allow(actions)
-    if type(actions) ~= 'table' then
-        actions = {actions}
+    if type(actions) ~= "table" then
+        actions = { actions }
     end
     for _, action in pairs(actions) do
         self:set_action(action, true)
     end
+
     return self
 end
 
@@ -189,12 +189,13 @@ group:disallow{
 
 ]]
 function Permissions_Groups._prototype:disallow(actions)
-    if type(actions) ~= 'table' then
-        actions = {actions}
+    if type(actions) ~= "table" then
+        actions = { actions }
     end
     for _, action in pairs(actions) do
         self:set_action(action, false)
     end
+
     return self
 end
 
@@ -231,7 +232,7 @@ local allowed = group:is_allowed('write_to_console')
 
 ]]
 function Permissions_Groups._prototype:is_allowed(action)
-    if type(action) == 'string' then
+    if type(action) == "string" then
         action = defines.input_action[action]
     end
     local state = self.actions[action]
@@ -260,6 +261,7 @@ function Permissions_Groups._prototype:create()
     for _, action in pairs(defines.input_action) do
         group.set_allows_action(action, self:is_allowed(action))
     end
+
     return group
 end
 
@@ -347,6 +349,7 @@ function Permissions_Groups._prototype:print(message)
     for _, player in pairs(players) do
         player.print(message)
     end
+
     return #players
 end
 

@@ -11,7 +11,7 @@ Commands.add_authenticator(function(player, command, tags, reject)
         if player.admin then
             return true
         else
-            return reject{'command-auth.admin-only'}
+            return reject{ "command-auth.admin-only" }
         end
     else
         return true

@@ -30,19 +30,20 @@ local valid_player = Game.get_player_from_any
 
 --- Stores the quickbar filters for a player
 local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
-local PlayerWarnings = PlayerData.Required:combine('Warnings')
+local PlayerWarnings = PlayerData.Required:combine("Warnings")
 PlayerWarnings:set_metadata{
     stringify = function(value)
-        if not value then return 'You have no warnings' end
+        if not value then return "You have no warnings" end
         local count = 0
         for _ in pairs(value) do count = count + 1 end
-        return 'You have '..count..' warnings'
-    end
+
+        return "You have " .. count .. " warnings"
+    end,
 }
 
 local Warnings = {
-    user_warnings=PlayerWarnings,
-    user_script_warnings={},
+    user_warnings = PlayerWarnings,
+    user_script_warnings = {},
     events = {
         --- When a warning is added to a player
         -- @event on_warning_added
@@ -71,7 +72,7 @@ local Warnings = {
         -- @tparam number player_index the index of the player who is having the warning removed
         -- @tparam number warning_count the new number of warnings that the player has
         on_script_warning_removed = script.generate_event_name(),
-    }
+    },
 }
 
 local user_script_warnings = Warnings.user_script_warnings
@@ -105,18 +106,18 @@ function Warnings.add_warning(player, by_player_name, reason)
     if not player then return end
     if not by_player_name then return end
 
-    reason = reason or 'None given.'
+    reason = reason or "None given."
 
     local warning_count
     PlayerWarnings:update(player.name, function(_, warnings)
         local warning = {
             by_player_name = by_player_name,
-            reason = reason
+            reason = reason,
         }
 
         if not warnings then
             warning_count = 1
-            return {warning}
+            return { warning }
         else
             table.insert(warnings, warning)
             warning_count = #warnings
@@ -129,20 +130,20 @@ function Warnings.add_warning(player, by_player_name, reason)
         player_index = player.index,
         warning_count = warning_count,
         by_player_name = by_player_name,
-        reason = reason
+        reason = reason,
     })
 
     local action = config.actions[warning_count]
     if action then
         local _type = type(action)
-        if _type == 'function' then
+        if _type == "function" then
             action(player, by_player_name, warning_count)
-        elseif _type == 'table' then
+        elseif _type == "table" then
             local current = table.deepcopy(action)
-            table.insert(current, 2,by_player_name)
-            table.insert(current, 3,warning_count)
+            table.insert(current, 2, by_player_name)
+            table.insert(current, 3, warning_count)
             player.print(current)
-        elseif type(action) == 'string' then
+        elseif type(action) == "string" then
             player.print(action)
         end
     end
@@ -166,7 +167,7 @@ local function warning_removed_event(player, warning_by_name, removed_by_name, w
         warning_by_name = warning_by_name,
         removed_by_name = removed_by_name,
         batch_count = batch_count or 1,
-        batch = batch or 1
+        batch = batch or 1,
     })
 end
 
@@ -206,7 +207,7 @@ function Warnings.clear_warnings(player, by_player_name)
 
     local warning_count = #warnings
     for n, warning in pairs(warnings) do
-        warning_removed_event(player, warning.by_player_name, by_player_name, warning_count-n, n, warning_count)
+        warning_removed_event(player, warning.by_player_name, by_player_name, warning_count - n, n, warning_count)
     end
 
     PlayerWarnings:remove(player)
@@ -236,7 +237,7 @@ function Warnings.add_script_warning(player, reason)
     player = valid_player(player)
     if not player then return end
 
-    reason = reason or 'Non given.'
+    reason = reason or "Non given."
 
     local warnings = user_script_warnings[player.name]
     if not warnings then
@@ -246,7 +247,7 @@ function Warnings.add_script_warning(player, reason)
 
     table.insert(warnings, {
         tick = game.tick,
-        reason = reason
+        reason = reason,
     })
 
     local warning_count = #warnings
@@ -256,11 +257,11 @@ function Warnings.add_script_warning(player, reason)
         tick = game.tick,
         player_index = player.index,
         warning_count = warning_count,
-        reason = reason
+        reason = reason,
     })
 
     if warning_count > config.script_warning_limit then
-        Warnings.add_warning(player, '<server>', reason)
+        Warnings.add_warning(player, "<server>", reason)
     end
 
     return warning_count
@@ -274,7 +275,7 @@ local function script_warning_removed_event(player, warning_count)
         name = Warnings.events.on_script_warning_removed,
         tick = game.tick,
         player_index = player.index,
-        warning_count = warning_count
+        warning_count = warning_count,
     })
 end
 
@@ -306,7 +307,7 @@ function Warnings.clear_script_warnings(player)
 
     local warning_count = #warnings
     for n, _ in pairs(warnings) do
-        script_warning_removed_event(player, warning_count-n)
+        script_warning_removed_event(player, warning_count - n)
     end
 
     user_script_warnings[player.name] = nil
@@ -314,8 +315,8 @@ function Warnings.clear_script_warnings(player)
 end
 
 -- script warnings are removed after a certain amount of time to make them even more lienient
-local script_warning_cool_down = config.script_warning_cool_down*3600
-Event.on_nth_tick(script_warning_cool_down/4, function()
+local script_warning_cool_down = config.script_warning_cool_down * 3600
+Event.on_nth_tick(script_warning_cool_down / 4, function()
     local cutoff = game.tick - script_warning_cool_down
     for player_name, script_warnings in pairs(user_script_warnings) do
         if #script_warnings > 0 then

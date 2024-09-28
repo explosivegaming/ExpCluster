@@ -191,9 +191,9 @@ local trace = debug.traceback
 local Commands = {
     --- Constant values used by the command system
     defines = {
-        error = 'CommandError',
-        unauthorized = 'CommandErrorUnauthorized',
-        success = 'CommandSuccess'
+        error = "CommandError",
+        unauthorized = "CommandErrorUnauthorized",
+        success = "CommandSuccess",
     },
     --- An array of all custom commands that are registered
     commands = {},
@@ -243,7 +243,7 @@ Commands.remove_authenticator(admin_authenticator)
 
 ]]
 function Commands.remove_authenticator(authenticator)
-    if type(authenticator) == 'number' then
+    if type(authenticator) == "number" then
         -- If a number is passed then it is assumed to be the index
         if Commands.authenticators[authenticator] then
             Commands.authenticators[authenticator] = nil
@@ -281,15 +281,15 @@ function Commands.authorize(player, command_name)
     -- This is the reject function given to authenticators
     local failure_message
     local function reject(message)
-        failure_message = message or {'expcore-commands.unauthorized'}
+        failure_message = message or { "expcore-commands.unauthorized" }
         return Commands.defines.unauthorized
     end
 
     -- This is the internal error function used when an authenticator errors
     local function authenticator_error(err)
-        log('[ERROR] Authorization failed: '..trace(err))
+        log("[ERROR] Authorization failed: " .. trace(err))
         if Commands.authorization_failure_on_error then
-            return reject('Internal Error')
+            return reject("Internal Error")
         end
     end
 
@@ -298,7 +298,7 @@ function Commands.authorize(player, command_name)
         -- player: LuaPlayer, command: string, flags: table, reject: function(error_message: string)
         local _, rtn = xpcall(authenticator, authenticator_error, player, command_name, command_data.flags, reject)
         if rtn == false or rtn == Commands.defines.unauthorized or rtn == reject or failure_message ~= nil then
-            if failure_message == nil then failure_message = {'expcore-commands.unauthorized'} end
+            if failure_message == nil then failure_message = { "expcore-commands.unauthorized" } end
             return false, failure_message
         end
     end
@@ -370,7 +370,10 @@ end)
 function Commands.parse(name, input, player, reject, ...)
     if not Commands.parsers[name] then return end
     local success, rtn = pcall(Commands.parsers[name], input, player, reject, ...)
-    if not success then error(rtn, 2) return end
+    if not success then
+        error(rtn, 2)
+        return
+    end
     if not rtn or rtn == Commands.defines.error then return end
     return rtn
 end
@@ -398,6 +401,7 @@ function Commands.get(player)
             allowed[name] = command_data
         end
     end
+
     return allowed
 end
 
@@ -420,12 +424,13 @@ function Commands.search(keyword, player)
     -- Loops over custom commands
     for name, command_data in pairs(custom_commands) do
         -- combines name help and aliases into one message to be searched
-        local search = string.format('%s %s %s %s', name, command_data.help, command_data.searchable_description, table.concat(command_data.aliases, ' '))
+        local search = string.format("%s %s %s %s", name, command_data.help, command_data.searchable_description, table.concat(command_data.aliases, " "))
 
         if search:lower():match(keyword) then
             matches[name] = command_data
         end
     end
+
     -- Loops over the names of game commands
     for name, description in pairs(commands.game_commands) do
         if name:lower():match(keyword) then
@@ -433,11 +438,12 @@ function Commands.search(keyword, player)
             matches[name] = {
                 name = name,
                 help = description,
-                description = '',
-                aliases = {}
+                description = "",
+                aliases = {},
             }
         end
     end
+
     return matches
 end
 
@@ -458,16 +464,16 @@ function Commands.new_command(name, help, descr)
     local command = setmetatable({
         name = name,
         help = help,
-        searchable_description = descr or '',
-        callback = function() Commands.internal_error(false, name, 'No callback registered') end,
+        searchable_description = descr or "",
+        callback = function() Commands.internal_error(false, name, "No callback registered") end,
         auto_concat = false,
         min_param_count = 0,
         max_param_count = 0,
-        flags   = {}, -- stores flags that can be used by auth
+        flags = {}, -- stores flags that can be used by auth
         aliases = {}, -- stores aliases to this command
-        params  = {}, -- [param_name] = {optional: boolean, default: any, parse: function, parse_args: table}
+        params = {}, -- [param_name] = {optional: boolean, default: any, parse: function, parse_args: table}
     }, {
-        __index = Commands._prototype
+        __index = Commands._prototype,
     })
     Commands.commands[name] = command
     return command
@@ -491,17 +497,17 @@ end)
 
 ]]
 function Commands._prototype:add_param(name, optional, parse, ...)
-    local parse_args = {...}
-    if type(optional) ~= 'boolean' then
-        parse_args = {parse, ...}
+    local parse_args = { ... }
+    if type(optional) ~= "boolean" then
+        parse_args = { parse, ... }
         parse = optional
         optional = false
     end
 
     self.params[name] = {
-        optional   = optional,
-        parse      = parse or function(string) return string end,
-        parse_args = parse_args
+        optional = optional,
+        parse = parse or function(string) return string end,
+        parse_args = parse_args,
     }
 
     self.max_param_count = self.max_param_count + 1
@@ -532,6 +538,7 @@ function Commands._prototype:set_defaults(defaults)
             self.params[name].default = value
         end
     end
+
     return self
 end
 
@@ -562,9 +569,10 @@ command:add_alias('name', 'rname')
 ]]
 function Commands._prototype:add_alias(...)
     local start_index = #self.aliases
-    for index, alias in ipairs{...} do
-        self.aliases[start_index+index] = alias
+    for index, alias in ipairs{ ... } do
+        self.aliases[start_index + index] = alias
     end
+
     return self
 end
 
@@ -600,14 +608,15 @@ function Commands._prototype:register(callback)
     self.callback = callback
 
     -- Generates a description to be used
-    local description = ''
+    local description = ""
     for param_name, param_details in pairs(self.params) do
         if param_details.optional then
-            description = string.format('%s [%s]', description, param_name)
+            description = string.format("%s [%s]", description, param_name)
         else
-            description = string.format('%s <%s>', description, param_name)
+            description = string.format("%s <%s>", description, param_name)
         end
     end
+
     self.description = description
 
     -- Last resort error handler for commands
@@ -622,7 +631,7 @@ function Commands._prototype:register(callback)
     end
 
     -- Registers the command under its own name
-    local help = {'expcore-commands.command-help', description, self.help}
+    local help = { "expcore-commands.command-help", description, self.help }
     commands.add_command(self.name, help, command_callback)
 
     -- Adds any aliases that it has
@@ -650,7 +659,7 @@ return 'Your message has been printed'
 ]]
 function Commands.success(value)
     if value ~= nil then player_return(value) end
-    player_return({'expcore-commands.command-ran'}, 'cyan')
+    player_return({ "expcore-commands.command-ran" }, "cyan")
     return Commands.defines.success
 end
 
@@ -675,11 +684,11 @@ return Commands.error('The player you selected is offline')
 
 ]]
 function Commands.error(error_message, play_sound)
-    error_message = error_message or ''
-    player_return({'expcore-commands.command-fail', error_message}, 'orange_red')
+    error_message = error_message or ""
+    player_return({ "expcore-commands.command-fail", error_message }, "orange_red")
     if play_sound ~= false then
-        play_sound = play_sound or 'utility/wire_pickup'
-        if game.player then game.player.play_sound{path=play_sound} end
+        play_sound = play_sound or "utility/wire_pickup"
+        if game.player then game.player.play_sound{ path = play_sound } end
     end
     return Commands.defines.error
 end
@@ -700,22 +709,22 @@ end
 ]]
 function Commands.internal_error(success, command_name, error_message)
     if not success then
-        Commands.error('Internal Error, Please contact an admin', 'utility/cannot_build')
-        log{'expcore-commands.command-error-log-format', command_name, error_message}
+        Commands.error("Internal Error, Please contact an admin", "utility/cannot_build")
+        log{ "expcore-commands.command-error-log-format", command_name, error_message }
     end
     return not success
 end
 
 --- Logs command usage to file
 local function command_log(player, command, comment, params, raw, details)
-    local player_name = player and player.name or '<Server>'
-    write_json('log/commands.log', {
-        player_name  = player_name,
+    local player_name = player and player.name or "<Server>"
+    write_json("log/commands.log", {
+        player_name = player_name,
         command_name = command.name,
-        comment      = comment,
-        details      = details,
-        params       = params,
-        raw          = raw
+        comment = comment,
+        details = details,
+        params = params,
+        raw = raw,
     })
 end
 
@@ -733,46 +742,46 @@ function Commands.run_command(command_event)
     -- Check if the player is allowed to use the command
     local authorized, auth_fail = Commands.authorize(player, command_data.name)
     if not authorized then
-        command_log(player, command_data, 'Failed Auth', {}, command_event.parameter)
-        Commands.error(auth_fail, 'utility/cannot_build')
+        command_log(player, command_data, "Failed Auth", {}, command_event.parameter)
+        Commands.error(auth_fail, "utility/cannot_build")
         return
     end
 
     -- Check for parameter being nil
     if command_data.min_param_count > 0 and not command_event.parameter then
-        command_log(player, command_data, 'No Params Given', {}, command_event.parameter)
-        Commands.error{'expcore-commands.invalid-inputs', command_data.name, command_data.description}
+        command_log(player, command_data, "No Params Given", {}, command_event.parameter)
+        Commands.error{ "expcore-commands.invalid-inputs", command_data.name, command_data.description }
         return
     end
 
     -- Extract quoted arguments
-    local raw_input = command_event.parameter or ''
+    local raw_input = command_event.parameter or ""
     local quote_params = {}
     local input_string = raw_input:gsub('"[^"]-"', function(word)
-        local no_spaces = word:gsub('%s', '%%s')
+        local no_spaces = word:gsub("%s", "%%s")
         quote_params[no_spaces] = word:sub(2, -2)
-        return ' '..no_spaces..' '
+        return " " .. no_spaces .. " "
     end)
 
     -- Extract unquoted arguments
     local raw_params = {}
     local last_index = 0
     local param_number = 0
-    for word in input_string:gmatch('%S+') do
+    for word in input_string:gmatch("%S+") do
         param_number = param_number + 1
         if param_number > command_data.max_param_count then
             -- there are too many params given to the command
             if not command_data.auto_concat then
                 -- error as they should not be more
-                command_log(player, command_data, 'Invalid Input: Too Many Params', raw_params, raw_input)
-                Commands.error{'expcore-commands.invalid-inputs', command_data.name, command_data.description}
+                command_log(player, command_data, "Invalid Input: Too Many Params", raw_params, raw_input)
+                Commands.error{ "expcore-commands.invalid-inputs", command_data.name, command_data.description }
                 return
             else
                 -- concat to the last param
                 if quote_params[word] then
-                    raw_params[last_index] = raw_params[last_index]..' "'..quote_params[word]..'"'
+                    raw_params[last_index] = raw_params[last_index] .. ' "' .. quote_params[word] .. '"'
                 else
-                    raw_params[last_index] = raw_params[last_index]..' '..word
+                    raw_params[last_index] = raw_params[last_index] .. " " .. word
                 end
             end
         else
@@ -790,8 +799,8 @@ function Commands.run_command(command_event)
     -- Check the param count
     local param_count = #raw_params
     if param_count < command_data.min_param_count then
-        command_log(player, command_data, 'Invalid Input: Not Enough Params', raw_params, raw_input)
-        Commands.error{'expcore-commands.invalid-inputs', command_data.name, command_data.description}
+        command_log(player, command_data, "Invalid Input: Not Enough Params", raw_params, raw_input)
+        Commands.error{ "expcore-commands.invalid-inputs", command_data.name, command_data.description }
         return
     end
 
@@ -801,48 +810,46 @@ function Commands.run_command(command_event)
     for param_name, param_data in pairs(command_data.params) do
         local parse_callback = param_data.parse
         -- If its a string this get it from the parser table
-        if type(parse_callback) == 'string' then
+        if type(parse_callback) == "string" then
             parse_callback = Commands.parsers[parse_callback]
         end
 
         -- If its not a function throw and error
-        if type(parse_callback) ~= 'function' then
-            Commands.internal_error(false, command_data.name, 'Invalid param parse '..tostring(param_data.parse))
-            command_log(player, command_data, 'Internal Error: Invalid Param Parse', params, raw_input, tostring(param_data.parse))
+        if type(parse_callback) ~= "function" then
+            Commands.internal_error(false, command_data.name, "Invalid param parse " .. tostring(param_data.parse))
+            command_log(player, command_data, "Internal Error: Invalid Param Parse", params, raw_input, tostring(param_data.parse))
             return
         end
 
         -- This is the reject function given to parse callbacks
         local function reject(error_message)
-            error_message = error_message or ''
-            command_log(player, command_data, 'Invalid Param Given', raw_params, input_string)
-            return Commands.error{'expcore-commands.invalid-param', param_name, error_message}
+            error_message = error_message or ""
+            command_log(player, command_data, "Invalid Param Given", raw_params, input_string)
+            return Commands.error{ "expcore-commands.invalid-param", param_name, error_message }
         end
 
         -- input: string, player: LuaPlayer, reject: function, ... extra args
         local success, param_parsed = pcall(parse_callback, raw_params[index], player, reject, table.unpack(param_data.parse_args))
         if Commands.internal_error(success, command_data.name, param_parsed) then
-            return command_log(player, command_data, 'Internal Error: Param Parse Fail', params, raw_input, param_parsed)
+            return command_log(player, command_data, "Internal Error: Param Parse Fail", params, raw_input, param_parsed)
         end
 
         if param_data.optional == true and raw_params[index] == nil then
             -- If the param is optional and nil then it is set to default
             param_parsed = param_data.default
-            if type(param_parsed) == 'function' then
+            if type(param_parsed) == "function" then
                 success, param_parsed = pcall(param_parsed, player)
                 if Commands.internal_error(success, command_data.name, param_parsed) then
-                    return command_log(player, command_data, 'Internal Error: Default Value Fail', params, raw_input, param_parsed)
+                    return command_log(player, command_data, "Internal Error: Default Value Fail", params, raw_input, param_parsed)
                 end
             end
-
         elseif param_parsed == nil or param_parsed == Commands.defines.error or param_parsed == reject then
             -- No value was returned or error was returned, if nil then give generic error
             if param_parsed ~= Commands.defines.error then
-                command_log(player, command_data, 'Invalid Param Given', raw_params, raw_input, param_name)
-                Commands.error{'expcore-commands.command-error-param-format', param_name, 'please make sure it is the correct type'}
+                command_log(player, command_data, "Invalid Param Given", raw_params, raw_input, param_name)
+                Commands.error{ "expcore-commands.command-error-param-format", param_name, "please make sure it is the correct type" }
             end
             return
-
         end
 
         -- Add the param to the table to be passed to the command callback
@@ -852,19 +859,19 @@ function Commands.run_command(command_event)
 
     -- Run the command
     -- player: LuaPlayer, ... command params, raw: string
-    params[command_data.max_param_count+1] = raw_input
+    params[command_data.max_param_count + 1] = raw_input
     local success, rtn = pcall(command_data.callback, player, table.unpack(params))
     if Commands.internal_error(success, command_data.name, rtn) then
-        return command_log(player, command_data, 'Internal Error: Command Callback Fail', raw_params, command_event.parameter, rtn)
+        return command_log(player, command_data, "Internal Error: Command Callback Fail", raw_params, command_event.parameter, rtn)
     end
 
     -- Give output to the player
     if rtn == Commands.defines.error or rtn == Commands.error then
-        return command_log(player, command_data, 'Custom Error', raw_params, raw_input)
+        return command_log(player, command_data, "Custom Error", raw_params, raw_input)
     elseif rtn ~= Commands.defines.success and rtn ~= Commands.success then
         Commands.success(rtn)
     end
-    command_log(player, command_data, 'Success', raw_params, raw_input)
+    command_log(player, command_data, "Success", raw_params, raw_input)
 end
 
 return Commands

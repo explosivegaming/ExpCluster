@@ -4,7 +4,7 @@
 ]]
 
 local Gui = require("modules.exp_legacy.expcore.gui.prototype")
-local mod_gui = require 'mod-gui' --- @dep mod-gui
+local mod_gui = require "mod-gui" --- @dep mod-gui
 
 local toolbar_button_size = 36
 local hide_top_flow = Gui.core_defines.hide_top_flow.name
@@ -14,7 +14,7 @@ local show_top_flow = Gui.core_defines.show_top_flow.name
 -- @section topFlow
 
 -- Triggered when a user changed the visibility of a left flow element by clicking a button
-Gui.events.on_toolbar_button_toggled = 'on_toolbar_button_toggled'
+Gui.events.on_toolbar_button_toggled = "on_toolbar_button_toggled"
 
 --- Contains the uids of the elements that will shown on the top flow and their auth functions
 -- @table top_elements
@@ -26,7 +26,7 @@ Gui.top_flow_button_style = mod_gui.button_style
 
 --- The style that should be used for buttons on the top flow when their flow is visible
 -- @field Gui.top_flow_button_toggled_style
-Gui.top_flow_button_toggled_style = 'menu_button_continue'
+Gui.top_flow_button_toggled_style = "menu_button_continue"
 
 --[[-- Styles a top flow button depending on the state given
 @tparam LuaGuiElement button the button element to style
@@ -40,7 +40,7 @@ Gui.toolbar_button_style(button, false)
 
 ]]
 function Gui.toolbar_button_style(button, state, size)
-    ---@cast button LuaGuiElement
+    --- @cast button LuaGuiElement
     if state then
         button.style = Gui.top_flow_button_toggled_style
     else
@@ -108,8 +108,8 @@ function Gui.inject_top_flow_order(provider)
     Gui.get_top_flow_order = provider
     local debug_info = debug.getinfo(2, "Sn")
     local file_name = debug_info.short_src:sub(10, -5)
-    local func_name = debug_info.name or ("<anonymous:"..debug_info.linedefined..">")
-    Gui._top_flow_order_src = file_name..":"..func_name
+    local func_name = debug_info.name or ("<anonymous:" .. debug_info.linedefined .. ">")
+    Gui._top_flow_order_src = file_name .. ":" .. func_name
 end
 
 --[[-- Updates the visible state of all the elements on the players top flow, uses authenticator
@@ -137,12 +137,12 @@ function Gui.update_top_flow(player)
         if not element then
             element = element_define(top_flow)
         else
-            top_flow.swap_children(index+1, element.get_index_in_parent())
+            top_flow.swap_children(index + 1, element.get_index_in_parent())
         end
 
         -- Set the visible state
         local allowed = element_define.authenticator
-        if type(allowed) == 'function' then allowed = allowed(player) end
+        if type(allowed) == "function" then allowed = allowed(player) end
         element.visible = allowed or false
 
         -- If its not visible and there is a left element, then hide it
@@ -176,7 +176,7 @@ function Gui.reorder_top_flow(player)
     -- Reorder the elements, index 1 is the core ui buttons so +1 is required
     for index, element_define in ipairs(flow_order) do
         local element = top_flow[element_define.name]
-        top_flow.swap_children(index+1, element.get_index_in_parent())
+        top_flow.swap_children(index + 1, element.get_index_in_parent())
     end
 end
 
@@ -243,7 +243,7 @@ function Gui.toggle_toolbar_button(player, element_define, state)
         name = Gui.events.on_toolbar_button_toggled,
         element = toolbar_button,
         player = player,
-        state = state
+        state = state,
     }
     return state
 end
@@ -262,18 +262,18 @@ end)
 ]]
 function Gui.toolbar_button(sprite, tooltip, authenticator)
     return Gui.element{
-        type = 'sprite-button',
-        sprite = sprite,
-        tooltip = tooltip,
-        style = Gui.top_flow_button_style,
-        name = Gui.unique_static_name
-    }
-    :style{
-        minimal_width = toolbar_button_size,
-        height = toolbar_button_size,
-        padding = -2
-    }
-    :add_to_top_flow(authenticator)
+            type = "sprite-button",
+            sprite = sprite,
+            tooltip = tooltip,
+            style = Gui.top_flow_button_style,
+            name = Gui.unique_static_name,
+        }
+        :style{
+            minimal_width = toolbar_button_size,
+            height = toolbar_button_size,
+            padding = -2,
+        }
+        :add_to_top_flow(authenticator)
 end
 
 --[[-- Creates a toggle button on the top flow with consistent styling
@@ -293,19 +293,19 @@ end)
 ]]
 function Gui.toolbar_toggle_button(sprite, tooltip, authenticator)
     local button =
-    Gui.element{
-        type = 'sprite-button',
-        sprite = sprite,
-        tooltip = tooltip,
-        style = Gui.top_flow_button_style,
-        name = Gui.unique_static_name
-    }
-    :style{
-        minimal_width = toolbar_button_size,
-        height = toolbar_button_size,
-        padding = -2
-    }
-    :add_to_top_flow(authenticator)
+        Gui.element{
+            type = "sprite-button",
+            sprite = sprite,
+            tooltip = tooltip,
+            style = Gui.top_flow_button_style,
+            name = Gui.unique_static_name,
+        }
+        :style{
+            minimal_width = toolbar_button_size,
+            height = toolbar_button_size,
+            padding = -2,
+        }
+        :add_to_top_flow(authenticator)
 
     button:on_click(function(player, _, _)
         Gui.toggle_toolbar_button(player, button)

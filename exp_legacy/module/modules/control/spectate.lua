@@ -1,4 +1,3 @@
-
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Storage = require("modules/exp_util/storage")
 local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
@@ -12,7 +11,7 @@ local Public = {}
 ----- Storage data -----
 Storage.register({
     following = following,
-    spectating = spectating
+    spectating = spectating,
 }, function(tbl)
     following = tbl.following
     spectating = tbl.spectating
@@ -24,7 +23,7 @@ end)
 -- @tparam LuaPlayer player The player to test the controller type of
 -- @treturn boolean Returns true if the player is in spectator mode
 function Public.is_spectating(player)
-    assert(player and player.valid, 'Invalid player given to follower')
+    assert(player and player.valid, "Invalid player given to follower")
     return player.controller_type == defines.controllers.spectator
 end
 
@@ -32,7 +31,7 @@ end
 -- @tparam LuaPlayer player The player that will be placed into spectator mode
 -- @treturn boolean Returns false if the player was already in spectator mode
 function Public.start_spectate(player)
-    assert(player and player.valid, 'Invalid player given to follower')
+    assert(player and player.valid, "Invalid player given to follower")
     if spectating[player.index] or not player.character then return false end
     local character = player.character
     local opened = player.opened
@@ -46,7 +45,7 @@ end
 --- Return a player from spectator mode back to their character, if their character was killed then respawn them
 -- @tparam LuaPlayer player The player that will leave spectator mode
 function Public.stop_spectate(player)
-    assert(player and player.valid, 'Invalid player given to follower')
+    assert(player and player.valid, "Invalid player given to follower")
     local character = spectating[player.index]
     spectating[player.index] = nil
     if character and character.valid then
@@ -63,7 +62,7 @@ end
 -- @tparam LuaPlayer player The player to test the follow mode of
 -- @treturn boolean Returns true if the player is in follow mode
 function Public.is_following(player)
-    assert(player and player.valid, 'Invalid player given to follower')
+    assert(player and player.valid, "Invalid player given to follower")
     return following[player.index] ~= nil
 end
 
@@ -71,8 +70,8 @@ end
 -- @tparam LuaPlayer player The player that will follow the entity
 -- @tparam ?LuaPlayer|LuaEntity entity The player or entity that will be followed
 function Public.start_follow(player, entity)
-    assert(player and player.valid, 'Invalid player given to follower')
-    assert(entity and entity.valid, 'Invalid entity given to follower')
+    assert(player and player.valid, "Invalid player given to follower")
+    assert(entity and entity.valid, "Invalid entity given to follower")
     local spectate = Public.start_spectate(player)
 
     player.close_map()
@@ -84,7 +83,7 @@ end
 --- Returns camera control to the player, will return a player to their character if start_follow placed them into spectator mode
 -- @tparam LuaPlayer player The player that will regain control of their camera
 function Public.stop_follow(player)
-    assert(player and player.valid, 'Invalid player given to follower')
+    assert(player and player.valid, "Invalid player given to follower")
     if following[player.index] and following[player.index][4] and Public.is_spectating(player) then
         Public.stop_spectate(player)
     end
@@ -105,32 +104,32 @@ end
 --- Label used to show that the player is following, also used to allow esc to stop following
 -- @element follow_label
 follow_label =
-Gui.element(function(definition, parent, target)
-    Gui.destroy_if_valid(parent[definition.name])
+    Gui.element(function(definition, parent, target)
+        Gui.destroy_if_valid(parent[definition.name])
 
-    local label = parent.add{
-        type = 'label',
-        style = 'frame_title',
-        caption = 'Following '..target.name..'.\nClick here or press esc to stop following.',
-        name = definition.name
-    }
+        local label = parent.add{
+            type = "label",
+            style = "frame_title",
+            caption = "Following " .. target.name .. ".\nClick here or press esc to stop following.",
+            name = definition.name,
+        }
 
-    local player = Gui.get_player_from_element(parent)
-    local res = player.display_resolution
-    label.location = {0, res.height-150}
-    label.style.width = res.width
-    label.style.horizontal_align = 'center'
-    player.opened = label
+        local player = Gui.get_player_from_element(parent)
+        local res = player.display_resolution
+        label.location = { 0, res.height - 150 }
+        label.style.width = res.width
+        label.style.horizontal_align = "center"
+        player.opened = label
 
-    return label
-end)
-:static_name(Gui.unique_static_name)
-:on_click(Public.stop_follow)
-:on_close(function(player)
-    -- Don't call set_controller during on_close as it invalidates the controller
-    -- Setting an invalid position (as to not equal their current) will call stop_follow on the next tick
-    following[player.index][3] = {}
-end)
+        return label
+    end)
+    :static_name(Gui.unique_static_name)
+    :on_click(Public.stop_follow)
+    :on_close(function(player)
+        -- Don't call set_controller during on_close as it invalidates the controller
+        -- Setting an invalid position (as to not equal their current) will call stop_follow on the next tick
+        following[player.index][3] = {}
+    end)
 
 ----- Events -----
 

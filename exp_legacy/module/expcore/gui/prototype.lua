@@ -23,7 +23,7 @@ local Gui = {
     --- The prototype used to store the functions of an element define
     _prototype_element = {},
     --- The prototype metatable applied to new element defines
-    _mt_element = {}
+    _mt_element = {},
 }
 
 --- Allow access to the element prototype methods
@@ -37,14 +37,14 @@ function Gui._mt_element.__call(self, parent, ...)
     -- Asserts to catch common errors
     if element then
         if self.name and self.name ~= element.name then
-            error("Static name \""..self.name.."\" expected but got: "..tostring(element.name))
+            error("Static name \"" .. self.name .. "\" expected but got: " .. tostring(element.name))
         end
         local event_triggers = element.tags and element.tags.ExpGui_event_triggers
         if event_triggers and table.array_contains(event_triggers, self.uid) then
             error("Element::triggers_events should not be called on the value you return from the definition")
         end
     elseif self.name then
-        error("Static name \""..self.name.."\" expected but no element was returned from the definition")
+        error("Static name \"" .. self.name .. "\" expected but no element was returned from the definition")
     end
 
     -- Register events by default, but allow skipping them
@@ -59,8 +59,8 @@ end
 local function get_defined_at(level)
     local debug_info = debug.getinfo(level, "Sn")
     local file_name = debug_info.short_src:sub(10, -5)
-    local func_name = debug_info.name or ("<anonymous:"..debug_info.linedefined..">")
-    return file_name..":"..func_name
+    local func_name = debug_info.name or ("<anonymous:" .. debug_info.linedefined .. ">")
+    return file_name .. ":" .. func_name
 end
 
 --- Element Define.
@@ -115,19 +115,20 @@ function Gui.element(element_define)
     local uid = Gui.uid + 1
     Gui.uid = uid
     element.uid = uid
-    Gui.debug_info[uid] = { draw = 'None', style = 'None', events = {} }
+    Gui.debug_info[uid] = { draw = "None", style = "None", events = {} }
 
     -- Add the definition function
-    if type(element_define) == 'table' then
+    if type(element_define) == "table" then
         Gui.debug_info[uid].draw = element_define
         if element_define.name == Gui.unique_static_name then
-            element_define.name = "ExpGui_"..tostring(uid)
+            element_define.name = "ExpGui_" .. tostring(uid)
         end
         for k, v in pairs(element_define) do
             if element[k] == nil then
                 element[k] = v
             end
         end
+
         element._draw = function(_, parent)
             return parent.add(element_define)
         end
@@ -183,7 +184,7 @@ end)
 function Gui._prototype_element:style(style_define)
     _C.error_if_runtime()
     -- Add the definition function
-    if type(style_define) == 'table' then
+    if type(style_define) == "table" then
         Gui.debug_info[self.uid].style = style_define
         self._style = function(style)
             for key, value in pairs(style_define) do
@@ -206,7 +207,7 @@ end
 function Gui._prototype_element:static_name(name)
     _C.error_if_runtime()
     if name == Gui.unique_static_name then
-        self.name = "ExpGui_"..tostring(self.uid)
+        self.name = "ExpGui_" .. tostring(self.uid)
     else
         self.name = name
     end
@@ -295,7 +296,7 @@ function Gui._prototype_element:raise_event(event)
 
     local success, err = xpcall(handler, debug.traceback, player, element, event)
     if not success then
-        error('There as been an error with an event handler for a gui element:\n\t'..err)
+        error("There as been an error with an event handler for a gui element:\n\t" .. err)
     end
     return self
 end
@@ -328,84 +329,84 @@ end
 -- @tparam function handler the event handler which will be called
 -- @usage element_define:on_open(function(event)
 --  event.player.print(table.inspect(event))
---end)
+-- end)
 Gui._prototype_element.on_open = event_handler_factory(defines.events.on_gui_opened)
 
 --- Called when the player closes the GUI they have open.
 -- @tparam function handler the event handler which will be called
 -- @usage element_define:on_close(function(event)
 --  event.player.print(table.inspect(event))
---end)
+-- end)
 Gui._prototype_element.on_close = event_handler_factory(defines.events.on_gui_closed)
 
 --- Called when LuaGuiElement is clicked.
 -- @tparam function handler the event handler which will be called
 -- @usage element_define:on_click(function(event)
 --  event.player.print(table.inspect(event))
---end)
+-- end)
 Gui._prototype_element.on_click = event_handler_factory(defines.events.on_gui_click)
 
 --- Called when a LuaGuiElement is confirmed, for example by pressing Enter in a textfield.
 -- @tparam function handler the event handler which will be called
 -- @usage element_define:on_confirmed(function(event)
 --  event.player.print(table.inspect(event))
---end)
+-- end)
 Gui._prototype_element.on_confirmed = event_handler_factory(defines.events.on_gui_confirmed)
 
 --- Called when LuaGuiElement checked state is changed (related to checkboxes and radio buttons).
 -- @tparam function handler the event handler which will be called
 -- @usage element_define:on_checked_changed(function(event)
 --  event.player.print(table.inspect(event))
---end)
+-- end)
 Gui._prototype_element.on_checked_changed = event_handler_factory(defines.events.on_gui_checked_state_changed)
 
 --- Called when LuaGuiElement element value is changed (related to choose element buttons).
 -- @tparam function handler the event handler which will be called
 -- @usage element_define:on_elem_changed(function(event)
 --  event.player.print(table.inspect(event))
---end)
+-- end)
 Gui._prototype_element.on_elem_changed = event_handler_factory(defines.events.on_gui_elem_changed)
 
 --- Called when LuaGuiElement element location is changed (related to frames in player.gui.screen).
 -- @tparam function handler the event handler which will be called
 -- @usage element_define:on_location_changed(function(event)
 --  event.player.print(table.inspect(event))
---end)
+-- end)
 Gui._prototype_element.on_location_changed = event_handler_factory(defines.events.on_gui_location_changed)
 
 --- Called when LuaGuiElement selected tab is changed (related to tabbed-panes).
 -- @tparam function handler the event handler which will be called
 -- @usage element_define:on_tab_changed(function(event)
 --  event.player.print(table.inspect(event))
---end)
+-- end)
 Gui._prototype_element.on_tab_changed = event_handler_factory(defines.events.on_gui_selected_tab_changed)
 
 --- Called when LuaGuiElement selection state is changed (related to drop-downs and listboxes).
 -- @tparam function handler the event handler which will be called
 -- @usage element_define:on_selection_changed(function(event)
 --  event.player.print(table.inspect(event))
---end)
+-- end)
 Gui._prototype_element.on_selection_changed = event_handler_factory(defines.events.on_gui_selection_state_changed)
 
 --- Called when LuaGuiElement switch state is changed (related to switches).
 -- @tparam function handler the event handler which will be called
 -- @usage element_define:on_switch_changed(function(event)
 --  event.player.print(table.inspect(event))
---end)
+-- end)
 Gui._prototype_element.on_switch_changed = event_handler_factory(defines.events.on_gui_switch_state_changed)
 
 --- Called when LuaGuiElement text is changed by the player.
 -- @tparam function handler the event handler which will be called
 -- @usage element_define:on_text_changed(function(event)
 --  event.player.print(table.inspect(event))
---end)
+-- end)
 Gui._prototype_element.on_text_changed = event_handler_factory(defines.events.on_gui_text_changed)
 
 --- Called when LuaGuiElement slider value is changed (related to the slider element).
 -- @tparam function handler the event handler which will be called
 -- @usage element_define:on_value_changed(function(event)
 --  event.player.print(table.inspect(event))
---end)
+-- end)
 Gui._prototype_element.on_value_changed = event_handler_factory(defines.events.on_gui_value_changed)
 
 -- Module return

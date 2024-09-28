@@ -73,58 +73,58 @@ end
 ]]
 
 return {
-    skip_intro=true, --- @setting skip_intro skips the intro given in the default factorio free play scenario
-    skip_victory=true, --- @setting skip_victory will skip the victory screen when a rocket is launched
-    disable_base_game_silo_script=true, --- @setting disable_base_game_silo_script will not load the silo script at all
-    research_queue_from_start=true, --- @setting research_queue_from_start when true the research queue is useable from the start
-    friendly_fire=false, --- @setting friendly_fire weather players will be able to attack each other on the same force
-    enemy_expansion=false, --- @setting enemy_expansion a catch all for in case the map settings file fails to load
-    chart_radius=10*32, --- @setting chart_radius the number of tiles that will be charted when the map starts
+    skip_intro = true, --- @setting skip_intro skips the intro given in the default factorio free play scenario
+    skip_victory = true, --- @setting skip_victory will skip the victory screen when a rocket is launched
+    disable_base_game_silo_script = true, --- @setting disable_base_game_silo_script will not load the silo script at all
+    research_queue_from_start = true, --- @setting research_queue_from_start when true the research queue is useable from the start
+    friendly_fire = false, --- @setting friendly_fire weather players will be able to attack each other on the same force
+    enemy_expansion = false, --- @setting enemy_expansion a catch all for in case the map settings file fails to load
+    chart_radius = 10 * 32, --- @setting chart_radius the number of tiles that will be charted when the map starts
     items = { --- @setting items items and there condition for being given
         -- ['item-name'] = function(amount_made, production_stats, player) return <Number> end -- 0 means no items given
         -- Plates
-        ['iron-plate']=scale_amount_made(100, 10, 10),
-        ['copper-plate']=scale_amount_made(100, 0, 8),
-        ['steel-plate']=scale_amount_made(100, 0, 4),
+        ["iron-plate"] = scale_amount_made(100, 10, 10),
+        ["copper-plate"] = scale_amount_made(100, 0, 8),
+        ["steel-plate"] = scale_amount_made(100, 0, 4),
         -- Secondary Items
-        ['electronic-circuit']=scale_amount_made(1000, 0, 6),
-        ['iron-gear-wheel']=scale_amount_made(1000, 0, 6),
+        ["electronic-circuit"] = scale_amount_made(1000, 0, 6),
+        ["iron-gear-wheel"] = scale_amount_made(1000, 0, 6),
         -- Starting Items
-        ['burner-mining-drill']=cutoff_time(10*minutes, 4, 0),
-        ['stone-furnace']=cutoff_time(10*minutes, 4, 0),
+        ["burner-mining-drill"] = cutoff_time(10 * minutes, 4, 0),
+        ["stone-furnace"] = cutoff_time(10 * minutes, 4, 0),
         -- Armor
-        ['light-armor']=cutoff_amount_made_unless(5, 0,1,'heavy-armor',5),
-        ['heavy-armor']=cutoff_amount_made(5, 0,1),
+        ["light-armor"] = cutoff_amount_made_unless(5, 0, 1, "heavy-armor", 5),
+        ["heavy-armor"] = cutoff_amount_made(5, 0, 1),
         -- Weapon
-        ['pistol']=cutoff_amount_made_unless(0, 1, 1,'submachine-gun',5),
-        ['submachine-gun']=cutoff_amount_made(5, 0, 1),
+        ["pistol"] = cutoff_amount_made_unless(0, 1, 1, "submachine-gun", 5),
+        ["submachine-gun"] = cutoff_amount_made(5, 0, 1),
         -- Ammo
-        ['firearm-magazine']=cutoff_amount_made_unless(100, 10, 0,'piercing-rounds-magazine', 100),
-        ['piercing-rounds-magazine']=cutoff_amount_made(100, 0, 10),
+        ["firearm-magazine"] = cutoff_amount_made_unless(100, 10, 0, "piercing-rounds-magazine", 100),
+        ["piercing-rounds-magazine"] = cutoff_amount_made(100, 0, 10),
         --[[
             ['construction-robot']=scale_amount_made(1, 10, 1)
         ]]
     },
     armor = {
-        enable=false,
-        main = 'modular-armor',
+        enable = false,
+        main = "modular-armor",
         item = {
             {
-                equipment='solar-panel-equipment',
-                count=16
+                equipment = "solar-panel-equipment",
+                count = 16,
             },
             {
-                equipment='belt-immunity-equipment',
-                count=1
+                equipment = "belt-immunity-equipment",
+                count = 1,
             },
             {
-                equipment='battery-equipment',
-                count=2
+                equipment = "battery-equipment",
+                count = 2,
             },
             {
-                equipment='personal-roboport-equipment',
-                count=1
+                equipment = "personal-roboport-equipment",
+                count = 1,
             },
-        }
-    }
+        },
+    },
 }

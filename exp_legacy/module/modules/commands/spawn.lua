@@ -9,7 +9,7 @@ local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local function teleport(player)
     local surface = player.surface
     local spawn = player.force.get_spawn_position(surface)
-    local position = surface.find_non_colliding_position('character', spawn, 32, 1)
+    local position = surface.find_non_colliding_position("character", spawn, 32, 1)
     -- return false if no new position
     if not position then
         return false
@@ -39,29 +39,28 @@ end
 --- Teleport to spawn
 -- @command go-to-spawn
 -- @tparam[opt=self] LuaPlayer player the player to teleport to their spawn point
-Commands.new_command('go-to-spawn', {'expcom-spawn.description'}, 'Teleport to spawn')
-:add_param('player', true, 'player-role-alive')
-:set_defaults{
-    player=function(player)
-        if player.connected and player.character and player.character.health > 0 then
-            return player
+Commands.new_command("go-to-spawn", { "expcom-spawn.description" }, "Teleport to spawn")
+    :add_param("player", true, "player-role-alive")
+    :set_defaults{
+        player = function(player)
+            if player.connected and player.character and player.character.health > 0 then
+                return player
+            end
+        end,
+    }
+    :add_alias("spawn", "tp-spawn")
+    :register(function(player, action_player)
+        if not action_player then
+            return Commands.error{ "expcom-spawn.unavailable" }
+        elseif action_player == player then
+            if not teleport(player) then
+                return Commands.error{ "expcom-spawn.unavailable" }
+            end
+        elseif Roles.player_allowed(player, "command/go-to-spawn/always") then
+            if not teleport(action_player) then
+                return Commands.error{ "expcom-spawn.unavailable" }
+            end
+        else
+            return Commands.error{ "expcore-commands.unauthorized" }
         end
-    end
-}
-:add_alias('spawn', 'tp-spawn')
-:register(function(player, action_player)
-    if not action_player then
-        return Commands.error{'expcom-spawn.unavailable'}
-    elseif action_player == player then
-        if not teleport(player) then
-            return Commands.error{'expcom-spawn.unavailable'}
-        end
-    elseif Roles.player_allowed(player, 'command/go-to-spawn/always') then
-        if not teleport(action_player) then
-            return Commands.error{'expcom-spawn.unavailable'}
-        end
-
-    else
-        return Commands.error{'expcore-commands.unauthorized'}
-    end
-end)
+    end)

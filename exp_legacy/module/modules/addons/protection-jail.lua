@@ -1,9 +1,9 @@
 --- When a player triggers protection multiple times they are automatically jailed
 -- @addon protection-jail
 
-local Event = require("modules/exp_legacy/utils/event") ---@dep utils.event
-local Storage = require("modules/exp_util/storage") ---@dep utils.global
-local Jail = require("modules.exp_legacy.modules.control.jail") ---@dep modules.control.jail
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Storage = require("modules/exp_util/storage") --- @dep utils.global
+local Jail = require("modules.exp_legacy.modules.control.jail") --- @dep modules.control.jail
 local Protection = require("modules.exp_legacy.modules.control.protection") --- @dep modules.control.protection
 local format_chat_player_name = _C.format_chat_player_name --- @dep expcore.common
 
@@ -30,8 +30,8 @@ Event.add(Protection.events.on_repeat_violation, function(event)
     end
 
     local player_name_color = format_chat_player_name(player)
-    Jail.jail_player(player, '<protection>', 'Removed too many protected entities, please wait for a moderator.')
-    game.print{'protection-jail.jail', player_name_color}
+    Jail.jail_player(player, "<protection>", "Removed too many protected entities, please wait for a moderator.")
+    game.print{ "protection-jail.jail", player_name_color }
 end)
 
 --- Clear the counter when they leave the game (stops a build up of data)

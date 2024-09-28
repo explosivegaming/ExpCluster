@@ -17,9 +17,9 @@ local ignore = {
     math = true,
     debug = true,
     serpent = true,
-    ['overrides.math'] = true,
+    ["overrides.math"] = true,
     util = true,
-    ['mod-gui'] = true
+    ["mod-gui"] = true,
 }
 
 local file_label_name = Gui.uid_name()
@@ -29,34 +29,34 @@ local top_panel_name = Gui.uid_name()
 local variable_label_name = Gui.uid_name()
 local text_box_name = Gui.uid_name()
 
-Public.name = 'package'
+Public.name = "package"
 
 function Public.show(container)
-    local main_flow = container.add {type = 'flow', direction = 'horizontal'}
+    local main_flow = container.add{ type = "flow", direction = "horizontal" }
 
-    local left_panel = main_flow.add {type = 'scroll-pane', name = left_panel_name}
+    local left_panel = main_flow.add{ type = "scroll-pane", name = left_panel_name }
     local left_panel_style = left_panel.style
     left_panel_style.width = 300
 
     for name, file in pairs(loaded) do
         if not ignore[name] then
             local file_label =
-                left_panel.add({type = 'flow'}).add {type = 'label', name = file_label_name, caption = name}
+                left_panel.add{ type = "flow" }.add{ type = "label", name = file_label_name, caption = name }
             Gui.set_data(file_label, file)
         end
     end
 
-    local right_flow = main_flow.add {type = 'flow', direction = 'vertical'}
+    local right_flow = main_flow.add{ type = "flow", direction = "vertical" }
 
-    local breadcrumbs = right_flow.add {type = 'label', name = breadcrumbs_name}
+    local breadcrumbs = right_flow.add{ type = "label", name = breadcrumbs_name }
 
-    local top_panel = right_flow.add {type = 'scroll-pane', name = top_panel_name}
+    local top_panel = right_flow.add{ type = "scroll-pane", name = top_panel_name }
     local top_panel_style = top_panel.style
     top_panel_style.height = 200
     top_panel_style.maximal_width = 1000
     top_panel_style.horizontally_stretchable = true
 
-    local text_box = right_flow.add {type = 'text-box', name = text_box_name}
+    local text_box = right_flow.add{ type = "text-box", name = text_box_name }
     text_box.read_only = true
     text_box.selectable = true
 
@@ -72,7 +72,7 @@ function Public.show(container)
         top_panel = top_panel,
         text_box = text_box,
         selected_file_label = nil,
-        selected_variable_label = nil
+        selected_variable_label = nil,
     }
 
     Gui.set_data(left_panel, data)
@@ -104,13 +104,13 @@ Gui.on_click(
 
         local file_type = type(file)
 
-        if file_type == 'table' then
+        if file_type == "table" then
             for k, v in pairs(file) do
                 local label =
-                    top_panel.add({type = 'flow'}).add {type = 'label', name = variable_label_name, caption = k}
+                    top_panel.add{ type = "flow" }.add{ type = "label", name = variable_label_name, caption = k }
                 Gui.set_data(label, v)
             end
-        elseif file_type == 'function' then
+        elseif file_type == "function" then
             text_box.text = dump_function(file)
         else
             text_box.text = tostring(file)
@@ -130,13 +130,14 @@ Gui.on_click(
 
         local variable_type = type(variable)
 
-        if variable_type == 'table' then
+        if variable_type == "table" then
             Gui.clear(top_panel)
             for k, v in pairs(variable) do
                 local label =
-                    top_panel.add({type = 'flow'}).add {type = 'label', name = variable_label_name, caption = k}
+                    top_panel.add{ type = "flow" }.add{ type = "label", name = variable_label_name, caption = k }
                 Gui.set_data(label, v)
             end
+
             return
         end
 
@@ -149,7 +150,7 @@ Gui.on_click(
         element.style.font_color = Color.orange
         data.selected_variable_label = element
 
-        if variable_type == 'function' then
+        if variable_type == "function" then
             text_box.text = dump_function(variable)
         else
             text_box.text = tostring(variable)

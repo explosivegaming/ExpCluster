@@ -25,7 +25,7 @@ end
 -- luacheck:ignore 212/player 212/tags
 Commands.add_authenticator(function(player, command, tags, reject)
     if disabled_commands[command] then
-        return reject{'command-auth.command-disabled'}
+        return reject{ "command-auth.command-disabled" }
     else
         return true
     end

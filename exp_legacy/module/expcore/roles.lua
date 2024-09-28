@@ -119,24 +119,24 @@ local write_json = _C.write_json --- @dep expcore.common
 local Roles = {
     _prototype = {},
     config = {
-        order          = {}, -- Contains the order of the roles, lower index is better
-        roles          = {}, -- Contains the raw info for the roles, indexed by role name
-        flags          = {}, -- Contains functions that run when a flag is added/removed from a player
-        internal       = {}, -- Contains all internally accessed roles, such as root, default
-        players        = {}, -- Contains the roles that players have
-        auto_assign    = {}, -- Contains references to all roles which have auto assign conditions
+        order = {}, -- Contains the order of the roles, lower index is better
+        roles = {}, -- Contains the raw info for the roles, indexed by role name
+        flags = {}, -- Contains functions that run when a flag is added/removed from a player
+        internal = {}, -- Contains all internally accessed roles, such as root, default
+        players = {}, -- Contains the roles that players have
+        auto_assign = {}, -- Contains references to all roles which have auto assign conditions
         deferred_roles = {}, -- Contains the roles that are to be assigned to players when they are unjailed
     },
     events = {
-        on_role_assigned   = script.generate_event_name(),
+        on_role_assigned = script.generate_event_name(),
         on_role_unassigned = script.generate_event_name(),
-    }
+    },
 }
 
 --- When global is loaded it will have the metatable re-assigned to the roles
 Storage.register({
     Roles.config.players,
-    Roles.config.deferred_roles
+    Roles.config.deferred_roles,
 }, function(tbl)
     Roles.config.players = tbl[1]
     Roles.config.deferred_roles = tbl[2]
@@ -150,12 +150,12 @@ end)
 -- this is the raw internal trigger as the other function is called at other times
 -- there is a second half called role_update which triggers after the event call, it also is called when a player joins
 local function emit_player_roles_updated(player, type, roles, by_player_name, skip_game_print)
-    by_player_name = by_player_name or game.player and game.player.name or '<server>'
+    by_player_name = by_player_name or game.player and game.player.name or "<server>"
     local by_player = game.players[by_player_name]
     local by_player_index = by_player and by_player.index or 0
     -- get the event id from the type of emit
     local event = Roles.events.on_role_assigned
-    if type == 'unassign' then
+    if type == "unassign" then
         event = Roles.events.on_role_unassigned
     end
     -- Get the names of the roles
@@ -163,27 +163,28 @@ local function emit_player_roles_updated(player, type, roles, by_player_name, sk
     for index, role in ipairs(roles) do
         role_names[index] = role.name
     end
+
     -- output to all the different locations: game print, player sound, event trigger and role log
     if not skip_game_print then
-        game.print({'expcore-roles.game-message-'..type, player.name, table.concat(role_names, ', '), by_player_name}, Colours.cyan)
+        game.print({ "expcore-roles.game-message-" .. type, player.name, table.concat(role_names, ", "), by_player_name }, Colours.cyan)
     end
-    if type == 'assign' then
-        player.play_sound{path='utility/achievement_unlocked'}
+    if type == "assign" then
+        player.play_sound{ path = "utility/achievement_unlocked" }
     else
-        player.play_sound{path='utility/game_lost'}
+        player.play_sound{ path = "utility/game_lost" }
     end
     script.raise_event(event, {
-        name=event,
-        tick=game.tick,
-        player_index=player.index,
-        by_player_index=by_player_index,
-        roles=role_names
+        name = event,
+        tick = game.tick,
+        player_index = player.index,
+        by_player_index = by_player_index,
+        roles = role_names,
     })
-    write_json('log/roles.log', {
-        player_name=player.name,
-        by_player_name=by_player_name,
-        type=type,
-        roles_changed=role_names
+    write_json("log/roles.log", {
+        player_name = player.name,
+        by_player_name = by_player_name,
+        type = type,
+        roles_changed = role_names,
     })
 end
 
@@ -195,13 +196,14 @@ game.player.print(Roles.debug())
 
 ]]
 function Roles.debug()
-    local output = ''
+    local output = ""
     for index, role_name in ipairs(Roles.config.order) do
         local role = Roles.config.roles[role_name]
         local color = role.custom_color or Colours.white
-        color = string.format('[color=%d, %d, %d]', color.r, color.g, color.b)
-        output = output..string.format('\n%s %s) %s[/color]', color, index, serpent.line(role))
+        color = string.format("[color=%d, %d, %d]", color.r, color.g, color.b)
+        output = output .. string.format("\n%s %s) %s[/color]", color, index, serpent.line(role))
     end
+
     return output
 end
 
@@ -234,9 +236,10 @@ function Roles.print_to_roles_higher(role, message)
     local roles = {}
     for index, role_name in ipairs(Roles.config.order) do
         if index <= role.index and role_name ~= Roles.config.internal.default then
-            roles[#roles+1] = role_name
+            roles[#roles + 1] = role_name
         end
     end
+
     Roles.print_to_roles(roles, message)
 end
 
@@ -254,9 +257,10 @@ function Roles.print_to_roles_lower(role, message)
     local roles = {}
     for index, role_name in ipairs(Roles.config.order) do
         if index >= role.index and role_name ~= Roles.config.internal.default then
-            roles[#roles+1] = role_name
+            roles[#roles + 1] = role_name
         end
     end
+
     Roles.print_to_roles(roles, message)
 end
 
@@ -296,12 +300,12 @@ local role = Roles.get_role_from_any('Moderator')
 ]]
 function Roles.get_role_from_any(any)
     local t_any = type(any)
-    if t_any == 'number' or tonumber(any) then
+    if t_any == "number" or tonumber(any) then
         any = tonumber(any)
         return Roles.get_role_by_order(any)
-    elseif t_any == 'string' then
+    elseif t_any == "string" then
         return Roles.get_role_by_name(any)
-    elseif t_any == 'table' then
+    elseif t_any == "table" then
         return Roles.get_role_by_name(any.name)
     end
 end
@@ -316,13 +320,14 @@ local roles = Roles.get_player_roles(game.player)
 ]]
 function Roles.get_player_roles(player)
     player = Game.get_player_from_any(player)
-    if not player then return {Roles.config.roles[Roles.config.internal.root]} end
+    if not player then return { Roles.config.roles[Roles.config.internal.root] } end
     local roles = Roles.config.players[player.name] or {}
     local default = Roles.config.roles[Roles.config.internal.default]
-    local rtn = {default}
+    local rtn = { default }
     for index, role_name in ipairs(roles) do
-        rtn[index+1] = Roles.config.roles[role_name]
+        rtn[index + 1] = Roles.config.roles[role_name]
     end
+
     return rtn
 end
 
@@ -343,6 +348,7 @@ function Roles.get_player_highest_role(player)
             highest = role
         end
     end
+
     return highest
 end
 
@@ -370,7 +376,7 @@ function Roles.assign_player(player, roles, by_player_name, skip_checks, silent)
     if not player then return end
 
     -- Convert the roles into a table (allows for optional array)
-    if type(roles) ~= 'table' or roles.name then
+    if type(roles) ~= "table" or roles.name then
         roles = { roles }
     end
 
@@ -394,10 +400,11 @@ function Roles.assign_player(player, roles, by_player_name, skip_checks, silent)
                 end
             else
                 assign_later[role.name] = {
-                    count = 1, by_player_name = by_player_name or "<server>", silent = silent
+                    count = 1, by_player_name = by_player_name or "<server>", silent = silent,
                 }
             end
         end
+
         Roles.config.deferred_roles[valid_player.name] = assign_later
         return
     end
@@ -407,7 +414,7 @@ function Roles.assign_player(player, roles, by_player_name, skip_checks, silent)
     end
 
     if valid_player then
-        emit_player_roles_updated(valid_player, 'assign', role_objects, by_player_name, silent)
+        emit_player_roles_updated(valid_player, "assign", role_objects, by_player_name, silent)
     end
 end
 
@@ -431,7 +438,7 @@ function Roles.unassign_player(player, roles, by_player_name, skip_checks, silen
     if not player then return end
 
     -- Convert the roles into a table (allows for optional array)
-    if type(roles) ~= 'table' or roles.name then
+    if type(roles) ~= "table" or roles.name then
         roles = { roles }
     end
 
@@ -456,10 +463,11 @@ function Roles.unassign_player(player, roles, by_player_name, skip_checks, silen
                 end
             else
                 assign_later[role.name] = {
-                    count = -1, by_player_name = by_player_name or "<server>", silent = silent
+                    count = -1, by_player_name = by_player_name or "<server>", silent = silent,
                 }
             end
         end
+
         Roles.config.deferred_roles[valid_player.name] = assign_later
     end
 
@@ -490,17 +498,20 @@ function Roles.unassign_player(player, roles, by_player_name, skip_checks, silen
                 end
             end
         end
+
         for assign_by_player_name, assign_roles in pairs(assigns) do
-            if #assign_roles > 0 then emit_player_roles_updated(valid_player, 'assign', assign_roles, assign_by_player_name) end
+            if #assign_roles > 0 then emit_player_roles_updated(valid_player, "assign", assign_roles, assign_by_player_name) end
         end
+
         for unassign_by_player_name, unassign_roles in pairs(unassigns) do
-            if #unassign_roles > 0 then emit_player_roles_updated(valid_player, 'unassign', unassign_roles, unassign_by_player_name) end
+            if #unassign_roles > 0 then emit_player_roles_updated(valid_player, "unassign", unassign_roles, unassign_by_player_name) end
         end
+
         Roles.config.deferred_roles[player.name] = nil
     end
 
     if valid_player and #role_changes > 0 then
-        emit_player_roles_updated(valid_player, 'unassign', role_changes, by_player_name, silent)
+        emit_player_roles_updated(valid_player, "unassign", role_changes, by_player_name, silent)
     end
 end
 
@@ -518,10 +529,11 @@ Roles.override_player_roles{
 }
 
 ]]
-function Roles.override_player_roles(player_name,roles)
+function Roles.override_player_roles(player_name, roles)
     local player_roles = Roles.config.players
     if not roles then
         for k in pairs(player_roles) do player_roles[k] = nil end
+
         for k, new_roles in pairs(player_name) do player_roles[k] = new_roles end
     else
         Roles.config.players[player_name] = roles
@@ -549,6 +561,7 @@ function Roles.player_has_role(player, search_role)
     for _, role in ipairs(roles) do
         if role.name == search_role.name then return true end
     end
+
     return false
 end
 
@@ -569,6 +582,7 @@ function Roles.player_has_flag(player, flag_name)
             return true
         end
     end
+
     return false
 end
 
@@ -589,6 +603,7 @@ function Roles.player_allowed(player, action)
             return true
         end
     end
+
     return false
 end
 
@@ -616,7 +631,7 @@ function Roles.define_role_order(order)
     Roles.config.order = {}
     local done = {}
     for index, role in ipairs(order) do
-        if type(role) == 'table' and role.name then
+        if type(role) == "table" and role.name then
             done[role.name] = true
             Roles.config.order[index] = role.name
         else
@@ -624,22 +639,24 @@ function Roles.define_role_order(order)
             Roles.config.order[index] = role
         end
     end
+
     -- Check no roles were missed
     for role_name in pairs(Roles.config.roles) do
         if not done[role_name] then
-            error('Role missing '..role_name..' from role order, all defined roles must be included.', 2)
+            error("Role missing " .. role_name .. " from role order, all defined roles must be included.", 2)
         end
     end
+
     -- Re-links roles to they parents as this is called at the end of the config
     for index, role_name in pairs(Roles.config.order) do
         local role = Roles.config.roles[role_name]
         if not role then
-            error('Role with name '..role_name..' has not beed defined, either define it or remove it from the order list.', 2)
+            error("Role with name " .. role_name .. " has not beed defined, either define it or remove it from the order list.", 2)
         end
         role.index = index
         local parent = Roles.config.roles[role.parent]
         if parent then
-            setmetatable(role.allowed_actions, {__index=parent.allowed_actions})
+            setmetatable(role.allowed_actions, { __index = parent.allowed_actions })
         end
     end
 end
@@ -696,14 +713,14 @@ local role = Roles.new_role('Moderator', 'Mod')
 ]]
 function Roles.new_role(name, short_hand)
     _C.error_if_runtime()
-    if Roles.config.roles[name] then return error('Role name is non unique') end
+    if Roles.config.roles[name] then return error("Role name is non unique") end
     local role = setmetatable({
-        name=name,
-        short_hand=short_hand or name,
-        allowed_actions={},
-        allow_all_actions=false,
-        flags={}
-    }, {__index=Roles._prototype})
+        name = name,
+        short_hand = short_hand or name,
+        allowed_actions = {},
+        allow_all_actions = false,
+        flags = {},
+    }, { __index = Roles._prototype })
     Roles.config.roles[name] = role
     return role
 end
@@ -738,12 +755,13 @@ role:allow{
 
 ]]
 function Roles._prototype:allow(actions)
-    if type(actions) ~= 'table' then
-        actions = {actions}
+    if type(actions) ~= "table" then
+        actions = { actions }
     end
     for _, action in ipairs(actions) do
-        self.allowed_actions[action]=true
+        self.allowed_actions[action] = true
     end
+
     return self
 end
 
@@ -759,12 +777,13 @@ role:disallow{
 
 ]]
 function Roles._prototype:disallow(actions)
-    if type(actions) ~= 'table' then
-        actions = {actions}
+    if type(actions) ~= "table" then
+        actions = { actions }
     end
     for _, action in ipairs(actions) do
-        self.allowed_actions[action]=false
+        self.allowed_actions[action] = false
     end
+
     return self
 end
 
@@ -850,7 +869,7 @@ role:set_custom_color{ r=255, g=100, b=100}
 
 ]]
 function Roles._prototype:set_custom_color(color)
-    if type(color) ~= 'table' then
+    if type(color) ~= "table" then
         color = Colours[color]
     end
     self.custom_color = color
@@ -869,7 +888,7 @@ role:set_permission_group('Admin')
 function Roles._prototype:set_permission_group(name, use_factorio_api)
     _C.error_if_runtime()
     if use_factorio_api then
-        self.permission_group = {true, name}
+        self.permission_group = { true, name }
     else
         local group = Groups.get_group_by_name(name)
         if not group then return end
@@ -892,7 +911,7 @@ function Roles._prototype:set_parent(role)
     self.parent = role
     role = Roles.get_role_from_any(role)
     if not role then return self end
-    setmetatable(self.allowed_actions, {__index=role.allowed_actions})
+    setmetatable(self.allowed_actions, { __index = role.allowed_actions })
     return self
 end
 
@@ -972,13 +991,14 @@ function Roles._prototype:add_player(player, skip_check, skip_event)
         for _, role_name in ipairs(player_roles) do
             if role_name == self.name then return false end
         end
-        player_roles[#player_roles+1] = self.name
+
+        player_roles[#player_roles + 1] = self.name
     else
-        Roles.config.players[player_name] = {self.name}
+        Roles.config.players[player_name] = { self.name }
     end
     -- Emits event if required
     if valid_player and not skip_event then
-        emit_player_roles_updated(valid_player, 'assign', {self})
+        emit_player_roles_updated(valid_player, "assign", { self })
     end
     return true
 end
@@ -1018,13 +1038,14 @@ function Roles._prototype:remove_player(player, skip_check, skip_event)
                 break
             end
         end
+
         if #player_roles == 0 then
             Roles.config.players[player_name] = nil
         end
     end
     -- Emits event if required
     if valid_player and not skip_event then
-        emit_player_roles_updated(valid_player, 'unassign', {self})
+        emit_player_roles_updated(valid_player, "unassign", { self })
     end
     return found
 end
@@ -1049,12 +1070,13 @@ function Roles._prototype:get_players(online)
                 local player = game.players[player_name]
                 -- Filter by online state if required
                 if player and (online == nil or player.connected == online) then
-                    players[#players+1] = player
+                    players[#players + 1] = player
                 end
                 break
             end
         end
     end
+
     return players
 end
 
@@ -1071,6 +1093,7 @@ function Roles._prototype:print(message)
     for _, player in ipairs(players) do
         player.print(message)
     end
+
     return #players
 end
 
@@ -1082,6 +1105,7 @@ local function role_update(event)
         local state = Roles.player_has_flag(player, flag)
         async_function(player, state)
     end
+
     -- Updates the players permission group
     local highest = Roles.get_player_highest_role(player)
     if highest.permission_group then
@@ -1114,7 +1138,7 @@ local function auto_assign(event)
         if not lookup[role] then
             local success, rtn = pcall(condition, player)
             if not success then
-                log{'expcore-roles.error-log-format-assign', role.name, rtn}
+                log{ "expcore-roles.error-log-format-assign", role.name, rtn }
             elseif rtn == true then
                 ctn = ctn + 1
                 assigns[ctn] = role
@@ -1138,7 +1162,6 @@ Event.on_nth_tick(3600, function()
         auto_assign{ player_index = player.index }
     end
 end)
-
 
 -- Return Roles
 return Roles

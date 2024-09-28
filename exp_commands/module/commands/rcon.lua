@@ -31,10 +31,15 @@ rcon_statics.ipc = Clustorio.send_json
 
 --- Some common callback values which are useful when a player uses the command
 function rcon_callbacks.player(player) return player end
+
 function rcon_callbacks.surface(player) return player and player.surface end
+
 function rcon_callbacks.force(player) return player and player.force end
+
 function rcon_callbacks.position(player) return player and player.position end
+
 function rcon_callbacks.entity(player) return player and player.selected end
+
 function rcon_callbacks.tile(player) return player and player.surface.get_tile(player.position) end
 
 --- The rcon env is saved between command runs to prevent desyncs
@@ -55,28 +60,28 @@ function Commands.add_rcon_callback(name, callback)
 end
 
 Commands.new("_rcon", "Execute arbitrary code within a custom environment")
-:add_flags{ "system_only" }
-:enable_auto_concatenation()
-:argument("invocation", "string")
-:register(function(player, invocation_string)
-    -- Construct the environment the command will run within
-    local env = setmetatable({}, { __index = rcon_env, __newindex = rcon_env })
-    for name, callback in pairs(rcon_callbacks) do
-        local _, rtn = pcall(callback, player.index > 0 and player or nil)
-        rawset(env, name, rtn)
-    end
-
-    -- Compile and run the invocation string
-    local invocation, compile_error = load(invocation_string, "rcon-invocation", "t", env)
-    if compile_error then
-        return Commands.status.invalid_input(compile_error)
-    else
-        local success, rtn = xpcall(invocation, debug.traceback)
-        if success == false then
-            local err = rtn:gsub('%.%.%..-/temp/currently%-playing/', '')
-            return Commands.status.error(err)
-        else
-            return Commands.status.success(rtn)
+    :add_flags{ "system_only" }
+    :enable_auto_concatenation()
+    :argument("invocation", "string")
+    :register(function(player, invocation_string)
+        -- Construct the environment the command will run within
+        local env = setmetatable({}, { __index = rcon_env, __newindex = rcon_env })
+        for name, callback in pairs(rcon_callbacks) do
+            local _, rtn = pcall(callback, player.index > 0 and player or nil)
+            rawset(env, name, rtn)
         end
-    end
-end)
+
+        -- Compile and run the invocation string
+        local invocation, compile_error = load(invocation_string, "rcon-invocation", "t", env)
+        if compile_error then
+            return Commands.status.invalid_input(compile_error)
+        else
+            local success, rtn = xpcall(invocation, debug.traceback)
+            if success == false then
+                local err = rtn:gsub("%.%.%..-/temp/currently%-playing/", "")
+                return Commands.status.error(err)
+            else
+                return Commands.status.success(rtn)
+            end
+        end
+    end)

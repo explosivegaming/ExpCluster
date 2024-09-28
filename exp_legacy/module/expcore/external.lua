@@ -47,8 +47,8 @@ local servers = External.get_servers()
 
 ]]
 function External.get_servers()
-    assert(ext, 'No external data was found, use External.valid() to ensure external data exists.')
-    return assert(ext.servers, 'No server list was found, please ensure that the external service is running')
+    assert(ext, "No external data was found, use External.valid() to ensure external data exists.")
+    return assert(ext.servers, "No server list was found, please ensure that the external service is running")
 end
 
 --[[-- Gets a table of all the servers filtered by name, key is the server id, value is the server details
@@ -60,14 +60,15 @@ local servers = External.get_servers_filtered(public)
 
 ]]
 function External.get_servers_filtered(search)
-    assert(ext, 'No external data was found, use External.valid() to ensure external data exists.')
-    local servers = assert(ext.servers, 'No server list was found, please ensure that the external service is running')
+    assert(ext, "No external data was found, use External.valid() to ensure external data exists.")
+    local servers = assert(ext.servers, "No server list was found, please ensure that the external service is running")
     local found_servers = {}
     search = search:lower()
     for server_id, server in pairs(servers) do
-        local str = concat{server.name, server.short_name, server.id}
+        local str = concat{ server.name, server.short_name, server.id }
         if str:lower():find(search, 1, true) then found_servers[server_id] = server end
     end
+
     return found_servers
 end
 
@@ -79,9 +80,9 @@ local server = External.get_current_server()
 
 ]]
 function External.get_current_server()
-    assert(ext, 'No external data was found, use External.valid() to ensure external data exists.')
-    local servers = assert(ext.servers, 'No server list was found, please ensure that the external service is running')
-    local server_id = assert(ext.current, 'No current id was found, please ensure that the external service is running')
+    assert(ext, "No external data was found, use External.valid() to ensure external data exists.")
+    local servers = assert(ext.servers, "No server list was found, please ensure that the external service is running")
+    local server_id = assert(ext.current, "No current id was found, please ensure that the external service is running")
     return servers[server_id]
 end
 
@@ -94,8 +95,8 @@ local server = External.get_server_details('eu-01')
 
 ]]
 function External.get_server_details(server_id)
-    assert(ext, 'No external data was found, use External.valid() to ensure external data exists.')
-    local servers = assert(ext.servers, 'No server list was found, please ensure that the external service is running')
+    assert(ext, "No external data was found, use External.valid() to ensure external data exists.")
+    local servers = assert(ext.servers, "No server list was found, please ensure that the external service is running")
     return servers[server_id]
 end
 
@@ -109,10 +110,10 @@ local status = External.get_server_status('eu-01')
 
 ]]
 function External.get_server_status(server_id, raw)
-    assert(var, 'No external data was found, use External.valid() to ensure external data exists.')
-    local servers = assert(var.status, 'No server status was found, please ensure that the external service is running')
-    local current = assert(ext.current, 'No current id was found, please ensure that the external service is running')
-    return not raw and server_id == current and 'Current' or servers[server_id]
+    assert(var, "No external data was found, use External.valid() to ensure external data exists.")
+    local servers = assert(var.status, "No server status was found, please ensure that the external service is running")
+    local current = assert(ext.current, "No current id was found, please ensure that the external service is running")
+    return not raw and server_id == current and "Current" or servers[server_id]
 end
 
 --[[-- Gets the ups of the current server
@@ -121,8 +122,8 @@ local server_ups = External.get_server_ups()
 
 ]]
 function External.get_server_ups()
-    assert(var, 'No external data was found, use External.valid() to ensure external data exists.')
-    return assert(var.server_ups, 'No server ups was found, please ensure that the external service is running')
+    assert(var, "No external data was found, use External.valid() to ensure external data exists.")
+    return assert(var.server_ups, "No server ups was found, please ensure that the external service is running")
 end
 
 --[[-- Connect a player to the given server
@@ -138,14 +139,14 @@ External.request_connection(player, 'eu-01', true)
 
 ]]
 function External.request_connection(player, server_id, self_requested)
-    local server = { address = server_id, name = 'Unknown Server', description = 'This server is not ran by us, please check the address of the server.' }
+    local server = { address = server_id, name = "Unknown Server", description = "This server is not ran by us, please check the address of the server." }
     if ext and ext.servers and ext.servers[server_id] then server = ext.servers[server_id] end
-    local message = 'Please press the connect button below to join.'
-    if not self_requested then message = 'You have been asked to switch to a different server.\n'..message end
+    local message = "Please press the connect button below to join."
+    if not self_requested then message = "You have been asked to switch to a different server.\n" .. message end
     player.connect_to_server{
         address = server.address,
-        name = '\n[color=orange][font=heading-1]'..server.name..'[/font][/color]\n',
-        description = server.description..'\n'..message
+        name = "\n[color=orange][font=heading-1]" .. server.name .. "[/font][/color]\n",
+        description = server.description .. "\n" .. message,
     }
 end
 

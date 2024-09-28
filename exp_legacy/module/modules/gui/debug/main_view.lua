@@ -10,7 +10,7 @@ local pages = {
     require("modules.exp_legacy.modules.gui.debug.global_view"),
     require("modules.exp_legacy.modules.gui.debug.package_view"),
     require("modules.exp_legacy.modules.gui.debug._g_view"),
-    require("modules.exp_legacy.modules.gui.debug.event_view")
+    require("modules.exp_legacy.modules.gui.debug.event_view"),
 }
 
 local main_frame_name = Gui.uid_name()
@@ -40,23 +40,23 @@ function Public.open_dubug(player)
         frame.auto_center = true
     ]]
 
-    frame = center.add {type = 'frame', name = main_frame_name, caption = 'Debuggertron 3002', direction = 'vertical'}
+    frame = center.add{ type = "frame", name = main_frame_name, caption = "Debuggertron 3002", direction = "vertical" }
     local frame_style = frame.style
     frame_style.height = 600
     frame_style.width = 900
 
-    local tab_flow = frame.add {type = 'flow', direction = 'horizontal'}
-    local container = frame.add {type = 'flow'}
+    local tab_flow = frame.add{ type = "flow", direction = "horizontal" }
+    local container = frame.add{ type = "flow" }
     container.style.vertically_stretchable = true
 
     local data = {}
 
     for i = 1, #pages do
         local page = pages[i]
-        local tab_button = tab_flow.add({type = 'flow'}).add {type = 'button', name = tab_name, caption = page.name}
+        local tab_button = tab_flow.add{ type = "flow" }.add{ type = "button", name = tab_name, caption = page.name }
         local tab_button_style = tab_button.style
 
-        Gui.set_data(tab_button, {index = i, frame_data = data})
+        Gui.set_data(tab_button, { index = i, frame_data = data })
 
         if i == 1 then
             tab_button_style.font_color = Color.orange
@@ -70,7 +70,7 @@ function Public.open_dubug(player)
         end
     end
 
-    frame.add {type = 'button', name = close_name, caption = 'Close'}
+    frame.add{ type = "button", name = close_name, caption = "Close" }
 end
 
 Gui.on_click(

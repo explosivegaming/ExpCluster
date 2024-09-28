@@ -47,13 +47,20 @@ local Production = {}
 -- @treturn[1] defines.flow_precision_index the next precision value
 -- @treturn[1] number the multiplicive difference between the values
 function Production.precision_up(precision)
-    if precision == precision_index.five_seconds then return precision_index.one_minute, 60
-    elseif precision == precision_index.one_minute then return precision_index.ten_minutes, 10
-    elseif precision == precision_index.ten_minutes then return precision_index.one_hour, 6
-    elseif precision == precision_index.one_hour then return precision_index.ten_hours, 10
-    elseif precision == precision_index.ten_hours then return precision_index.fifty_hours, 5
-    elseif precision == precision_index.fifty_hours then return precision_index.two_hundred_fifty_hours, 5
-    elseif precision == precision_index.two_hundred_fifty_hours then return precision_index.one_thousand_hours, 4
+    if precision == precision_index.five_seconds then
+        return precision_index.one_minute, 60
+    elseif precision == precision_index.one_minute then
+        return precision_index.ten_minutes, 10
+    elseif precision == precision_index.ten_minutes then
+        return precision_index.one_hour, 6
+    elseif precision == precision_index.one_hour then
+        return precision_index.ten_hours, 10
+    elseif precision == precision_index.ten_hours then
+        return precision_index.fifty_hours, 5
+    elseif precision == precision_index.fifty_hours then
+        return precision_index.two_hundred_fifty_hours, 5
+    elseif precision == precision_index.two_hundred_fifty_hours then
+        return precision_index.one_thousand_hours, 4
     end
 end
 
@@ -62,13 +69,20 @@ end
 -- @treturn[1] defines.flow_precision_index the next precision value
 -- @treturn[1] number the multiplicive difference between the values
 function Production.precision_down(precision)
-    if precision == precision_index.one_minute then return precision_index.five_seconds, 60
-    elseif precision == precision_index.ten_minutes then return precision_index.one_minute, 10
-    elseif precision == precision_index.one_hour then return precision_index.ten_minutes, 6
-    elseif precision == precision_index.ten_hours then return precision_index.one_hour, 10
-    elseif precision == precision_index.fifty_hours then return precision_index.ten_hours, 5
-    elseif precision == precision_index.two_hundred_fifty_hours then return precision_index.fifty_hours, 5
-    elseif precision == precision_index.one_thousand_hours then return precision_index.two_hundred_fifty_hours, 4
+    if precision == precision_index.one_minute then
+        return precision_index.five_seconds, 60
+    elseif precision == precision_index.ten_minutes then
+        return precision_index.one_minute, 10
+    elseif precision == precision_index.one_hour then
+        return precision_index.ten_minutes, 6
+    elseif precision == precision_index.ten_hours then
+        return precision_index.one_hour, 10
+    elseif precision == precision_index.fifty_hours then
+        return precision_index.ten_hours, 5
+    elseif precision == precision_index.two_hundred_fifty_hours then
+        return precision_index.fifty_hours, 5
+    elseif precision == precision_index.one_thousand_hours then
+        return precision_index.two_hundred_fifty_hours, 4
     end
 end
 
@@ -76,14 +90,22 @@ end
 -- @tparam defines.flow_precision_index precision
 -- @treturn number the number of ticks in this time
 function Production.precision_ticks(precision)
-    if precision == precision_index.five_seconds then return 300
-    elseif precision == precision_index.one_minute then return 3600
-    elseif precision == precision_index.ten_minutes then return 36000
-    elseif precision == precision_index.one_hour then return 216000
-    elseif precision == precision_index.ten_hours then return 2160000
-    elseif precision == precision_index.fifty_hours then return 10800000
-    elseif precision == precision_index.two_hundred_fifty_hours then return 54000000
-    elseif precision == precision_index.one_thousand_hours then return 216000000
+    if precision == precision_index.five_seconds then
+        return 300
+    elseif precision == precision_index.one_minute then
+        return 3600
+    elseif precision == precision_index.ten_minutes then
+        return 36000
+    elseif precision == precision_index.one_hour then
+        return 216000
+    elseif precision == precision_index.ten_hours then
+        return 2160000
+    elseif precision == precision_index.fifty_hours then
+        return 10800000
+    elseif precision == precision_index.two_hundred_fifty_hours then
+        return 54000000
+    elseif precision == precision_index.one_thousand_hours then
+        return 216000000
     end
 end
 
@@ -104,11 +126,10 @@ function Production.get_production_total(force, item_name)
     end
 
     return {
-        made=made,
-        used=used,
-        net=made-used
+        made = made,
+        used = used,
+        net = made - used,
     }
-
 end
 
 --- Returns the production data for the given precision game time
@@ -120,16 +141,15 @@ function Production.get_production(force, item_name, precision)
     local made, used = 0, 0
     for _, surface in pairs(game.surfaces) do
         local stats = force.get_item_production_statistics(surface).get_flow_count
-        made = made + stats{name=item_name, category="input", precision_index=precision}
-        used = used + stats{name=item_name, category="output", precision_index=precision}
+        made = made + stats{ name = item_name, category = "input", precision_index = precision }
+        used = used + stats{ name = item_name, category = "output", precision_index = precision }
     end
 
     return {
-        made=made,
-        used=used,
-        net=made-used
+        made = made,
+        used = used,
+        net = made - used,
     }
-
 end
 
 --- Returns the current fluctuation from the average
@@ -143,11 +163,10 @@ function Production.get_fluctuations(force, item_name, precision)
     local previous = Production.get_production(force, item_name, precision_up)
 
     return {
-        made=(current.made/previous.made)-1,
-        used=(current.used/previous.used)-1,
-        net=(current.net/previous.net)-1,
+        made = (current.made / previous.made) - 1,
+        used = (current.used / previous.used) - 1,
+        net = (current.net / previous.net) - 1,
     }
-
 end
 
 --- Returns the amount of ticks required to produce a certain amount
@@ -160,7 +179,7 @@ function Production.get_production_eta(force, item_name, precision, required)
     required = required or 1000
     local ticks = Production.precision_ticks(precision)
     local production = Production.get_production(force, item_name, precision)
-    return production.made == 0 and -1 or ticks*required/production.made
+    return production.made == 0 and -1 or ticks * required / production.made
 end
 
 --- Returns the amount of ticks required to consume a certain amount
@@ -173,7 +192,7 @@ function Production.get_consumsion_eta(force, item_name, precision, required)
     required = required or 1000
     local ticks = Production.precision_ticks(precision)
     local production = Production.get_production(force, item_name, precision)
-    return production.used == 0 and -1 or ticks*required/production.used
+    return production.used == 0 and -1 or ticks * required / production.used
 end
 
 --- Returns the amount of ticks required to produce but not consume a certain amount
@@ -186,7 +205,7 @@ function Production.get_net_eta(force, item_name, precision, required)
     required = required or 1000
     local ticks = Production.precision_ticks(precision)
     local production = Production.get_production(force, item_name, precision)
-    return production.net == 0 and -1 or ticks*required/production.net
+    return production.net == 0 and -1 or ticks * required / production.net
 end
 
 --- Formating.
@@ -223,17 +242,16 @@ function Production.format_number(value)
     local surfix = rtn:sub(-1)
 
     if value > 0 then
-        rtn = '+'..rtn
-    elseif value == 0 and rtn:sub(1, 1) == '-' then
+        rtn = "+" .. rtn
+    elseif value == 0 and rtn:sub(1, 1) == "-" then
         rtn = rtn:sub(2)
     end
 
     if not tonumber(surfix) then
         return surfix, rtn:sub(1, -2)
     else
-        return '', rtn
+        return "", rtn
     end
-
 end
 
 return Production

@@ -2,5 +2,5 @@
 -- @config lawnmower
 
 return {
-    destroy_decoratives = false
+    destroy_decoratives = false,
 }

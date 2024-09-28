@@ -26,14 +26,14 @@ local Storage = require("modules/exp_util/storage")
 local config = require("modules.exp_legacy.config.gui.warps") --- @dep config.warps
 
 --- Stores all data for the warp system
-local WrapData = Datastore.connect('WrapData')
+local WrapData = Datastore.connect("WrapData")
 WrapData:set_serializer(function(raw_key) return raw_key.warp_id end)
 
 local Warps = {}
 
 -- Storage lookup table for force name to task ids
-local force_warps = {_uid=1}
----@cast force_warps table<string, { spawn: string, [number]: string }>
+local force_warps = { _uid = 1 }
+--- @cast force_warps table<string, { spawn: string, [number]: string }>
 Storage.register(force_warps, function(tbl)
     force_warps = tbl
 end)
@@ -65,13 +65,13 @@ WrapData:on_update(function(warp_id, warp, old_warp)
         for _, next_warp_id in pairs(warp_ids) do
             local next_warp = WrapData:get(next_warp_id)
             if next_warp_id ~= spawn_id then
-                warp_names[next_warp.name..next_warp_id] = next_warp_id
+                warp_names[next_warp.name .. next_warp_id] = next_warp_id
             end
         end
 
         -- Sort the warp names in alphabetical order
         local new_warp_ids = table.get_values(table.keysort(warp_names))
-        table.insert(new_warp_ids, 1,spawn_id)
+        table.insert(new_warp_ids, 1, spawn_id)
         new_warp_ids.spawn = spawn_id
         force_warps[force_name] = new_warp_ids
     end
@@ -98,7 +98,7 @@ function Warps.make_warp_tag(warp_id)
     local tag = warp.tag
 
     if tag and tag.valid then
-        tag.text = 'Warp: ' .. name
+        tag.text = "Warp: " .. name
         tag.icon = icon
         return false
     end
@@ -109,9 +109,9 @@ function Warps.make_warp_tag(warp_id)
     local position = warp.position
 
     tag = force.add_chart_tag(surface, {
-        position = {position.x+0.5, position.y+0.5},
-        text = 'Warp: ' .. name,
-        icon = icon
+        position = { position.x + 0.5, position.y + 0.5 },
+        text = "Warp: " .. name,
+        icon = icon,
     })
 
     -- Add the tag to this warp, store.update not needed as we dont want it to trigger
@@ -165,16 +165,17 @@ function Warps.make_warp_area(warp_id)
     -- Add a tile pattern on top of the base
     local tiles = {}
     for _, tile in pairs(config.tiles) do
-        table.insert(tiles, {name=tile[1], position={tile[2]+posx, tile[3]+posy}})
+        table.insert(tiles, { name = tile[1], position = { tile[2] + posx, tile[3] + posy } })
     end
+
     surface.set_tiles(tiles)
 
     -- Add entities to the warp structure
     for _, entity in pairs(config.entities) do
         entity = surface.create_entity{
-            name=entity[1],
-            position={entity[2]+posx, entity[3]+posy},
-            force='neutral'
+            name = entity[1],
+            position = { entity[2] + posx, entity[3] + posy },
+            force = "neutral",
         }
         entity.destructible = false
         entity.health = 0
@@ -182,7 +183,7 @@ function Warps.make_warp_area(warp_id)
         entity.rotatable = false
 
         -- Save reference of the last power pole
-        if entity.type == 'electric-pole' then
+        if entity.type == "electric-pole" then
             warp.electric_pole = entity
         end
     end
@@ -209,18 +210,18 @@ function Warps.remove_warp_area(warp_id)
     local tiles = {}
 
     for _, tile in pairs(config.tiles) do
-        table.insert(tiles, {name=old_tile, position={tile[2]+position.x, tile[3]+position.y}})
+        table.insert(tiles, { name = old_tile, position = { tile[2] + position.x, tile[3] + position.y } })
     end
 
     surface.set_tiles(tiles)
 
     local area = {
-        {position.x-radius, position.y-radius},
-        {position.x+radius, position.y+radius}
+        { position.x - radius, position.y - radius },
+        { position.x + radius, position.y + radius },
     }
 
     -- Remove warp structure entities
-    local entities = surface.find_entities_filtered{ force='neutral', area=area, name = remove_warp_area_entity_names }
+    local entities = surface.find_entities_filtered{ force = "neutral", area = area, name = remove_warp_area_entity_names }
     for _, entity in pairs(entities) do
         -- Destroy them, this will leave corpses of the entities that it destroyed.
         if entity and entity.valid and entity.destructible == false then
@@ -228,6 +229,7 @@ function Warps.remove_warp_area(warp_id)
             entity.die(entity.force)
         end
     end
+
     -- Rechart map area, useful if warp is not covered by a radar
     game.forces[warp.force_name].chart(surface, area)
 end
@@ -269,8 +271,8 @@ function Warps.teleport_player(warp_id, player)
     local warp = WrapData:get(warp_id)
     local surface = warp.surface
     local position = {
-        x=warp.position.x+0.5,
-        y=warp.position.y+0.5
+        x = warp.position.x + 0.5,
+        y = warp.position.y + 0.5,
     }
 
     if player.vehicle then
@@ -285,13 +287,13 @@ function Warps.teleport_player(warp_id, player)
             if not entity.teleport(goto_position) then
                 player.driving = false
                 -- Need to calculate new goto_position because entities have different collision boxes
-                goto_position = surface.find_non_colliding_position('character', position, 32, 1)
+                goto_position = surface.find_non_colliding_position("character", position, 32, 1)
                 player.teleport(goto_position, surface)
             end
         end
     else
         -- Teleport the player
-        local goto_position = surface.find_non_colliding_position('character', position, 32, 1)
+        local goto_position = surface.find_non_colliding_position("character", position, 32, 1)
         if player.driving then player.driving = false end
         player.teleport(goto_position, surface)
     end
@@ -318,7 +320,7 @@ function Warps.add_warp(force_name, surface, position, player_name, warp_name)
     -- Get new warp id
     local warp_id = tostring(force_warps._uid)
     force_warps._uid = force_warps._uid + 1
-    warp_name = warp_name or 'New warp'
+    warp_name = warp_name or "New warp"
 
     -- Get the existing warps for this force
     local warp_ids = force_warps[force_name]
@@ -345,9 +347,9 @@ function Warps.add_warp(force_name, surface, position, player_name, warp_name)
         surface = surface,
         position = {
             x = math.floor(position.x),
-            y = math.floor(position.y)
+            y = math.floor(position.y),
         },
-        last_edit_name = player_name or '<server>',
+        last_edit_name = player_name or "<server>",
         last_edit_time = game.tick,
         currently_editing = editing,
         updates = 0,
@@ -389,7 +391,7 @@ function Warps.update_warp(warp_id, new_name, new_icon, player_name)
             new_icon = warp.icon
         end
 
-        warp.last_edit_name = player_name or '<server>'
+        warp.last_edit_name = player_name or "<server>"
         warp.last_edit_time = game.tick
         warp.name = new_name or warp.name
         warp.icon = new_icon or warp.icon

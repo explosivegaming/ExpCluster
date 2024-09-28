@@ -11,24 +11,24 @@ local External = require("modules.exp_legacy.expcore.external") --- @dep expcore
 
 --- Stores the visible state of server ups
 local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
-local UsesServerUps = PlayerData.Settings:combine('UsesServerUps')
+local UsesServerUps = PlayerData.Settings:combine("UsesServerUps")
 UsesServerUps:set_default(false)
 UsesServerUps:set_metadata{
-    permission = 'command/server-ups',
-    stringify = function(value) return value and 'Visible' or 'Hidden' end
+    permission = "command/server-ups",
+    stringify = function(value) return value and "Visible" or "Hidden" end,
 }
 
 --- Label to show the server ups
 -- @element server_ups
 local server_ups =
-Gui.element{
-    type = 'label',
-    caption = 'SUPS = 60.0',
-    name = Gui.unique_static_name
-}
-:style{
-    font = 'default-game'
-}
+    Gui.element{
+        type = "label",
+        caption = "SUPS = 60.0",
+        name = Gui.unique_static_name,
+    }
+    :style{
+        font = "default-game",
+    }
 
 --- Change the visible state when your data loads
 UsesServerUps:on_load(function(player_name, visible)
@@ -40,17 +40,17 @@ end)
 
 --- Toggles if the server ups is visbile
 -- @command server-ups
-Commands.new_command('server-ups', 'Toggle the server UPS display')
-:add_alias('sups', 'ups')
-:register(function(player)
-    local label = player.gui.screen[server_ups.name]
-    if not External.valid() then
-        label.visible = false
-        return Commands.error{'expcom-server-ups.no-ext'}
-    end
-    label.visible = not label.visible
-    UsesServerUps:set(player, label.visible)
-end)
+Commands.new_command("server-ups", "Toggle the server UPS display")
+    :add_alias("sups", "ups")
+    :register(function(player)
+        local label = player.gui.screen[server_ups.name]
+        if not External.valid() then
+            label.visible = false
+            return Commands.error{ "expcom-server-ups.no-ext" }
+        end
+        label.visible = not label.visible
+        UsesServerUps:set(player, label.visible)
+    end)
 
 -- Set the location of the label
 -- 1920x1080: x=1455, y=30 (ui scale 100%)
@@ -61,7 +61,7 @@ local function set_location(event)
     local uis = player.display_scale
     -- below ups and clock
     -- label.location = {x=res.width-423*uis, y=50*uis}
-    label.location = {x=res.width-363*uis, y=31*uis}
+    label.location = { x = res.width - 363 * uis, y = 31 * uis }
 end
 
 -- Draw the label when the player joins
@@ -76,7 +76,7 @@ end)
 -- percentage of game speed
 Event.on_nth_tick(60, function()
     if External.valid() then
-        local caption = External.get_server_ups() .. ' (' .. string.format('%.1f', External.get_server_ups() * 5 / 3) .. '%)'
+        local caption = External.get_server_ups() .. " (" .. string.format("%.1f", External.get_server_ups() * 5 / 3) .. "%)"
         for _, player in pairs(game.connected_players) do
             player.gui.screen[server_ups.name].caption = caption
         end

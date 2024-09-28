@@ -39,7 +39,7 @@ end
 local Rockets = {
     times = {},
     stats = {},
-    silos = {}
+    silos = {},
 }
 
 local rocket_times = Rockets.times
@@ -48,7 +48,7 @@ local rocket_silos = Rockets.silos
 Storage.register({
     rocket_times = rocket_times,
     rocket_stats = rocket_stats,
-    rocket_silos = rocket_silos
+    rocket_silos = rocket_silos,
 }, function(tbl)
     Rockets.times = tbl.rocket_times
     Rockets.stats = tbl.rocket_stats
@@ -63,7 +63,7 @@ end)
 -- @treturn table the data table for this silo, contains rockets launch, silo status, and its force
 function Rockets.get_silo_data(silo)
     local position = silo.position
-    local silo_name = math.floor(position.x)..':'..math.floor(position.y)
+    local silo_name = math.floor(position.x) .. ":" .. math.floor(position.y)
     return rocket_silos[silo_name]
 end
 
@@ -99,6 +99,7 @@ function Rockets.get_silos(force_name)
             table.insert(rtn, silo_data)
         end
     end
+
     return rtn
 end
 
@@ -125,6 +126,7 @@ function Rockets.get_game_rocket_count()
     for _, force in pairs(game.forces) do
         rtn = rtn + force.rockets_launched
     end
+
     return rtn
 end
 
@@ -139,10 +141,10 @@ function Rockets.get_rolling_average(force_name, count)
     local last_launch_time = rocket_times[force_name][rocket_count]
     local start_rocket_time = 0
     if count < rocket_count then
-        start_rocket_time = rocket_times[force_name][rocket_count-count+1]
+        start_rocket_time = rocket_times[force_name][rocket_count - count + 1]
         rocket_count = count
     end
-    return math.floor((last_launch_time-start_rocket_time)/rocket_count)
+    return math.floor((last_launch_time - start_rocket_time) / rocket_count)
 end
 
 --- Event used to update the stats and the hui when a rocket is launched
@@ -163,8 +165,8 @@ Event.add(defines.events.on_rocket_launched, function(event)
     if rockets_launched == 1 then
         stats.first_launch = event.tick
         stats.fastest_launch = event.tick
-    elseif event.tick-stats.last_launch < stats.fastest_launch then
-        stats.fastest_launch = event.tick-stats.last_launch
+    elseif event.tick - stats.last_launch < stats.fastest_launch then
+        stats.fastest_launch = event.tick - stats.last_launch
     end
 
     stats.last_launch = event.tick
@@ -176,13 +178,13 @@ Event.add(defines.events.on_rocket_launched, function(event)
 
     rocket_times[force_name][rockets_launched] = event.tick
 
-    local remove_rocket = rockets_launched-largest_rolling_avg
+    local remove_rocket = rockets_launched - largest_rolling_avg
     if remove_rocket > 0 and not table.contains(config.milestones, remove_rocket) then
         rocket_times[force_name][remove_rocket] = nil
     end
 
     --- Adds this 1 to the launch count for this silo
-    silo_data.launched = silo_data.launched+1
+    silo_data.launched = silo_data.launched + 1
 end)
 
 --- When a launch is reiggered it will await reset
@@ -195,19 +197,19 @@ end)
 --- Adds a silo to the list when it is built
 local function on_built(event)
     local entity = event.created_entity
-    if entity.valid and entity.name == 'rocket-silo' then
+    if entity.valid and entity.name == "rocket-silo" then
         local force = entity.force
         local force_name = force.name
         local position = entity.position
-        local silo_name = math.floor(position.x)..':'..math.floor(position.y)
+        local silo_name = math.floor(position.x) .. ":" .. math.floor(position.y)
 
         rocket_silos[silo_name] = {
-            name=silo_name,
-            force=force_name,
-            entity=entity,
-            launched=0,
-            awaiting_reset=false,
-            built=game.tick
+            name = silo_name,
+            force = force_name,
+            entity = entity,
+            launched = 0,
+            awaiting_reset = false,
+            built = game.tick,
         }
     end
 end

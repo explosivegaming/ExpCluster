@@ -2,1639 +2,1640 @@
 -- @config Personal Logistic
 
 return {
+    start = 0,
     production_required = {
-        ['belt'] = 100,
-        ['power'] = 20,
-        ['miner'] = 20,
-        ['furnace'] = 20,
-        ['machine'] = 20,
-        ['pole'] = 20,
-        ['bot'] = 20,
-        ['inserter'] = 20,
-        ['chest'] = 20,
-        ['rail'] = 100,
-        ['module'] = 20,
-        ['defense'] = 20,
-        ['rocket'] = 20,
-        ['ammo'] = 20,
-        ['armor'] = 3,
-        ['armor_equipment'] = 4,
-        ['weapon'] = 0
+        ["belt"] = 100,
+        ["power"] = 20,
+        ["miner"] = 20,
+        ["furnace"] = 20,
+        ["machine"] = 20,
+        ["pole"] = 20,
+        ["bot"] = 20,
+        ["inserter"] = 20,
+        ["chest"] = 20,
+        ["rail"] = 100,
+        ["module"] = 20,
+        ["defense"] = 20,
+        ["rocket"] = 20,
+        ["ammo"] = 20,
+        ["armor"] = 3,
+        ["armor_equipment"] = 4,
+        ["weapon"] = 0,
     },
     request = {
         -- belt
-        ['transport-belt'] = {
+        ["transport-belt"] = {
             key = 1,
             upgrade_of = nil,
-            type = 'belt',
+            type = "belt",
             stack = 100,
             min = 800,
-            max = 800
+            max = 800,
         },
-        ['underground-belt'] = {
+        ["underground-belt"] = {
             key = 2,
             upgrade_of = nil,
-            type = 'belt',
+            type = "belt",
             stack = 50,
             min = 250,
-            max = 250
+            max = 250,
         },
-        ['splitter'] = {
+        ["splitter"] = {
             key = 3,
             upgrade_of = nil,
-            type = 'belt',
+            type = "belt",
             stack = 50,
             min = 100,
-            max = 100
+            max = 100,
         },
-        ['fast-transport-belt'] = {
+        ["fast-transport-belt"] = {
             key = 11,
-            upgrade_of = 'transport-belt',
-            type = 'belt',
+            upgrade_of = "transport-belt",
+            type = "belt",
             stack = 100,
             min = 800,
-            max = 800
+            max = 800,
         },
-        ['fast-underground-belt'] = {
+        ["fast-underground-belt"] = {
             key = 12,
-            upgrade_of = 'underground-belt',
-            type = 'belt',
+            upgrade_of = "underground-belt",
+            type = "belt",
             stack = 50,
             min = 250,
-            max = 250
+            max = 250,
         },
-        ['fast-splitter'] = {
+        ["fast-splitter"] = {
             key = 13,
-            upgrade_of = 'splitter',
-            type = 'belt',
+            upgrade_of = "splitter",
+            type = "belt",
             stack = 50,
             min = 100,
-            max = 100
+            max = 100,
         },
-        ['express-transport-belt'] = {
+        ["express-transport-belt"] = {
             key = 21,
-            upgrade_of = 'fast-transport-belt',
-            type = 'belt',
+            upgrade_of = "fast-transport-belt",
+            type = "belt",
             stack = 100,
             min = 800,
-            max = 800
+            max = 800,
         },
-        ['express-underground-belt'] = {
+        ["express-underground-belt"] = {
             key = 22,
-            upgrade_of = 'fast-underground-belt',
-            type = 'belt',
+            upgrade_of = "fast-underground-belt",
+            type = "belt",
             stack = 50,
             min = 250,
-            max = 250
+            max = 250,
         },
-        ['express-splitter'] = {
+        ["express-splitter"] = {
             key = 23,
-            upgrade_of = 'fast-splitter',
-            type = 'belt',
+            upgrade_of = "fast-splitter",
+            type = "belt",
             stack = 50,
             min = 100,
-            max = 100
+            max = 100,
         },
         -- power
-        ['solar-panel'] = {
+        ["solar-panel"] = {
             key = 4,
             upgrade_of = nil,
-            type = 'power',
+            type = "power",
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['accumulator'] = {
+        ["accumulator"] = {
             key = 5,
             upgrade_of = nil,
-            type = 'power',
+            type = "power",
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['boiler'] = {
+        ["boiler"] = {
             key = 6,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['steam-engine'] = {
+        ["steam-engine"] = {
             key = 7,
             upgrade_of = nil,
             type = nil,
             stack = 10,
             min = 0,
-            max = 0
+            max = 0,
         },
         -- miner
-        ['burner-mining-drill'] = {
+        ["burner-mining-drill"] = {
             key = 8,
             upgrade_of = nil,
-            type = 'miner',
+            type = "miner",
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['electric-mining-drill'] = {
+        ["electric-mining-drill"] = {
             key = 9,
-            upgrade_of = 'burner-mining-drill',
-            type = 'miner',
+            upgrade_of = "burner-mining-drill",
+            type = "miner",
             stack = 50,
             min = 250,
-            max = 250
+            max = 250,
         },
-        ['pumpjack'] = {
+        ["pumpjack"] = {
             key = 10,
             upgrade_of = nil,
-            type = 'miner',
+            type = "miner",
             stack = 20,
             min = 20,
-            max = 20
+            max = 20,
         },
         -- furnace
-        ['stone-furnace'] = {
+        ["stone-furnace"] = {
             key = 18,
             upgrade_of = nil,
-            type = 'furnace',
+            type = "furnace",
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['steel-furnace'] = {
+        ["steel-furnace"] = {
             key = 19,
-            upgrade_of = 'stone-furnace',
-            type = 'furnace',
+            upgrade_of = "stone-furnace",
+            type = "furnace",
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['electric-furnace'] = {
+        ["electric-furnace"] = {
             key = 20,
-            upgrade_of = 'steel-furnace',
-            type = 'furnace',
+            upgrade_of = "steel-furnace",
+            type = "furnace",
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
         -- machine
-        ['assembling-machine-1'] = {
+        ["assembling-machine-1"] = {
             key = 28,
             upgrade_of = nil,
-            type = 'machine',
+            type = "machine",
             stack = 50,
             min = 0,
-            max = 50
+            max = 50,
         },
-        ['assembling-machine-2'] = {
+        ["assembling-machine-2"] = {
             key = 29,
-            upgrade_of = 'assembling-machine-1',
-            type = 'machine',
+            upgrade_of = "assembling-machine-1",
+            type = "machine",
             stack = 50,
             min = 50,
-            max = 50
+            max = 50,
         },
-        ['assembling-machine-3'] = {
+        ["assembling-machine-3"] = {
             key = 30,
-            upgrade_of = 'assembling-machine-2',
-            type = 'machine',
+            upgrade_of = "assembling-machine-2",
+            type = "machine",
             stack = 50,
             min = 50,
-            max = 50
+            max = 50,
         },
-        ['oil-refinery'] = {
+        ["oil-refinery"] = {
             key = 24,
             upgrade_of = nil,
-            type = 'machine',
+            type = "machine",
             stack = 10,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['chemical-plant'] = {
+        ["chemical-plant"] = {
             key = 25,
             upgrade_of = nil,
-            type = 'machine',
+            type = "machine",
             stack = 10,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['centrifuge'] = {
+        ["centrifuge"] = {
             key = 26,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['lab'] = {
+        ["lab"] = {
             key = 27,
             upgrade_of = nil,
             type = nil,
             stack = 10,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['nuclear-reactor'] = {
+        ["nuclear-reactor"] = {
             key = 14,
             upgrade_of = nil,
             type = nil,
             stack = 10,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['heat-pipe'] = {
+        ["heat-pipe"] = {
             key = 15,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['heat-exchanger'] = {
+        ["heat-exchanger"] = {
             key = 16,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['steam-turbine'] = {
+        ["steam-turbine"] = {
             key = 17,
             upgrade_of = nil,
             type = nil,
             stack = 10,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['rocket-silo'] = {
+        ["rocket-silo"] = {
             key = 80,
             upgrade_of = nil,
             type = nil,
             stack = 1,
             min = 0,
-            max = 0
+            max = 0,
         },
         -- pole
-        ['small-electric-pole'] = {
+        ["small-electric-pole"] = {
             key = 31,
             upgrade_of = nil,
-            type = 'pole',
+            type = "pole",
             stack = 50,
             min = 150,
-            max = 150
+            max = 150,
         },
-        ['medium-electric-pole'] = {
+        ["medium-electric-pole"] = {
             key = 32,
-            upgrade_of = 'small-electric-pole',
-            type = 'pole',
+            upgrade_of = "small-electric-pole",
+            type = "pole",
             stack = 50,
             min = 150,
-            max = 150
+            max = 150,
         },
-        ['big-electric-pole'] = {
+        ["big-electric-pole"] = {
             key = 33,
             upgrade_of = nil,
-            type = 'pole',
+            type = "pole",
             stack = 50,
             min = 150,
-            max = 150
+            max = 150,
         },
-        ['substation'] = {
+        ["substation"] = {
             key = 34,
             upgrade_of = nil,
-            type = 'pole',
+            type = "pole",
             stack = 50,
             min = 50,
-            max = 50
+            max = 50,
         },
         -- bot
-        ['roboport'] = {
+        ["roboport"] = {
             key = 35,
             upgrade_of = nil,
-            type = 'bot',
+            type = "bot",
             stack = 10,
             min = 20,
-            max = 20
+            max = 20,
         },
-        ['construction-robot'] = {
+        ["construction-robot"] = {
             key = 36,
             upgrade_of = nil,
-            type = 'bot',
+            type = "bot",
             stack = 50,
             min = 100,
-            max = 100
+            max = 100,
         },
-        ['logistic-robot'] = {
+        ["logistic-robot"] = {
             key = 37,
             upgrade_of = nil,
-            type = 'bot',
+            type = "bot",
             stack = 50,
             min = 10,
-            max = 10
+            max = 10,
         },
-        ['cliff-explosives'] = {
+        ["cliff-explosives"] = {
             key = 38,
             upgrade_of = nil,
-            type = 'bot',
+            type = "bot",
             stack = 20,
             min = 80,
-            max = 80
+            max = 80,
         },
-        ['repair-pack'] = {
+        ["repair-pack"] = {
             key = 39,
             upgrade_of = nil,
-            type = 'bot',
+            type = "bot",
             stack = 100,
             min = 100,
-            max = 100
+            max = 100,
         },
-        ['landfill'] = {
+        ["landfill"] = {
             key = 40,
             upgrade_of = nil,
-            type = 'bot',
+            type = "bot",
             stack = 100,
             min = 300,
-            max = 300
+            max = 300,
         },
         -- ore
-        ['wood'] = {
+        ["wood"] = {
             key = 151,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['coal'] = {
+        ["coal"] = {
             key = 152,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['stone'] = {
+        ["stone"] = {
             key = 153,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['iron-ore'] = {
+        ["iron-ore"] = {
             key = 154,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['copper-ore'] = {
+        ["copper-ore"] = {
             key = 155,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['uranium-ore'] = {
+        ["uranium-ore"] = {
             key = 156,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['raw-fish'] = {
+        ["raw-fish"] = {
             key = 157,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['iron-stick'] = {
+        ["iron-stick"] = {
             key = 158,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['iron-gear-wheel'] = {
+        ["iron-gear-wheel"] = {
             key = 159,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['satellite'] = {
+        ["satellite"] = {
             key = 160,
             upgrade_of = nil,
             type = nil,
             stack = 1,
             min = 0,
-            max = 0
+            max = 0,
         },
         -- inserter
-        ['burner-inserter'] = {
+        ["burner-inserter"] = {
             key = 41,
             upgrade_of = nil,
-            type = 'inserter',
+            type = "inserter",
             stack = 50,
             min = 0,
-            max = 50
+            max = 50,
         },
-        ['inserter'] = {
+        ["inserter"] = {
             key = 42,
-            upgrade_of = 'burner-inserter',
-            type = 'inserter',
+            upgrade_of = "burner-inserter",
+            type = "inserter",
             stack = 50,
             min = 0,
-            max = 50
+            max = 50,
         },
-        ['long-handed-inserter'] = {
+        ["long-handed-inserter"] = {
             key = 43,
             upgrade_of = nil,
-            type = 'inserter',
+            type = "inserter",
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['fast-inserter'] = {
+        ["fast-inserter"] = {
             key = 44,
-            upgrade_of = 'inserter',
-            type = 'inserter',
+            upgrade_of = "inserter",
+            type = "inserter",
             stack = 50,
             min = 0,
-            max = 50
+            max = 50,
         },
-        ['filter-inserter'] = {
+        ["filter-inserter"] = {
             key = 45,
             upgrade_of = nil,
-            type = 'inserter',
+            type = "inserter",
             stack = 50,
             min = 50,
-            max = 50
+            max = 50,
         },
-        ['stack-inserter'] = {
+        ["stack-inserter"] = {
             key = 46,
-            upgrade_of = 'fast-inserter',
-            type = 'inserter',
+            upgrade_of = "fast-inserter",
+            type = "inserter",
             stack = 50,
             min = 100,
-            max = 100
+            max = 100,
         },
-        ['stack-filter-inserter'] = {
+        ["stack-filter-inserter"] = {
             key = 47,
             upgrade_of = nil,
-            type = 'inserter',
+            type = "inserter",
             stack = 50,
             min = 50,
-            max = 50
+            max = 50,
         },
         -- pipe
-        ['pipe'] = {
+        ["pipe"] = {
             key = 48,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 200,
-            max = 200
+            max = 200,
         },
-        ['pipe-to-ground'] = {
+        ["pipe-to-ground"] = {
             key = 49,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 150,
-            max = 150
+            max = 150,
         },
-        ['pump'] = {
+        ["pump"] = {
             key = 50,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 100,
-            max = 100
+            max = 100,
         },
-        ['storage-tank'] = {
+        ["storage-tank"] = {
             key = 59,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 50,
-            max = 50
+            max = 50,
         },
         -- chest
-        ['wooden-chest'] = {
+        ["wooden-chest"] = {
             key = 51,
             upgrade_of = nil,
-            type = 'chest',
+            type = "chest",
             stack = 50,
             min = 0,
-            max = 50
+            max = 50,
         },
-        ['iron-chest'] = {
+        ["iron-chest"] = {
             key = 52,
-            upgrade_of = 'wooden-chest',
-            type = 'chest',
+            upgrade_of = "wooden-chest",
+            type = "chest",
             stack = 50,
             min = 0,
-            max = 50
+            max = 50,
         },
-        ['steel-chest'] = {
+        ["steel-chest"] = {
             key = 53,
-            upgrade_of = 'iron-chest',
-            type = 'chest',
+            upgrade_of = "iron-chest",
+            type = "chest",
             stack = 50,
             min = 50,
-            max = 100
+            max = 100,
         },
-        ['logistic-chest-passive-provider'] = {
+        ["logistic-chest-passive-provider"] = {
             key = 54,
             upgrade_of = nil,
-            type = 'chest',
+            type = "chest",
             stack = 50,
             min = 50,
-            max = 50
+            max = 50,
         },
-        ['logistic-chest-storage'] = {
+        ["logistic-chest-storage"] = {
             key = 55,
             upgrade_of = nil,
-            type = 'chest',
+            type = "chest",
             stack = 50,
             min = 50,
-            max = 50
+            max = 50,
         },
-        ['logistic-chest-requester'] = {
+        ["logistic-chest-requester"] = {
             key = 56,
             upgrade_of = nil,
-            type = 'chest',
+            type = "chest",
             stack = 50,
             min = 50,
-            max = 50
+            max = 50,
         },
-        ['logistic-chest-buffer'] = {
+        ["logistic-chest-buffer"] = {
             key = 57,
             upgrade_of = nil,
-            type = 'chest',
+            type = "chest",
             stack = 50,
             min = 50,
-            max = 50
+            max = 50,
         },
-        ['logistic-chest-active-provider'] = {
+        ["logistic-chest-active-provider"] = {
             key = 58,
             upgrade_of = nil,
-            type = 'chest',
+            type = "chest",
             stack = 50,
             min = 50,
-            max = 50
+            max = 50,
         },
         -- rail
-        ['rail'] = {
+        ["rail"] = {
             key = 61,
             upgrade_of = nil,
-            type = 'rail',
+            type = "rail",
             stack = 100,
             min = 1500,
-            max = 1500
+            max = 1500,
         },
-        ['train-stop'] = {
+        ["train-stop"] = {
             key = 62,
             upgrade_of = nil,
-            type = 'rail',
+            type = "rail",
             stack = 10,
             min = 20,
-            max = 20
+            max = 20,
         },
-        ['rail-signal'] = {
+        ["rail-signal"] = {
             key = 63,
             upgrade_of = nil,
-            type = 'rail',
+            type = "rail",
             stack = 50,
             min = 150,
-            max = 150
+            max = 150,
         },
-        ['rail-chain-signal'] = {
+        ["rail-chain-signal"] = {
             key = 64,
             upgrade_of = nil,
-            type = 'rail',
+            type = "rail",
             stack = 50,
             min = 150,
-            max = 150
+            max = 150,
         },
-        ['locomotive'] = {
+        ["locomotive"] = {
             key = 65,
             upgrade_of = nil,
-            type = 'rail',
+            type = "rail",
             stack = 5,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['cargo-wagon'] = {
+        ["cargo-wagon"] = {
             key = 66,
             upgrade_of = nil,
-            type = 'rail',
+            type = "rail",
             stack = 5,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['fluid-wagon'] = {
+        ["fluid-wagon"] = {
             key = 67,
             upgrade_of = nil,
-            type = 'rail',
+            type = "rail",
             stack = 5,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['artillery-wagon'] = {
+        ["artillery-wagon"] = {
             key = 68,
             upgrade_of = nil,
-            type = 'rail',
+            type = "rail",
             stack = 5,
             min = 0,
-            max = 0
+            max = 0,
         },
         -- circuit
-        ['constant-combinator'] = {
+        ["constant-combinator"] = {
             key = 71,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 50,
-            max = 50
+            max = 50,
         },
-        ['arithmetic-combinator'] = {
+        ["arithmetic-combinator"] = {
             key = 72,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 50,
-            max = 50
+            max = 50,
         },
-        ['decider-combinator'] = {
+        ["decider-combinator"] = {
             key = 73,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 50,
-            max = 50
+            max = 50,
         },
-        ['small-lamp'] = {
+        ["small-lamp"] = {
             key = 74,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 50,
-            max = 50
+            max = 50,
         },
-        ['red-wire'] = {
+        ["red-wire"] = {
             key = 75,
             upgrade_of = nil,
             type = nil,
             stack = 200,
             min = 200,
-            max = 200
+            max = 200,
         },
-        ['green-wire'] = {
+        ["green-wire"] = {
             key = 76,
             upgrade_of = nil,
             type = nil,
             stack = 200,
             min = 200,
-            max = 200
+            max = 200,
         },
-        ['copper-cable'] = {
+        ["copper-cable"] = {
             key = 77,
             upgrade_of = nil,
             type = nil,
             stack = 200,
             min = 200,
-            max = 200
+            max = 200,
         },
-        ['power-switch'] = {
+        ["power-switch"] = {
             key = 78,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['programmable-speaker'] = {
+        ["programmable-speaker"] = {
             key = 79,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 10,
-            max = 10
+            max = 10,
         },
-        ['offshore-pump'] = {
+        ["offshore-pump"] = {
             key = 60,
             upgrade_of = nil,
             type = nil,
             stack = 20,
             min = 20,
-            max = 20
+            max = 20,
         },
         -- module
-        ['beacon'] = {
+        ["beacon"] = {
             key = 81,
             upgrade_of = nil,
-            type = 'module',
+            type = "module",
             stack = 10,
             min = 120,
-            max = 120
+            max = 120,
         },
-        ['speed-module'] = {
+        ["speed-module"] = {
             key = 82,
             upgrade_of = nil,
-            type = 'module',
+            type = "module",
             stack = 50,
             min = 500,
-            max = 500
+            max = 500,
         },
-        ['speed-module-2'] = {
+        ["speed-module-2"] = {
             key = 83,
-            upgrade_of = 'speed-module',
-            type = 'module',
+            upgrade_of = "speed-module",
+            type = "module",
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['speed-module-3'] = {
+        ["speed-module-3"] = {
             key = 84,
-            upgrade_of = 'speed-module-2',
-            type = 'module',
+            upgrade_of = "speed-module-2",
+            type = "module",
             stack = 50,
             min = 500,
-            max = 500
+            max = 500,
         },
-        ['productivity-module'] = {
+        ["productivity-module"] = {
             key = 85,
             upgrade_of = nil,
-            type = 'module',
+            type = "module",
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['productivity-module-2'] = {
+        ["productivity-module-2"] = {
             key = 86,
-            upgrade_of = 'productivity-module',
-            type = 'module',
+            upgrade_of = "productivity-module",
+            type = "module",
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['productivity-module-3'] = {
+        ["productivity-module-3"] = {
             key = 87,
-            upgrade_of = 'productivity-module-2',
-            type = 'module',
+            upgrade_of = "productivity-module-2",
+            type = "module",
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['effectivity-module'] = {
+        ["effectivity-module"] = {
             key = 88,
             upgrade_of = nil,
-            type = 'module',
+            type = "module",
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['effectivity-module-2'] = {
+        ["effectivity-module-2"] = {
             key = 89,
-            upgrade_of = 'effectivity-module',
-            type = 'module',
+            upgrade_of = "effectivity-module",
+            type = "module",
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['effectivity-module-3'] = {
+        ["effectivity-module-3"] = {
             key = 90,
-            upgrade_of = 'effectivity-module-2',
-            type = 'module',
+            upgrade_of = "effectivity-module-2",
+            type = "module",
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
         -- defense
-        ['stone-wall'] = {
+        ["stone-wall"] = {
             key = 91,
             upgrade_of = nil,
-            type = 'defense',
+            type = "defense",
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['gate'] = {
+        ["gate"] = {
             key = 92,
             upgrade_of = nil,
-            type = 'defense',
+            type = "defense",
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['gun-turret'] = {
+        ["gun-turret"] = {
             key = 93,
             upgrade_of = nil,
-            type = 'defense',
+            type = "defense",
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['laser-turret'] = {
+        ["laser-turret"] = {
             key = 94,
             upgrade_of = nil,
-            type = 'defense',
+            type = "defense",
             stack = 50,
             min = 100,
-            max = 100
+            max = 100,
         },
-        ['flamethrower-turret'] = {
+        ["flamethrower-turret"] = {
             key = 95,
             upgrade_of = nil,
-            type = 'defense',
+            type = "defense",
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['artillery-turret'] = {
+        ["artillery-turret"] = {
             key = 96,
             upgrade_of = nil,
-            type = 'defense',
+            type = "defense",
             stack = 10,
             min = 0,
-            max = 0
+            max = 0,
         },
         -- rocket
-        ['rocket'] = {
+        ["rocket"] = {
             key = 101,
             upgrade_of = nil,
-            type = 'rocket',
+            type = "rocket",
             stack = 200,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['explosive-rocket'] = {
+        ["explosive-rocket"] = {
             key = 102,
-            upgrade_of = 'rocket',
-            type = 'rocket',
+            upgrade_of = "rocket",
+            type = "rocket",
             stack = 200,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['atomic-bomb'] = {
+        ["atomic-bomb"] = {
             key = 103,
-            upgrade_of = 'explosive-rocket',
-            type = 'rocket',
+            upgrade_of = "explosive-rocket",
+            type = "rocket",
             stack = 10,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['rocket-launcher'] = {
+        ["rocket-launcher"] = {
             key = 104,
             upgrade_of = nil,
-            type = 'weapon',
+            type = "weapon",
             stack = 5,
             min = 1,
-            max = 1
+            max = 1,
         },
-        ['flamethrower'] = {
+        ["flamethrower"] = {
             key = 105,
             upgrade_of = nil,
-            type = 'weapon',
+            type = "weapon",
             stack = 5,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['pistol'] = {
+        ["pistol"] = {
             key = 106,
             upgrade_of = nil,
-            type = 'weapon',
+            type = "weapon",
             stack = 5,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['submachine-gun'] = {
+        ["submachine-gun"] = {
             key = 107,
             upgrade_of = nil,
-            type = 'weapon',
+            type = "weapon",
             stack = 5,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['shotgun'] = {
+        ["shotgun"] = {
             key = 108,
             upgrade_of = nil,
-            type = 'weapon',
+            type = "weapon",
             stack = 5,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['combat-shotgun'] = {
+        ["combat-shotgun"] = {
             key = 109,
             upgrade_of = nil,
-            type = 'weapon',
+            type = "weapon",
             stack = 5,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['land-mine'] = {
+        ["land-mine"] = {
             key = 110,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
         -- ammo
-        ['firearm-magazine'] = {
+        ["firearm-magazine"] = {
             key = 111,
             upgrade_of = nil,
-            type = 'ammo',
+            type = "ammo",
             stack = 200,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['piercing-rounds-magazine'] = {
+        ["piercing-rounds-magazine"] = {
             key = 112,
-            upgrade_of = 'firearm-magazine',
-            type = 'ammo',
+            upgrade_of = "firearm-magazine",
+            type = "ammo",
             stack = 200,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['uranium-rounds-magazine'] = {
+        ["uranium-rounds-magazine"] = {
             key = 113,
-            upgrade_of = 'piercing-rounds-magazine',
-            type = 'ammo',
+            upgrade_of = "piercing-rounds-magazine",
+            type = "ammo",
             stack = 200,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['flamethrower-ammo'] = {
+        ["flamethrower-ammo"] = {
             key = 114,
             upgrade_of = nil,
-            type = 'ammo',
+            type = "ammo",
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['shotgun-shell'] = {
+        ["shotgun-shell"] = {
             key = 115,
             upgrade_of = nil,
-            type = 'ammo',
+            type = "ammo",
             stack = 200,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['piercing-shotgun-shell'] = {
+        ["piercing-shotgun-shell"] = {
             key = 116,
             upgrade_of = nil,
-            type = 'ammo',
+            type = "ammo",
             stack = 200,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['cannon-shell'] = {
+        ["cannon-shell"] = {
             key = 117,
             upgrade_of = nil,
-            type = 'ammo',
+            type = "ammo",
             stack = 200,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['explosive-cannon-shell'] = {
+        ["explosive-cannon-shell"] = {
             key = 118,
             upgrade_of = nil,
-            type = 'ammo',
+            type = "ammo",
             stack = 200,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['uranium-cannon-shell'] = {
+        ["uranium-cannon-shell"] = {
             key = 119,
             upgrade_of = nil,
-            type = 'ammo',
+            type = "ammo",
             stack = 200,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['explosive-uranium-cannon-shell'] = {
+        ["explosive-uranium-cannon-shell"] = {
             key = 120,
             upgrade_of = nil,
-            type = 'ammo',
+            type = "ammo",
             stack = 200,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['grenade'] = {
+        ["grenade"] = {
             key = 97,
             upgrade_of = nil,
-            type = 'ammo',
+            type = "ammo",
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['cluster-grenade'] = {
+        ["cluster-grenade"] = {
             key = 98,
             upgrade_of = nil,
-            type = 'ammo',
+            type = "ammo",
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['artillery-shell'] = {
+        ["artillery-shell"] = {
             key = 121,
             upgrade_of = nil,
             type = nil,
             stack = 1,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['poison-capsule'] = {
+        ["poison-capsule"] = {
             key = 122,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['slowdown-capsule'] = {
+        ["slowdown-capsule"] = {
             key = 123,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['defender-capsule'] = {
+        ["defender-capsule"] = {
             key = 124,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['distractor-capsule'] = {
+        ["distractor-capsule"] = {
             key = 125,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['destroyer-capsule'] = {
+        ["destroyer-capsule"] = {
             key = 126,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['car'] = {
+        ["car"] = {
             key = 127,
             upgrade_of = nil,
             type = nil,
             stack = 1,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['tank'] = {
+        ["tank"] = {
             key = 128,
             upgrade_of = nil,
             type = nil,
             stack = 1,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['spidertron'] = {
+        ["spidertron"] = {
             key = 129,
             upgrade_of = nil,
             type = nil,
             stack = 1,
             min = 0,
-            max = 5
+            max = 5,
         },
-        ['spidertron-remote'] = {
+        ["spidertron-remote"] = {
             key = 130,
             upgrade_of = nil,
             type = nil,
             stack = 1,
             min = 0,
-            max = 5
+            max = 5,
         },
-        ['radar'] = {
+        ["radar"] = {
             key = 99,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 50,
-            max = 50
+            max = 50,
         },
         -- armor
-        ['light-armor'] = {
+        ["light-armor"] = {
             key = 131,
             upgrade_of = nil,
-            type = 'armor',
+            type = "armor",
             stack = 1,
             min = 0,
-            max = 1
+            max = 1,
         },
-        ['heavy-armor'] = {
+        ["heavy-armor"] = {
             key = 132,
-            upgrade_of = 'light-armor',
-            type = 'armor',
+            upgrade_of = "light-armor",
+            type = "armor",
             stack = 1,
             min = 0,
-            max = 1
+            max = 1,
         },
-        ['modular-armor'] = {
+        ["modular-armor"] = {
             key = 133,
-            upgrade_of = 'heavy-armor',
-            type = 'armor',
+            upgrade_of = "heavy-armor",
+            type = "armor",
             stack = 1,
             min = 0,
-            max = 1
+            max = 1,
         },
-        ['power-armor'] = {
+        ["power-armor"] = {
             key = 134,
-            upgrade_of = 'modular-armor',
-            type = 'armor',
+            upgrade_of = "modular-armor",
+            type = "armor",
             stack = 1,
             min = 0,
-            max = 1
+            max = 1,
         },
-        ['power-armor-mk2'] = {
+        ["power-armor-mk2"] = {
             key = 135,
-            upgrade_of = 'power-armor',
-            type = 'armor',
+            upgrade_of = "power-armor",
+            type = "armor",
             stack = 1,
             min = 0,
-            max = 1
+            max = 1,
         },
         -- armor equipment
-        ['solar-panel-equipment'] = {
+        ["solar-panel-equipment"] = {
             key = 136,
             upgrade_of = nil,
-            type = 'armor_equipment',
+            type = "armor_equipment",
             stack = 20,
             min = 0,
-            max = 5
+            max = 5,
         },
-        ['fusion-reactor-equipment'] = {
+        ["fusion-reactor-equipment"] = {
             key = 137,
-            upgrade_of = 'solar-panel-equipment',
-            type = 'armor_equipment',
+            upgrade_of = "solar-panel-equipment",
+            type = "armor_equipment",
             stack = 20,
             min = 0,
-            max = 5
+            max = 5,
         },
-        ['belt-immunity-equipment'] = {
+        ["belt-immunity-equipment"] = {
             key = 138,
             upgrade_of = nil,
-            type = 'armor_equipment',
+            type = "armor_equipment",
             stack = 20,
             min = 0,
-            max = 5
+            max = 5,
         },
-        ['night-vision-equipment'] = {
+        ["night-vision-equipment"] = {
             key = 139,
             upgrade_of = nil,
-            type = 'armor_equipment',
+            type = "armor_equipment",
             stack = 20,
             min = 0,
-            max = 5
+            max = 5,
         },
-        ['personal-laser-defense-equipment'] = {
+        ["personal-laser-defense-equipment"] = {
             key = 140,
             upgrade_of = nil,
-            type = 'armor_equipment',
+            type = "armor_equipment",
             stack = 20,
             min = 0,
-            max = 20
+            max = 20,
         },
-        ['personal-roboport-equipment'] = {
+        ["personal-roboport-equipment"] = {
             key = 141,
             upgrade_of = nil,
-            type = 'armor_equipment',
+            type = "armor_equipment",
             stack = 20,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['personal-roboport-mk2-equipment'] = {
+        ["personal-roboport-mk2-equipment"] = {
             key = 142,
-            upgrade_of = 'personal-roboport-equipment',
-            type = 'armor_equipment',
+            upgrade_of = "personal-roboport-equipment",
+            type = "armor_equipment",
             stack = 20,
             min = 0,
-            max = 5
+            max = 5,
         },
-        ['energy-shield-equipment'] = {
+        ["energy-shield-equipment"] = {
             key = 143,
             upgrade_of = nil,
-            type = 'armor_equipment',
+            type = "armor_equipment",
             stack = 20,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['energy-shield-mk2-equipment'] = {
+        ["energy-shield-mk2-equipment"] = {
             key = 144,
-            upgrade_of = 'energy-shield-equipment',
-            type = 'armor_equipment',
+            upgrade_of = "energy-shield-equipment",
+            type = "armor_equipment",
             stack = 20,
             min = 0,
-            max = 5
+            max = 5,
         },
-        ['battery-equipment'] = {
+        ["battery-equipment"] = {
             key = 145,
             upgrade_of = nil,
-            type = 'armor_equipment',
+            type = "armor_equipment",
             stack = 20,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['battery-mk2-equipment'] = {
+        ["battery-mk2-equipment"] = {
             key = 146,
-            upgrade_of = 'battery-equipment',
-            type = 'armor_equipment',
+            upgrade_of = "battery-equipment",
+            type = "armor_equipment",
             stack = 20,
             min = 0,
-            max = 5
+            max = 5,
         },
-        ['exoskeleton-equipment'] = {
+        ["exoskeleton-equipment"] = {
             key = 147,
             upgrade_of = nil,
-            type = 'armor_equipment',
+            type = "armor_equipment",
             stack = 20,
             min = 0,
-            max = 5
+            max = 5,
         },
-        ['discharge-defense-equipment'] = {
+        ["discharge-defense-equipment"] = {
             key = 148,
             upgrade_of = nil,
-            type = 'armor_equipment',
+            type = "armor_equipment",
             stack = 20,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['discharge-defense-remote'] = {
+        ["discharge-defense-remote"] = {
             key = 149,
             upgrade_of = nil,
             type = nil,
             stack = 1,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['artillery-targeting-remote'] = {
+        ["artillery-targeting-remote"] = {
             key = 150,
             upgrade_of = nil,
             type = nil,
             stack = 1,
             min = 1,
-            max = 1
+            max = 1,
         },
         -- path
-        ['stone-brick'] = {
+        ["stone-brick"] = {
             key = 100,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['concrete'] = {
+        ["concrete"] = {
             key = 69,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['hazard-concrete'] = {
+        ["hazard-concrete"] = {
             key = 70,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['refined-concrete'] = {
+        ["refined-concrete"] = {
             key = 188,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['refined-hazard-concrete'] = {
+        ["refined-hazard-concrete"] = {
             key = 189,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['crude-oil-barrel'] = {
+        ["crude-oil-barrel"] = {
             key = 161,
             upgrade_of = nil,
             type = nil,
             stack = 10,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['heavy-oil-barrel'] = {
+        ["heavy-oil-barrel"] = {
             key = 162,
             upgrade_of = nil,
             type = nil,
             stack = 10,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['light-oil-barrel'] = {
+        ["light-oil-barrel"] = {
             key = 163,
             upgrade_of = nil,
             type = nil,
             stack = 10,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['lubricant-barrel'] = {
+        ["lubricant-barrel"] = {
             key = 164,
             upgrade_of = nil,
             type = nil,
             stack = 10,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['petroleum-gas-barrel'] = {
+        ["petroleum-gas-barrel"] = {
             key = 165,
             upgrade_of = nil,
             type = nil,
             stack = 10,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['sulfuric-acid-barrel'] = {
+        ["sulfuric-acid-barrel"] = {
             key = 166,
             upgrade_of = nil,
             type = nil,
             stack = 10,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['water-barrel'] = {
+        ["water-barrel"] = {
             key = 167,
             upgrade_of = nil,
             type = nil,
             stack = 10,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['empty-barrel'] = {
+        ["empty-barrel"] = {
             key = 168,
             upgrade_of = nil,
             type = nil,
             stack = 10,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['uranium-fuel-cell'] = {
+        ["uranium-fuel-cell"] = {
             key = 169,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['used-up-uranium-fuel-cell'] = {
+        ["used-up-uranium-fuel-cell"] = {
             key = 170,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
         -- science and circuit
-        ['automation-science-pack'] = {
+        ["automation-science-pack"] = {
             key = 171,
             upgrade_of = nil,
             type = nil,
             stack = 200,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['logistic-science-pack'] = {
+        ["logistic-science-pack"] = {
             key = 172,
             upgrade_of = nil,
             type = nil,
             stack = 200,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['military-science-pack'] = {
+        ["military-science-pack"] = {
             key = 173,
             upgrade_of = nil,
             type = nil,
             stack = 200,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['chemical-science-pack'] = {
+        ["chemical-science-pack"] = {
             key = 174,
             upgrade_of = nil,
             type = nil,
             stack = 200,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['production-science-pack'] = {
+        ["production-science-pack"] = {
             key = 175,
             upgrade_of = nil,
             type = nil,
             stack = 200,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['utility-science-pack'] = {
+        ["utility-science-pack"] = {
             key = 176,
             upgrade_of = nil,
             type = nil,
             stack = 200,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['space-science-pack'] = {
+        ["space-science-pack"] = {
             key = 177,
             upgrade_of = nil,
             type = nil,
             stack = 2000,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['electronic-circuit'] = {
+        ["electronic-circuit"] = {
             key = 178,
             upgrade_of = nil,
             type = nil,
             stack = 200,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['advanced-circuit'] = {
+        ["advanced-circuit"] = {
             key = 179,
             upgrade_of = nil,
             type = nil,
             stack = 200,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['processing-unit'] = {
+        ["processing-unit"] = {
             key = 180,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
         -- intermediate
-        ['iron-plate'] = {
+        ["iron-plate"] = {
             key = 181,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['copper-plate'] = {
+        ["copper-plate"] = {
             key = 182,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['steel-plate'] = {
+        ["steel-plate"] = {
             key = 183,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['plastic-bar'] = {
+        ["plastic-bar"] = {
             key = 184,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['sulfur'] = {
+        ["sulfur"] = {
             key = 185,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['battery'] = {
+        ["battery"] = {
             key = 186,
             upgrade_of = nil,
             type = nil,
             stack = 200,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['explosives'] = {
+        ["explosives"] = {
             key = 187,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['engine-unit'] = {
+        ["engine-unit"] = {
             key = 191,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['electric-engine-unit'] = {
+        ["electric-engine-unit"] = {
             key = 192,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['flying-robot-frame'] = {
+        ["flying-robot-frame"] = {
             key = 193,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['rocket-control-unit'] = {
+        ["rocket-control-unit"] = {
             key = 194,
             upgrade_of = nil,
             type = nil,
             stack = 10,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['low-density-structure'] = {
+        ["low-density-structure"] = {
             key = 195,
             upgrade_of = nil,
             type = nil,
             stack = 10,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['solid-fuel'] = {
+        ["solid-fuel"] = {
             key = 196,
             upgrade_of = nil,
             type = nil,
             stack = 50,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['rocket-fuel'] = {
+        ["rocket-fuel"] = {
             key = 197,
             upgrade_of = nil,
             type = nil,
             stack = 10,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['nuclear-fuel'] = {
+        ["nuclear-fuel"] = {
             key = 198,
             upgrade_of = nil,
             type = nil,
             stack = 1,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['uranium-235'] = {
+        ["uranium-235"] = {
             key = 199,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 0,
-            max = 0
+            max = 0,
         },
-        ['uranium-238'] = {
+        ["uranium-238"] = {
             key = 200,
             upgrade_of = nil,
             type = nil,
             stack = 100,
             min = 0,
-            max = 0
-        }
-    }
+            max = 0,
+        },
+    },
 }

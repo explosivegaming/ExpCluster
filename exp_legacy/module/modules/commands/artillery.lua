@@ -6,21 +6,17 @@
 local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
 require("modules.exp_legacy.config.expcore.command_general_parse")
 local Selection = require("modules.exp_legacy.modules.control.selection") --- @dep modules.control.selection
-local SelectionArtyArea = 'ArtyArea'
+local SelectionArtyArea = "ArtyArea"
 
 local function location_break(player, pos)
-    if player.force.is_chunk_charted(player.surface, {x=math.floor(pos.left_top.x / 32), y=math.floor(pos.left_top.y / 32)}) then
+    if player.force.is_chunk_charted(player.surface, { x = math.floor(pos.left_top.x / 32), y = math.floor(pos.left_top.y / 32) }) then
         return true
-
-    elseif player.force.is_chunk_charted(player.surface, {x=math.floor(pos.left_top.x / 32), y=math.floor(pos.right_bottom.y / 32)}) then
+    elseif player.force.is_chunk_charted(player.surface, { x = math.floor(pos.left_top.x / 32), y = math.floor(pos.right_bottom.y / 32) }) then
         return true
-
-    elseif player.force.is_chunk_charted(player.surface, {x=math.floor(pos.right_bottom.x / 32), y=math.floor(pos.left_top.y / 32)}) then
+    elseif player.force.is_chunk_charted(player.surface, { x = math.floor(pos.right_bottom.x / 32), y = math.floor(pos.left_top.y / 32) }) then
         return true
-
-    elseif player.force.is_chunk_charted(player.surface, {x=math.floor(pos.right_bottom.x / 32), y=math.floor(pos.right_bottom.y / 32)}) then
+    elseif player.force.is_chunk_charted(player.surface, { x = math.floor(pos.right_bottom.x / 32), y = math.floor(pos.right_bottom.y / 32) }) then
         return true
-
     else
         return false
     end
@@ -29,8 +25,8 @@ end
 --- align an aabb to the grid by expanding it
 local function aabb_align_expand(aabb)
     return {
-        left_top = {x = math.floor(aabb.left_top.x), y = math.floor(aabb.left_top.y)},
-        right_bottom = {x = math.ceil(aabb.right_bottom.x), y = math.ceil(aabb.right_bottom.y)}
+        left_top = { x = math.floor(aabb.left_top.x), y = math.floor(aabb.left_top.y) },
+        right_bottom = { x = math.ceil(aabb.right_bottom.x), y = math.ceil(aabb.right_bottom.y) },
     }
 end
 
@@ -50,7 +46,7 @@ Selection.on_selection(SelectionArtyArea, function(event)
     local count = 0
     local hit = {}
 
-    for _, e in pairs(player.surface.find_entities_filtered({area=area, type={'unit-spawner', 'turret'}, force='enemy'})) do
+    for _, e in pairs(player.surface.find_entities_filtered{ area = area, type = { "unit-spawner", "turret" }, force = "enemy" }) do
         local skip = false
 
         for _, pos in ipairs(hit) do
@@ -61,7 +57,7 @@ Selection.on_selection(SelectionArtyArea, function(event)
         end
 
         if not skip then
-            player.surface.create_entity{name='artillery-flare', position=e.position, force=player.force, life_time=240, movement={0, 0}, height=0, vertical_speed=0, frame_speed=0}
+            player.surface.create_entity{ name = "artillery-flare", position = e.position, force = player.force, life_time = 240, movement = { 0, 0 }, height = 0, vertical_speed = 0, frame_speed = 0 }
             table.insert(hit, e.position)
             count = count + 1
 
@@ -72,13 +68,13 @@ Selection.on_selection(SelectionArtyArea, function(event)
     end
 end)
 
-Commands.new_command('artillery-target-remote', {'expcom-artillery.description'}, 'Artillery Target Remote')
-:register(function(player)
-    if Selection.is_selecting(player, SelectionArtyArea) then
-        Selection.stop(player)
-    else
-        Selection.start(player, SelectionArtyArea)
-    end
+Commands.new_command("artillery-target-remote", { "expcom-artillery.description" }, "Artillery Target Remote")
+    :register(function(player)
+        if Selection.is_selecting(player, SelectionArtyArea) then
+            Selection.stop(player)
+        else
+            Selection.start(player, SelectionArtyArea)
+        end
 
-    return Commands.success
-end)
+        return Commands.success
+    end)

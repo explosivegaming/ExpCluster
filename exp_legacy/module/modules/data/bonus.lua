@@ -11,17 +11,17 @@ require("modules.exp_legacy.config.expcore.command_general_parse")
 
 -- Stores the bonus for the player
 local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
-local PlayerBonus = PlayerData.Settings:combine('Bonus')
+local PlayerBonus = PlayerData.Settings:combine("Bonus")
 PlayerBonus:set_default(0)
 PlayerBonus:set_metadata{
-    permission = 'command/bonus',
+    permission = "command/bonus",
     stringify = function(value)
         if not value or value == 0 then
-            return 'None set'
+            return "None set"
         end
 
         return value
-    end
+    end,
 }
 
 --- Apply a bonus to a player
@@ -34,7 +34,7 @@ local function apply_bonus(player, stage)
         player[k] = v.value * stage / 10
 
         if v.combined_bonus then
-            for i=1, #v.combined_bonus, 1 do
+            for i = 1, #v.combined_bonus, 1 do
                 player[v.combined_bonus[i]] = v.value * stage / 10
             end
         end
@@ -49,18 +49,18 @@ end)
 --- Changes the amount of bonus you receive
 -- @command bonus
 -- @tparam number amount range 0-10 the increase for your bonus
-Commands.new_command('bonus', {'expcom-bonus.description'}, 'Changes the amount of bonus you receive')
-:add_param('amount', 'integer-range', 0, 10)
-:register(function(player, amount)
-    if not Roles.player_allowed(player, 'command/bonus') then
-        Commands.print{'expcom-bonus.perm', 1}
-        return
-    end
+Commands.new_command("bonus", "Changes the amount of bonus you receive")
+    :add_param("amount", "integer-range", 0, 10)
+    :register(function(player, amount)
+        if not Roles.player_allowed(player, "command/bonus") then
+            Commands.print{ "expcom-bonus.perm", 1 }
+            return
+        end
 
-    PlayerBonus:set(player, amount)
+        PlayerBonus:set(player, amount)
 
-    Commands.print{'expcom-bonus.set', amount}
-end)
+        Commands.print{ "expcom-bonus.set", amount }
+    end)
 
 --- When a player respawns re-apply bonus
 Event.add(defines.events.on_player_respawned, function(event)
@@ -71,7 +71,7 @@ end)
 --- Remove bonus if a player no longer has access to the command
 local function role_update(event)
     local player = game.players[event.player_index]
-    if not Roles.player_allowed(player, 'command/bonus') then
+    if not Roles.player_allowed(player, "command/bonus") then
         apply_bonus(player, 0)
     end
 end
@@ -80,7 +80,7 @@ end
 Event.add(defines.events.on_player_died, function(event)
     local player = game.players[event.player_index]
 
-    if Roles.player_has_flag(player, 'instant-respawn') then
+    if Roles.player_has_flag(player, "instant-respawn") then
         player.ticks_to_respawn = 120
     end
 end)

@@ -9,33 +9,33 @@ local messages = config.messages
 local locations = config.locations
 
 local Public = {
-    compilatrons={},
-    current_messages={}
+    compilatrons = {},
+    current_messages = {},
 }
 
 Storage.register({
     compilatrons = Public.compilatrons,
-    current_messages = Public.current_messages
+    current_messages = Public.current_messages,
 }, function(tbl)
     Public.compilatrons = tbl.compilatrons
     Public.current_messages = tbl.current_messages
 end)
 
 local speech_bubble_async =
-Async.register(function(data)
-    local message = 
-    data.ent.surface.create_entity{
-        name = 'compi-speech-bubble',
-        text = messages[data.name][data.msg_number],
-        source = data.ent,
-        position = {0, 0},
-    }
+    Async.register(function(data)
+        local message =
+            data.ent.surface.create_entity{
+                name = "compi-speech-bubble",
+                text = messages[data.name][data.msg_number],
+                source = data.ent,
+                position = { 0, 0 },
+            }
 
-    Public.current_messages[data.name] = {
-        message = message,
-        msg_number = data.msg_number
-    }
-end)
+        Public.current_messages[data.name] = {
+            message = message,
+            msg_number = data.msg_number,
+        }
+    end)
 
 --- This will move the messages onto the next message in the loop
 local function circle_messages()
@@ -57,7 +57,7 @@ local function circle_messages()
             msg_number = 1
         end
         -- this calls the callback above to re-spawn the message after some time
-        speech_bubble_async:start_after(300, {ent = ent, name = name, msg_number = msg_number})
+        speech_bubble_async:start_after(300, { ent = ent, name = name, msg_number = msg_number })
     end
 end
 
@@ -77,10 +77,10 @@ function Public.add_compilatron(entity, name)
 
     Public.compilatrons[name] = entity
     local message =
-        entity.surface.create_entity(
-        {name = 'compi-speech-bubble', text = messages[name][1], position = {0, 0}, source = entity}
-    )
-    Public.current_messages[name] = {message = message, msg_number = 1}
+        entity.surface.create_entity
+            { name = "compi-speech-bubble", text = messages[name][1], position = { 0, 0 }, source = entity }
+
+    Public.current_messages[name] = { message = message, msg_number = 1 }
 end
 
 --- This spawns a new compilatron on a surface with the given location tag (not a position)
@@ -88,8 +88,8 @@ end
 -- @tparam string location the location tag that is in the config file
 function Public.spawn_compilatron(surface, location)
     local position = locations[location]
-    local pos = surface.find_non_colliding_position('small-biter', position, 1.5, 0.5)
-    local compi = surface.create_entity {name='small-biter', position=pos, force=game.forces.neutral}
+    local pos = surface.find_non_colliding_position("small-biter", position, 1.5, 0.5)
+    local compi = surface.create_entity{ name = "small-biter", position = pos, force = game.forces.neutral }
     Public.add_compilatron(compi, location)
 end
 

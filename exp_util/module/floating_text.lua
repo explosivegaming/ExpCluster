@@ -40,9 +40,9 @@ FloatingText.color = require("modules/exp_util/include/color")
 function FloatingText.print(surface, position, text, color)
     return surface.create_entity{
         text = text,
-        name = 'tutorial-flying-text',
+        name = "tutorial-flying-text",
         color = color or FloatingText.color.white,
-        position = position
+        position = position,
     }
 end
 
@@ -55,12 +55,12 @@ function FloatingText.print_above_entity(entity, text, color)
     local size_y = entity.bounding_box.left_top.y - entity.bounding_box.right_bottom.y
     return entity.surface.create_entity{
         text = text,
-        name = 'tutorial-flying-text',
+        name = "tutorial-flying-text",
         color = color or FloatingText.color.white,
         position = {
             x = entity.position.x,
-            y = entity.position.y - size_y * 0.25
-        }
+            y = entity.position.y - size_y * 0.25,
+        },
     }
 end
 
@@ -72,12 +72,12 @@ end
 function FloatingText.print_above_player(player, text, color)
     return player.surface.create_entity{
         text = text,
-        name = 'tutorial-flying-text',
+        name = "tutorial-flying-text",
         color = color or FloatingText.color.white,
         position = {
             x = player.position.x,
-            y = player.position.y - 1.5
-        }
+            y = player.position.y - 1.5,
+        },
     }
 end
 
@@ -88,12 +88,12 @@ end
 function FloatingText.print_as_player(player, text)
     return player.surface.create_entity{
         text = text,
-        name = 'tutorial-flying-text',
+        name = "tutorial-flying-text",
         color = player.chat_color,
         position = {
             x = player.position.x,
-            y = player.position.y - 1.5
-        }
+            y = player.position.y - 1.5,
+        },
     }
 end
 
@@ -114,7 +114,7 @@ function FloatingText.create_tag(surface, position, text, color, alt_mode)
         surface = surface,
         color = color or FloatingText.color.white,
         only_in_alt_mode = alt_mode,
-        target = position
+        target = position,
     }
 end
 
@@ -133,8 +133,8 @@ function FloatingText.create_tag_above_entity(entity, text, color, alt_mode)
         target = entity,
         target_offset = {
             x = 0,
-            y = (entity.bounding_box.left_top.y - entity.bounding_box.right_bottom.y) * -0.25
-        }
+            y = (entity.bounding_box.left_top.y - entity.bounding_box.right_bottom.y) * -0.25,
+        },
     }
 end
 
@@ -153,8 +153,8 @@ function FloatingText.create_tag_above_player(player, text, color, alt_mode)
         target = player.character,
         target_offset = {
             x = 0,
-            y = -1.5
-        }
+            y = -1.5,
+        },
     }
 end
 
@@ -172,8 +172,8 @@ function FloatingText.create_tag_as_player(player, text, alt_mode)
         target = player.character,
         target_offset = {
             x = 0,
-            y = -1.5
-        }
+            y = -1.5,
+        },
     }
 end
 

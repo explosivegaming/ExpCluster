@@ -1,4 +1,4 @@
---luacheck:ignore global package
+-- luacheck:ignore global package
 
 local Clustorio = require("modules/clusterio/api")
 
@@ -13,7 +13,7 @@ package.lifecycle_stage = {
     init = 5,
     load = 6,
     config_change = 7,
-    runtime = 8
+    runtime = 8,
 }
 
 --- Stores the current lifecycle stage we are in, compare values against package.lifecycle_stage
@@ -24,10 +24,10 @@ return setmetatable({
     on_load = function() package.lifecycle = package.lifecycle_stage.load end,
     on_configuration_changed = function() package.lifecycle = package.lifecycle_stage.config_change end,
     events = {
-		-- TODO find a reliable way to set to runtime because currently it will desync if accessed before player joined
+        -- TODO find a reliable way to set to runtime because currently it will desync if accessed before player joined
         [defines.events.on_player_joined_game] = function() package.lifecycle = package.lifecycle_stage.runtime end,
         [Clustorio.events.on_server_startup] = function() package.lifecycle = package.lifecycle_stage.runtime end,
-    }
+    },
 }, {
-    __index = package
+    __index = package,
 })

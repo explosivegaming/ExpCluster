@@ -30,7 +30,7 @@ local ignore = {
     type = true,
     xpcall = true,
     _VERSION = true,
-    ['module'] = true,
+    ["module"] = true,
     require = true,
     package = true,
     unpack = true,
@@ -51,31 +51,31 @@ local ignore = {
     util = true,
     mod_gui = true,
     game = true,
-    rendering = true
+    rendering = true,
 }
 
 local header_name = Gui.uid_name()
 local left_panel_name = Gui.uid_name()
 local right_panel_name = Gui.uid_name()
 
-Public.name = '_G'
+Public.name = "_G"
 
 function Public.show(container)
-    local main_flow = container.add {type = 'flow', direction = 'horizontal'}
+    local main_flow = container.add{ type = "flow", direction = "horizontal" }
 
-    local left_panel = main_flow.add {type = 'scroll-pane', name = left_panel_name}
+    local left_panel = main_flow.add{ type = "scroll-pane", name = left_panel_name }
     local left_panel_style = left_panel.style
     left_panel_style.width = 300
 
     for key, value in pairs(_G) do
         if not ignore[key] then
             local header =
-                left_panel.add({type = 'flow'}).add {type = 'label', name = header_name, caption = tostring(key)}
+                left_panel.add{ type = "flow" }.add{ type = "label", name = header_name, caption = tostring(key) }
             Gui.set_data(header, value)
         end
     end
 
-    local right_panel = main_flow.add {type = 'text-box', name = right_panel_name}
+    local right_panel = main_flow.add{ type = "text-box", name = right_panel_name }
     right_panel.read_only = true
     right_panel.selectable = true
 
@@ -85,7 +85,7 @@ function Public.show(container)
     right_panel_style.maximal_width = 1000
     right_panel_style.maximal_height = 1000
 
-    Gui.set_data(left_panel, {right_panel = right_panel, selected_header = nil})
+    Gui.set_data(left_panel, { right_panel = right_panel, selected_header = nil })
 end
 
 Gui.on_click(

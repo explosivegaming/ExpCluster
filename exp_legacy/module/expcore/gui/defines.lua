@@ -24,19 +24,19 @@ local alignment = Gui.alignment(element, 'example_center_top_alignment', 'center
 
 ]]
 Gui.alignment =
-Gui.element(function(_, parent, name, _,_)
-    return parent.add{
-        name = name or 'alignment',
-        type = 'flow',
-    }
-end)
-:style(function(style, _,_, horizontal_align, vertical_align)
-    style.padding = {1, 2}
-    style.vertical_align = vertical_align or 'center'
-    style.horizontal_align = horizontal_align or 'right'
-    style.vertically_stretchable  = style.vertical_align ~= 'center'
-    style.horizontally_stretchable = style.horizontal_align ~= 'center'
-end)
+    Gui.element(function(_, parent, name, _, _)
+        return parent.add{
+            name = name or "alignment",
+            type = "flow",
+        }
+    end)
+    :style(function(style, _, _, horizontal_align, vertical_align)
+        style.padding = { 1, 2 }
+        style.vertical_align = vertical_align or "center"
+        style.horizontal_align = horizontal_align or "right"
+        style.vertically_stretchable = style.vertical_align ~= "center"
+        style.horizontally_stretchable = style.horizontal_align ~= "center"
+    end)
 
 --[[-- Draw a scroll pane that has a table inside of it
 @element Gui.scroll_table
@@ -51,41 +51,41 @@ local scroll_table = Gui.scroll_table(element, 200, 3)
 
 ]]
 Gui.scroll_table =
-Gui.element(function(_, parent, height, column_count, name)
-    -- Draw the scroll
-    local scroll_pane =
-    parent.add{
-        name = name or 'scroll',
-        type = 'scroll-pane',
-        direction = 'vertical',
-        horizontal_scroll_policy = 'never',
-        vertical_scroll_policy = 'auto',
-        style = 'scroll_pane_under_subheader'
+    Gui.element(function(_, parent, height, column_count, name)
+        -- Draw the scroll
+        local scroll_pane =
+            parent.add{
+                name = name or "scroll",
+                type = "scroll-pane",
+                direction = "vertical",
+                horizontal_scroll_policy = "never",
+                vertical_scroll_policy = "auto",
+                style = "scroll_pane_under_subheader",
+            }
+
+        -- Set the style of the scroll pane
+        local scroll_style = scroll_pane.style
+        scroll_style.padding = { 1, 3 }
+        scroll_style.maximal_height = height
+        scroll_style.horizontally_stretchable = true
+
+        -- Draw the table
+        local scroll_table =
+            scroll_pane.add{
+                type = "table",
+                name = "table",
+                column_count = column_count,
+            }
+
+        -- Return the scroll table
+        return scroll_table
+    end)
+    :style{
+        padding = 0,
+        cell_padding = 0,
+        vertical_align = "center",
+        horizontally_stretchable = true,
     }
-
-    -- Set the style of the scroll pane
-    local scroll_style = scroll_pane.style
-    scroll_style.padding = {1, 3}
-    scroll_style.maximal_height = height
-    scroll_style.horizontally_stretchable = true
-
-    -- Draw the table
-    local scroll_table =
-    scroll_pane.add{
-        type = 'table',
-        name = 'table',
-        column_count = column_count
-    }
-
-    -- Return the scroll table
-    return scroll_table
-end)
-:style{
-    padding = 0,
-    cell_padding = 0,
-    vertical_align = 'center',
-    horizontally_stretchable = true
-}
 
 --[[-- Used to add a frame with the header style, has the option for a right alignment flow for buttons
 @element Gui.header
@@ -105,35 +105,35 @@ local header = Gui.header(
 
 ]]
 Gui.header =
-Gui.element(function(_, parent, caption, tooltip, add_alignment, name, label_name)
-    -- Draw the header
-    local header =
-    parent.add{
-        name = name or 'header',
-        type = 'frame',
-        style = 'subheader_frame'
-    }
+    Gui.element(function(_, parent, caption, tooltip, add_alignment, name, label_name)
+        -- Draw the header
+        local header =
+            parent.add{
+                name = name or "header",
+                type = "frame",
+                style = "subheader_frame",
+            }
 
-    -- Change the style of the header
-    local style = header.style
-    style.padding = {2, 4}
-    style.use_header_filler = false
-    style.horizontally_stretchable = true
+        -- Change the style of the header
+        local style = header.style
+        style.padding = { 2, 4 }
+        style.use_header_filler = false
+        style.horizontally_stretchable = true
 
-    -- Draw the caption label
-    if caption then
-        header.add{
-            name = label_name or 'header_label',
-            type = 'label',
-            style = 'frame_title',
-            caption = caption,
-            tooltip = tooltip
-        }
-    end
+        -- Draw the caption label
+        if caption then
+            header.add{
+                name = label_name or "header_label",
+                type = "label",
+                style = "frame_title",
+                caption = caption,
+                tooltip = tooltip,
+            }
+        end
 
-    -- Return either the header or the added alignment
-    return add_alignment and Gui.alignment(header) or header
-end)
+        -- Return either the header or the added alignment
+        return add_alignment and Gui.alignment(header) or header
+    end)
 
 --[[-- Used to add a frame with the footer style, has the option for a right alignment flow for buttons
 @element Gui.footer
@@ -153,35 +153,35 @@ local footer = Gui.footer(
 
 ]]
 Gui.footer =
-Gui.element(function(_, parent, caption, tooltip, add_alignment, name)
-    -- Draw the header
-    local footer =
-    parent.add{
-        name = name or 'footer',
-        type = 'frame',
-        style = 'subfooter_frame'
-    }
+    Gui.element(function(_, parent, caption, tooltip, add_alignment, name)
+        -- Draw the header
+        local footer =
+            parent.add{
+                name = name or "footer",
+                type = "frame",
+                style = "subfooter_frame",
+            }
 
-    -- Change the style of the footer
-    local style = footer.style
-    style.padding = {2, 4}
-    style.use_header_filler = false
-    style.horizontally_stretchable = true
+        -- Change the style of the footer
+        local style = footer.style
+        style.padding = { 2, 4 }
+        style.use_header_filler = false
+        style.horizontally_stretchable = true
 
-    -- Draw the caption label
-    if caption then
-        footer.add{
-            name = 'footer_label',
-            type = 'label',
-            style = 'frame_title',
-            caption = caption,
-            tooltip = tooltip
-        }
-    end
+        -- Draw the caption label
+        if caption then
+            footer.add{
+                name = "footer_label",
+                type = "label",
+                style = "frame_title",
+                caption = caption,
+                tooltip = tooltip,
+            }
+        end
 
-    -- Return either the footer or the added alignment
-    return add_alignment and Gui.alignment(footer) or footer
-end)
+        -- Return either the footer or the added alignment
+        return add_alignment and Gui.alignment(footer) or footer
+    end)
 
 --[[-- Used for left frames to give them a nice boarder
 @element Gui.container
@@ -194,29 +194,29 @@ local container = Gui.container(parent, 'my_container', 200)
 
 ]]
 Gui.container =
-Gui.element(function(_, parent, name, _)
-    -- Draw the external container
-    local frame =
-    parent.add{
-        name = name,
-        type = 'frame'
-    }
-    frame.style.horizontally_stretchable = false
+    Gui.element(function(_, parent, name, _)
+        -- Draw the external container
+        local frame =
+            parent.add{
+                name = name,
+                type = "frame",
+            }
+        frame.style.horizontally_stretchable = false
 
-    -- Return the container
-    return frame.add{
-        name = 'container',
-        type = 'frame',
-        direction = 'vertical',
-        style = 'inside_shallow_frame_packed'
-    }
-end)
-:style(function(style, element, _,width)
-    style.vertically_stretchable = false
-    local frame_style = element.parent.style
-    frame_style.padding = 2
-    frame_style.minimal_width = width
-end)
+        -- Return the container
+        return frame.add{
+            name = "container",
+            type = "frame",
+            direction = "vertical",
+            style = "inside_shallow_frame_packed",
+        }
+    end)
+    :style(function(style, element, _, width)
+        style.vertically_stretchable = false
+        local frame_style = element.parent.style
+        frame_style.padding = 2
+        frame_style.minimal_width = width
+    end)
 
 --[[-- Used to make a solid white bar in a gui
 @element Gui.bar
@@ -228,19 +228,22 @@ local bar = Gui.bar(parent, 100)
 
 ]]
 Gui.bar =
-Gui.element(function(_, parent)
-    return parent.add{
-        type = 'progressbar',
-        size = 1,
-        value = 1
-    }
-end)
-:style(function(style, _,width)
-    style.height = 3
-    style.color = {r=255, g=255, b=255}
-    if width then style.width = width
-    else style.horizontally_stretchable = true end
-end)
+    Gui.element(function(_, parent)
+        return parent.add{
+            type = "progressbar",
+            size = 1,
+            value = 1,
+        }
+    end)
+    :style(function(style, _, width)
+        style.height = 3
+        style.color = { r = 255, g = 255, b = 255 }
+        if width then
+            style.width = width
+        else
+            style.horizontally_stretchable = true
+        end
+    end)
 
 --[[-- Used to make a label which is centered and of a certian size
 @element Gui.centered_label
@@ -254,20 +257,20 @@ local label = Gui.centered_label(parent, 100, 'This is centered')
 
 ]]
 Gui.centered_label =
-Gui.element(function(_, parent, width, caption, tooltip)
-    local label = parent.add{
-        type = 'label',
-        caption = caption,
-        tooltip = tooltip,
-    }
+    Gui.element(function(_, parent, width, caption, tooltip)
+        local label = parent.add{
+            type = "label",
+            caption = caption,
+            tooltip = tooltip,
+        }
 
-    local style = label.style
-    style.horizontal_align = 'center'
-    style.single_line = false
-    style.width = width
+        local style = label.style
+        style.horizontal_align = "center"
+        style.single_line = false
+        style.width = width
 
-    return label
-end)
+        return label
+    end)
 
 --[[-- Used to make a title which has two bars on either side
 @element Gui.title_label
@@ -281,18 +284,18 @@ local label = Gui.centered_label(parent, 100, 'This is centered')
 
 ]]
 Gui.title_label =
-Gui.element(function(_, parent, width, caption, tooltip)
-    local title_flow = parent.add{ type='flow' }
-    title_flow.style.vertical_align = 'center'
+    Gui.element(function(_, parent, width, caption, tooltip)
+        local title_flow = parent.add{ type = "flow" }
+        title_flow.style.vertical_align = "center"
 
-    Gui.bar(title_flow, width)
-    local title_label = title_flow.add{
-        type = 'label',
-        caption = caption,
-        tooltip = tooltip,
-        style = 'frame_title'
-    }
-    Gui.bar(title_flow)
+        Gui.bar(title_flow, width)
+        local title_label = title_flow.add{
+            type = "label",
+            caption = caption,
+            tooltip = tooltip,
+            style = "frame_title",
+        }
+        Gui.bar(title_flow)
 
-    return title_label
-end)
+        return title_label
+    end)

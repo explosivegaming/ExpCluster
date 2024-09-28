@@ -22,7 +22,7 @@ local created_items = function()
     ["pistol"] = 1,
     ["firearm-magazine"] = 10,
     ["burner-mining-drill"] = 1,
-    ["stone-furnace"] = 1
+    ["stone-furnace"] = 1,
   }
 end
 
@@ -30,13 +30,13 @@ local respawn_items = function()
   return
   {
     ["pistol"] = 1,
-    ["firearm-magazine"] = 10
+    ["firearm-magazine"] = 10,
   }
 end
 
 if use_silo_script then
   for k, v in pairs(silo_script.get_events()) do
-      Event.add(k, v)
+    Event.add(k, v)
   end
 end
 
@@ -45,13 +45,13 @@ Event.add(defines.events.on_player_created, function(event)
   util.insert_safe(player, global.created_items)
 
   local r = global.chart_distance or 200
-  player.force.chart(player.surface, {{player.position.x - r, player.position.y - r}, {player.position.x + r, player.position.y + r}})
+  player.force.chart(player.surface, { { player.position.x - r, player.position.y - r }, { player.position.x + r, player.position.y + r } })
 
   if not global.skip_intro then
     if game.is_multiplayer() then
-      player.print({"msg-intro"})
+      player.print{ "msg-intro" }
     else
-      game.show_message_dialog{text = {"msg-intro"}}
+      game.show_message_dialog{ text = { "msg-intro" } }
     end
   end
 
@@ -88,37 +88,37 @@ if use_silo_script then
 end
 
 remote.add_interface("freeplay",
-{
-  get_created_items = function()
-    return global.created_items
-  end,
-  set_created_items = function(map)
-    global.created_items = map
-  end,
-  get_respawn_items = function()
-    return global.respawn_items
-  end,
-  set_respawn_items = function(map)
-    global.respawn_items = map
-  end,
-  set_skip_intro = function(bool)
-    global.skip_intro = bool
-  end,
-  set_chart_distance = function(value)
-    global.chart_distance = tonumber(value)
-  end,
-  set_disable_crashsite = function()
-  end,
-  get_ship_items = function()
-    return {}
-  end,
-  set_ship_items = function()
-  return
-  end,
-  get_debris_items = function ()
-    return {}
-  end,
-  set_debris_items = function ()
-    return
-  end
-})
+  {
+    get_created_items = function()
+      return global.created_items
+    end,
+    set_created_items = function(map)
+      global.created_items = map
+    end,
+    get_respawn_items = function()
+      return global.respawn_items
+    end,
+    set_respawn_items = function(map)
+      global.respawn_items = map
+    end,
+    set_skip_intro = function(bool)
+      global.skip_intro = bool
+    end,
+    set_chart_distance = function(value)
+      global.chart_distance = tonumber(value)
+    end,
+    set_disable_crashsite = function()
+    end,
+    get_ship_items = function()
+      return {}
+    end,
+    set_ship_items = function()
+      return
+    end,
+    get_debris_items = function()
+      return {}
+    end,
+    set_debris_items = function()
+      return
+    end,
+  })

@@ -10,7 +10,7 @@ return {
     unlimited_surface_area = false, --- @setting unlimited_surface_area When true the vlayer has an unlimited surface area, landfill is not required
     modded_auto_downgrade = false, --- @setting modded_auto_downgrade When true modded items will be converted into their base game equivalent, original items can not be recovered
 
-    mimic_surface = 'nauvis', --- @setting mimic_surface Surface name/index the vlayer will copy its settings from, use nil to use the settings below
+    mimic_surface = "nauvis", --- @setting mimic_surface Surface name/index the vlayer will copy its settings from, use nil to use the settings below
     surface = { --- @setting surface When mimic_surface is nil these settings will be used instead, see LuaSurface for details
         always_day = false,
         solar_power_multiplier = 1,
@@ -20,14 +20,14 @@ return {
         dusk = 0.25,
         evening = 0.45,
         morning = 0.55,
-        dawn = 0.75
+        dawn = 0.75,
     },
 
     interface_limit = { --- @setting interface_limit Sets the limit for the number of vlayer interfaces that can be created
         energy = 1, -- >1 allows for disconnected power networks to receive power
         circuit = 10, -- No caveats
         storage_input = 10, -- No caveats
-        storage_output = 1 -- >0 allows for item teleportation (allowed_items only)
+        storage_output = 1, -- >0 allows for item teleportation (allowed_items only)
     },
 
     allowed_items = { --- @setting allowed_items List of all items allowed in vlayer storage and their properties
@@ -40,36 +40,36 @@ return {
             capacity = 0: The energy capacity of the item in MJ, used for accumulators
             surface_area = 0: The surface area provided by the item, used for landfill
         ]]
-        ['solar-panel'] = {
+        ["solar-panel"] = {
             starting_value = 0,
             required_area = 9,
-            production = 0.06 -- MW
+            production = 0.06, -- MW
         },
-        ['accumulator'] = {
+        ["accumulator"] = {
             starting_value = 0,
             required_area = 4,
             discharge = 0.3, -- MW
-            capacity = 5 -- MJ
+            capacity = 5, -- MJ
         },
-        ['landfill'] = {
+        ["landfill"] = {
             starting_value = 0,
             required_area = 0,
-            surface_area = 6 -- Tiles
+            surface_area = 6, -- Tiles
         },
-        ['wood'] = {
+        ["wood"] = {
             starting_value = 0,
             required_area = 0,
             surface_area = 0,
             fuel_value = 2, -- MJ
-            power = true -- turn all wood to power to reduce trash
+            power = true, -- turn all wood to power to reduce trash
         },
-        ['coal'] = {
+        ["coal"] = {
             starting_value = 0,
             required_area = 0,
             surface_area = 0,
             fuel_value = 4, -- MJ
-            power = false -- turn all coal to power to reduce trash
-        }
+            power = false, -- turn all coal to power to reduce trash
+        },
         --[[
         ['iron-ore'] = {
             starting_value = 0,
@@ -100,75 +100,75 @@ return {
     },
 
     modded_items = { --- @setting modded_items List of all modded items allowed in vlayer storage and their base game equivalent
-        ['solar-panel-2'] = {
+        ["solar-panel-2"] = {
             starting_value = 0,
-            base_game_equivalent = 'solar-panel',
-            multiplier = 4
+            base_game_equivalent = "solar-panel",
+            multiplier = 4,
         },
-        ['solar-panel-3'] = {
+        ["solar-panel-3"] = {
             starting_value = 0,
-            base_game_equivalent = 'solar-panel',
-            multiplier = 16
+            base_game_equivalent = "solar-panel",
+            multiplier = 16,
         },
-        ['solar-panel-4'] = {
+        ["solar-panel-4"] = {
             starting_value = 0,
-            base_game_equivalent = 'solar-panel',
-            multiplier = 64
+            base_game_equivalent = "solar-panel",
+            multiplier = 64,
         },
-        ['solar-panel-5'] = {
+        ["solar-panel-5"] = {
             starting_value = 0,
-            base_game_equivalent = 'solar-panel',
-            multiplier = 256
+            base_game_equivalent = "solar-panel",
+            multiplier = 256,
         },
-        ['solar-panel-6'] = {
+        ["solar-panel-6"] = {
             starting_value = 0,
-            base_game_equivalent = 'solar-panel',
-            multiplier = 1024
+            base_game_equivalent = "solar-panel",
+            multiplier = 1024,
         },
-        ['solar-panel-7'] = {
+        ["solar-panel-7"] = {
             starting_value = 0,
-            base_game_equivalent = 'solar-panel',
-            multiplier = 4096
+            base_game_equivalent = "solar-panel",
+            multiplier = 4096,
         },
-        ['solar-panel-8'] = {
+        ["solar-panel-8"] = {
             starting_value = 0,
-            base_game_equivalent = 'solar-panel',
-            multiplier = 16384
+            base_game_equivalent = "solar-panel",
+            multiplier = 16384,
         },
-        ['accumulator-2'] = {
+        ["accumulator-2"] = {
             starting_value = 0,
-            base_game_equivalent = 'accumulator',
-            multiplier = 4
+            base_game_equivalent = "accumulator",
+            multiplier = 4,
         },
-        ['accumulator-3'] = {
+        ["accumulator-3"] = {
             starting_value = 0,
-            base_game_equivalent = 'accumulator',
-            multiplier = 16
+            base_game_equivalent = "accumulator",
+            multiplier = 16,
         },
-        ['accumulator-4'] = {
+        ["accumulator-4"] = {
             starting_value = 0,
-            base_game_equivalent = 'accumulator',
-            multiplier = 64
+            base_game_equivalent = "accumulator",
+            multiplier = 64,
         },
-        ['accumulator-5'] = {
+        ["accumulator-5"] = {
             starting_value = 0,
-            base_game_equivalent = 'accumulator',
-            multiplier = 256
+            base_game_equivalent = "accumulator",
+            multiplier = 256,
         },
-        ['accumulator-6'] = {
+        ["accumulator-6"] = {
             starting_value = 0,
-            base_game_equivalent = 'accumulator',
-            multiplier = 1024
+            base_game_equivalent = "accumulator",
+            multiplier = 1024,
         },
-        ['accumulator-7'] = {
+        ["accumulator-7"] = {
             starting_value = 0,
-            base_game_equivalent = 'accumulator',
-            multiplier = 4096
+            base_game_equivalent = "accumulator",
+            multiplier = 4096,
         },
-        ['accumulator-8'] = {
+        ["accumulator-8"] = {
             starting_value = 0,
-            base_game_equivalent = 'accumulator',
-            multiplier = 16384
+            base_game_equivalent = "accumulator",
+            multiplier = 16384,
         },
-    }
+    },
 }

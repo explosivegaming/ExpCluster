@@ -4,102 +4,102 @@
 -- then use :allow{} and :disallow{} to specify certain actions to allow/disallow
 -- @config Permission-Groups
 
---local Event = require("modules/exp_legacy/utils/event") -- @dep utils.event
+-- local Event = require("modules/exp_legacy/utils/event") -- @dep utils.event
 local Permission_Groups = require("modules.exp_legacy.expcore.permission_groups") --- @dep expcore.permission_groups
 
-Permission_Groups.new_group('Admin')
-:allow_all()
-:disallow{
-    'add_permission_group', -- admin
-    'delete_permission_group',
-    'edit_permission_group',
-    'import_permissions_string',
-    'map_editor_action',
-    'toggle_map_editor',
-    'change_multiplayer_config',
-    'set_heat_interface_mode',
-    'set_heat_interface_temperature',
-    'set_infinity_container_filter_item',
-    'set_infinity_container_remove_unfiltered_items',
-    'set_infinity_pipe_filter'
-}
+Permission_Groups.new_group("Admin")
+    :allow_all()
+    :disallow{
+        "add_permission_group", -- admin
+        "delete_permission_group",
+        "edit_permission_group",
+        "import_permissions_string",
+        "map_editor_action",
+        "toggle_map_editor",
+        "change_multiplayer_config",
+        "set_heat_interface_mode",
+        "set_heat_interface_temperature",
+        "set_infinity_container_filter_item",
+        "set_infinity_container_remove_unfiltered_items",
+        "set_infinity_pipe_filter",
+    }
 
-Permission_Groups.new_group('Trusted')
-:allow_all()
-:disallow{
-    'add_permission_group', -- admin
-    'delete_permission_group',
-    'edit_permission_group',
-    'import_permissions_string',
-    'map_editor_action',
-    'toggle_map_editor',
-    'change_multiplayer_config',
-    'set_heat_interface_mode',
-    'set_heat_interface_temperature',
-    'set_infinity_container_filter_item',
-    'set_infinity_container_remove_unfiltered_items',
-    'set_infinity_pipe_filter',
-    'admin_action' -- trusted
-}
+Permission_Groups.new_group("Trusted")
+    :allow_all()
+    :disallow{
+        "add_permission_group", -- admin
+        "delete_permission_group",
+        "edit_permission_group",
+        "import_permissions_string",
+        "map_editor_action",
+        "toggle_map_editor",
+        "change_multiplayer_config",
+        "set_heat_interface_mode",
+        "set_heat_interface_temperature",
+        "set_infinity_container_filter_item",
+        "set_infinity_container_remove_unfiltered_items",
+        "set_infinity_pipe_filter",
+        "admin_action", -- trusted
+    }
 
-Permission_Groups.new_group('Standard')
-:allow_all()
-:disallow{
-    'add_permission_group', -- admin
-    'delete_permission_group',
-    'edit_permission_group',
-    'import_permissions_string',
-    'map_editor_action',
-    'toggle_map_editor',
-    'change_multiplayer_config',
-    'set_heat_interface_mode',
-    'set_heat_interface_temperature',
-    'set_infinity_container_filter_item',
-    'set_infinity_container_remove_unfiltered_items',
-    'set_infinity_pipe_filter',
-    'admin_action', -- trusted
-    'change_programmable_speaker_alert_parameters', -- standard
-    'drop_item',
-    'change_rocket_silo_mode'
-}
+Permission_Groups.new_group("Standard")
+    :allow_all()
+    :disallow{
+        "add_permission_group", -- admin
+        "delete_permission_group",
+        "edit_permission_group",
+        "import_permissions_string",
+        "map_editor_action",
+        "toggle_map_editor",
+        "change_multiplayer_config",
+        "set_heat_interface_mode",
+        "set_heat_interface_temperature",
+        "set_infinity_container_filter_item",
+        "set_infinity_container_remove_unfiltered_items",
+        "set_infinity_pipe_filter",
+        "admin_action", -- trusted
+        "change_programmable_speaker_alert_parameters", -- standard
+        "drop_item",
+        "change_rocket_silo_mode",
+    }
 
-Permission_Groups.new_group('Guest')
-:allow_all()
-:disallow{
-    'add_permission_group', -- admin
-    'delete_permission_group',
-    'edit_permission_group',
-    'import_permissions_string',
-    'map_editor_action',
-    'toggle_map_editor',
-    'change_multiplayer_config',
-    'set_heat_interface_mode',
-    'set_heat_interface_temperature',
-    'set_infinity_container_filter_item',
-    'set_infinity_container_remove_unfiltered_items',
-    'set_infinity_pipe_filter',
-    'admin_action', -- trusted
-    'change_programmable_speaker_alert_parameters', -- standard
-    'drop_item',
-    'change_rocket_silo_mode',
-    'change_programmable_speaker_parameters', -- guest
-    'change_train_stop_station',
-    --'deconstruct',
-    'remove_cables',
-    'remove_train_station',
-    'reset_assembling_machine',
-    'rotate_entity',
-    --'use_artillery_remote', -- not in 2.0
-    'launch_rocket',
-    'cancel_research',
-    --'activate_cut', -- not in 2.0
-    'flush_opened_entity_fluid',
-    'flush_opened_entity_specific_fluid'
-}
+Permission_Groups.new_group("Guest")
+    :allow_all()
+    :disallow{
+        "add_permission_group", -- admin
+        "delete_permission_group",
+        "edit_permission_group",
+        "import_permissions_string",
+        "map_editor_action",
+        "toggle_map_editor",
+        "change_multiplayer_config",
+        "set_heat_interface_mode",
+        "set_heat_interface_temperature",
+        "set_infinity_container_filter_item",
+        "set_infinity_container_remove_unfiltered_items",
+        "set_infinity_pipe_filter",
+        "admin_action", -- trusted
+        "change_programmable_speaker_alert_parameters", -- standard
+        "drop_item",
+        "change_rocket_silo_mode",
+        "change_programmable_speaker_parameters", -- guest
+        "change_train_stop_station",
+        -- 'deconstruct',
+        "remove_cables",
+        "remove_train_station",
+        "reset_assembling_machine",
+        "rotate_entity",
+        -- 'use_artillery_remote', -- not in 2.0
+        "launch_rocket",
+        "cancel_research",
+        -- 'activate_cut', -- not in 2.0
+        "flush_opened_entity_fluid",
+        "flush_opened_entity_specific_fluid",
+    }
 
-Permission_Groups.new_group('Restricted')
-:disallow_all()
-:allow('write_to_console')
+Permission_Groups.new_group("Restricted")
+    :disallow_all()
+    :allow("write_to_console")
 
 --[[ These events are used until a role system is added to make it easier for our admins
 

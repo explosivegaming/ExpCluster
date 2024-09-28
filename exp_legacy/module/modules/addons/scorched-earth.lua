@@ -26,7 +26,7 @@ local function degrade(surface, position)
     local tile_name = tile.name
     local degrade_tile_name = config.degrade_order[tile_name]
     if not degrade_tile_name then return end
-    surface.set_tiles{{name=degrade_tile_name, position=position}}
+    surface.set_tiles{ { name = degrade_tile_name, position = position } }
 end
 
 -- Same as degrade but will degrade all tiles that are under an entity
@@ -39,25 +39,26 @@ local function degrade_entity(entity)
     local lt = box.left_top
     local rb = box.right_bottom
     for x = lt.x, rb.x do -- x loop
-        local px = position.x+x
+        local px = position.x + x
         for y = lt.y, rb.y do -- y loop
-            local p = {x=px, y=position.y+y}
+            local p = { x = px, y = position.y + y }
             local tile = surface.get_tile(p)
             local tile_name = tile.name
             local degrade_tile_name = config.degrade_order[tile_name]
             if not degrade_tile_name then return end
-            table.insert(tiles, {name=degrade_tile_name, position=p})
+            table.insert(tiles, { name = degrade_tile_name, position = p })
         end
     end
+
     surface.set_tiles(tiles)
 end
 
 -- Turns the strength of a tile into a probability (0 = impossible, 1 = certain)
 local function get_probability(strength)
-    local v1 = strength/max_strength
+    local v1 = strength / max_strength
     local dif = 1 - v1
-    local v2 = dif/2
-    return (1-v1+v2)/config.weakness_value
+    local v2 = dif / 2
+    return (1 - v1 + v2) / config.weakness_value
 end
 
 -- Gets the mean of the strengths around a tile to give the strength at that position
@@ -69,24 +70,25 @@ local function get_tile_strength(surface, position)
     for x = -1, 1 do -- x loop
         local px = position.x + x
         for y = -1, 1 do -- y loop
-            local check_tile = surface.get_tile{x=px, y=position.y+y}
+            local check_tile = surface.get_tile{ x = px, y = position.y + y }
             local check_tile_name = check_tile.name
             local check_strength = config.strengths[check_tile_name] or 0
             strength = strength + check_strength
         end
     end
-    return strength/9
+
+    return strength / 9
 end
 
 -- Same as get_tile_strength but returns to a in game text rather than as a value
 local function debug_get_tile_strength(surface, position)
     for x = -3, 3 do -- x loop
-        local px = position.x+x
+        local px = position.x + x
         for y = -3, 3 do -- y loop
-            local p = {x=px, y=position.y+y}
+            local p = { x = px, y = position.y + y }
             local strength = get_tile_strength(surface, p) or 0
             local tile = surface.get_tile(p)
-            print_grid_value(get_probability(strength)*config.weakness_value, surface, tile.position)
+            print_grid_value(get_probability(strength) * config.weakness_value, surface, tile.position)
         end
     end
 end
@@ -113,7 +115,7 @@ Event.add(defines.events.on_built_entity, function(event)
     local position = entity.position
     local strength = get_tile_strength(surface, position)
     if not strength then return end
-    if get_probability(strength)*config.weakness_value > math.random() then
+    if get_probability(strength) * config.weakness_value > math.random() then
         degrade_entity(entity)
     end
 end)
@@ -125,7 +127,7 @@ Event.add(defines.events.on_robot_built_entity, function(event)
     local position = entity.position
     local strength = get_tile_strength(surface, position)
     if not strength then return end
-    if get_probability(strength)*config.weakness_value > math.random() then
+    if get_probability(strength) * config.weakness_value > math.random() then
         degrade_entity(entity)
     end
 end)

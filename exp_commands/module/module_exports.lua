@@ -70,34 +70,34 @@ local Commands = {
 
 Commands._metatable = {
     __index = Commands._prototype,
-    __class = "ExpCommand"
+    __class = "ExpCommand",
 }
 
 Commands.player_server = setmetatable({
-	index = 0,
-	color = Color.white,
-	chat_color = Color.white,
-	name = "<server>",
-	tag = "",
-	connected = true,
-	admin = true,
-	afk_time = 0,
-	online_time = 0,
-	last_online = 0,
-	spectator = true,
-	show_on_map = false,
-	valid = true,
-	object_name = "LuaPlayer"
+    index = 0,
+    color = Color.white,
+    chat_color = Color.white,
+    name = "<server>",
+    tag = "",
+    connected = true,
+    admin = true,
+    afk_time = 0,
+    online_time = 0,
+    last_online = 0,
+    spectator = true,
+    show_on_map = false,
+    valid = true,
+    object_name = "LuaPlayer",
 }, {
-	__index = function(_, key)
-		if key == "__self" or type(key) == "number" then return nil end
-		Commands.error("Command does not support rcon usage, requires reading player." .. key)
-		error("Command does not support rcon usage, requires reading player." .. key)
-	end,
-	__newindex = function(_, key)
-		Commands.error("Command does not support rcon usage, requires reading player." .. key)
-		error("Command does not support rcon usage, requires setting player." .. key)
-	end
+    __index = function(_, key)
+        if key == "__self" or type(key) == "number" then return nil end
+        Commands.error("Command does not support rcon usage, requires reading player." .. key)
+        error("Command does not support rcon usage, requires reading player." .. key)
+    end,
+    __newindex = function(_, key)
+        Commands.error("Command does not support rcon usage, requires reading player." .. key)
+        error("Command does not support rcon usage, requires setting player." .. key)
+    end,
 })
 
 --- Status Returns.
@@ -107,34 +107,34 @@ Commands.player_server = setmetatable({
 --- Used to signal success from a command, data type parser, or permission authority
 -- @tparam[opt] LocaleString|string msg An optional message to be included when a command completes (only has an effect in command callbacks)
 function Commands.status.success(msg)
-    return Commands.status.success, msg or {'exp-commands.success'}
+    return Commands.status.success, msg or { "exp-commands.success" }
 end
 
 --- Used to signal an error has occurred in a command, data type parser, or permission authority
 -- For data type parsers and permission authority, an error return will prevent the command from being executed
 -- @tparam[opt] LocaleString|string msg An optional error message to be included in the output, a generic message is used if not provided
 function Commands.status.error(msg)
-    return Commands.status.error, {'exp-commands.error', msg or {'exp-commands.error-default'}}
+    return Commands.status.error, { "exp-commands.error", msg or { "exp-commands.error-default" } }
 end
 
 --- Used to signal the player is unauthorised to use a command, primarily used by permission authorities but can be used in a command callback
 -- For permission authorities, an error return will prevent the command from being executed
 -- @tparam[opt] LocaleString|string msg An optional error message to be included in the output, a generic message is used if not provided
 function Commands.status.unauthorised(msg)
-    return Commands.status.unauthorised, msg or {'exp-commands.unauthorized', msg or {'exp-commands.unauthorized-default'}}
+    return Commands.status.unauthorised, msg or { "exp-commands.unauthorized", msg or { "exp-commands.unauthorized-default" } }
 end
 
 --- Used to signal the player provided invalid input to an command, primarily used by data type parsers but can be used in a command callback
 -- For data type parsers, an error return will prevent the command from being executed
 -- @tparam[opt] LocaleString|string msg An optional error message to be included in the output, a generic message is used if not provided
 function Commands.status.invalid_input(msg)
-    return Commands.status.invalid_input, msg or {'exp-commands.invalid-input'}
+    return Commands.status.invalid_input, msg or { "exp-commands.invalid-input" }
 end
 
 --- Used to signal an internal error has occurred, this is reserved for internal use
 -- @tparam LocaleString|string msg A message detailing the error which has occurred, will be logged and outputted
 function Commands.status.internal_error(msg)
-    return Commands.status.internal_error, {'exp-commands.internal-error', msg}
+    return Commands.status.internal_error, { "exp-commands.internal-error", msg }
 end
 
 local valid_command_status = {} -- Hashmap lookup for testing if a status is valid
@@ -207,7 +207,7 @@ end
 -- @treturn string The data type passed as the first argument
 function Commands.add_data_type(data_type, parser)
     if Commands.data_types[data_type] then
-        error("Data type \""..tostring(data_type).."\" already has a parser registered", 2)
+        error("Data type \"" .. tostring(data_type) .. "\" already has a parser registered", 2)
     end
     Commands.data_types[data_type] = parser
     return data_type
@@ -231,12 +231,12 @@ function Commands.parse_data_type(data_type, input, ...)
     if type(data_type) == "function" then
         parser = data_type
     elseif parser == nil then
-        return false, Commands.status.internal_error, {"exp-commands.internal-error" , "Data type \""..tostring(data_type).."\" does not have a registered parser"}
+        return false, Commands.status.internal_error, { "exp-commands.internal-error", "Data type \"" .. tostring(data_type) .. "\" does not have a registered parser" }
     end
 
     local status, parsed = parser(input, ...)
     if status == nil then
-        return Commands.status.internal_error, {"exp-commands.internal-error" , "Parser for data type \""..tostring(data_type).."\" returned a nil value"}
+        return Commands.status.internal_error, { "exp-commands.internal-error", "Parser for data type \"" .. tostring(data_type) .. "\" returned a nil value" }
     elseif valid_command_status[status] then
         if status ~= Commands.status.success then
             return false, status, parsed -- error_type, error_msg
@@ -279,7 +279,7 @@ local function search_commands(keyword, custom_commands)
 
     -- Search all custom commands
     for name, command in pairs(custom_commands) do
-        local search = string.format('%s %s %s', name, command.help, table.concat(command.aliases, ' '))
+        local search = string.format("%s %s %s", name, command.help, table.concat(command.aliases, " "))
         if search:lower():match(keyword) then
             rtn[name] = command
         end
@@ -287,13 +287,13 @@ local function search_commands(keyword, custom_commands)
 
     -- Search all game commands
     for name, description in pairs(commands.game_commands) do
-        local search = string.format('%s %s', name, description)
+        local search = string.format("%s %s", name, description)
         if search:lower():match(keyword) then
             rtn[name] = {
                 name = name,
                 help = description,
                 description = "",
-                aliases = {}
+                aliases = {},
             }
         end
     end
@@ -322,8 +322,8 @@ end
 -- @tparam Color color The color that the message should be
 -- @treturn string The string which can be printed to game chat
 function Commands.set_chat_message_color(message, color)
-    local color_tag = math.round(color.r, 3)..', '..math.round(color.g, 3)..', '..math.round(color.b, 3)
-    return string.format('[color=%s]%s[/color]', color_tag, message)
+    local color_tag = math.round(color.r, 3) .. ", " .. math.round(color.g, 3) .. ", " .. math.round(color.b, 3)
+    return string.format("[color=%s]%s[/color]", color_tag, message)
 end
 
 --- Set the color of a locale message using rich text chat
@@ -331,8 +331,8 @@ end
 -- @tparam Color color The color that the message should be
 -- @treturn LocaleString The locale string which can be printed to game chat
 function Commands.set_locale_chat_message_color(message, color)
-    local color_tag = math.round(color.r, 3)..', '..math.round(color.g, 3)..', '..math.round(color.b, 3)
-    return {'color-tag', color_tag, message}
+    local color_tag = math.round(color.r, 3) .. ", " .. math.round(color.g, 3) .. ", " .. math.round(color.b, 3)
+    return { "color-tag", color_tag, message }
 end
 
 --- Get a string representing the name of the given player in their chat colour
@@ -341,8 +341,8 @@ end
 function Commands.format_player_name(player)
     local player_name = player and player.name or "<server>"
     local player_color = player and player.chat_color or Color.white
-    local color_tag = math.round(player_color.r, 3)..', '..math.round(player_color.g, 3)..', '..math.round(player_color.b, 3)
-    return string.format('[color=%s]%s[/color]', color_tag, player_name)
+    local color_tag = math.round(player_color.r, 3) .. ", " .. math.round(player_color.g, 3) .. ", " .. math.round(player_color.b, 3)
+    return string.format("[color=%s]%s[/color]", color_tag, player_name)
 end
 
 --- Get a locale string representing the name of the given player in their chat colour
@@ -351,8 +351,8 @@ end
 function Commands.format_locale_player_name(player)
     local player_name = player and player.name or "<server>"
     local player_color = player and player.chat_color or Color.white
-    local color_tag = math.round(player_color.r, 3)..', '..math.round(player_color.g, 3)..', '..math.round(player_color.b, 3)
-    return {'color-tag', color_tag, player_name}
+    local color_tag = math.round(player_color.r, 3) .. ", " .. math.round(player_color.g, 3) .. ", " .. math.round(player_color.b, 3)
+    return { "color-tag", color_tag, player_name }
 end
 
 --- Print a message to the user of a command, accepts any value and will print in a readable and safe format
@@ -366,14 +366,14 @@ function Commands.print(message, color, sound)
     else
         local formatted = ExpUtil.format_any(message, nil, 20)
         player.print(formatted, color or Color.white)
-        player.play_sound{ path = sound or 'utility/scenario_message' }
+        player.play_sound{ path = sound or "utility/scenario_message" }
     end
 end
 
 --- Print an error message to the user of a command, accepts any value and will print in a readable and safe format
 -- @tparam any message The message / value to be printed
 function Commands.error(message)
-    return Commands.print(message, Color.orange_red, 'utility/wire_pickup')
+    return Commands.print(message, Color.orange_red, "utility/wire_pickup")
 end
 
 --- Command Prototype
@@ -382,7 +382,7 @@ end
 
 --- This is a default callback that should never be called
 local function default_command_callback()
-    return Commands.status.internal_error('No callback registered')
+    return Commands.status.internal_error("No callback registered")
 end
 
 --- Returns a new command object, this will not register the command to the game
@@ -393,7 +393,7 @@ function Commands.new(name, help)
     ExpUtil.assert_argument_type(name, "string", 1, "name")
     ExpUtil.assert_argument_type(help, "string", 2, "help")
     if Commands.registered_commands[name] then
-        error("Command is already defined at: "..Commands.registered_commands[name].defined_at, 2)
+        error("Command is already defined at: " .. Commands.registered_commands[name].defined_at, 2)
     end
 
     return setmetatable({
@@ -414,7 +414,7 @@ end
 local function get_parser(data_type)
     local rtn = Commands.data_types[data_type]
     if rtn == nil then
-        error("Unknown data type: "..tostring(data_type), 3)
+        error("Unknown data type: " .. tostring(data_type), 3)
     end
     return data_type, rtn
 end
@@ -434,7 +434,7 @@ function Commands._prototype:argument(name, data_type, ...)
         optional = false,
         data_type = data_type,
         data_type_parser = get_parser(data_type),
-        parse_args = {...}
+        parse_args = { ... },
     }
     return self
 end
@@ -450,7 +450,7 @@ function Commands._prototype:optional(name, data_type, ...)
         optional = true,
         data_type = data_type,
         data_type_parser = get_parser(data_type),
-        parse_args = {...}
+        parse_args = { ... },
     }
     return self
 end
@@ -459,22 +459,24 @@ end
 -- @tparam table defaults A table who's keys are the argument names and values are the defaults or function which returns a default
 -- @treturn Command The command object to allow chaining method calls
 function Commands._prototype:defaults(defaults)
-	local matched = {}
-	for _, argument in ipairs(self.arguments) do
-		if defaults[argument.name] then
-			if not argument.optional then
-				error("Attempting to set default value for required argument: " .. argument.name)
-			end
-			argument.default = defaults[argument.name]
-			matched[argument.name] = true
-		end
-	end
-	-- Check that there are no extra values in the table
-    for name in pairs(defaults) do
-        if not matched[name] then
-			error("No argument with name: " .. name)
+    local matched = {}
+    for _, argument in ipairs(self.arguments) do
+        if defaults[argument.name] then
+            if not argument.optional then
+                error("Attempting to set default value for required argument: " .. argument.name)
+            end
+            argument.default = defaults[argument.name]
+            matched[argument.name] = true
         end
     end
+
+    -- Check that there are no extra values in the table
+    for name in pairs(defaults) do
+        if not matched[name] then
+            error("No argument with name: " .. name)
+        end
+    end
+
     return self
 end
 
@@ -489,6 +491,7 @@ function Commands._prototype:add_flags(flags)
             self.flags[name] = value
         end
     end
+
     return self
 end
 
@@ -500,6 +503,7 @@ function Commands._prototype:add_aliases(aliases)
     for index, alias in ipairs(aliases) do
         self.aliases[start_index + index] = alias
     end
+
     return self
 end
 
@@ -520,11 +524,12 @@ function Commands._prototype:register(callback)
     local description = {}
     for index, argument in pairs(self.arguments) do
         if argument.optional then
-            description[index] = "["..argument.name.."]"
+            description[index] = "[" .. argument.name .. "]"
         else
-            description[index] = "<"..argument.name..">"
+            description[index] = "<" .. argument.name .. ">"
         end
     end
+
     self.description = table.concat(description, " ")
 
     -- Callback which is called by the game engine
@@ -539,7 +544,7 @@ function Commands._prototype:register(callback)
     end
 
     -- Registers the command under its own name
-    local help = {'exp-commands.command-help', self.description, self.help}
+    local help = { "exp-commands.command-help", self.description, self.help }
     commands.add_command(self.name, help, command_callback)
 
     -- Registers the command under its aliases
@@ -554,42 +559,42 @@ end
 
 --- Log that a command was attempted and its outcome (error / success)
 local function log_command(comment, command, player, args, detail)
-    local player_name = player and player.name or '<Server>'
-    ExpUtil.write_json('log/commands.log', {
+    local player_name = player and player.name or "<Server>"
+    ExpUtil.write_json("log/commands.log", {
         comment = comment,
         detail = detail,
         player_name = player_name,
         command_name = command.name,
-        args = args
+        args = args,
     })
 end
 
 --- Extract the arguments from a string input string
 local function extract_arguments(raw_input, max_args, auto_concat)
-	-- nil check when no input given
-	if raw_input == nil then return {} end
+    -- nil check when no input given
+    if raw_input == nil then return {} end
 
     -- Extract quoted arguments
     local quoted_arguments = {}
     local input_string = raw_input:gsub('"[^"]-"', function(word)
-        local no_spaces = word:gsub('%s', '%%s')
+        local no_spaces = word:gsub("%s", "%%s")
         quoted_arguments[no_spaces] = word:sub(2, -2)
-        return ' '..no_spaces..' '
+        return " " .. no_spaces .. " "
     end)
 
     -- Extract all arguments
     local index = 0
     local arguments = {}
-    for word in input_string:gmatch('%S+') do
+    for word in input_string:gmatch("%S+") do
         index = index + 1
         if index > max_args then
             -- concat the word onto the last argument
             if auto_concat == false then
                 return nil -- too many args, exit early
             elseif quoted_arguments[word] then
-                arguments[max_args] = arguments[max_args]..' "'..quoted_arguments[word]..'"'
+                arguments[max_args] = arguments[max_args] .. ' "' .. quoted_arguments[word] .. '"'
             else
-                arguments[max_args] = arguments[max_args]..' '..word
+                arguments[max_args] = arguments[max_args] .. " " .. word
             end
         else
             -- new argument to be added
@@ -608,7 +613,7 @@ end
 function Commands._event_handler(event)
     local command = Commands.registered_commands[event.name]
     if command == nil then
-        error("Command not recognised: "..event.name)
+        error("Command not recognised: " .. event.name)
     end
 
     local player = nil -- nil represents the server until the command is called
@@ -626,20 +631,20 @@ function Commands._event_handler(event)
     -- Check the edge case of parameter being nil
     if command.min_arg_count > 0 and event.parameter == nil then
         log_command("Too few arguments", command, player, event.parameter, { minimum = command.min_arg_count, maximum = command.max_arg_count })
-        return Commands.error{'exp-commands.invalid-usage', command.name, command.description}
+        return Commands.error{ "exp-commands.invalid-usage", command.name, command.description }
     end
 
     -- Get the arguments for the command, returns nil if there are too many arguments
     local raw_arguments = extract_arguments(event.parameter, command.max_arg_count, command.auto_concat)
     if raw_arguments == nil then
         log_command("Too many arguments", command, player, event.parameter, { minimum = command.min_arg_count, maximum = command.max_arg_count })
-        return Commands.error{'exp-commands.invalid-usage', command.name, command.description}
+        return Commands.error{ "exp-commands.invalid-usage", command.name, command.description }
     end
 
     -- Check the minimum number of arguments is fullfiled
     if #raw_arguments < command.min_arg_count then
         log_command("Too few arguments", command, player, event.parameter, { minimum = command.min_arg_count, maximum = command.max_arg_count })
-        return Commands.error{'exp-commands.invalid-usage', command.name, command.description}
+        return Commands.error{ "exp-commands.invalid-usage", command.name, command.description }
     end
 
     -- Parse the arguments, optional arguments will attempt to use a default if provided
@@ -659,7 +664,7 @@ function Commands._event_handler(event)
             local success, status, parsed = Commands.parse_data_type(argument.data_type_parser, input, player, table.unpack(argument.parse_args))
             if success == false then
                 log_command("Input parse failed", command, player, event.parameter, { status = valid_command_status[status], index = index, argument = argument, reason = parsed })
-                return Commands.error{'exp-commands.invalid-argument', argument.name, parsed}
+                return Commands.error{ "exp-commands.invalid-argument", argument.name, parsed }
             else
                 arguments[index] = parsed
             end

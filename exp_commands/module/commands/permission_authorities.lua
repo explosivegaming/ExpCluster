@@ -60,32 +60,32 @@ end
 
 --- If a command has the flag "admin_only" then only admins can use the command#
 permission_authorities.admin_only =
-add(function(player, command)
-    if command.flags.admin_only and not player.admin then
-        return deny{"exp-commands-permissions.admin-only"}
-    else
-        return allow()
-    end
-end)
+    add(function(player, command)
+        if command.flags.admin_only and not player.admin then
+            return deny{ "exp-commands-permissions.admin-only" }
+        else
+            return allow()
+        end
+    end)
 
 --- If a command has the flag "system_only" then only rcon connections can use the command
 permission_authorities.system_only =
-add(function(player, command)
-    if command.flags.system_only and not system_players[player.name] then
-        return deny{"exp-commands-permissions.system-only"}
-    else
-        return allow()
-    end
-end)
+    add(function(player, command)
+        if command.flags.system_only and not system_players[player.name] then
+            return deny{ "exp-commands-permissions.system-only" }
+        else
+            return allow()
+        end
+    end)
 
 --- If Commands.disable was called then no one can use the command
 permission_authorities.disabled =
-add(function(_, command)
-    if disabled_commands[command.name] then
-        return deny{"exp-commands-permissions.disabled"}
-    else
-        return allow()
-    end
-end)
+    add(function(_, command)
+        if disabled_commands[command.name] then
+            return deny{ "exp-commands-permissions.disabled" }
+        else
+            return allow()
+        end
+    end)
 
 return permission_authorities

@@ -12,7 +12,7 @@ local concat = table.concat
 
 local Common = {
     --- A large mapping of colour rgb values by their common name
-    color = require("modules/exp_util/include/color")
+    color = require("modules/exp_util/include/color"),
 }
 
 --- Raise an error if we are not in runtime
@@ -36,22 +36,22 @@ end]]
 --- Check the type of a value, also considers LuaObject.object_name and metatable.__class
 --- Returns true when the check failed and an error should be raised
 local function check_type(value, type_name)
-	local value_type = type(value) --[[@as string]]
-	if value_type == "userdata" then
-		if type_name == "userdata" then
-			return false, value_type
-		end
-		value_type = value.object_name
-	elseif value_type == "table" then
-		if type_name == "table" then
-			return false, value_type
-		end
-		local mt = getmetatable(value)
-		if mt and mt.__class then
-			value_type = mt.__class
-		end
-	end
-	return value == nil or value_type ~= type_name, value_type
+    local value_type = type(value) --[[@as string]]
+    if value_type == "userdata" then
+        if type_name == "userdata" then
+            return false, value_type
+        end
+        value_type = value.object_name
+    elseif value_type == "table" then
+        if type_name == "table" then
+            return false, value_type
+        end
+        local mt = getmetatable(value)
+        if mt and mt.__class then
+            value_type = mt.__class
+        end
+    end
+    return value == nil or value_type ~= type_name, value_type
 end
 
 local assert_type_fmt = "%s expected to be of type %s but got %s"
@@ -60,7 +60,7 @@ local assert_type_fmt = "%s expected to be of type %s but got %s"
 -- @tparam string type_name The name of the type that value is expected to be
 -- @tparam[opt=Value] string value_name The name of the value being tested, this is included in the error message
 function Common.assert_type(value, type_name, value_name)
-	local failed, actual_type = check_type(value, type_name)
+    local failed, actual_type = check_type(value, type_name)
     if failed then
         error(assert_type_fmt:format(value_name or "Value", type_name, actual_type), 2)
     end
@@ -73,7 +73,7 @@ local assert_argument_fmt = "Bad argument #%d to %s; %s expected to be of type %
 -- @tparam number arg_index The index of the argument being tested, this is included in the error message
 -- @tparam[opt=Argument] string arg_name The name of the argument being tested, this is included in the error message
 function Common.assert_argument_type(arg_value, type_name, arg_index, arg_name)
-	local failed, actual_type = check_type(arg_value, type_name)
+    local failed, actual_type = check_type(arg_value, type_name)
     if failed then
         local func_name = getinfo(2, "n").name or "<anonymous>"
         error(assert_argument_fmt:format(arg_index, func_name, arg_name or "Argument", type_name, actual_type), 2)
@@ -87,9 +87,9 @@ end
 -- @tparam[opt=0] number player_index The player's machine to write on, -1 means all, 0 means host only
 function Common.write_json(path, tbl, overwrite, player_index)
     if player_index == -1 then
-        return game.write_file(path, game.table_to_json(tbl).."\n", not overwrite)
+        return game.write_file(path, game.table_to_json(tbl) .. "\n", not overwrite)
     end
-    return game.write_file(path, game.table_to_json(tbl).."\n", not overwrite, player_index or 0)
+    return game.write_file(path, game.table_to_json(tbl) .. "\n", not overwrite, player_index or 0)
 end
 
 --- Clear a file by replacing its contents with an empty string
@@ -118,17 +118,17 @@ end
 -- @treturn string The relative filepath of the given stack frame
 function Common.safe_file_path(level)
     level = level or 1
-    return getinfo(level+1, 'S').short_src:sub(10, -5)
+    return getinfo(level + 1, "S").short_src:sub(10, -5)
 end
 
 --- Returns the name of your module, this assumes your module is stored within /modules (which it is for clustorio)
 -- @tparam[opt=1] number level The level of the stack to get the module of, a value of 1 is the caller of this function
 -- @treturn string The name of the module at the given stack frame
 function Common.get_module_name(level)
-    local file_within_module = getinfo((level or 1)+1, 'S').short_src:sub(18, -5)
+    local file_within_module = getinfo((level or 1) + 1, "S").short_src:sub(18, -5)
     local next_slash = file_within_module:find("/")
     if next_slash then
-        return file_within_module:sub(1, next_slash-1)
+        return file_within_module:sub(1, next_slash - 1)
     else
         return file_within_module
     end
@@ -139,12 +139,12 @@ end
 -- @tparam boolean raw When true there will not be any < > around the name
 -- @treturn string The name of the function at the given stack frame or provided as an argument
 function Common.get_function_name(func, raw)
-	local debug_info = getinfo(func, "Sn")
-	local safe_source = debug_info.source:find('__level__')
+    local debug_info = getinfo(func, "Sn")
+    local safe_source = debug_info.source:find("__level__")
     local file_name = safe_source == 1 and debug_info.short_src:sub(10, -5) or debug_info.source
     local func_name = debug_info.name or debug_info.linedefined
-	if raw then return file_name .. ":" .. func_name end
-	return "<" .. file_name .. ":" .. func_name .. ">"
+    if raw then return file_name .. ":" .. func_name end
+    return "<" .. file_name .. ":" .. func_name .. ">"
 end
 
 --- Attempt a simple autocomplete search from a set of options
@@ -175,25 +175,25 @@ end
 -- @return The formated version of the value
 -- @return True if value is a locale string, nil otherwise
 function Common.safe_value(value)
-	if type(value) == "table" or type(value) == "userdata" then
+    if type(value) == "table" or type(value) == "userdata" then
         if type(value.__self) == "userdata" or type(value) == "userdata" then
-			local success, rtn = pcall(function() -- some userdata doesnt contain "valid"
-				if value.valid then -- userdata
-					return "<userdata:"..value.object_name..">"
-				else -- invalid userdata
-					return "<userdata:"..value.object_name..":invalid>"
-				end
-			end)
-			return success and rtn or "<userdata:"..value.object_name..">"
+            local success, rtn = pcall(function() -- some userdata doesnt contain "valid"
+                if value.valid then -- userdata
+                    return "<userdata:" .. value.object_name .. ">"
+                else -- invalid userdata
+                    return "<userdata:" .. value.object_name .. ":invalid>"
+                end
+            end)
+            return success and rtn or "<userdata:" .. value.object_name .. ">"
         elseif type(value[1]) == "string" and string.find(value[1], ".+[.].+") and not string.find(value[1], "%s") then
             return value, true -- locale string
         elseif tostring(value) ~= "table" then
             return tostring(value) -- has __tostring metamethod
-		else -- plain table
+        else -- plain table
             return value
         end
     elseif type(value) == "function" then -- function
-        return "<function:"..Common.get_function_name(value, true)..">"
+        return "<function:" .. Common.get_function_name(value, true) .. ">"
     else -- not: table, userdata, or function
         return tostring(value)
     end
@@ -205,17 +205,17 @@ end
 -- @param[opt] maxLineCount If table newline count exceeds provided then it will be inlined
 -- @return The formated version of the value
 function Common.format_any(value, tableAsJson, maxLineCount)
-	local formatted, is_locale_string = Common.safe_value(value)
+    local formatted, is_locale_string = Common.safe_value(value)
     if type(formatted) == "table" and not is_locale_string then
-		if tableAsJson then
-			local success, rtn = pcall(game.table_to_json, value)
-			if success then return rtn end
-		end
-        local rtn = table.inspect(value, {depth=5, indent=' ', newline='\n', process=Common.safe_value})
-		if maxLineCount == nil or select(2, rtn:gsub("\n", "")) < maxLineCount then return rtn end
-		return table.inspect(value, {depth=5, indent='', newline='', process=Common.safe_value})
-	end
-	return formatted
+        if tableAsJson then
+            local success, rtn = pcall(game.table_to_json, value)
+            if success then return rtn end
+        end
+        local rtn = table.inspect(value, { depth = 5, indent = " ", newline = "\n", process = Common.safe_value })
+        if maxLineCount == nil or select(2, rtn:gsub("\n", "")) < maxLineCount then return rtn end
+        return table.inspect(value, { depth = 5, indent = "", newline = "", process = Common.safe_value })
+    end
+    return formatted
 end
 
 --- Format a tick value into one of a selection of pre-defined formats (short, long, clock)
@@ -229,39 +229,39 @@ function Common.format_time(ticks, format, units)
 
     if ticks ~= nil then
         -- Calculate the values to be determine the display values
-        local max_days, max_hours, max_minutes, max_seconds = ticks/5184000, ticks/216000, ticks/3600, ticks/60
-        local days, hours = max_days, max_hours-floor(max_days)*24
-        local minutes, seconds = max_minutes-floor(max_hours)*60, max_seconds-floor(max_minutes)*60
+        local max_days, max_hours, max_minutes, max_seconds = ticks / 5184000, ticks / 216000, ticks / 3600, ticks / 60
+        local days, hours = max_days, max_hours - floor(max_days) * 24
+        local minutes, seconds = max_minutes - floor(max_hours) * 60, max_seconds - floor(max_minutes) * 60
 
         -- Calculate rhw units to be displayed
         rtn_days, rtn_hours, rtn_minutes, rtn_seconds = floor(days), floor(hours), floor(minutes), floor(seconds)
-        if not units.days then rtn_hours = rtn_hours + rtn_days*24 end
-        if not units.hours then rtn_minutes = rtn_minutes + rtn_hours*60 end
-        if not units.minutes then rtn_seconds = rtn_seconds + rtn_minutes*60 end
+        if not units.days then rtn_hours = rtn_hours + rtn_days * 24 end
+        if not units.hours then rtn_minutes = rtn_minutes + rtn_hours * 60 end
+        if not units.minutes then rtn_seconds = rtn_seconds + rtn_minutes * 60 end
     end
 
     local rtn = {}
     if format == "clock" then
         -- Example 12:34:56 or --:--:--
-        if units.days then rtn[#rtn+1] = rtn_days end
-        if units.hours then rtn[#rtn+1] = rtn_hours end
-        if units.minutes then rtn[#rtn+1] = rtn_minutes end
-        if units.seconds then rtn[#rtn+1] = rtn_seconds end
+        if units.days then rtn[#rtn + 1] = rtn_days end
+        if units.hours then rtn[#rtn + 1] = rtn_hours end
+        if units.minutes then rtn[#rtn + 1] = rtn_minutes end
+        if units.seconds then rtn[#rtn + 1] = rtn_seconds end
         return concat(rtn, ":")
     elseif format == "short" then
         -- Example 12d 34h 56m or --d --h --m
-        if units.days then rtn[#rtn+1] = rtn_days.."d" end
-        if units.hours then rtn[#rtn+1] = rtn_hours.."h" end
-        if units.minutes then rtn[#rtn+1] = rtn_minutes.."m" end
-        if units.seconds then rtn[#rtn+1] = rtn_seconds.."s" end
+        if units.days then rtn[#rtn + 1] = rtn_days .. "d" end
+        if units.hours then rtn[#rtn + 1] = rtn_hours .. "h" end
+        if units.minutes then rtn[#rtn + 1] = rtn_minutes .. "m" end
+        if units.seconds then rtn[#rtn + 1] = rtn_seconds .. "s" end
         return concat(rtn, " ")
     else
         -- Example 12 days, 34 hours, and 56 minutes or -- days, -- hours, and -- minutes
-        if units.days then rtn[#rtn+1] = rtn_days.." days" end
-        if units.hours then rtn[#rtn+1] = rtn_hours.." hours" end
-        if units.minutes then rtn[#rtn+1] = rtn_minutes.." minutes" end
-        if units.seconds then rtn[#rtn+1] = rtn_seconds.." seconds" end
-        rtn[#rtn] = "and "..rtn[#rtn]
+        if units.days then rtn[#rtn + 1] = rtn_days .. " days" end
+        if units.hours then rtn[#rtn + 1] = rtn_hours .. " hours" end
+        if units.minutes then rtn[#rtn + 1] = rtn_minutes .. " minutes" end
+        if units.seconds then rtn[#rtn + 1] = rtn_seconds .. " seconds" end
+        rtn[#rtn] = "and " .. rtn[#rtn]
         return concat(rtn, ", ")
     end
 end
@@ -277,47 +277,48 @@ function Common.format_locale_time(ticks, format, units)
 
     if ticks ~= nil then
         -- Calculate the values to be determine the display values
-        local max_days, max_hours, max_minutes, max_seconds = ticks/5184000, ticks/216000, ticks/3600, ticks/60
-        local days, hours = max_days, max_hours-floor(max_days)*24
-        local minutes, seconds = max_minutes-floor(max_hours)*60, max_seconds-floor(max_minutes)*60
+        local max_days, max_hours, max_minutes, max_seconds = ticks / 5184000, ticks / 216000, ticks / 3600, ticks / 60
+        local days, hours = max_days, max_hours - floor(max_days) * 24
+        local minutes, seconds = max_minutes - floor(max_hours) * 60, max_seconds - floor(max_minutes) * 60
 
         -- Calculate rhw units to be displayed
         rtn_days, rtn_hours, rtn_minutes, rtn_seconds = floor(days), floor(hours), floor(minutes), floor(seconds)
-        if not units.days then rtn_hours = rtn_hours + rtn_days*24 end
-        if not units.hours then rtn_minutes = rtn_minutes + rtn_hours*60 end
-        if not units.minutes then rtn_seconds = rtn_seconds + rtn_minutes*60 end
+        if not units.days then rtn_hours = rtn_hours + rtn_days * 24 end
+        if not units.hours then rtn_minutes = rtn_minutes + rtn_hours * 60 end
+        if not units.minutes then rtn_seconds = rtn_seconds + rtn_minutes * 60 end
     end
 
     local rtn = {}
     local join = ", "
     if format == "clock" then
         -- Example 12:34:56 or --:--:--
-        if units.days then rtn[#rtn+1] = rtn_days end
-        if units.hours then rtn[#rtn+1] = rtn_hours end
-        if units.minutes then rtn[#rtn+1] = rtn_minutes end
-        if units.seconds then rtn[#rtn+1] = rtn_seconds end
+        if units.days then rtn[#rtn + 1] = rtn_days end
+        if units.hours then rtn[#rtn + 1] = rtn_hours end
+        if units.minutes then rtn[#rtn + 1] = rtn_minutes end
+        if units.seconds then rtn[#rtn + 1] = rtn_seconds end
         join = { "colon" }
     elseif format == "short" then
         -- Example 12d 34h 56m or --d --h --m
-        if units.days then rtn[#rtn+1] = {"?", {"time-symbol-days-short", rtn_days}, rtn_days.."d"} end
-        if units.hours then rtn[#rtn+1] = {"time-symbol-hours-short", rtn_hours} end
-        if units.minutes then rtn[#rtn+1] = {"time-symbol-minutes-short", rtn_minutes} end
-        if units.seconds then rtn[#rtn+1] = {"time-symbol-seconds-short", rtn_seconds} end
+        if units.days then rtn[#rtn + 1] = { "?", { "time-symbol-days-short", rtn_days }, rtn_days .. "d" } end
+        if units.hours then rtn[#rtn + 1] = { "time-symbol-hours-short", rtn_hours } end
+        if units.minutes then rtn[#rtn + 1] = { "time-symbol-minutes-short", rtn_minutes } end
+        if units.seconds then rtn[#rtn + 1] = { "time-symbol-seconds-short", rtn_seconds } end
         join = " "
     else
         -- Example 12 days, 34 hours, and 56 minutes or -- days, -- hours, and -- minutes
-        if units.days then rtn[#rtn+1] = {"days", rtn_days} end
-        if units.hours then rtn[#rtn+1] = {"hours", rtn_hours} end
-        if units.minutes then rtn[#rtn+1] = {"minutes", rtn_minutes} end
-        if units.seconds then rtn[#rtn+1] = {"seconds", rtn_seconds} end
-        rtn[#rtn] = {"", { "and" }, " ", rtn[#rtn]}
+        if units.days then rtn[#rtn + 1] = { "days", rtn_days } end
+        if units.hours then rtn[#rtn + 1] = { "hours", rtn_hours } end
+        if units.minutes then rtn[#rtn + 1] = { "minutes", rtn_minutes } end
+        if units.seconds then rtn[#rtn + 1] = { "seconds", rtn_seconds } end
+        rtn[#rtn] = { "", { "and" }, " ", rtn[#rtn] }
     end
 
     local joined = { "" }
     for k, v in ipairs(rtn) do
-        joined[2*k] = v
-        joined[2*k+1] = join
+        joined[2 * k] = v
+        joined[2 * k + 1] = join
     end
+
     return joined
 end
 
@@ -341,7 +342,7 @@ function Common.insert_item_stacks(items, surface, options)
 
             -- Attempt to insert the items
             for i = 1, count do
-                local entity = entities[((current+i-1)%count)+1]
+                local entity = entities[((current + i - 1) % count) + 1]
                 if entity.can_insert(item) then
                     last_entity = entity
                     current = current + 1
@@ -361,9 +362,9 @@ function Common.insert_item_stacks(items, surface, options)
                 elseif options.area then
                     position = surface.find_non_colliding_position_in_box(options.name, options.area, 1, true)
                 else
-                    position = surface.find_non_colliding_position(options.name, {0,0}, 0, 1, true)
+                    position = surface.find_non_colliding_position(options.name, { 0, 0 }, 0, 1, true)
                 end
-                last_entity = surface.create_entity{name = options.name, position = position, force = options.force or "neutral"}
+                last_entity = surface.create_entity{ name = options.name, position = position, force = options.force or "neutral" }
 
                 count = count + 1
                 entities[count] = last_entity

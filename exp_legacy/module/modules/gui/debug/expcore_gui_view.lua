@@ -15,37 +15,37 @@ local right_panel_name = Gui.uid_name()
 local input_text_box_name = Gui.uid_name()
 local refresh_name = Gui.uid_name()
 
-Public.name = 'Elements'
+Public.name = "Elements"
 
 function Public.show(container)
-    local main_flow = container.add {type = 'flow', direction = 'horizontal'}
+    local main_flow = container.add{ type = "flow", direction = "horizontal" }
 
-    local left_panel = main_flow.add {type = 'scroll-pane', name = left_panel_name}
+    local left_panel = main_flow.add{ type = "scroll-pane", name = left_panel_name }
     local left_panel_style = left_panel.style
     left_panel_style.width = 300
 
     for element_id, file_path in pairs(ExpGui.file_paths) do
-        local header = left_panel.add({type = 'flow'}).add {type = 'label', name = header_name, caption = element_id..' - '..file_path}
+        local header = left_panel.add{ type = "flow" }.add{ type = "label", name = header_name, caption = element_id .. " - " .. file_path }
         Gui.set_data(header, element_id)
     end
 
-    local right_flow = main_flow.add {type = 'flow', direction = 'vertical'}
+    local right_flow = main_flow.add{ type = "flow", direction = "vertical" }
 
-    local right_top_flow = right_flow.add {type = 'flow', direction = 'horizontal'}
+    local right_top_flow = right_flow.add{ type = "flow", direction = "horizontal" }
 
-    local input_text_box = right_top_flow.add {type = 'text-box', name = input_text_box_name}
+    local input_text_box = right_top_flow.add{ type = "text-box", name = input_text_box_name }
     local input_text_box_style = input_text_box.style
     input_text_box_style.horizontally_stretchable = true
     input_text_box_style.height = 32
     input_text_box_style.maximal_width = 1000
 
     local refresh_button =
-        right_top_flow.add {type = 'sprite-button', name = refresh_name, sprite = 'utility/reset', tooltip = 'refresh'}
+        right_top_flow.add{ type = "sprite-button", name = refresh_name, sprite = "utility/reset", tooltip = "refresh" }
     local refresh_button_style = refresh_button.style
     refresh_button_style.width = 32
     refresh_button_style.height = 32
 
-    local right_panel = right_flow.add {type = 'text-box', name = right_panel_name}
+    local right_panel = right_flow.add{ type = "text-box", name = right_panel_name }
     right_panel.read_only = true
     right_panel.selectable = true
 
@@ -58,7 +58,7 @@ function Public.show(container)
     local data = {
         right_panel = right_panel,
         input_text_box = input_text_box,
-        selected_header = nil
+        selected_header = nil,
     }
 
     Gui.set_data(input_text_box, data)
@@ -85,10 +85,10 @@ Gui.on_click(
         element.style.font_color = Color.orange
         data.selected_header = element
 
-        input_text_box.text = concat {'Gui.defines[', element_id, ']'}
+        input_text_box.text = concat{ "Gui.defines[", element_id, "]" }
         input_text_box.style.font_color = Color.black
 
-        local content = dump(ExpGui.debug_info[element_id]) or 'nil'
+        local content = dump(ExpGui.debug_info[element_id]) or "nil"
         right_panel.text = content
     end
 )

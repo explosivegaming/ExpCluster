@@ -21,11 +21,11 @@ local EntityProtection = {
         -- @tparam number player_index the player index of the player who got mined the entities
         -- @tparam LuaEntity entity the last entity which was mined
         on_repeat_violation = script.generate_event_name(),
-    }
+    },
 }
 
 -- Convert config tables into lookup tables
-for _, config_key in ipairs{'always_protected_names', 'always_protected_types', 'always_trigger_repeat_names', 'always_trigger_repeat_types'} do
+for _, config_key in ipairs{ "always_protected_names", "always_protected_types", "always_trigger_repeat_names", "always_trigger_repeat_types" } do
     local tbl = config[config_key]
     for key, value in ipairs(tbl) do
         tbl[key] = nil
@@ -49,7 +49,7 @@ local repeats = {} -- Stores repeat removals by players
 Storage.register({
     protected_entities = protected_entities,
     protected_areas = protected_areas,
-    repeats = repeats
+    repeats = repeats,
 }, function(tbl)
     protected_entities = tbl.protected_entities
     protected_areas = tbl.protected_areas
@@ -61,12 +61,12 @@ end)
 
 --- Get the key used in protected_entities
 local function get_entity_key(entity)
-    return string.format('%i,%i', math.floor(entity.position.x), math.floor(entity.position.y))
+    return string.format("%i,%i", math.floor(entity.position.x), math.floor(entity.position.y))
 end
 
 --- Get the key used in protected_areas
 local function get_area_key(area)
-    return string.format('%i,%i', math.floor(area.left_top.x), math.floor(area.left_top.y))
+    return string.format("%i,%i", math.floor(area.left_top.x), math.floor(area.left_top.y))
 end
 
 --- Check if an entity is always protected
@@ -145,6 +145,7 @@ function EntityProtection.is_position_protected(surface, position)
             return true
         end
     end
+
     return false
 end
 

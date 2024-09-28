@@ -20,10 +20,10 @@ end)
 
 --- Kicks an afk player, used to add a delay so the gui has time to appear
 local kick_player_async =
-Async.register(function(player)
-    if game.tick - primitives.last_active < config.kick_time then return end -- Safety Catch
-    game.kick_player(player, 'AFK while no active players on the server')
-end)
+    Async.register(function(player)
+        if game.tick - primitives.last_active < config.kick_time then return end -- Safety Catch
+        game.kick_player(player, "AFK while no active players on the server")
+    end)
 
 --- Check for an active player every update_time number of ticks
 Event.on_nth_tick(config.update_time, function()
@@ -48,10 +48,10 @@ Event.on_nth_tick(config.update_time, function()
         local res = player.display_resolution
         local uis = player.display_scale
         player.gui.screen.add{
-            type = 'frame',
-            name = 'afk-kick',
-            caption = {'afk-kick.message'},
-        }.location = { x=res.width*(0.5 - 0.11*uis), y=res.height*(0.5 - 0.14*uis) }
+            type = "frame",
+            name = "afk-kick",
+            caption = { "afk-kick.message" },
+        }.location = { x = res.width * (0.5 - 0.11 * uis), y = res.height * (0.5 - 0.14 * uis) }
 
         -- Kick the player, some delay needed because network delay
         kick_player_async:start_after(10, player)

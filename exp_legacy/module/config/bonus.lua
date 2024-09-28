@@ -17,79 +17,79 @@ return {
     =       480
     ]]
     pts = {
-        base = 260
+        base = 260,
     },
     gui_display_width = {
         half = 150,
         label = 70,
         slider = 180,
-        count = 50
+        count = 50,
     },
     conversion = {
-        ['cmms'] = 'character_mining_speed_modifier',
-        ['crs'] = 'character_running_speed_modifier',
-        ['ccs'] = 'character_crafting_speed_modifier',
-        ['cisb'] = 'character_inventory_slots_bonus',
-        ['chb'] = 'character_health_bonus',
-        ['crdb'] = 'character_reach_distance_bonus',
+        ["cmms"] = "character_mining_speed_modifier",
+        ["crs"] = "character_running_speed_modifier",
+        ["ccs"] = "character_crafting_speed_modifier",
+        ["cisb"] = "character_inventory_slots_bonus",
+        ["chb"] = "character_health_bonus",
+        ["crdb"] = "character_reach_distance_bonus",
         --[[
         ['cpdb'] = 'character_item_pickup_distance_bonus'
         ]]
     },
     player_special_bonus_rate = 300,
     player_special_bonus = {
-        ['personal_battery_recharge'] = {
+        ["personal_battery_recharge"] = {
             -- 1 MW
             value = 6,
             max = 12,
             scale = 1,
             cost_scale = 4,
             cost = 40,
-            is_percentage = false
-        }
+            is_percentage = false,
+        },
     },
     player_bonus = {
-        ['character_mining_speed_modifier'] = {
+        ["character_mining_speed_modifier"] = {
             value = 3,
             max = 6,
             scale = 0.5,
             cost_scale = 1,
             cost = 10,
-            is_percentage = true
+            is_percentage = true,
         },
-        ['character_running_speed_modifier'] = {
+        ["character_running_speed_modifier"] = {
             value = 1.5,
             max = 3,
             scale = 0.25,
             cost_scale = 1,
             cost = 60,
-            is_percentage = true
+            is_percentage = true,
         },
-        ['character_crafting_speed_modifier'] = {
+        ["character_crafting_speed_modifier"] = {
             value = 8,
             max = 16,
             scale = 1,
             cost_scale = 1,
             cost = 4,
-            is_percentage = true
+            is_percentage = true,
         },
-        ['character_inventory_slots_bonus'] = {
+        ["character_inventory_slots_bonus"] = {
             value = 100,
             max = 200,
             scale = 10,
             cost_scale = 10,
             cost = 2,
-            is_percentage = false
+            is_percentage = false,
         },
-        ['character_health_bonus'] = {
+        ["character_health_bonus"] = {
             value = 200,
             max = 400,
             scale = 50,
             cost_scale = 50,
             cost = 4,
-            is_percentage = false
+            is_percentage = false,
         },
-        ['character_reach_distance_bonus'] = {
+        ["character_reach_distance_bonus"] = {
             value = 12,
             max = 24,
             scale = 2,
@@ -97,9 +97,9 @@ return {
             cost = 1,
             is_percentage = false,
             combined_bonus = {
-                'character_resource_reach_distance_bonus',
-                'character_build_distance_bonus'
-            }
+                "character_resource_reach_distance_bonus",
+                "character_build_distance_bonus",
+            },
         },
         --[[
         ['character_item_pickup_distance_bonus'] = {
@@ -190,29 +190,29 @@ return {
             is_percentage = false
         },
         ]]
-        ['worker_robots_battery_modifier'] = {
+        ["worker_robots_battery_modifier"] = {
             value = 1,
             max = 1,
             scale = 1,
             cost_scale = 1,
             cost = 1,
-            is_percentage = false
+            is_percentage = false,
         },
-        ['worker_robots_storage_bonus'] = {
+        ["worker_robots_storage_bonus"] = {
             value = 1,
             max = 1,
             scale = 1,
             cost_scale = 1,
             cost = 1,
-            is_percentage = false
+            is_percentage = false,
         },
-        ['following_robots_lifetime_modifier'] = {
+        ["following_robots_lifetime_modifier"] = {
             value = 1,
             max = 1,
             scale = 1,
             cost_scale = 1,
             cost = 1,
-            is_percentage = false
+            is_percentage = false,
         },
         --[[
         ['character_item_pickup_distance_bonus'] = {
@@ -316,5 +316,5 @@ return {
             is_percentage = false
         }
         ]]
-    }
+    },
 }
