@@ -39,7 +39,7 @@ Commands.new_command("admin-marker", { "expcom-admin-marker.description" }, "Tog
 --- Listen for new map markers being added, add admin marker if done by player in admin mode
 Event.add(defines.events.on_chart_tag_added, function(event)
     if not event.player_index then return end
-    local player = game.get_player(event.player_index)
+    local player = game.players[event.player_index]
     if not admins[player.name] then return end
     local tag = event.tag
     markers[tag.force.name .. tag.tag_number] = true
@@ -49,7 +49,7 @@ end)
 --- Listen for players leaving the game, leave admin mode to avoid unexpected admin markers
 Event.add(defines.events.on_player_left_game, function(event)
     if not event.player_index then return end
-    local player = game.get_player(event.player_index)
+    local player = game.players[event.player_index]
     admins[player.name] = nil
 end)
 
@@ -58,7 +58,7 @@ local function maintain_tag(event)
     local tag = event.tag
     if not event.player_index then return end
     if not markers[tag.force.name .. tag.tag_number] then return end
-    local player = game.get_player(event.player_index)
+    local player = game.players[event.player_index]
     if player.admin then
         -- Player is admin, tell them it was an admin marker
         Commands.print({ "expcom-admin-marker.edit" }, nil, player)

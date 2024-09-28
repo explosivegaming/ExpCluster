@@ -16,7 +16,7 @@ local function reporter_playtime(_, by_player_name, _)
 end
 
 Event.add(Reports.events.on_player_reported, function(event)
-    local player = game.get_player(event.player_index)
+    local player = game.players[event.player_index]
     local total_playtime = Reports.count_reports(player, reporter_playtime)
 
     -- player less than 30 min

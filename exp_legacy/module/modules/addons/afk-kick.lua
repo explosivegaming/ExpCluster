@@ -60,7 +60,7 @@ end)
 
 --- Remove the screen gui if it is present
 Event.add(defines.events.on_player_joined_game, function(event)
-    local player = game.get_player(event.player_index)
+    local player = game.players[event.player_index]
     local frame = player.gui.screen["afk-kick"]
     if frame and frame.valid then frame.destroy() end
 end)

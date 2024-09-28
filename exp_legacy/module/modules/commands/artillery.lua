@@ -33,7 +33,7 @@ end
 --- when an area is selected to add protection to the area
 Selection.on_selection(SelectionArtyArea, function(event)
     local area = aabb_align_expand(event.area)
-    local player = game.get_player(event.player_index)
+    local player = game.players[event.player_index]
 
     if player == nil then
         return

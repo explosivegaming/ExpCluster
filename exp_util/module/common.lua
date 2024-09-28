@@ -204,15 +204,15 @@ end
 -- @param[opt] tableAsJson If table values should be returned as json
 -- @param[opt] maxLineCount If table newline count exceeds provided then it will be inlined
 -- @return The formated version of the value
-function Common.format_any(value, tableAsJson, maxLineCount)
+function Common.format_any(value, as_json, max_line_count)
     local formatted, is_locale_string = Common.safe_value(value)
     if type(formatted) == "table" and not is_locale_string then
-        if tableAsJson then
+        if as_json then
             local success, rtn = pcall(game.table_to_json, value)
             if success then return rtn end
         end
         local rtn = table.inspect(value, { depth = 5, indent = " ", newline = "\n", process = Common.safe_value })
-        if maxLineCount == nil or select(2, rtn:gsub("\n", "")) < maxLineCount then return rtn end
+        if max_line_count == nil or select(2, rtn:gsub("\n", "")) < max_line_count then return rtn end
         return table.inspect(value, { depth = 5, indent = "", newline = "", process = Common.safe_value })
     end
     return formatted
@@ -234,10 +234,12 @@ function Common.format_time(ticks, format, units)
         local minutes, seconds = max_minutes - floor(max_hours) * 60, max_seconds - floor(max_minutes) * 60
 
         -- Calculate rhw units to be displayed
+        --- @diagnostic disable: cast-local-type
         rtn_days, rtn_hours, rtn_minutes, rtn_seconds = floor(days), floor(hours), floor(minutes), floor(seconds)
         if not units.days then rtn_hours = rtn_hours + rtn_days * 24 end
         if not units.hours then rtn_minutes = rtn_minutes + rtn_hours * 60 end
         if not units.minutes then rtn_seconds = rtn_seconds + rtn_minutes * 60 end
+        --- @diagnostic enable: cast-local-type
     end
 
     local rtn = {}
@@ -282,10 +284,12 @@ function Common.format_locale_time(ticks, format, units)
         local minutes, seconds = max_minutes - floor(max_hours) * 60, max_seconds - floor(max_minutes) * 60
 
         -- Calculate rhw units to be displayed
+        --- @diagnostic disable: cast-local-type
         rtn_days, rtn_hours, rtn_minutes, rtn_seconds = floor(days), floor(hours), floor(minutes), floor(seconds)
         if not units.days then rtn_hours = rtn_hours + rtn_days * 24 end
         if not units.hours then rtn_minutes = rtn_minutes + rtn_hours * 60 end
         if not units.minutes then rtn_seconds = rtn_seconds + rtn_minutes * 60 end
+        --- @diagnostic enable: cast-local-type
     end
 
     local rtn = {}
@@ -296,6 +300,7 @@ function Common.format_locale_time(ticks, format, units)
         if units.hours then rtn[#rtn + 1] = rtn_hours end
         if units.minutes then rtn[#rtn + 1] = rtn_minutes end
         if units.seconds then rtn[#rtn + 1] = rtn_seconds end
+        --- @diagnostic disable-next-line: cast-local-type
         join = { "colon" }
     elseif format == "short" then
         -- Example 12d 34h 56m or --d --h --m
@@ -313,10 +318,10 @@ function Common.format_locale_time(ticks, format, units)
         rtn[#rtn] = { "", { "and" }, " ", rtn[#rtn] }
     end
 
-    local joined = { "" }
+    local joined = { "" } --[[@as any]]
     for k, v in ipairs(rtn) do
         joined[2 * k] = v
-        joined[2 * k + 1] = join
+        joined[2 * k + 1] = join --[[@as any]]
     end
 
     return joined

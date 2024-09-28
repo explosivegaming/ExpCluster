@@ -74,7 +74,7 @@ local function handler_factory(event_name)
     return function(element_name, handler)
         Event.add(defines.events[event_name], function(event)
             if event.element and event.element.valid and event.element.name == element_name then
-                event.player = game.get_player(event.player_index)
+                event.player = game.players[event.player_index]
                 handler(event)
             end
         end)

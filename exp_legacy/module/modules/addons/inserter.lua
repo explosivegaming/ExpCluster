@@ -14,7 +14,7 @@ Event.add(defines.events.on_player_mined_entity, function(event)
     local item_entity = event.entity.surface.find_entity("item-on-ground", event.entity.drop_position)
 
     if item_entity then
-        local player = game.get_player(event.player_index)
+        local player = game.players[event.player_index]
 
         if controllers_with_inventory[player.controller_type] then
             player.mine_entity(item_entity)

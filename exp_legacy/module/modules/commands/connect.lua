@@ -63,7 +63,7 @@ Commands.new_command("connect", { "expcom-connect.description" }, "Connect to an
             server_id = new_server_id
         end
 
-        Async(request_connection, player, server_id, true)
+        request_connection_async(player, server_id, true)
     end)
 
 --- Connect a player to a different server

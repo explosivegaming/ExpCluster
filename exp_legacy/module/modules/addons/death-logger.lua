@@ -63,6 +63,7 @@ end
 Event.add(defines.events.on_player_died, function(event)
     local player = game.players[event.player_index]
     local corpse = player.surface.find_entity("character-corpse", player.position)
+    if not corpse or not corpse.valid then return end
     if config.use_chests_as_bodies then
         local items = corpse.get_inventory(defines.inventory.character_corpse)
         local chest = move_items(items, corpse.surface, corpse.position)

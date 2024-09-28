@@ -41,10 +41,10 @@ lib.collect_other = function()
         local other = lib.data.output[force.name].other or {}
 
         other.evolution = {
-            evolution_factor = force.evolution_factor,
-            evolution_factor_by_pollution = force.evolution_factor_by_pollution,
-            evolution_factor_by_time = force.evolution_factor_by_time,
-            evolution_factor_by_killing_spawners = force.evolution_factor_by_killing_spawners,
+            evolution_factor = force.get_evolution_factor(game.surfaces[1]),
+            evolution_factor_by_pollution = force.get_evolution_factor_by_pollution(game.surfaces[1]),
+            evolution_factor_by_time = force.get_evolution_factor_by_time(game.surfaces[1]),
+            evolution_factor_by_killing_spawners = force.get_evolution_factor_by_killing_spawners(game.surfaces[1]),
         }
         for k, v in pairs(other) do
             lib.data.output[force.name].other[k] = v

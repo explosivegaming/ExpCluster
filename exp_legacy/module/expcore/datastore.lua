@@ -158,8 +158,8 @@ local trace = debug.traceback
 --- Save datastores in the global table
 Storage.register(Data, function(tbl)
     Data = tbl
-    for datastoreName, datastore in pairs(Datastores) do
-        datastore.data = Data[datastoreName]
+    for name, datastore in pairs(Datastores) do
+        datastore.data = Data[name]
     end
 end)
 
@@ -174,7 +174,7 @@ DatastoreManager.metatable = {
 }
 
 --[[-- Make a new datastore connection, if a connection already exists then it is returned
-@tparam string datastoreName The name that you want the new datastore to have, this can not have any whitespace
+@tparam string datastore_name The name that you want the new datastore to have, this can not have any whitespace
 @tparam[opt=false] boolean saveToDisk When set to true, using the save method with write the data to datastore.pipe
 @tparam[opt=false] boolean autoSave When set to true, using any method which modifies data will cause the data to be saved
 @tparam[opt=false] boolean propagateChanges When set to true, using the save method will send the data to all other connected servers
@@ -184,19 +184,19 @@ DatastoreManager.metatable = {
 local ExampleData = Datastore.connect('ExampleData', true) -- saveToDisk
 
 ]]
-function DatastoreManager.connect(datastoreName, saveToDisk, autoSave, propagateChanges)
-    if Datastores[datastoreName] then return Datastores[datastoreName] end
+function DatastoreManager.connect(datastore_name, save_to_disk, autosave, propagate_changes)
+    if Datastores[datastore_name] then return Datastores[datastore_name] end
     if package.lifecycle ~= package.lifecycle_stage.control then
         -- Only allow this function to be called during the control stage
         error("New datastore connection can not be created during runtime", 2)
     end
 
     local new_datastore = {
-        name = datastoreName,
-        value_name = datastoreName,
-        auto_save = autoSave or false,
-        save_to_disk = saveToDisk or false,
-        propagate_changes = propagateChanges or false,
+        name = datastore_name,
+        value_name = datastore_name,
+        auto_save = autosave or false,
+        save_to_disk = save_to_disk or false,
+        propagate_changes = propagate_changes or false,
         serializer = false,
         parent = false,
         children = {},
@@ -205,28 +205,28 @@ function DatastoreManager.connect(datastoreName, saveToDisk, autoSave, propagate
         data = {},
     }
 
-    Data[datastoreName] = new_datastore.data
-    Datastores[datastoreName] = new_datastore
+    Data[datastore_name] = new_datastore.data
+    Datastores[datastore_name] = new_datastore
     return setmetatable(new_datastore, DatastoreManager.metatable)
 end
 
 --[[-- Make a new datastore that stores its data inside of another one
-@tparam string datastoreName The name of the datastore that will contain the data for the new datastore
-@tparam string subDatastoreName The name of the new datastore, this name will also be used as the key inside the parent datastore
+@tparam string datastore_name The name of the datastore that will contain the data for the new datastore
+@tparam string subdatastore_name The name of the new datastore, this name will also be used as the key inside the parent datastore
 @treturn table The new datastore connection that can be used to access and modify data in the datastore
 
 @usage-- Setting up a datastore which stores its data inside of another datastore
 local BarData = Datastore.combine('ExampleData', 'Bar')
 
 ]]
-function DatastoreManager.combine(datastoreName, subDatastoreName)
-    local datastore = assert(Datastores[datastoreName], "Datastore not found " .. tostring(datastoreName))
-    return datastore:combine(subDatastoreName)
+function DatastoreManager.combine(datastore_name, subdatastore_name)
+    local datastore = assert(Datastores[datastore_name], "Datastore not found " .. tostring(datastore_name))
+    return datastore:combine(subdatastore_name)
 end
 
 --[[-- Ingest the result from a request, this is used through a rcon interface to sync data
 @tparam string action The action that should be done, can be: remove, message, propagate, or request
-@tparam string datastoreName The name of the datastore that should have the action done to it
+@tparam string datastore_name The name of the datastore that should have the action done to it
 @tparam string key The key of that datastore that is having the action done to it
 @tparam string valueJson The json string for the value being ingested, remove does not require a value
 
@@ -234,20 +234,20 @@ end
 Datastore.ingest('request', 'ExampleData', 'TestKey', 'Foo')
 
 ]]
-function DatastoreManager.ingest(action, datastoreName, key, valueJson)
-    local datastore = assert(Datastores[datastoreName], "Datastore ingest error, Datastore not found " .. tostring(datastoreName))
+function DatastoreManager.ingest(action, datastore_name, key, value_json)
+    local datastore = assert(Datastores[datastore_name], "Datastore ingest error, Datastore not found " .. tostring(datastore_name))
     assert(type(action) == "string", "Datastore ingest error, Action is not a string got: " .. type(action))
     assert(type(key) == "string", "Datastore ingest error, Key is not a string got: " .. type(key))
 
     if action == "remove" then
         datastore:raw_set(key)
     elseif action == "message" then
-        local success, value = pcall(game.json_to_table, valueJson)
-        if not success or value == nil then value = tonumber(valueJson) or valueJson end
+        local success, value = pcall(game.json_to_table, value_json)
+        if not success or value == nil then value = tonumber(value_json) or value_json end
         datastore:raise_event("on_message", key, value)
     elseif action == "propagate" or action == "request" then
-        local success, value = pcall(game.json_to_table, valueJson)
-        if not success or value == nil then value = tonumber(valueJson) or valueJson end
+        local success, value = pcall(game.json_to_table, value_json)
+        if not success or value == nil then value = tonumber(value_json) or value_json end
         local old_value = datastore:raw_get(key)
         value = datastore:raise_event("on_load", key, value, old_value)
         datastore:set(key, value)
@@ -255,7 +255,7 @@ function DatastoreManager.ingest(action, datastoreName, key, valueJson)
 end
 
 --[[-- Debug, Use to get all datastores, or return debug info on a datastore
-@tparam[opt] string datastoreName The name of the datastore to get the debug info of
+@tparam[opt] string datastore_name The name of the datastore to get the debug info of
 
 @usage-- Get all the datastores
 local datastores = Datastore.debug()
@@ -264,9 +264,9 @@ local datastores = Datastore.debug()
 local debug_info = Datastore.debug('ExampleData')
 
 ]]
-function DatastoreManager.debug(datastoreName)
-    if not datastoreName then return Datastores end
-    local datastore = assert(Datastores[datastoreName], "Datastore not found " .. tostring(datastoreName))
+function DatastoreManager.debug(datastore_name)
+    if not datastore_name then return Datastores end
+    local datastore = assert(Datastores[datastore_name], "Datastore not found " .. tostring(datastore_name))
     return datastore:debug()
 end
 
@@ -279,8 +279,8 @@ local ExampleData = Datastore.connect('ExampleData')
 ExampleData:set_serializer(Datastore.name_serializer)
 
 ]]
-function DatastoreManager.name_serializer(rawKey)
-    return rawKey.name
+function DatastoreManager.name_serializer(raw_key)
+    return raw_key.name
 end
 
 ----- Datastore Internal
@@ -328,7 +328,7 @@ end
 local value = self:raw_get('TestKey')
 
 ]]
-function Datastore:raw_get(key, fromChild)
+function Datastore:raw_get(key, from_child)
     local data = self.data
     if self.parent then
         data = self.parent:raw_get(key, true)
@@ -336,7 +336,7 @@ function Datastore:raw_get(key, fromChild)
     end
     local value = data[key]
     if value ~= nil then return value end
-    if fromChild then value = {} end
+    if from_child then value = {} end
     data[key] = value
     return value
 end
@@ -367,10 +367,10 @@ local function serialize_error(err) error("An error ocurred in a datastore seria
 key = self:serialize(key)
 
 ]]
-function Datastore:serialize(rawKey)
-    if type(rawKey) == "string" then return rawKey end
+function Datastore:serialize(raw_key)
+    if type(raw_key) == "string" then return raw_key end
     assert(self.serializer, "Datastore does not have a serializer and received non string key")
-    local success, key = xpcall(self.serializer, serialize_error, rawKey)
+    local success, key = xpcall(self.serializer, serialize_error, raw_key)
     return success and key or nil
 end
 
@@ -398,7 +398,7 @@ end
 -- @section datastore-local
 
 --[[-- Create a new datastore which is stores its data inside of this datastore
-@tparam string subDatastoreName The name of the datastore that will have its data stored in this datastore
+@tparam string subdatastore_name The name of the datastore that will have its data stored in this datastore
 @treturn table The new datastore that was created inside of this datastore
 
 @usage-- Add a new sub datastore
@@ -406,10 +406,10 @@ local ExampleData = Datastore.connect('ExampleData')
 local BarData = ExampleData:combine('Bar')
 
 ]]
-function Datastore:combine(subDatastoreName)
-    local new_datastore = DatastoreManager.connect(self.name .. "." .. subDatastoreName)
-    self.children[subDatastoreName] = new_datastore
-    new_datastore.value_name = subDatastoreName
+function Datastore:combine(subdatastore_name)
+    local new_datastore = DatastoreManager.connect(self.name .. "." .. subdatastore_name)
+    self.children[subdatastore_name] = new_datastore
+    new_datastore.value_name = subdatastore_name
     new_datastore.serializer = self.serializer
     new_datastore.auto_save = self.auto_save
     new_datastore.parent = self
@@ -442,9 +442,9 @@ local ExampleData = Datastore.connect('ExampleData')
 ExampleData:set_default('Foo')
 
 ]]
-function Datastore:set_default(value, allowSet)
+function Datastore:set_default(value, allow_set)
     self.default = value
-    self.allow_set_to_default = allowSet
+    self.allow_set_to_default = allow_set
 end
 
 --[[-- Set metadata tags on this datastore which can be accessed by other scripts

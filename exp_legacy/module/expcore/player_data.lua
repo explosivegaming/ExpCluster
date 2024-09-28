@@ -107,23 +107,23 @@ end)
 
 --- Remove data that the player doesnt want to have stored
 PlayerData:on_save(function(player_name, player_data)
-    local dataPreference = DataSavingPreference:get(player_name)
-    dataPreference = PreferenceEnum[dataPreference]
-    if dataPreference == PreferenceEnum.All then
+    local data_preference = DataSavingPreference:get(player_name)
+    data_preference = PreferenceEnum[data_preference]
+    if data_preference == PreferenceEnum.All then
         player_data.valid = nil
         return player_data
     end
 
-    local saved_player_data = { PlayerRequired = player_data.PlayerRequired, DataSavingPreference = PreferenceEnum[dataPreference] }
-    if dataPreference <= PreferenceEnum.Settings then saved_player_data.PlayerSettings = player_data.PlayerSettings end
-    if dataPreference <= PreferenceEnum.Statistics then saved_player_data.PlayerStatistics = player_data.PlayerStatistics end
+    local saved_player_data = { PlayerRequired = player_data.PlayerRequired, DataSavingPreference = PreferenceEnum[data_preference] }
+    if data_preference <= PreferenceEnum.Settings then saved_player_data["PlayerSettings"] = player_data.PlayerSettings end
+    if data_preference <= PreferenceEnum.Statistics then saved_player_data["PlayerStatistics"] = player_data.PlayerStatistics end
 
     return saved_player_data
 end)
 
 --- Display your data preference when your data loads
-DataSavingPreference:on_load(function(player_name, dataPreference)
-    game.players[player_name].print{ "expcore-data.get-preference", dataPreference or DataSavingPreference.default }
+DataSavingPreference:on_load(function(player_name, data_preference)
+    game.players[player_name].print{ "expcore-data.get-preference", data_preference or DataSavingPreference.default }
 end)
 
 --- Load player data when they join

@@ -226,6 +226,7 @@ function Gui._prototype_element:triggers_events(element)
         element.tags = { ExpGui_event_triggers = { self.uid } }
         return element
     elseif not tags.ExpGui_event_triggers then
+        --- @diagnostic disable-next-line: name-style-check
         tags.ExpGui_event_triggers = { self.uid }
     elseif table.array_contains(tags.ExpGui_event_triggers, self.uid) then
         error("Element::triggers_events called multiple times on the same element with the same definition")

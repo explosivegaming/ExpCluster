@@ -26,7 +26,7 @@ end
 for _, inventory in ipairs(config.inventories) do
     if #inventory.items > 0 then
         Event.add(inventory.event, function(event)
-            local player = game.get_player(event.player_index)
+            local player = game.players[event.player_index]
             if player and player.valid then
                 check_items(player, inventory.inventory)
             end

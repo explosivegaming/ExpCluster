@@ -7,7 +7,7 @@ local move_items_stack = _C.move_items_stack --- @dep expcore.common
 
 local function clear_items(event)
     local player = game.players[event.player_index]
-    local inv = player.get_main_inventory()
+    local inv = player.get_main_inventory() --- @cast inv -nil
     move_items_stack(inv)
     inv.clear()
 end

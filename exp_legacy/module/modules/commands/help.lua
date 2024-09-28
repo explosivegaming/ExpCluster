@@ -27,6 +27,7 @@ Commands.new_command("search-help", { "expcom-chelp.description" }, "Searches fo
         local player_index = player and player.index or 0
         -- if keyword is a number then treat it as page number
         if tonumber(keyword) then
+            --- @diagnostic disable-next-line: param-type-mismatch
             page = math.floor(tonumber(keyword))
             keyword = ""
         end

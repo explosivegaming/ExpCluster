@@ -15,7 +15,7 @@ end)
 
 --- When a protection is triggered increment their counter and jail if needed
 Event.add(Protection.events.on_repeat_violation, function(event)
-    local player = game.get_player(event.player_index)
+    local player = game.players[event.player_index]
 
     -- Increment the counter
     if repeat_count[player.index] then

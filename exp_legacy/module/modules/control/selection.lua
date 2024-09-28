@@ -146,13 +146,13 @@ end
 
 --- Stop selection if the selection tool is removed from the cursor
 Event.add(defines.events.on_player_cursor_stack_changed, function(event)
-    local player = game.get_player(event.player_index) --- @cast player -nil
+    local player = game.players[event.player_index] --- @cast player -nil
     if player.cursor_stack.is_selection_tool then return end
     Selection.stop(player)
 end)
 --- Stop selection after an event such as death or leaving the game
 local function stop_after_event(event)
-    local player = game.get_player(event.player_index)
+    local player = game.players[event.player_index]
     Selection.stop(player)
 end
 

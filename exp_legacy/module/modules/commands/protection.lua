@@ -28,9 +28,9 @@ local function aabb_point_enclosed(point, aabb)
 end
 
 --- Test if an aabb is inside another aabb
-local function aabb_area_enclosed(aabbOne, aabbTwo)
-    return aabb_point_enclosed(aabbOne.left_top, aabbTwo)
-        and aabb_point_enclosed(aabbOne.right_bottom, aabbTwo)
+local function aabb_area_enclosed(aabb_one, aabb_two)
+    return aabb_point_enclosed(aabb_one.left_top, aabb_two)
+        and aabb_point_enclosed(aabb_one.right_bottom, aabb_two)
 end
 
 --- Align an aabb to the grid by expanding it
@@ -89,8 +89,8 @@ end
 
 --- Remove a render object for a player
 local function remove_render(player, key)
-    local render = renders[player.index][key]
-    if render and rendering.is_valid(render) then rendering.destroy(render) end
+    local render = renders[player.index][key] --[[@as LuaRenderObject]]
+    if render and render.valid then render.destroy() end
     renders[player.index][key] = nil
 end
 
@@ -122,7 +122,7 @@ Commands.new_command("protect-area", { "expcom-protection.description-pa" }, "To
 
 --- When an area is selected to add protection to entities
 Selection.on_selection(SelectionProtectEntity, function(event)
-    local player = game.get_player(event.player_index)
+    local player = game.players[event.player_index]
     for _, entity in ipairs(event.entities) do
         EntityProtection.add_entity(entity)
         show_protected_entity(player, entity)
@@ -133,7 +133,7 @@ end)
 
 --- When an area is selected to remove protection from entities
 Selection.on_alt_selection(SelectionProtectEntity, function(event)
-    local player = game.get_player(event.player_index)
+    local player = game.players[event.player_index]
     for _, entity in ipairs(event.entities) do
         EntityProtection.remove_entity(entity)
         remove_render(player, get_entity_key(entity))
@@ -146,7 +146,7 @@ end)
 Selection.on_selection(SelectionProtectArea, function(event)
     local area = aabb_align_expand(event.area)
     local areas = EntityProtection.get_areas(event.surface)
-    local player = game.get_player(event.player_index)
+    local player = game.players[event.player_index]
     for _, next_area in pairs(areas) do
         if aabb_area_enclosed(area, next_area) then
             return player.print{ "expcom-protection.already-protected" }
@@ -162,7 +162,7 @@ end)
 Selection.on_alt_selection(SelectionProtectArea, function(event)
     local area = aabb_align_expand(event.area)
     local areas = EntityProtection.get_areas(event.surface)
-    local player = game.get_player(event.player_index)
+    local player = game.players[event.player_index]
     for _, next_area in pairs(areas) do
         if aabb_area_enclosed(next_area, area) then
             EntityProtection.remove_area(event.surface, next_area)
@@ -175,7 +175,7 @@ end)
 --- When selection starts show all protected entities and protected areas
 Event.add(Selection.events.on_player_selection_start, function(event)
     if event.selection ~= SelectionProtectEntity and event.selection ~= SelectionProtectArea then return end
-    local player = game.get_player(event.player_index)
+    local player = game.players[event.player_index]
     local surface = player.surface
     renders[player.index] = {}
     -- Show protected entities
@@ -206,8 +206,8 @@ end)
 --- When selection ends hide protected entities and protected areas
 Event.add(Selection.events.on_player_selection_end, function(event)
     if event.selection ~= SelectionProtectEntity and event.selection ~= SelectionProtectArea then return end
-    for _, id in pairs(renders[event.player_index]) do
-        if rendering.is_valid(id) then rendering.destroy(id) end
+    for _, render in pairs(renders[event.player_index]) do
+        if render.valid then render.destroy() end
     end
 
     renders[event.player_index] = nil

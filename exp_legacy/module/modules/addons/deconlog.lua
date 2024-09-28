@@ -44,7 +44,7 @@ if config.decon_area then
             return
         end
 
-        local player = game.get_player(e.player_index)
+        local player = game.players[e.player_index]
 
         if Roles.player_has_flag(player, "deconlog-bypass") then
             return
@@ -63,7 +63,7 @@ end
 if config.built_entity then
     Event.add(defines.events.on_built_entity, function(e)
         if not e.player_index then return end
-        local player = game.get_player(e.player_index)
+        local player = game.players[e.player_index]
         if Roles.player_has_flag(player, "deconlog-bypass") then
             return
         end
@@ -74,7 +74,7 @@ end
 
 if config.mined_entity then
     Event.add(defines.events.on_player_mined_entity, function(e)
-        local player = game.get_player(e.player_index)
+        local player = game.players[e.player_index]
         if Roles.player_has_flag(player, "deconlog-bypass") then
             return
         end
@@ -85,11 +85,11 @@ end
 
 if config.fired_rocket then
     Event.add(defines.events.on_player_ammo_inventory_changed, function(e)
-        local player = game.get_player(e.player_index)
+        local player = game.players[e.player_index]
         if Roles.player_has_flag(player, "deconlog-bypass") then
             return
         end
-        local ammo_inv = player.get_inventory(defines.inventory.character_ammo)
+        local ammo_inv = player.get_inventory(defines.inventory.character_ammo) --- @cast ammo_inv -nil
         local item = ammo_inv[player.character.selected_gun_index]
         if not item or not item.valid or not item.valid_for_read then
             return
@@ -102,12 +102,12 @@ end
 
 if config.fired_explosive_rocket then
     Event.add(defines.events.on_player_ammo_inventory_changed, function(e)
-        local player = game.get_player(e.player_index)
+        local player = game.players[e.player_index]
 
         if Roles.player_has_flag(player, "deconlog-bypass") then
             return
         end
-        local ammo_inv = player.get_inventory(defines.inventory.character_ammo)
+        local ammo_inv = player.get_inventory(defines.inventory.character_ammo) --- @cast ammo_inv -nil
         local item = ammo_inv[player.character.selected_gun_index]
 
         if not item or not item.valid or not item.valid_for_read then
@@ -121,13 +121,13 @@ end
 
 if config.fired_nuke then
     Event.add(defines.events.on_player_ammo_inventory_changed, function(e)
-        local player = game.get_player(e.player_index)
+        local player = game.players[e.player_index]
 
         if Roles.player_has_flag(player, "deconlog-bypass") then
             return
         end
 
-        local ammo_inv = player.get_inventory(defines.inventory.character_ammo)
+        local ammo_inv = player.get_inventory(defines.inventory.character_ammo) --- @cast ammo_inv -nil
         local item = ammo_inv[player.character.selected_gun_index]
 
         if not item or not item.valid or not item.valid_for_read then

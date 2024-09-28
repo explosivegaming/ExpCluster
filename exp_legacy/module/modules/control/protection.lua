@@ -155,7 +155,7 @@ end
 --- Raise events for protected entities
 Event.add(defines.events.on_pre_player_mined_item, function(event)
     local entity = event.entity
-    local player = game.get_player(event.player_index)
+    local player = game.players[event.player_index]
     -- Check if the player should be ignored
     if config.ignore_admins and player.admin then return end
     if entity.last_user == nil or entity.last_user.index == player.index then return end

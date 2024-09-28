@@ -88,6 +88,7 @@ Commands.new_command("interface", { "expcom-interface.description" }, "Sends an 
         -- Compile the invocation with the custom _env value
         local invocation_func, compile_error = load(invocation, "interface", nil, _env)
         if compile_error then return Commands.error(compile_error) end
+        --- @cast invocation_func -nil
 
         -- Run the invocation
         local success, rtn = pcall(invocation_func)

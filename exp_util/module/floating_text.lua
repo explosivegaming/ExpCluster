@@ -5,20 +5,20 @@
 
 @usage-- Show player chat message in world
 local function on_console_chat(event)
-    local player = game.get_player(event.player_index)
+    local player = game.players[event.player_index]
     FloatingText.print_as_player(player, event.message)
 end
 
 @usage-- Show player tags above their characters
 local function on_player_respawned(event)
-    local player = game.get_player(event.player_index)
+    local player = game.players[event.player_index]
     FloatingText.create_tag_as_player(player, player.tag)
 end
 
 @usage-- Show placed an entity in alt mode
 local function on_built_entity(event)
     local entity = event.created_entity
-    local player = game.get_player(event.player_index)
+    local player = game.players[event.player_index]
     FloatingText.create_tag_above_entity(entity, player.name, player.color, true)
 end
 

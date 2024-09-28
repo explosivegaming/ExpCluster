@@ -1,3 +1,4 @@
+---@diagnostic disable: duplicate-set-field
 -- luacheck:ignore global table
 local random = math.random
 local floor = math.floor
@@ -270,7 +271,7 @@ end
 -- @param x one comparator operand
 -- @param y the other comparator operand
 -- @return true if x logically comes before y in a list, false otherwise
-local function sortFunc(x, y) -- sorts tables with mixed index types.
+local function sort_func(x, y) -- sorts tables with mixed index types.
     local tx = type(x)
     local ty = type(y)
     if tx == ty then
@@ -307,7 +308,7 @@ function table.get_values(tbl, sorted, as_string)
         end
     end
     if sorted then
-        table.sort(valueset, sortFunc)
+        table.sort(valueset, sort_func)
     end
     return valueset
 end
@@ -333,7 +334,7 @@ function table.get_keys(tbl, sorted, as_string)
         end
     end
     if sorted then
-        table.sort(keyset, sortFunc)
+        table.sort(keyset, sort_func)
     end
     return keyset
 end

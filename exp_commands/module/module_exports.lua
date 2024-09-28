@@ -536,6 +536,7 @@ function Commands._prototype:register(callback)
     local function command_callback(event)
         event.name = self.name
         local success, traceback = xpcall(Commands._event_handler, debug.traceback, event)
+        --- @cast traceback string
         if not success and not traceback:find("Command does not support rcon usage") then
             local _, msg = Commands.status.internal_error(event.tick)
             Commands.error(msg)
@@ -618,7 +619,7 @@ function Commands._event_handler(event)
 
     local player = nil -- nil represents the server until the command is called
     if event.player_index then
-        player = game.get_player(event.player_index)
+        player = game.players[event.player_index]
     end
 
     -- Check if the player is allowed to use the command

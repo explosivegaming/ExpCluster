@@ -133,10 +133,10 @@ local Event = _C.opt_require("modules/exp_legacy/utils/event")
 
 if Roles and Event then
     Event.add(Roles.events.on_role_assigned, function(e)
-        Gui.update_top_flow(game.get_player(e.player_index))
+        Gui.update_top_flow(game.players[e.player_index])
     end)
     Event.add(Roles.events.on_role_unassigned, function(e)
-        Gui.update_top_flow(game.get_player(e.player_index))
+        Gui.update_top_flow(game.players[e.player_index])
     end)
 end
 

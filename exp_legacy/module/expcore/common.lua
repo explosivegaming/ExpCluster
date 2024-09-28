@@ -398,26 +398,26 @@ function Common.player_return(value, colour, player)
     colour = Common.type_check(colour, "table") and colour or Colours[colour] ~= Colours.white and Colours[colour] or Colours.white
     player = player or game.player
     -- converts the value to a string
-    local returnAsString
+    local string_return
     if Common.type_check(value, "table") or type(value) == "userdata" then
         if Common.type_check(value.__self, "userdata") or type(value) == "userdata" then
             -- value is userdata
-            returnAsString = "Cant Display Userdata"
+            string_return = "Cant Display Userdata"
         elseif Common.type_check(value[1], "string") and string.find(value[1], ".+[.].+") and not string.find(value[1], "%s") then
             -- value is a locale string
-            returnAsString = value
+            string_return = value
         elseif getmetatable(value) ~= nil and not tostring(value):find("table: 0x") then
             -- value has a tostring meta method
-            returnAsString = tostring(value)
+            string_return = tostring(value)
         else
             -- value is a table
-            returnAsString = table.inspect(value, { depth = 5, indent = " ", newline = "\n" })
+            string_return = table.inspect(value, { depth = 5, indent = " ", newline = "\n" })
         end
     elseif Common.type_check(value, "function") then
         -- value is a function
-        returnAsString = "Cant Display Functions"
+        string_return = "Cant Display Functions"
     else
-        returnAsString = tostring(value)
+        string_return = tostring(value)
     end
     -- returns to the player or the server
     if player then
@@ -426,9 +426,9 @@ function Common.player_return(value, colour, player)
         if not player then error("Invalid Player given to player_return", 2) end
         -- plays a nice sound that is different to normal message sound
         player.play_sound{ path = "utility/scenario_message" }
-        player.print(returnAsString, colour)
+        player.print(string_return, colour)
     else
-        rcon.print(returnAsString)
+        rcon.print(string_return)
     end
 end
 
@@ -469,7 +469,11 @@ function Common.format_time(ticks, options)
     local days, hours = max_days, max_hours - math.floor(max_days) * 24
     local minutes, seconds = max_minutes - math.floor(max_hours) * 60, max_seconds - math.floor(max_minutes) * 60
     -- Handles overflow of disabled denominations
-    local rtn_days, rtn_hours, rtn_minutes, rtn_seconds = math.floor(days), math.floor(hours), math.floor(minutes), math.floor(seconds)
+    local rtn_days, rtn_hours, rtn_minutes, rtn_seconds = 
+        math.floor(days) --[[@as string | number | table]],
+        math.floor(hours) --[[@as string | number | table]],
+        math.floor(minutes) --[[@as string | number | table]],
+        math.floor(seconds) --[[@as string | number | table]]
     if not options.days then
         rtn_hours = rtn_hours + rtn_days * 24
     end
@@ -496,10 +500,10 @@ function Common.format_time(ticks, options)
     local div = options.string and " " or "time-format.simple-format-tagged"
     if options.time then
         div = options.string and ":" or "time-format.simple-format-div"
-        suffix = false
+        -- suffix = false -- Can't get the types to work
     end
     -- Adds formatting
-    if suffix ~= false then
+    if not options.time then -- Can't get the types to work
         if options.string then
             -- format it as a string
             local long = suffix == ""

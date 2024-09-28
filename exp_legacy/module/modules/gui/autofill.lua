@@ -78,7 +78,7 @@ local entity_toggle =
             element.style = "shortcut_bar_button_green"
         end
         -- Correct the button size
-        local style = element.style
+        local style = element.style --[[@as LuaStyle]]
         style.padding = -2
         style.height = 22
         style.width = 22
@@ -147,7 +147,7 @@ local toggle_item_button =
             element.style = "shortcut_bar_button_green"
         end
         -- Correct the button size
-        local style = element.style
+        local style = element.style --[[@as LuaStyle]]
         style.right_margin = -3
         style.padding = -2
         style.height = 32
@@ -322,7 +322,7 @@ local function entity_build(event)
     if not entity_settings.enabled then return end
 
     -- Get the inventory of the player
-    local player_inventory = player.get_main_inventory()
+    local player_inventory = player.get_main_inventory() --- @cast player_inventory -nil
 
     local text_position = { x = entity.position.x, y = entity.position.y }
     -- Loop over all possible items to insert into the entity

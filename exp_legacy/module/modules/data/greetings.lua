@@ -17,7 +17,7 @@ CustomMessages:on_load(function(player_name, player_message)
     local player = game.players[player_name]
     local custom_message = player_message or config[player_name]
     if custom_message then
-        game.print(custom_message, player.color)
+        game.print(custom_message, { color = player.color })
     else
         player.print{ "join-message.greet", { "links.discord" } }
     end

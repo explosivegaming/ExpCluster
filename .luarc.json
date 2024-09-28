@@ -43,7 +43,7 @@
         }, "pascal_case"],
         "function_param_name_style": [{
             "type" : "pattern",
-            "param": "_?_?(\\w+)",
+            "param": "_?_?(\\w+)?",
             "$1": "snake_case"
         }],
         "function_name_style": [{
@@ -61,7 +61,10 @@
             "param": "_?_?(\\w+)",
             "$1": "snake_case"
         }],
-        "global_variable_name_style": "upper_snake_case",
+        "global_variable_name_style": [{
+            "type": "ignore",
+            "param": ["_VERSION"]
+        }, "snake_case", "upper_snake_case" ],
         "module_name_style": [ "pascal_case", "snake_case" ],
         "require_module_name_style": [ "pascal_case", "snake_case" ],
         "class_name_style": "pascal_case",

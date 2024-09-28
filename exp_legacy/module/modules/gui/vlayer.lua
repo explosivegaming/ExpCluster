@@ -74,7 +74,7 @@ end
 --- When an area is selected to add protection to the area
 Selection.on_selection(SelectionConvertArea, function(event)
     local area = aabb_align_expand(event.area)
-    local player = game.get_player(event.player_index)
+    local player = game.players[event.player_index]
 
     if not player then
         return nil
@@ -99,7 +99,7 @@ Selection.on_selection(SelectionConvertArea, function(event)
 
     local e = entities[1]
     local e_pos = { x = string.format("%.1f", e.position.x), y = string.format("%.1f", e.position.y) }
-    local e_circ = e.circuit_connected_entities
+    local e_circ = {} -- e.circuit_connected_entities --- TODO use new circuit api
 
     if not e.get_inventory(defines.inventory.chest).is_empty() then
         player.print{ "vlayer.steel-chest-empty" }

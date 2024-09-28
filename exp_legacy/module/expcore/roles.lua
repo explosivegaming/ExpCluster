@@ -200,8 +200,8 @@ function Roles.debug()
     for index, role_name in ipairs(Roles.config.order) do
         local role = Roles.config.roles[role_name]
         local color = role.custom_color or Colours.white
-        color = string.format("[color=%d, %d, %d]", color.r, color.g, color.b)
-        output = output .. string.format("\n%s %s) %s[/color]", color, index, serpent.line(role))
+        local color_str = string.format("[color=%d, %d, %d]", color.r, color.g, color.b)
+        output = output .. string.format("\n%s %s) %s[/color]", color_str, index, serpent.line(role))
     end
 
     return output
@@ -341,7 +341,6 @@ local role = Roles.get_player_highest_role(game.player)
 ]]
 function Roles.get_player_highest_role(player)
     local roles = Roles.get_player_roles(player)
-    if not roles then return end
     local highest
     for _, role in ipairs(roles) do
         if not highest or role.index < highest.index then

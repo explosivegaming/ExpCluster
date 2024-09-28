@@ -400,7 +400,7 @@ SelectedPlayer:on_update(function(player_name, selected_player)
             style = "tool_button"
         end
         element.style = style
-        local element_style = element.style
+        local element_style = element.style --[[@as LuaStyle]]
         element_style.padding = -2
         element_style.width = 8
         element_style.height = 14

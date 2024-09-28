@@ -62,12 +62,13 @@ local function spawn_turrets()
         -- Makes a new turret if it is not found
         if not turret or not turret.valid then
             turret = surface.create_entity{ name = "gun-turret", position = pos, force = "spawn" }
+            if not turret then return end
             protect_entity(turret)
         end
 
         -- Adds ammo to the turret
         local inv = turret.get_inventory(defines.inventory.turret_ammo)
-        if inv.can_insert{ name = config.turrets.ammo_type, count = 10 } then
+        if inv and inv.can_insert{ name = config.turrets.ammo_type, count = 10 } then
             inv.insert{ name = config.turrets.ammo_type, count = 10 }
         end
     end

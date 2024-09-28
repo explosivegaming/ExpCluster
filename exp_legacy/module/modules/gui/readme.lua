@@ -14,7 +14,7 @@ local format_time = _C.format_time --- @dep expcore.common
 local format_number = require("util").format_number --- @dep util
 
 local tabs = {}
-local function Tab(caption, tooltip, element_define)
+local function define_tab(caption, tooltip, element_define)
     tabs[#tabs + 1] = { caption, tooltip, element_define }
 end
 
@@ -111,7 +111,7 @@ local join_server =
 
 --- Content area for the welcome tab
 -- @element welcome_content
-Tab({ "readme.welcome-tab" }, { "readme.welcome-tooltip" },
+define_tab({ "readme.welcome-tab" }, { "readme.welcome-tooltip" },
     Gui.element(function(_, parent)
         local server_details = { name = "ExpGaming S0 - Local", welcome = "Failed to load description: disconnected from external api.", reset_time = "Non Set", branch = "Unknown" }
         if External.valid() then server_details = External.get_current_server() end
@@ -149,7 +149,7 @@ Tab({ "readme.welcome-tab" }, { "readme.welcome-tooltip" },
 
 --- Content area for the rules tab
 -- @element rules_content
-Tab({ "readme.rules-tab" }, { "readme.rules-tooltip" },
+define_tab({ "readme.rules-tab" }, { "readme.rules-tooltip" },
     Gui.element(function(_, parent)
         local container = parent.add{ type = "flow", direction = "vertical" }
 
@@ -160,7 +160,7 @@ Tab({ "readme.rules-tab" }, { "readme.rules-tooltip" },
         container.add{ type = "flow" }
 
         -- Add a table for the rules
-        local rules = Gui.scroll_table(container, scroll_height, 1)
+        local rules = Gui.scroll_table(container, scroll_height, 1) --[[@as LuaGuiElement]]
         rules.style = "bordered_table"
         rules.style.cell_padding = 4
 
@@ -174,7 +174,7 @@ Tab({ "readme.rules-tab" }, { "readme.rules-tooltip" },
 
 --- Content area for the commands tab
 -- @element commands_content
-Tab({ "readme.commands-tab" }, { "readme.commands-tooltip" },
+define_tab({ "readme.commands-tab" }, { "readme.commands-tooltip" },
     Gui.element(function(_, parent)
         local container = parent.add{ type = "flow", direction = "vertical" }
         local player = Gui.get_player_from_element(parent)
@@ -186,7 +186,7 @@ Tab({ "readme.commands-tab" }, { "readme.commands-tooltip" },
         container.add{ type = "flow" }
 
         -- Add a table for the commands
-        local commands = Gui.scroll_table(container, scroll_height, 2)
+        local commands = Gui.scroll_table(container, scroll_height, 2) --[[@as LuaGuiElement]]
         commands.style = "bordered_table"
         commands.style.cell_padding = 0
 
@@ -201,7 +201,7 @@ Tab({ "readme.commands-tab" }, { "readme.commands-tooltip" },
 
 --- Content area for the servers tab
 -- @element servers_content
-Tab({ "readme.servers-tab" }, { "readme.servers-tooltip" },
+define_tab({ "readme.servers-tab" }, { "readme.servers-tooltip" },
     Gui.element(function(_, parent)
         local container = parent.add{ type = "flow", direction = "vertical" }
 
@@ -245,7 +245,7 @@ Tab({ "readme.servers-tab" }, { "readme.servers-tooltip" },
 
 --- Content area for the servers tab
 -- @element backers_content
-Tab({ "readme.backers-tab" }, { "readme.backers-tooltip" },
+define_tab({ "readme.backers-tab" }, { "readme.backers-tooltip" },
     Gui.element(function(_, parent)
         local container = parent.add{ type = "flow", direction = "vertical" }
 
@@ -309,7 +309,7 @@ Tab({ "readme.backers-tab" }, { "readme.backers-tooltip" },
 
 --- Content area for the player data tab
 -- @element commands_content
-Tab({ "readme.data-tab" }, { "readme.data-tooltip" },
+define_tab({ "readme.data-tab" }, { "readme.data-tooltip" },
     Gui.element(function(_, parent)
         local container = parent.add{ type = "flow", direction = "vertical" }
         local player = Gui.get_player_from_element(parent)

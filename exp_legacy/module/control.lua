@@ -4,11 +4,13 @@
 -- this file is the landing point for all scenarios please DO NOT edit directly, further comments are to aid development
 
 local _xpcall = xpcall
+--- @diagnostic disable
 xpcall = function(func, error_handler, ...)
     local rtn = { _xpcall(func, error_handler, ...) }
     if not rtn[1] then error(rtn[2]) end
     return table.unpack(rtn)
 end
+--- @diagnostic enable
 
 log("[START] -----| Explosive Gaming Scenario Loader |-----")
 log("[INFO] Setting up lua environment")
@@ -16,6 +18,7 @@ log("[INFO] Setting up lua environment")
 -- Require the global overrides
 require("modules.exp_legacy.overrides.table") -- Adds alot more functions to the table module
 storage.version = require("modules.exp_legacy.overrides.version") -- The current version for exp gaming scenario
+--- @diagnostic disable-next-line
 _C = require("modules.exp_legacy.expcore.common") -- _C is used to store lots of common functions expected to be used
 
 -- Please go to config/file_loader.lua to edit the files that are loaded

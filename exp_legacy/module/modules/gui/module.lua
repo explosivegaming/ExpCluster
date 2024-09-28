@@ -109,7 +109,7 @@ end
 --- when an area is selected to add protection to the area
 Selection.on_selection(SelectionModuleArea, function(event)
     local area = aabb_align_expand(event.area)
-    local player = game.get_player(event.player_index)
+    local player = game.players[event.player_index]
     local frame = Gui.get_left_element(player, module_container)
     local scroll_table = frame.container.scroll.table
 

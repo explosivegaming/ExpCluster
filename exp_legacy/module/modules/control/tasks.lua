@@ -46,10 +46,10 @@ function Tasks.add_task(force_name, player_name, task_title, task_body)
     force_tasks._uid = force_tasks._uid + 1
 
     -- Get the existing tasks for this force
-    local task_ids = force_tasks[force_name]
+    local task_ids = force_tasks[force_name] --[[@as table?]]
     if not task_ids then
         task_ids = {}
-        force_tasks[force_name] = task_ids
+        force_tasks[force_name] = task_ids --[[@as any]]
     end
 
     -- Insert the task id into the forces tasks
