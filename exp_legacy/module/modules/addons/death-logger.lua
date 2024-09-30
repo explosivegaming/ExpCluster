@@ -1,10 +1,10 @@
 --- Makes markers on the map where places have died and reclaims items if not recovered
 -- @addon Death-Logger
 
+local ExpUtil = require("modules/exp_util")
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Storage = require("modules/exp_util/storage")
 local config = require("modules.exp_legacy.config.death_logger") --- @dep config.death_logger
-local format_time, move_items = _C.format_time, _C.move_items_stack --- @dep expcore.common
 
 -- Max amount of ticks a corpse can be alive
 local corpse_lifetime = 60 * 60 * 15
@@ -17,12 +17,14 @@ Storage.register(deaths, function(tbl)
     deaths = tbl
 end)
 
+local map_tag_time_format = ExpUtil.format_time_factory{ format = "short", hours = true, minutes = true }
+
 --- Creates a new death marker and saves it to the given death
 local function create_map_tag(death)
     local player = game.players[death.player_name]
     local message = player.name .. " died"
     if config.include_time_of_death then
-        local time = format_time(death.time_of_death, { hours = true, minutes = true, string = true })
+        local time = map_tag_time_format(death.time_of_death)
         message = message .. " at " .. time
     end
     death.tag = player.force.add_chart_tag(player.surface, {
@@ -60,14 +62,21 @@ local function check_map_tags()
 end
 
 -- when a player dies a new death is added to the records and a map marker is made
+--- @param event EventData.on_player_died
 Event.add(defines.events.on_player_died, function(event)
     local player = game.players[event.player_index]
     local corpse = player.surface.find_entity("character-corpse", player.position)
     if not corpse or not corpse.valid then return end
     if config.use_chests_as_bodies then
-        local items = corpse.get_inventory(defines.inventory.character_corpse)
-        local chest = move_items(items, corpse.surface, corpse.position)
-        chest.destructible = false
+        local inventory = assert(corpse.get_inventory(defines.inventory.character_corpse))
+        local chest = ExpUtil.transfer_inventory_to_surface{
+            inventory = inventory,
+            surface = corpse.surface,
+            position = corpse.position,
+            name = "iron-chest",
+            allow_creation = true,
+        }
+        
         corpse.destroy()
         corpse = chest
     end
@@ -139,10 +148,16 @@ if config.show_map_markers then
 end
 
 if config.auto_collect_bodies then
+    --- @param event EventData.on_character_corpse_expired
     Event.add(defines.events.on_character_corpse_expired, function(event)
         local corpse = event.corpse
-        local items = corpse.get_inventory(defines.inventory.character_corpse)
-        move_items(items, corpse.surface, { x = 0, y = 0 })
+        local inventory = assert(corpse.get_inventory(defines.inventory.character_corpse))
+        ExpUtil.transfer_inventory_to_surface{
+            inventory = inventory,
+            surface = corpse.surface,
+            name = "iron-chest",
+            allow_creation = true,
+        }
     end)
 end
 

@@ -1,7 +1,5 @@
 --[[-- Util Module - Common
-- Adds some commonly used functions used in many modules
-@core Common
-@alias Common
+Adds some commonly used functions used in many modules
 ]]
 
 local assert = assert
@@ -35,6 +33,10 @@ end]]
 
 --- Check the type of a value, also considers LuaObject.object_name and metatable.__class
 --- Returns true when the check failed and an error should be raised
+--- @param value any The value to check the type of
+--- @param type_name string The type name the value should be
+--- @return boolean failed True if the check failed and an error should be raised
+--- @return string actual_type The actual type of the value 
 local function check_type(value, type_name)
     local value_type = type(value) --[[@as string]]
     if value_type == "userdata" then
@@ -56,9 +58,9 @@ end
 
 local assert_type_fmt = "%s expected to be of type %s but got %s"
 --- Raise an error if the type of a value is not as expected
--- @param value The value to assert the type of
--- @tparam string type_name The name of the type that value is expected to be
--- @tparam[opt=Value] string value_name The name of the value being tested, this is included in the error message
+--- @param value any The value to assert the type of
+--- @param type_name string The name of the type that value is expected to be
+--- @param value_name string? The name of the value being tested, this is included in the error message
 function Common.assert_type(value, type_name, value_name)
     local failed, actual_type = check_type(value, type_name)
     if failed then
@@ -68,10 +70,10 @@ end
 
 local assert_argument_fmt = "Bad argument #%d to %s; %s expected to be of type %s but got %s"
 --- Raise an error if the type of any argument is not as expected, more performant than assert_argument_types, but requires more manual input
--- @param arg_value The argument to assert the type of
--- @tparam string type_name The name of the type that value is expected to be
--- @tparam number arg_index The index of the argument being tested, this is included in the error message
--- @tparam[opt=Argument] string arg_name The name of the argument being tested, this is included in the error message
+--- @param arg_value any The argument to assert the type of
+--- @param type_name string The name of the type that value is expected to be
+--- @param arg_index number The index of the argument being tested, this is included in the error message
+--- @param arg_name string? The name of the argument being tested, this is included in the error message
 function Common.assert_argument_type(arg_value, type_name, arg_index, arg_name)
     local failed, actual_type = check_type(arg_value, type_name)
     if failed then
@@ -81,10 +83,11 @@ function Common.assert_argument_type(arg_value, type_name, arg_index, arg_name)
 end
 
 --- Write a luu table to a file as a json string, note the defaults are different to game.write_file
--- @tparam string path The path to write the json to
--- @tparam table value The table to write to file
--- @tparam[opt=false] boolean overwrite When true the json replaces the full contents of the file
--- @tparam[opt=0] number player_index The player's machine to write on, -1 means all, 0 means host only
+--- @param path string The path to write the json to
+--- @param tbl table The table to write to file
+--- @param overwrite boolean? When true the json replaces the full contents of the file
+--- @param player_index number? The player's machine to write on, -1 means all, 0 is default means host only
+--- @return nil
 function Common.write_json(path, tbl, overwrite, player_index)
     if player_index == -1 then
         return game.write_file(path, game.table_to_json(tbl) .. "\n", not overwrite)
@@ -93,8 +96,9 @@ function Common.write_json(path, tbl, overwrite, player_index)
 end
 
 --- Clear a file by replacing its contents with an empty string
--- @tparam string path The path to clear the contents of
--- @tparam[opt=0] number player_index The player's machine to write on, -1 means all, 0 means host only
+--- @param path string The path to clear the contents of
+--- @param player_index number? The player's machine to write on, -1 means all, 0 is default and means host only
+--- @return nil
 function Common.clear_file(path, player_index)
     if player_index == -1 then
         return game.write_file(path, "", false)
@@ -103,8 +107,9 @@ function Common.clear_file(path, player_index)
 end
 
 --- Same as require but will return nil if the module does not exist, all other errors will propagate to the caller
--- @tparam string module_path The path to the module to require, same syntax as normal require
--- @return The contents of the module, or nil if the module does not exist or did not return a value
+--- @param module_path string The path to the module to require, same syntax as normal require
+--- @return any # The contents of the module, or nil if the module does not exist or did not return a value
+--- @deprecated
 function Common.optional_require(module_path)
     local success, rtn = xpcall(require, traceback, module_path)
     if success then return rtn end
@@ -114,16 +119,16 @@ function Common.optional_require(module_path)
 end
 
 --- Returns a desync sale filepath for a given stack frame, default is the current file
--- @tparam number level The level of the stack to get the file of, a value of 1 is the caller of this function
--- @treturn string The relative filepath of the given stack frame
+--- @param level number? The level of the stack to get the file of, a value of 1 is the caller of this function
+--- @return string # The relative filepath of the given stack frame
 function Common.safe_file_path(level)
     level = level or 1
     return getinfo(level + 1, "S").short_src:sub(10, -5)
 end
 
 --- Returns the name of your module, this assumes your module is stored within /modules (which it is for clustorio)
--- @tparam[opt=1] number level The level of the stack to get the module of, a value of 1 is the caller of this function
--- @treturn string The name of the module at the given stack frame
+--- @param level number? The level of the stack to get the module of, a value of 1 is the caller of this function
+--- @return string # The name of the module at the given stack frame
 function Common.get_module_name(level)
     local file_within_module = getinfo((level or 1) + 1, "S").short_src:sub(18, -5)
     local next_slash = file_within_module:find("/")
@@ -135,9 +140,9 @@ function Common.get_module_name(level)
 end
 
 --- Returns the name of a function in a safe and consistent format
--- @tparam number|function func The level of the stack to get the name of, a value of 1 is the caller of this function
--- @tparam boolean raw When true there will not be any < > around the name
--- @treturn string The name of the function at the given stack frame or provided as an argument
+--- @param func number | function The level of the stack to get the name of, a value of 1 is the caller of this function
+--- @param raw boolean When true there will not be any < > around the name
+--- @return string # The name of the function at the given stack frame or provided as an argument
 function Common.get_function_name(func, raw)
     local debug_info = getinfo(func, "Sn")
     local safe_source = debug_info.source:find("__level__")
@@ -148,11 +153,11 @@ function Common.get_function_name(func, raw)
 end
 
 --- Attempt a simple autocomplete search from a set of options
--- @tparam table options The table representing the possible options which can be selected
--- @tparam string input The user input string which should be matched to an option
--- @tparam[opt=false] boolean use_key When true the keys will be searched, when false the values will be searched
--- @tparam[opt=false] boolean rtn_key When true the selected key will be returned, when false the selected value will be returned
--- @return The selected key or value which first matches the input text
+--- @param options table The table representing the possible options which can be selected
+--- @param input string The user input string which should be matched to an option
+--- @param use_key boolean? When true the keys will be searched, when false the values will be searched
+--- @param rtn_key boolean? When true the selected key will be returned, when false the selected value will be returned
+--- @return any # The selected key or value which first matches the input text
 function Common.auto_complete(options, input, use_key, rtn_key)
     input = input:lower()
     if use_key then
@@ -170,61 +175,71 @@ function Common.auto_complete(options, input, use_key, rtn_key)
     end
 end
 
---- Formats any value into a safe representation, useful with table.insert
--- @param value The value to be formated
--- @return The formated version of the value
--- @return True if value is a locale string, nil otherwise
+--- Formats any value into a safe representation, useful with table.inspect
+--- @param value any The value to be formatted
+--- @return string | LocalisedString # The formatted version of the value
+--- @return boolean # True if value is a locale string, nil otherwise
 function Common.safe_value(value)
-    if type(value) == "table" or type(value) == "userdata" then
-        if type(value.__self) == "userdata" or type(value) == "userdata" then
-            local success, rtn = pcall(function() -- some userdata doesnt contain "valid"
-                if value.valid then -- userdata
-                    return "<userdata:" .. value.object_name .. ">"
-                else -- invalid userdata
-                    return "<userdata:" .. value.object_name .. ":invalid>"
-                end
-            end)
-            return success and rtn or "<userdata:" .. value.object_name .. ">"
-        elseif type(value[1]) == "string" and string.find(value[1], ".+[.].+") and not string.find(value[1], "%s") then
+    if type(value) == "table" then
+        local v1 = value[1]
+        local str = tostring(value)
+        if type(v1) == "string" and not v1:find("%s")
+        and (v1 == "" or v1 == "?" or v1:find(".+[.].+")) then
             return value, true -- locale string
-        elseif tostring(value) ~= "table" then
-            return tostring(value) -- has __tostring metamethod
+        elseif str ~= "table" then
+            return str, false -- has __tostring metamethod
         else -- plain table
-            return value
+            return value, false
         end
     elseif type(value) == "function" then -- function
-        return "<function:" .. Common.get_function_name(value, true) .. ">"
-    else -- not: table, userdata, or function
-        return tostring(value)
+        return "<function:" .. Common.get_function_name(value, true) .. ">", false
+    else -- not: table or function
+        return tostring(value), false
     end
 end
 
+--- @class Common.format_any_param
+--- @field as_json boolean? If table values should be returned as json
+--- @field max_line_count number? If table newline count exceeds provided then it will be inlined, if 0 then always inline
+--- @field no_locale_strings boolean? If value is a locale string it will be treated like a normal table
+--- @field depth number? The max depth to process tables to, the default is 5
+
 --- Formats any value to be presented in a safe and human readable format
--- @param value The value to be formated
--- @param[opt] tableAsJson If table values should be returned as json
--- @param[opt] maxLineCount If table newline count exceeds provided then it will be inlined
--- @return The formated version of the value
-function Common.format_any(value, as_json, max_line_count)
+--- @param value any The value to be formatted
+--- @param options Common.format_any_param? Options for the formatter
+--- @return string | LocalisedString # The formatted version of the value
+function Common.format_any(value, options)
+    options = options or {}
     local formatted, is_locale_string = Common.safe_value(value)
-    if type(formatted) == "table" and not is_locale_string then
-        if as_json then
+    if type(formatted) == "table" and (not is_locale_string or options.no_locale_strings) then
+        if options.as_json then
             local success, rtn = pcall(game.table_to_json, value)
             if success then return rtn end
         end
-        local rtn = table.inspect(value, { depth = 5, indent = " ", newline = "\n", process = Common.safe_value })
-        if max_line_count == nil or select(2, rtn:gsub("\n", "")) < max_line_count then return rtn end
-        return table.inspect(value, { depth = 5, indent = "", newline = "", process = Common.safe_value })
+        if options.max_line_count ~= 0 then
+            local rtn = table.inspect(value, { depth = options.depth or 5, indent = " ", newline = "\n", process = Common.safe_value })
+            if options.max_line_count == nil or select(2, rtn:gsub("\n", "")) < options.max_line_count then return rtn end
+        end
+        return table.inspect(value, { depth = options.depth or 5, indent = "", newline = "", process = Common.safe_value })
     end
     return formatted
 end
 
+--- @alias Common.format_time_param_format "short" | "long" | "clock"
+
+--- @class Common.format_time_param_units
+--- @field days boolean? True if days are included
+--- @field hours boolean? True if hours are included
+--- @field minutes boolean? True if minutes are included
+--- @field seconds boolean? True if seconds are included
+
 --- Format a tick value into one of a selection of pre-defined formats (short, long, clock)
--- @tparam number ticks The number of ticks which will be represented, can be any duration or time value
--- @tparam string format The format to display, must be one of: short, long, clock
--- @tparam[opt] table units A table selecting which units should be displayed, options are: days, hours, minutes, seconds
--- @treturn string The ticks formatted into a string of the desired format
+--- @param ticks number|nil The number of ticks which will be represented, can be any duration or time value
+--- @param format Common.format_time_param_format format to display, must be one of: short, long, clock
+--- @param units Common.format_time_param_units A table selecting which units should be displayed, options are: days, hours, minutes, seconds
+--- @return string # The ticks formatted into a string of the desired format
 function Common.format_time(ticks, format, units)
-    units = units or { days = false, hours = true, minutes = true, seconds = false }
+    --- @type string | number, string | number, string | number, string | number
     local rtn_days, rtn_hours, rtn_minutes, rtn_seconds = "--", "--", "--", "--"
 
     if ticks ~= nil then
@@ -234,7 +249,6 @@ function Common.format_time(ticks, format, units)
         local minutes, seconds = max_minutes - floor(max_hours) * 60, max_seconds - floor(max_minutes) * 60
 
         -- Calculate rhw units to be displayed
-        --- @diagnostic disable: cast-local-type
         rtn_days, rtn_hours, rtn_minutes, rtn_seconds = floor(days), floor(hours), floor(minutes), floor(seconds)
         if not units.days then rtn_hours = rtn_hours + rtn_days * 24 end
         if not units.hours then rtn_minutes = rtn_minutes + rtn_hours * 60 end
@@ -269,12 +283,12 @@ function Common.format_time(ticks, format, units)
 end
 
 --- Format a tick value into one of a selection of pre-defined formats (short, long, clock)
--- @tparam number ticks The number of ticks which will be represented, can be any duration or time value
--- @tparam string format The format to display, must be one of: short, long, clock
--- @tparam[opt] table units A table selecting which units should be displayed, options are: days, hours, minutes, seconds
--- @treturn LocaleString The ticks formatted into a LocaleString of the desired format
-function Common.format_locale_time(ticks, format, units)
-    units = units or { days = false, hours = true, minutes = true, seconds = false }
+--- @param ticks number|nil The number of ticks which will be represented, can be any duration or time value
+--- @param format Common.format_time_param_format format to display, must be one of: short, long, clock
+--- @param units Common.format_time_param_units A table selecting which units should be displayed, options are: days, hours, minutes, seconds
+--- @return LocalisedString # The ticks formatted into a string of the desired format
+function Common.format_time_locale(ticks, format, units)
+    --- @type string | number, string | number, string | number, string | number
     local rtn_days, rtn_hours, rtn_minutes, rtn_seconds = "--", "--", "--", "--"
 
     if ticks ~= nil then
@@ -284,23 +298,20 @@ function Common.format_locale_time(ticks, format, units)
         local minutes, seconds = max_minutes - floor(max_hours) * 60, max_seconds - floor(max_minutes) * 60
 
         -- Calculate rhw units to be displayed
-        --- @diagnostic disable: cast-local-type
         rtn_days, rtn_hours, rtn_minutes, rtn_seconds = floor(days), floor(hours), floor(minutes), floor(seconds)
         if not units.days then rtn_hours = rtn_hours + rtn_days * 24 end
         if not units.hours then rtn_minutes = rtn_minutes + rtn_hours * 60 end
         if not units.minutes then rtn_seconds = rtn_seconds + rtn_minutes * 60 end
-        --- @diagnostic enable: cast-local-type
     end
 
     local rtn = {}
-    local join = ", "
+    local join = ", " --- @type string | LocalisedString
     if format == "clock" then
         -- Example 12:34:56 or --:--:--
         if units.days then rtn[#rtn + 1] = rtn_days end
         if units.hours then rtn[#rtn + 1] = rtn_hours end
         if units.minutes then rtn[#rtn + 1] = rtn_minutes end
         if units.seconds then rtn[#rtn + 1] = rtn_seconds end
-        --- @diagnostic disable-next-line: cast-local-type
         join = { "colon" }
     elseif format == "short" then
         -- Example 12d 34h 56m or --d --h --m
@@ -318,81 +329,225 @@ function Common.format_locale_time(ticks, format, units)
         rtn[#rtn] = { "", { "and" }, " ", rtn[#rtn] }
     end
 
-    local joined = { "" } --[[@as any]]
+    --- @type LocalisedString
+    local joined = { "" }
     for k, v in ipairs(rtn) do
         joined[2 * k] = v
-        joined[2 * k + 1] = join --[[@as any]]
+        joined[2 * k + 1] = join
     end
 
     return joined
 end
 
---- Insert a copy of the given items into the found / created entities. If no entities are found then they will be created if possible.
--- @tparam table items The items which are to be inserted into the entities, an array of LuaItemStack
--- @tparam LuaSurface surface The surface which will be searched to find the entities
--- @tparam table options A table of various optional options similar to find_entities_filtered
--- position + radius or area can be used to define a search area on the surface
--- type can be used to find all entities of a given type, such as a chest
--- name can be used to further specify which entity to insert into, this field is required if entity creation is desired
--- allow_creation is a boolean which when true will allow the function to create new entities in order to insert all items
--- force is the force which new entities will be created to, the default is the neutral force
--- @treturn LuaEntity the last entity that had items inserted into it
-function Common.insert_item_stacks(items, surface, options)
-    local entities = surface.find_entities_filtered(options)
-    local count, current, last_entity = #entities, 0, nil
+--- @class Common.format_time_factory_param: Common.format_time_param_units
+--- @field format Common.format_time_param_format The format to use
+--- @field coefficient number? If present will multiply the input by this amount before formatting
 
-    for _, item in ipairs(items) do
-        if item.valid_for_read then
-            local inserted = false
+--- Create a formatter to format a tick value into one of a selection of pre-defined formats (short, long, clock)
+--- @param options Common.format_time_factory_param
+--- @return fun(ticks: number|nil): string
+function Common.format_time_factory(options)
+    local formatter, format, coefficient = Common.format_time, options.format, options.coefficient
+    if coefficient then
+        return function(ticks) return formatter(ticks and ticks * coefficient or nil, format, options) end
+    end
+    return function(ticks) return formatter(ticks, format, options) end
+end
 
-            -- Attempt to insert the items
-            for i = 1, count do
-                local entity = entities[((current + i - 1) % count) + 1]
-                if entity.can_insert(item) then
-                    last_entity = entity
-                    current = current + 1
-                    entity.insert(item)
-                    inserted = true
-                end
-            end
+--- Create a formatter to format a tick value into one of a selection of pre-defined formats (short, long, clock)
+--- @param options Common.format_time_factory_param
+--- @return fun(ticks: number|nil): LocalisedString
+function Common.format_time_factory_locale(options)
+    local formatter, format, coefficient = Common.format_local_time, options.format, options.coefficient
+    if coefficient then
+        return function(ticks) return formatter(ticks and ticks * coefficient or nil, format, options) end
+    end
+    return function(ticks) return formatter(ticks, format, options) end
+end
 
-            -- If it was not inserted then a new entity is needed
-            if not inserted then
-                if not options.allow_creation then error("Unable to insert items into a valid entity, consider enabling allow_creation") end
-                if options.name == nil then error("Name must be provided to allow creation of new entities") end
+--- @class Common.get_or_create_storage_cache
+--- @field entities LuaEntity[] Array of found entities matching the search
+--- @field current number The current index within the entity array
+--- @field count number The number of entities found
 
-                local position
-                if options.position then
-                    position = surface.find_non_colliding_position(options.name, options.position, options.radius, 1, true)
-                elseif options.area then
-                    position = surface.find_non_colliding_position_in_box(options.name, options.area, 1, true)
-                else
-                    position = surface.find_non_colliding_position(options.name, { 0, 0 }, 0, 1, true)
-                end
-                last_entity = surface.create_entity{ name = options.name, position = position, force = options.force or "neutral" }
+--- @class Common.get_or_create_storage_param: EntitySearchFilters
+--- @field item ItemStackIdentification The item stack that must be insertable
+--- @field surface LuaSurface The surface to search for targets on
+--- @field allow_creation boolean? If new entities can be create to store the items
+--- @field cache Common.get_or_create_storage_cache? Internal search cache passed between subsequent calls
 
-                count = count + 1
-                entities[count] = last_entity
-                last_entity.insert(item)
-            end
+--- Find, or optionally create, a storage entity which a stack can be inserted into
+--- @param options Common.get_or_create_storage_param
+--- @return LuaEntity
+function Common.get_storage_for_stack(options)
+    local surface = assert(options.surface, "A surface must be provided")
+    local item = assert(options.item, "An item stack must be provided")
+
+    -- Perform a search if on has not been done already
+    local cache = options.cache
+    if cache then
+        local entities = surface.find_entities_filtered(options)
+        cache = {
+            entities = entities,
+            count = #entities,
+            current = 0,
+        }
+        options.cache = cache
+    end
+    --- @cast cache -nil
+
+    -- Find a valid entity from the search results
+    local current, count, entities = cache.current, cache.count, cache.entities
+    for i = 1, cache.count do
+        local entity = entities[((current + i - 1) % count) + 1]
+        if entity.can_insert(item) then
+            cache.current = current + 1
+            return entity
         end
     end
 
-    return last_entity
+    -- No entity was found so one needs to be created
+    assert(options.allow_creation, "Unable to find valid entity, consider enabling allow_creation")
+    assert(options.name, "Name must be provided to allow creation of new entities")
+
+    local position
+    if options.position then
+        position = surface.find_non_colliding_position(options.name, options.position, options.radius or 0, 1, true)
+    elseif options.area then
+        position = surface.find_non_colliding_position_in_box(options.name, options.area, 1, true)
+    else
+        position = surface.find_non_colliding_position(options.name, { 0, 0 }, 0, 1, true)
+    end
+    assert(position, "Failed to find valid location")
+
+    local entity = surface.create_entity{ name = options.name, position = position, force = options.force or "neutral" }
+    assert(entity, "Failed to create a new entity")
+
+    cache.count = count + 1
+    entities[count] = entity
+    return entity
 end
 
---- Move the given items into the found / created entities. If no entities are found then they will be created if possible.
--- @tparam table items The items which are to be inserted into the entities, an array of LuaItemStack
--- @tparam LuaSurface surface The surface which will be searched to find the entities
--- @tparam table options A table of various optional options similar to find_entities_filtered
--- position + radius or area can be used to define a search area on the surface
--- type can be used to find all entities of a given type, such as a chest
--- name can be used to further specify which entity to insert into, this field is required if entity creation is desired
--- allow_creation is a boolean which when true will allow the function to create new entities in order to insert all items
--- @treturn LuaEntity the last entity that had items inserted into it
-function Common.transfer_item_stacks(inventory, surface, options)
-    Common.insert_item_stacks(inventory, surface, options)
-    inventory.clear()
+--- @class Common.copy_items_to_surface_param: Common.get_or_create_storage_param
+--- @field items ItemStackIdentification[] | LuaInventory The item stacks to copy
+
+--- Insert a copy of the given items into the found entities. If no entities are found then they will be created if possible.
+--- @param options Common.copy_items_to_surface_param
+--- @return LuaEntity # The last entity inserted into
+function Common.copy_items_to_surface(options)
+    local entity
+    for item_index = 1, #options.items do
+        options.item = options.items[item_index]
+        entity = Common.get_storage_for_stack(options)
+        entity.insert(options.item)
+    end
+    return entity
+end
+
+--- @class Common.move_items_to_surface_param: Common.get_or_create_storage_param
+--- @field items LuaItemStack[] The item stacks to move
+
+--- Insert a copy of the given items into the found entities. If no entities are found then they will be created if possible.
+--- @param options Common.move_items_to_surface_param
+--- @return LuaEntity # The last entity inserted into
+function Common.move_items_to_surface(options)
+    local entity
+    for item_index = 1, #options.items do
+        options.item = options.items[item_index]
+        entity = Common.get_storage_for_stack(options)
+        entity.insert(options.item)
+        options.item.clear()
+    end
+    return entity
+end
+
+--- @class Common.transfer_inventory_to_surface_param: Common.copy_items_to_surface_param
+--- @field inventory LuaInventory The inventory to transfer
+
+--- Move the given inventory into the found entities. If no entities are found then they will be created if possible.
+--- @param options Common.transfer_inventory_to_surface_param
+--- @return LuaEntity # The last entity inserted into
+function Common.transfer_inventory_to_surface(options)
+    options.items = options.inventory
+    local entity = Common.copy_items_to_surface(options)
+    options.inventory.clear()
+    return entity
+end
+
+--- Create an enum table from a set of strings, can use custom indexes to change base
+--- @param values { [number]: string }
+--- @return { [string | number]: string | number }
+function Common.enum(values)
+    local enum = {}
+
+    local index = 0 -- Real index within values
+    local offset = 0 -- Offset from base for next index
+    local base = 0 -- Start point for offset
+    for k, v in pairs(values) do
+        index = index + 1
+        if k ~= index then
+            offset = 0
+            base = k
+        end
+        enum[base + offset] = v
+        offset = offset + 1
+    end
+
+    for k, v in pairs(enum) do
+        if type(k) == "number" then
+            enum[v] = k
+        end
+    end
+
+    return enum
+end
+
+--- Returns a string for a number with comma separators
+--- @param n number
+--- @return string
+function Common.comma_value(n) -- credit http://richard.warburton.it
+    local left, num, right = string.match(n, "^([^%d]*%d)(%d*)(.-)$")
+    return left .. (num:reverse():gsub("(%d%d%d)", "%1, "):reverse()) .. right
+end
+
+--- Returns a message formatted for game chat using rich text colour tags
+--- @param message string
+--- @param color Color | string
+--- @return string
+function Common.format_rich_text_color(message, color)
+    color = color or Common.color.white
+    local color_tag = "[color=" .. math.round(color.r, 3) .. ", " .. math.round(color.g, 3) .. ", " .. math.round(color.b, 3) .. "]"
+    return string.format("%s%s[/color]", color_tag, message)
+end
+
+--- Returns a message formatted for game chat using rich text colour tags
+--- @param message string
+--- @param color Color | string
+--- @return LocalisedString
+function Common.format_rich_text_color_locale(message, color)
+    color = color or Common.color.white
+    color = math.round(color.r, 3) .. ", " .. math.round(color.g, 3) .. ", " .. math.round(color.b, 3)
+    return { "color-tag", color, message }
+end
+
+--- Formats a players name using rich text color
+--- @param player LuaPlayer
+--- @return string
+function Common.format_player_name(player)
+    local valid_player = type(player) == "userdata" and player or game.get_player(player)
+    local player_name = valid_player and valid_player.name or "<Server>"
+    local player_chat_colour = valid_player and valid_player.chat_color or Common.color.white
+    return Common.format_rich_text_color(player_name, player_chat_colour)
+end
+
+--- Formats a players name using rich text color
+--- @param player LuaPlayer
+--- @return LocalisedString
+function Common.format_player_name_locale(player)
+    local valid_player = type(player) == "userdata" and player or game.get_player(player)
+    local player_name = valid_player and valid_player.name or "<Server>"
+    local player_chat_colour = valid_player and valid_player.chat_color or Common.color.white
+    return Common.format_rich_text_color_locale(player_name, player_chat_colour)
 end
 
 return Common

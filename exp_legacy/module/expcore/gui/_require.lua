@@ -121,6 +121,7 @@ end)
 
 ]]
 
+local ExpUtil = require("modules/exp_util")
 local Gui = require("modules.exp_legacy.expcore.gui.prototype")
 require("modules.exp_legacy.expcore.gui.helper_functions")
 require("modules.exp_legacy.expcore.gui.core_defines")
@@ -128,8 +129,8 @@ require("modules.exp_legacy.expcore.gui.top_flow")
 require("modules.exp_legacy.expcore.gui.left_flow")
 require("modules.exp_legacy.expcore.gui.defines")
 
-local Roles = _C.opt_require("modules.exp_legacy.expcore.roles")
-local Event = _C.opt_require("modules/exp_legacy/utils/event")
+local Roles = ExpUtil.optional_require("modules.exp_legacy.expcore.roles")
+local Event = ExpUtil.optional_require("modules/exp_legacy/utils/event")
 
 if Roles and Event then
     Event.add(Roles.events.on_role_assigned, function(e)

@@ -3,10 +3,10 @@
     @commands InventorySearch
 ]]
 
+local ExpUtil = require("modules/exp_util")
 local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
 local format_number = require("util").format_number --- @dep util
-local format_chat_player_name = _C.format_chat_player_name --- @dep expcore.common
-local format_time = _C.format_time
+local format_player_name = ExpUtil.format_player_name_locale
 require("modules.exp_legacy.config.expcore.command_general_parse")
 
 --- Input parse for items by name
@@ -85,13 +85,15 @@ local function sort_players(players, func)
     return sorted
 end
 
+local display_players_time_format = ExpUtil.format_time_factory_locale{ format = "short", hours = true, minutes = true }
+
 --- Display to the player the top players which were found
 local function display_players(player, players, item)
     player.print{ "expcom-inv-search.results-heading", item.name }
     for index, data in ipairs(players) do
-        local player_name_color = format_chat_player_name(data.player)
+        local player_name_color = format_player_name(data.player)
         local amount = format_number(data.count)
-        local time = format_time(data.online_time)
+        local time = display_players_time_format(data.online_time)
         player.print{ "expcom-inv-search.results-item", index, player_name_color, amount, time }
     end
 end

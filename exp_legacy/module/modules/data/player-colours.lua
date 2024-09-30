@@ -40,7 +40,7 @@ PlayerColours:on_load(function(player_name, player_colour)
         else
             local colour_name = "white"
             while config.disallow[colour_name] do
-                colour_name = table.get_random_dictionary_entry(Colours, true)
+                colour_name = table.get_random(Colours, true)
             end
 
             player_colour = { Colours[colour_name], lighten(Colours[colour_name]) }

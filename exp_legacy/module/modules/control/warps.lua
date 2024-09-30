@@ -70,7 +70,7 @@ WrapData:on_update(function(warp_id, warp, old_warp)
         end
 
         -- Sort the warp names in alphabetical order
-        local new_warp_ids = table.get_values(table.keysort(warp_names))
+        local new_warp_ids = table.get_values(table.key_sort(warp_names))
         table.insert(new_warp_ids, 1, spawn_id)
         new_warp_ids.spawn = spawn_id
         force_warps[force_name] = new_warp_ids

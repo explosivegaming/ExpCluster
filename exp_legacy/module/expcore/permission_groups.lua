@@ -23,8 +23,7 @@ Permission_Groups.new_group('Restricted') -- this defines a new group called "Re
 
 ]]
 
-local Game = require("modules.exp_legacy.utils.game") --- @dep utils.game
-local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Event = require("modules/exp_legacy/utils/event")
 local Async = require("modules/exp_util/async")
 
 local PermissionsGroups = {
@@ -91,8 +90,6 @@ local group = Groups.get_group_from_player(game.player)
 
 ]]
 function PermissionsGroups.get_group_from_player(player)
-    player = Game.get_player_from_any(player)
-    if not player then return end
     local group = player.permission_group
     if group then
         return PermissionsGroups.groups[group.name]
@@ -125,7 +122,6 @@ Groups.set_player_group(game.player, 'Admin')
 
 ]]
 function PermissionsGroups.set_player_group(player, group)
-    player = Game.get_player_from_any(player)
     group = PermissionsGroups.get_group_by_name(group)
     if not group or not player then return false end
     group:add_player(player)
@@ -285,7 +281,6 @@ group:add_player(game.player)
 
 ]]
 function PermissionsGroups._prototype:add_player(player)
-    player = Game.get_player_from_any(player)
     local group = self:get_raw()
     if not group or not player then return false end
     add_to_permission_group_async(group, player)
@@ -301,7 +296,6 @@ group:remove_player(game.player)
 
 ]]
 function PermissionsGroups._prototype:remove_player(player)
-    player = Game.get_player_from_any(player)
     local group = self:get_raw()
     if not group or not player then return false end
     remove_from_permission_group_async(group, player)

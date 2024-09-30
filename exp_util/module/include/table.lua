@@ -32,9 +32,9 @@ end
 local tbl = {}
 local values = {}
 for i = 1, 1000 do tbl[i] = i values[i] = i end
-table.array_insert(tbl, 500, values) -- around 0.4ms
+table.insert_array(tbl, 500, values) -- around 0.4ms
 ]]
-function table.array_insert(tbl, start_index, values)
+function table.insert_array(tbl, start_index, values)
     if not values then
         values = start_index
         start_index = nil
@@ -69,15 +69,15 @@ end
 local tbl = {}
 local tbl2 = {}
 for i = 1, 100 do tbl[i] = i tbl['_'..i] = i tbl2[i] = i tbl2['__'..i] = i end
-table.table_insert(tbl, 50, tbl2)
+table.insert_table(tbl, 50, tbl2)
 ]]
-function table.table_insert(tbl, start_index, tbl2)
+function table.insert_table(tbl, start_index, tbl2)
     if not tbl2 then
         tbl2 = start_index
         start_index = nil
     end
 
-    table.array_insert(tbl, start_index, tbl2)
+    table.insert_array(tbl, start_index, tbl2)
     for key, value in pairs(tbl2) do
         if not tonumber(key) then
             tbl[key] = value
@@ -111,11 +111,6 @@ function table.remove_index(tbl, index)
     tbl[index] = tbl[count]
     tbl[count] = nil
 end
-
---- Removes an item from an array in O(1) time. Does not guarantee the order of elements.
--- @tparam table tbl The array to remove the element from
--- @tparam number index Must be >= 0. The case where index > #tbl is handled.
-table.fast_remove = table.remove_index
 
 --- Return the key which holds this element element
 -- @tparam table tbl The table to search
@@ -428,7 +423,6 @@ table.deep_copy = table.deepcopy -- added by util
 table.deep_merge = util.merge
 
 --- Determines if two tables are structurally equal.
--- Notice: tables that are LuaObjects or contain LuaObjects won't be compared correctly, use == operator for LuaObjects
 -- @tparam table tbl1 The first table
 -- @tparam table tbl2 The second table
 -- @treturn boolean True if the tables are equal

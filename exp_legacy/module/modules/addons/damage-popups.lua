@@ -2,7 +2,7 @@
 -- also shows player health when a player is attacked
 -- @addon Damage-Popups
 
-local FloatingText = require("modules/exp_util/floating_text")
+local FlyingText = require("modules/exp_util/flying_text")
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local config = require("modules.exp_legacy.config.popup_messages") --- @dep config.popup_messages
 
@@ -31,11 +31,10 @@ Event.add(defines.events.on_entity_damaged, function(event)
 
     -- Outputs the message as floating text
     if message then
-        FloatingText.print(
-            entity.surface,
-            position,
-            message,
-            text_colour
-        )
+        FlyingText.create{
+            text = message,
+            position = position,
+            color = text_colour,
+        }
     end
 end)

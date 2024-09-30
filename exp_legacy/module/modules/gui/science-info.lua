@@ -4,15 +4,18 @@
     @alias science_info
 ]]
 
+local ExpUtil = require("modules/exp_util")
 local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.gui
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local config = require("modules.exp_legacy.config.gui.science") --- @dep config.gui.science
 local Production = require("modules.exp_legacy.modules.control.production") --- @dep modules.control.production
-local format_time = _C.format_time --- @dep expcore.common
 
-local null_time_short = { "science-info.eta-time", format_time(0, { hours = true, minutes = true, seconds = true, time = true, null = true }) }
-local null_time_long = format_time(0, { hours = true, minutes = true, seconds = true, long = true, null = true })
+local clock_time_format = ExpUtil.format_time_factory_locale{ format = "clock", hours = true, minutes = true, seconds = true }
+local long_time_format = ExpUtil.format_time_factory_locale{ format = "long", hours = true, minutes = true, seconds = true }
+
+local null_time_clock = { "science-info.eta-time", clock_time_format(nil) }
+local null_time_long = long_time_format(nil)
 
 --- Data label that contains the value and the surfix
 -- @element production_label
@@ -235,16 +238,18 @@ local function get_eta_label_data(player)
     -- Return the caption and tooltip
     return limit and limit > 0 and {
         research = true,
-        caption = format_time(limit, { hours = true, minutes = true, seconds = true, time = true }),
-        tooltip = format_time(limit, { hours = true, minutes = true, seconds = true, long = true }),
-    } or { research = false }
+        caption = clock_time_format(limit),
+        tooltip = long_time_format(limit),
+    } or {
+        research = false
+    }
 end
 
 -- Updates the eta label
 local function update_eta_label(element, eta_label_data)
     -- If no research selected show null
     if not eta_label_data.research then
-        element.caption = null_time_short
+        element.caption = null_time_clock
         element.tooltip = null_time_long
         return
     end
@@ -293,7 +298,7 @@ local science_info_container =
                 footer.add{
                     name = "label",
                     type = "label",
-                    caption = null_time_short,
+                    caption = null_time_clock,
                     tooltip = null_time_long,
                     style = "frame_title",
                 }

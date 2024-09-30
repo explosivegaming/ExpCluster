@@ -24,10 +24,9 @@
 
 ]]
 
-local Game = require("modules.exp_legacy.utils.game") --- @dep utils.game
 local Storage = require("modules/exp_util/storage")
 
-local valid_player = Game.get_player_from_any
+local valid_player = function(p) return type(p) == "userdata" and p or game.get_player(p) end
 
 local Reports = {
     user_reports = {}, -- stores all user reports, global table

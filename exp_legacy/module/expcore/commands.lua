@@ -185,7 +185,8 @@ end)
 
 ]]
 
-local player_return, write_json = _C.player_return, _C.write_json --- @dep expcore.common
+local ExpUtil = require("modules/exp_util")
+local write_json = ExpUtil.write_json --- @dep expcore.common
 local trace = debug.traceback
 
 local Commands = {
@@ -203,11 +204,28 @@ local Commands = {
     authenticators = {},
     --- Used to store default functions which are common parse function such as player or number in range
     parsers = {},
-    --- Returns a value to the player, different to success as this does not signal the end of your command
-    print = player_return,
     --- The command prototype which stores all command defining functions
     _prototype = {},
 }
+
+local Colours = ExpUtil.color
+--- This is copied in so that _C.player_return can be removed
+--- Returns a value to the player, different to success as this does not signal the end of your command
+function Commands.print(value, colour, player)
+    colour = type(colour) == "table" and colour or Colours[colour] ~= Colours.white and Colours[colour] or Colours.white
+    player = player or game.player
+    local output = ExpUtil.format_any(value)
+    if player then
+        player = type(player) == "userdata" and player or game.get_player(player)
+        if not player then error("Invalid Player given to Commands.print", 2) end
+        player.print(output, {
+            color = colour,
+            sound_path = "utility/scenario_message",
+        })
+    else
+        rcon.print(output)
+    end
+end
 
 --- Authentication.
 -- Functions that control who can use commands
@@ -658,8 +676,8 @@ return 'Your message has been printed'
 
 ]]
 function Commands.success(value)
-    if value ~= nil then player_return(value) end
-    player_return({ "expcore-commands.command-ran" }, "cyan")
+    if value ~= nil then Commands.print(value) end
+    Commands.print({ "expcore-commands.command-ran" }, "cyan")
     return Commands.defines.success
 end
 
@@ -685,7 +703,7 @@ return Commands.error('The player you selected is offline')
 ]]
 function Commands.error(error_message, play_sound)
     error_message = error_message or ""
-    player_return({ "expcore-commands.command-fail", error_message }, "orange_red")
+    Commands.print({ "expcore-commands.command-fail", error_message }, "orange_red")
     if play_sound ~= false then
         play_sound = play_sound or "utility/wire_pickup"
         if game.player then game.player.play_sound{ path = play_sound } end

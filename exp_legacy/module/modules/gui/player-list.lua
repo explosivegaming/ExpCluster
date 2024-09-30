@@ -5,13 +5,12 @@
 ]]
 
 -- luacheck:ignore 211/Colors
+local ExpUtil = require("modules/exp_util")
 local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local Datastore = require("modules.exp_legacy.expcore.datastore") --- @dep expcore.datastore
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local config = require("modules.exp_legacy.config.gui.player_list_actions") --- @dep config.gui.player_list_actions
-local Colors = require("modules/exp_util/include/color")
-local format_time = _C.format_time --- @dep expcore.common
 
 --- Stores all data for the warp gui
 local PlayerListData = Datastore.connect("PlayerListData")
@@ -261,12 +260,15 @@ Gui.left_toolbar_button("entity/character", { "player-list.main-tooltip" }, play
     return Roles.player_allowed(player, "gui/player-list")
 end)
 
+local online_time_format = ExpUtil.format_time_factory_locale{ format = "short", hours = true, minutes = true }
+local afk_time_format = ExpUtil.format_time_factory_locale{ format = "long", minutes = true }
+
 -- Get caption and tooltip format for a player
 local function get_time_formats(online_time, afk_time)
     local tick = game.tick > 0 and game.tick or 1
     local percent = math.round(online_time / tick, 3) * 100
-    local caption = format_time(online_time)
-    local tooltip = { "player-list.afk-time", percent, format_time(afk_time, { minutes = true, long = true }) }
+    local caption = online_time_format(online_time)
+    local tooltip = { "player-list.afk-time", percent, afk_time_format(afk_time) }
     return caption, tooltip
 end
 
@@ -333,7 +335,7 @@ local function get_player_list_order()
             index=0-i,
             tag='',
             role_name = 'Fake Player',
-            chat_color = table.get_random_dictionary_entry(Colors),
+            chat_color = table.get_random(Colors),
             caption = caption,
             tooltip = tooltip
         }

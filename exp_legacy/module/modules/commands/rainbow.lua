@@ -3,8 +3,9 @@
     @commands Rainbow
 ]]
 
+local ExpUtil = require("modules/exp_util")
 local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
-local format_chat_colour = _C.format_chat_colour --- @dep expcore.common
+local format_chat_colour = ExpUtil.format_rich_text_color --- @dep expcore.common
 
 local function step_component(c1, c2)
     if c1 < 0 then

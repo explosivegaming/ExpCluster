@@ -3,13 +3,14 @@
     @commands Interface
 ]]
 
-local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+local ExpUtil = require("modules/exp_util")
 local Storage = require("modules/exp_util/storage")
+local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
 
 -- modules that are loaded into the interface env to be accessed
 local interface_modules = {
     ["Commands"] = Commands,
-    ["output"] = _C.player_return,
+    ["output"] = Commands.print,
     ["Group"] = "expcore.permission_groups",
     ["Roles"] = "expcore.roles",
     ["Gui"] = "expcore.gui",
@@ -20,7 +21,7 @@ local interface_modules = {
 -- loads all the modules given in the above table
 for key, value in pairs(interface_modules) do
     if type(value) == "string" then
-        interface_modules[key] = _C.opt_require(value)
+        interface_modules[key] = ExpUtil.optional_require(value)
     end
 end
 

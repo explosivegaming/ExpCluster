@@ -4,10 +4,10 @@
     @alias vlayer
 ]]
 
+local ExpUtil = require("modules/exp_util")
 local Storage = require("modules/exp_util/storage")
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local config = require("modules.exp_legacy.config.vlayer") --- @dep config.vlayer
-local move_items_stack = _C.move_items_stack
 
 local mega = 1000000
 
@@ -682,13 +682,25 @@ function vlayer.remove_interface(surface, position)
 
     -- Return the type of interface removed and do some clean up
     if name == "logistic-chest-storage" then
-        move_items_stack(interface.get_inventory(defines.inventory.chest).get_contents())
+        local inventory = assert(interface.get_inventory(defines.inventory.chest))
+        ExpUtil.transfer_inventory_to_surface{
+            inventory = inventory,
+            surface = interface.surface,
+            name = "iron-chest",
+            allow_creation = true,
+        }
         table.remove_element(vlayer_data.entity_interfaces.storage_input, interface)
         interface.destroy()
 
         return "storage-input", pos
     elseif name == "logistic-chest-requester" then
-        move_items_stack(interface.get_inventory(defines.inventory.chest).get_contents())
+        local inventory = assert(interface.get_inventory(defines.inventory.chest))
+        ExpUtil.transfer_inventory_to_surface{
+            inventory = inventory,
+            surface = interface.surface,
+            name = "iron-chest",
+            allow_creation = true,
+        }
         table.remove_element(vlayer_data.entity_interfaces.storage_output, interface)
         interface.destroy()
 

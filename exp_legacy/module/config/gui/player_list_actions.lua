@@ -5,13 +5,14 @@
 -- the key used for the name of the button is the permission name used by the role system;
 -- @config Player-List
 
+local ExpUtil = require("modules/exp_util")
 local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local Reports = require("modules.exp_legacy.modules.control.reports") --- @dep modules.control.reports
 local Warnings = require("modules.exp_legacy.modules.control.warnings") --- @dep modules.control.warnings
 local Jail = require("modules.exp_legacy.modules.control.jail") --- @dep modules.control.jail
 local Colors = require("modules/exp_util/include/color")
-local format_chat_player_name = _C.format_chat_player_name --- @dep expcore.common
+local format_player_name = ExpUtil.format_player_name_locale --- @dep expcore.common
 
 local SelectedPlayer, SelectedAction
 local function set_datastores(player, action)
@@ -31,7 +32,7 @@ end
 local function get_action_player_name(player)
     local selected_player_name = SelectedPlayer:get(player)
     local selected_player = game.players[selected_player_name]
-    local selected_player_color = format_chat_player_name(selected_player)
+    local selected_player_color = format_player_name(selected_player)
     return selected_player_name, selected_player_color
 end
 
@@ -98,7 +99,7 @@ local report_player = new_button("utility/spawn_flag", { "player-list.report-pla
 
 local function report_player_callback(player, reason)
     local selected_player_name, selected_player_color = get_action_player_name(player)
-    local by_player_name_color = format_chat_player_name(player)
+    local by_player_name_color = format_player_name(player)
     game.print{ "expcom-report.non-admin", selected_player_color, reason }
     Roles.print_to_roles_higher("Trainee", { "expcom-report.admin", selected_player_color, by_player_name_color, reason })
     Reports.report_player(selected_player_name, player.name, reason)
@@ -113,7 +114,7 @@ local warn_player = new_button("utility/spawn_flag", { "player-list.warn-player"
 
 local function warn_player_callback(player, reason)
     local selected_player_name, selected_player_color = get_action_player_name(player)
-    local by_player_name_color = format_chat_player_name(player)
+    local by_player_name_color = format_player_name(player)
     game.print{ "expcom-warnings.received", selected_player_color, by_player_name_color, reason }
     Warnings.add_warning(selected_player_name, player.name, reason)
 end
@@ -132,7 +133,7 @@ local jail_player = new_button("utility/multiplayer_waiting_icon", { "player-lis
 
 local function jail_player_callback(player, reason)
     local selected_player_name, selected_player_color = get_action_player_name(player)
-    local by_player_name_color = format_chat_player_name(player)
+    local by_player_name_color = format_player_name(player)
     game.print{ "expcom-jail.give", selected_player_color, by_player_name_color, reason }
     Jail.jail_player(selected_player_name, player.name, reason)
 end

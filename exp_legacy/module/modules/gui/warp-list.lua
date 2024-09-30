@@ -4,6 +4,7 @@
     @alias warp_list
 ]]
 
+local ExpUtil = require("modules/exp_util")
 local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
 local Datastore = require("modules.exp_legacy.expcore.datastore") --- @dep expcore.datastore
 local Storage = require("modules/exp_util/storage")
@@ -12,7 +13,8 @@ local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local Colors = require("modules/exp_util/include/color")
 local config = require("modules.exp_legacy.config.gui.warps") --- @dep config.gui.warps
 local Warps = require("modules.exp_legacy.modules.control.warps") --- @dep modules.control.warps
-local format_time, player_return = _C.format_time, _C.player_return --- @dep expcore.common
+
+local format_time = ExpUtil.format_time_factory_locale{ format = "short", hours = true, minutes = true }
 
 --- Stores all data for the warp gui
 local WrapGuiData = Datastore.connect("WrapGuiData")
@@ -94,7 +96,10 @@ local add_new_warp =
         -- Check if the warp is too close to water
         local water_tiles = surface.find_tiles_filtered{ collision_mask = "water-tile", radius = config.standard_proximity_radius + 1, position = position }
         if #water_tiles > 0 then
-            player_return({ "expcore-commands.command-fail", { "warp-list.too-close-to-water", config.standard_proximity_radius + 1 } }, "orange_red", player)
+            player.print(
+                { "expcore-commands.command-fail", { "warp-list.too-close-to-water", config.standard_proximity_radius + 1 } },
+                { color = Colors.orange_red }
+            )
             if game.player then game.player.play_sound{ path = "utility/wire_pickup" } end
             for _, tile in pairs(water_tiles) do
                 rendering.draw_sprite{
@@ -121,7 +126,10 @@ local add_new_warp =
         }
         -- Remove 1 because that is the current player
         if #entities > 1 then
-            player_return({ "expcore-commands.command-fail", { "warp-list.too-close-to-entities", config.standard_proximity_radius + 2.5 } }, "orange_red", player)
+            player.print(
+                { "expcore-commands.command-fail", { "warp-list.too-close-to-entities", config.standard_proximity_radius + 2.5 } },
+                { color = Colors.orange_red }
+            )
             if game.player then game.player.play_sound{ path = "utility/wire_pickup" } end
             local character = player.character
             for _, entity in pairs(entities) do

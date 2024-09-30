@@ -3,6 +3,7 @@
 @module Gui
 ]]
 
+local ExpUtil = require("modules/exp_util")
 local Gui = require("modules.exp_legacy.expcore.gui.prototype")
 local mod_gui = require "mod-gui"
 
@@ -38,7 +39,7 @@ example_flow_with_button:add_to_left_flow(true)
 
 ]]
 function Gui._prototype_element:add_to_left_flow(open_on_join)
-    _C.error_if_runtime()
+    ExpUtil.assert_not_runtime()
     if not self.name then error("Elements for the top flow must have a static name") end
     self.open_on_join = open_on_join or false
     table.insert(Gui.left_elements, self)

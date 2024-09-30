@@ -19,6 +19,7 @@ see ./expcore/commands.lua for more details
     surface
 ]]
 
+local ExpUtil = require("modules/exp_util")
 local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
 
 -- luacheck:ignore 212/player
@@ -37,7 +38,7 @@ end)
 
 Commands.add_parse("string-options", function(input, player, reject, options)
     if not input then return end -- nil check
-    local option = _C.auto_complete(options, input)
+    local option = ExpUtil.auto_complete(options, input)
     return option or reject{ "expcore-commands.reject-string-options", table.concat(options, ", ") }
 end)
 

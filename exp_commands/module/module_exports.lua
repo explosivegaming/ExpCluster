@@ -364,9 +364,11 @@ function Commands.print(message, color, sound)
     if not player then
         rcon.print(ExpUtil.format_any(message))
     else
-        local formatted = ExpUtil.format_any(message, nil, 20)
-        player.print(formatted, color or Color.white)
-        player.play_sound{ path = sound or "utility/scenario_message" }
+        local formatted = ExpUtil.format_any(message, { max_line_count = 20 })
+        player.print(formatted, {
+            color = color or Color.white,
+            sound_path = sound or "utility/scenario_message",
+        })
     end
 end
 

@@ -23,7 +23,7 @@ function Public.show(container)
     local left_panel_style = left_panel.style
     left_panel_style.width = 300
 
-    for name in pairs(table.keysort(Datastore.debug())) do
+    for name in pairs(table.key_sort(Datastore.debug())) do
         local header = left_panel.add{ type = "flow" }.add{ type = "label", name = header_name, caption = name }
         Gui.set_data(header, name)
     end
@@ -69,7 +69,7 @@ Gui.on_click(
     header_name,
     function(event)
         local element = event.element
-        local tableName = Gui.get_data(element)
+        local table_name = Gui.get_data(element)
 
         local left_panel = element.parent.parent
         local data = Gui.get_data(left_panel)
@@ -84,10 +84,10 @@ Gui.on_click(
         element.style.font_color = Color.orange
         data.selected_header = element
 
-        input_text_box.text = tableName
+        input_text_box.text = table_name
         input_text_box.style.font_color = Color.black
 
-        local content = Datastore.debug(tableName)
+        local content = Datastore.debug(table_name)
         local content_string = {}
         for key, value in pairs(content) do
             content_string[#content_string + 1] = key:gsub("^%l", string.upper) .. " = " .. dump(value)

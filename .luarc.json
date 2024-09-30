@@ -1,9 +1,8 @@
 {
     "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
     "completion.requireSeparator": "/",
-    "doc.privateName": [ "__" ],
-    "doc.protectedName": [ "_" ],
-    "runtime.version": "Lua 5.2",
+    "doc.privateName": [ "__(\\w+)" ],
+    "doc.protectedName": [ "_(\\w+)" ],
     "runtime.pluginArgs": [
         "--clusterio-modules"
     ],
@@ -40,7 +39,15 @@
             "type" : "pattern",
             "param": "_?_?(\\w+)",
             "$1": "snake_case"
-        }, "pascal_case"],
+        }, {
+            "type" : "pattern",
+            "param": "_?_?(\\w+)",
+            "$1": "upper_snake_case"
+        }, {
+            "type" : "pattern",
+            "param": "_?_?(\\w+)",
+            "$1": "pascal_case"
+        }],
         "function_param_name_style": [{
             "type" : "pattern",
             "param": "_?_?(\\w+)?",
@@ -62,9 +69,14 @@
             "$1": "snake_case"
         }],
         "global_variable_name_style": [{
-            "type": "ignore",
-            "param": ["_VERSION"]
-        }, "snake_case", "upper_snake_case" ],
+            "type" : "pattern",
+            "param": "_?_?(\\w+)",
+            "$1": "snake_case"
+        }, {
+            "type" : "pattern",
+            "param": "_?_?(\\w+)",
+            "$1": "upper_snake_case"
+        }],
         "module_name_style": [ "pascal_case", "snake_case" ],
         "require_module_name_style": [ "pascal_case", "snake_case" ],
         "class_name_style": "pascal_case",

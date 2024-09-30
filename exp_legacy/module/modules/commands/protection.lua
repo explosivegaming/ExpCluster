@@ -3,11 +3,12 @@
     @commands Protection
 ]]
 
+local ExpUtil = require("modules/exp_util")
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Storage = require("modules/exp_util/storage")
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
-local format_chat_player_name = _C.format_chat_player_name --- @dep expcore.common
+local format_player_name = ExpUtil.format_player_name_locale --- @dep expcore.common
 local EntityProtection = require("modules.exp_legacy.modules.control.protection") --- @dep modules.control.protection
 local Selection = require("modules.exp_legacy.modules.control.selection") --- @dep modules.control.selection
 
@@ -215,6 +216,6 @@ end)
 
 --- When there is a repeat offence print it in chat
 Event.add(EntityProtection.events.on_repeat_violation, function(event)
-    local player_name = format_chat_player_name(event.player_index)
+    local player_name = format_player_name(event.player_index)
     Roles.print_to_roles_higher("Regular", { "expcom-protection.repeat-offence", player_name, event.entity.localised_name, event.entity.position.x, event.entity.position.y })
 end)

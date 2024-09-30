@@ -4,13 +4,13 @@
     @alias readme
 ]]
 
+local ExpUtil = require("modules/exp_util")
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
 local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
 local External = require("modules.exp_legacy.expcore.external") --- @dep expcore.external
-local format_time = _C.format_time --- @dep expcore.common
 local format_number = require("util").format_number --- @dep util
 
 local tabs = {}
@@ -109,6 +109,8 @@ local join_server =
         External.request_connection(player, server_id, true)
     end)
 
+local welcome_time_format = ExpUtil.format_time_factory_locale{ format = "long", days = true, hours = true, minutes = true }
+
 --- Content area for the welcome tab
 -- @element welcome_content
 define_tab({ "readme.welcome-tab" }, { "readme.welcome-tooltip" },
@@ -139,7 +141,7 @@ define_tab({ "readme.welcome-tab" }, { "readme.welcome-tooltip" },
 
         -- Add the other information to the gui
         container.add{ type = "flow" }.style.height = 4
-        local online_time = format_time(game.tick, { days = true, hours = true, minutes = true, long = true })
+        local online_time = welcome_time_format(game.tick)
         Gui.centered_label(sub_content(container), frame_width, { "readme.welcome-general", server_details.reset_time, online_time })
         Gui.centered_label(sub_content(container), frame_width, { "readme.welcome-roles", table.concat(role_names, ", ") })
         Gui.centered_label(sub_content(container), frame_width, { "readme.welcome-chat" })

@@ -16,10 +16,9 @@
     Jail.unjail_player('MrBiter', 'Cooldude2606')
 ]]
 
-local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
-local Game = require("modules.exp_legacy.utils.game") --- @dep utils.game
+local Roles = require("modules.exp_legacy.expcore.roles")
 
-local valid_player = Game.get_player_from_any
+local valid_player = function(p) return type(p) == "userdata" and p or game.get_player(p) end
 local assign_roles = Roles.assign_player
 local unassign_roles = Roles.unassign_player
 local has_role = Roles.player_has_role
@@ -65,7 +64,7 @@ end
 -- @tparam LuaPlayer player the player to check if they are in jail
 -- @treturn boolean whether the player is currently in jail
 function Jail.is_jailed(player)
-    return has_role(player, "Jail")
+    return has_role(valid_player(player), "Jail")
 end
 
 --- Moves a player to jail and removes all other roles

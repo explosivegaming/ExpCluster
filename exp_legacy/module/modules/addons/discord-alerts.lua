@@ -1,12 +1,14 @@
 --- Sends alert messages to our discord server when certain events are triggered
 -- @addon Discord-Alerts
 
+local ExpUtil = require("modules/exp_util")
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Colors = require("modules/exp_util/include/color")
-local write_json, format_time = _C.write_json, _C.format_time --- @dep expcore.common
 local config = require("modules.exp_legacy.config.discord_alerts") --- @dep config.discord_alerts
+local write_json = ExpUtil.write_json
 
-local playtime_format = { hours = true, minutes = true, short = true, string = true }
+local playtime_format = ExpUtil.format_time_factory{ format = "short", hours = true, minutes = true, seconds = true }
+local emit_event_time_format = ExpUtil.format_time_factory{ format = "short", hours = true, minutes = true }
 
 local function append_playtime(player_name)
     if not config.show_playtime then
@@ -19,7 +21,7 @@ local function append_playtime(player_name)
         return player_name
     end
 
-    return player.name .. " (" .. format_time(player.online_time, playtime_format) .. ")"
+    return player.name .. " (" .. playtime_format(player.online_time) .. ")"
 end
 
 local function get_player_name(event)
@@ -48,7 +50,7 @@ local function emit_event(args)
     end
 
     local tick = args.tick or game.tick
-    local tick_formatted = format_time(tick, { days = false, hours = true, minutes = true, short = true, string = true })
+    local tick_formatted = emit_event_time_format(tick)
 
     local players_online = 0
     local admins_online = 0

@@ -108,13 +108,14 @@ Roles.define_role_order{
 
 ]]
 
+local ExpUtil = require("modules/exp_util")
 local Async = require("modules/exp_util/async")
 local Storage = require("modules/exp_util/storage")
-local Game = require("modules.exp_legacy.utils.game") --- @dep utils.game
-local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
-local Groups = require("modules.exp_legacy.expcore.permission_groups") --- @dep expcore.permission_groups
-local Colours = require("modules/exp_util/include/color")
-local write_json = _C.write_json --- @dep expcore.common
+local Event = require("modules/exp_legacy/utils/event")
+local Groups = require("modules.exp_legacy.expcore.permission_groups")
+
+local Colours = ExpUtil.color
+local write_json = ExpUtil.write_json
 
 local Roles = {
     _prototype = {},
@@ -319,7 +320,6 @@ local roles = Roles.get_player_roles(game.player)
 
 ]]
 function Roles.get_player_roles(player)
-    player = Game.get_player_from_any(player)
     if not player then return { Roles.config.roles[Roles.config.internal.root] } end
     local roles = Roles.config.players[player.name] or {}
     local default = Roles.config.roles[Roles.config.internal.default]
@@ -370,9 +370,8 @@ Roles.assign_player('Cooldude2606',  'Moderator', nil, true)
 
 ]]
 function Roles.assign_player(player, roles, by_player_name, skip_checks, silent)
-    local valid_player = Game.get_player_from_any(player)
+    local valid_player = type(player) == "userdata" and player or game.get_player(player)
     if not skip_checks and not valid_player then return end
-    if not player then return end
 
     -- Convert the roles into a table (allows for optional array)
     if type(roles) ~= "table" or roles.name then
@@ -387,7 +386,7 @@ function Roles.assign_player(player, roles, by_player_name, skip_checks, silent)
     end
 
     -- If the player has a role that needs to defer the role changes, save the roles that need to be assigned later into a table
-    if valid_player and Roles.player_has_flag(player, "defer_role_changes") then
+    if valid_player and Roles.player_has_flag(valid_player, "defer_role_changes") then
         local assign_later = Roles.config.deferred_roles[valid_player.name] or {}
         for _, role in ipairs(role_objects) do
             local role_change = assign_later[role.name]
@@ -432,7 +431,7 @@ Roles.unassign_player('Cooldude2606',  'Moderator', nil, true)
 
 ]]
 function Roles.unassign_player(player, roles, by_player_name, skip_checks, silent)
-    local valid_player = Game.get_player_from_any(player)
+    local valid_player = type(player) == "userdata" and player or game.get_player(player)
     if not skip_checks and not valid_player then return end
     if not player then return end
 
@@ -626,7 +625,7 @@ Roles.define_role_order{
 ]]
 function Roles.define_role_order(order)
     -- Clears and then rebuilds the order table
-    _C.error_if_runtime()
+    ExpUtil.assert_not_runtime()
     Roles.config.order = {}
     local done = {}
     for index, role in ipairs(order) do
@@ -711,7 +710,7 @@ local role = Roles.new_role('Moderator', 'Mod')
 
 ]]
 function Roles.new_role(name, short_hand)
-    _C.error_if_runtime()
+    ExpUtil.assert_not_runtime()
     if Roles.config.roles[name] then return error("Role name is non unique") end
     local role = setmetatable({
         name = name,
@@ -885,7 +884,7 @@ role:set_permission_group('Admin')
 
 ]]
 function Roles._prototype:set_permission_group(name, use_factorio_api)
-    _C.error_if_runtime()
+    ExpUtil.assert_not_runtime()
     if use_factorio_api then
         self.permission_group = { true, name }
     else
@@ -906,7 +905,7 @@ role:set_parent('Guest')
 
 ]]
 function Roles._prototype:set_parent(role)
-    _C.error_if_runtime()
+    ExpUtil.assert_not_runtime()
     self.parent = role
     role = Roles.get_role_from_any(role)
     if not role then return self end
@@ -926,7 +925,7 @@ end)
 
 ]]
 function Roles._prototype:set_auto_assign_condition(callback)
-    _C.error_if_runtime()
+    ExpUtil.assert_not_runtime()
     self.auto_assign_condition = true
     Roles.config.auto_assign[self.name] = callback
     return self
@@ -972,7 +971,7 @@ role:add_player(game.player)
 
 ]]
 function Roles._prototype:add_player(player, skip_check, skip_event)
-    local valid_player = Game.get_player_from_any(player)
+    local valid_player = type(player) == "userdata" and player or game.get_player(player)
     -- Default role cant have players added or removed
     if self.name == Roles.config.internal.default then return end
     -- Check the player is valid, can be skipped but a name must be given
@@ -1013,7 +1012,7 @@ role:remove_player(game.player)
 
 ]]
 function Roles._prototype:remove_player(player, skip_check, skip_event)
-    local valid_player = Game.get_player_from_any(player)
+    local valid_player = type(player) == "userdata" and player or game.get_player(player)
     -- Default role cant have players added or removed
     if self.name == Roles.config.internal.default then return end
     -- Check the player is valid, can be skipped but a name must be given

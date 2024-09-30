@@ -3,13 +3,16 @@
     @gui Task-List
     @alias task_list
 ]]
+
+local ExpUtil = require("modules/exp_util")
 local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local Datastore = require("modules.exp_legacy.expcore.datastore") --- @dep expcore.datastore
 local config = require("modules.exp_legacy.config.gui.tasks") --- @dep config.gui.tasks
 local Tasks = require("modules.exp_legacy.modules.control.tasks") --- @dep modules.control.tasks
-local format_time = _C.format_time --- @dep expcore.common
+
+local format_time = ExpUtil.format_time_factory_locale{ format = "short", hours = true, minutes = true }
 
 --- Stores all data for the task gui by player
 local TaskGuiData = Datastore.connect("TaskGuiData")

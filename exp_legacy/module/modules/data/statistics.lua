@@ -1,7 +1,7 @@
+local ExpUtil = require("modules/exp_util")
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Storage = require("modules/exp_util/storage") --- @dep utils.global
 local config = require("modules.exp_legacy.config.statistics") --- @dep config.statistics
-local format_time = _C.format_time
 local floor = math.floor
 local afk_required = 5 * 3600 -- 5 minutes
 
@@ -46,25 +46,8 @@ Statistics:on_load(function(player_name, player_statistics)
     return player_statistics
 end)
 
---- Used to format time in minute format
-local function format_minutes(value)
-    return format_time(value * 3600, {
-        long = true,
-        hours = true,
-        minutes = true,
-    })
-end
-
---- Used to format time into a clock
-local function format_clock(value)
-    return format_time(value * 3600, {
-        hours = true,
-        minutes = true,
-        seconds = false,
-        time = false,
-        string = true,
-    })
-end
+local long_time_format = ExpUtil.format_time_factory_locale{ format = "long", coefficient = 3600, hours = true, minutes = true }
+local short_time_format = ExpUtil.format_time_factory_locale{ format = "short", coefficient = 3600, hours = true, minutes = true }
 
 --- Add MapsPlayed if it is enabled
 if config.MapsPlayed then
@@ -80,11 +63,11 @@ if config.Playtime or config.AfkTime then
     local playtime, afk_time
     if config.Playtime then
         playtime = Statistics:combine("Playtime")
-        playtime:set_metadata{ stringify = format_minutes, stringify_short = format_clock }
+        playtime:set_metadata{ stringify = long_time_format, stringify_short = short_time_format }
     end
     if config.AfkTime then
         afk_time = Statistics:combine("AfkTime")
-        afk_time:set_metadata{ stringify = format_minutes, stringify_short = format_clock }
+        afk_time:set_metadata{ stringify = long_time_format, stringify_short = short_time_format }
     end
     Event.on_nth_tick(3600, function()
         if game.tick == 0 then return end

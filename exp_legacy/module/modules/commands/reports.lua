@@ -3,10 +3,11 @@
     @commands Reports
 ]]
 
+local ExpUtil = require("modules/exp_util")
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
 local Reports = require("modules.exp_legacy.modules.control.reports") --- @dep modules.control.reports
-local format_chat_player_name = _C.format_chat_player_name --- @dep expcore.common
+local format_player_name = ExpUtil.format_player_name_locale --- @dep expcore.common
 require("modules.exp_legacy.config.expcore.command_general_parse")
 
 --- Print a message to all players who match the value of admin
@@ -38,8 +39,8 @@ Commands.new_command("report", { "expcom-report.description-report" }, "Reports 
     :add_alias("report-player")
     :enable_auto_concat()
     :register(function(player, action_player, reason)
-        local action_player_name_color = format_chat_player_name(action_player)
-        local by_player_name_color = format_chat_player_name(player)
+        local action_player_name_color = format_player_name(action_player)
+        local by_player_name_color = format_player_name(player)
         if Reports.report_player(action_player, player.name, reason) then
             print_to_players(false, { "expcom-report.non-admin", action_player_name_color, reason })
             print_to_players(true, { "expcom-report.admin", action_player_name_color, by_player_name_color, reason })
@@ -58,17 +59,17 @@ Commands.new_command("get-reports", { "expcom-report.description-get-reports" },
     :register(function(_, player)
         if player then
             local reports = Reports.get_reports(player)
-            local player_name_color = format_chat_player_name(player)
+            local player_name_color = format_player_name(player)
             Commands.print{ "expcom-report.player-report-title", player_name_color }
             for player_name, reason in pairs(reports) do
-                local by_player_name_color = format_chat_player_name(player_name)
+                local by_player_name_color = format_player_name(player_name)
                 Commands.print{ "expcom-report.list", by_player_name_color, reason }
             end
         else
             local user_reports = Reports.user_reports
             Commands.print{ "expcom-report.player-count-title" }
             for player_name in pairs(user_reports) do
-                local player_name_color = format_chat_player_name(player_name)
+                local player_name_color = format_player_name(player_name)
                 local report_count = Reports.count_reports(player_name)
                 Commands.print{ "expcom-report.list", player_name_color, report_count }
             end
@@ -92,7 +93,7 @@ Commands.new_command("clear-reports", { "expcom-report.description-clear-reports
                 return Commands.error{ "expcom-report.not-reported" }
             end
         end
-        local action_player_name_color = format_chat_player_name(action_player)
-        local by_player_name_color = format_chat_player_name(player)
+        local action_player_name_color = format_player_name(action_player)
+        local by_player_name_color = format_player_name(player)
         game.print{ "expcom-report.removed", action_player_name_color, by_player_name_color }
     end)

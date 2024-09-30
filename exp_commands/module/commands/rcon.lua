@@ -22,12 +22,14 @@ setmetatable(rcon_statics, { __index = _G })
 setmetatable(rcon_env, { __index = rcon_statics })
 
 --- Some common static values which can be added now
+--- @diagnostic disable: name-style-check
 rcon_statics.Async = Async
 rcon_statics.ExpUtil = ExpUtil
 rcon_statics.Commands = Commands
 rcon_statics.Clustorio = Clustorio
 rcon_statics.output = Commands.print
 rcon_statics.ipc = Clustorio.send_json
+--- @diagnostic enable: name-style-check
 
 --- Some common callback values which are useful when a player uses the command
 function rcon_callbacks.player(player) return player end

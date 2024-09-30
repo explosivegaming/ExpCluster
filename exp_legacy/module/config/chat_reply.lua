@@ -47,7 +47,7 @@ return {
                 end
             end
 
-            return { "chat-bot.afk", max.name, ExpUtil.format_locale_time(max.afk_time, "long", afk_time_units) }
+            return { "chat-bot.afk", max.name, ExpUtil.format_time_locale(max.afk_time, "long", afk_time_units) }
         end,
         ["players"] = function(_player, _is_command)
             return { "chat-bot.players", #game.players }
@@ -70,7 +70,7 @@ return {
                 names[#names + 1] = next_player.name
             end
 
-            return { "chat-bot.blame", table.get_random_dictionary_entry(names) }
+            return { "chat-bot.blame", table.get_random(names) }
         end,
         ["magic"] = { "chat-bot.magic" },
         ["aids"] = { "chat-bot.aids" },
@@ -78,7 +78,7 @@ return {
         ["lenny"] = { "chat-bot.lenny" },
         ["hodor"] = function(_player, _is_command)
             local options = { "?", ".", "!", "!!!" }
-            return { "chat-bot.hodor", table.get_random_dictionary_entry(options) }
+            return { "chat-bot.hodor", table.get_random(options) }
         end,
         ["evolution"] = function(_player, _is_command)
             return { "chat-bot.current-evolution", string.format("%.2f", game.forces["enemy"].evolution_factor) }

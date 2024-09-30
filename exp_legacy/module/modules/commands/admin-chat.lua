@@ -3,8 +3,9 @@
     @commands Admin-Chat
 ]]
 
+local ExpUtil = require("modules/exp_util")
 local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
-local format_chat_player_name = _C.format_chat_player_name --- @dep expcore.common
+local format_player_name = ExpUtil.format_player_name_locale --- @dep expcore.common
 require("modules.exp_legacy.config.expcore.command_general_parse")
 
 --- Sends a message in chat that only admins can see
@@ -16,7 +17,7 @@ Commands.new_command("admin-chat", { "expcom-admin-chat.description" }, "Sends a
     :set_flag("admin_only")
     :add_alias("ac")
     :register(function(player, message)
-        local player_name_colour = format_chat_player_name(player)
+        local player_name_colour = format_player_name(player)
         for _, return_player in pairs(game.connected_players) do
             if return_player.admin then
                 return_player.print{ "expcom-admin-chat.format", player_name_colour, message }

@@ -4,15 +4,13 @@
     @alias autofill
 ]]
 
-local FloatingText = require("modules/exp_util/floating_text")
+local FlyingText = require("modules/exp_util/flying_text")
 local Gui = require("modules.exp_legacy.expcore.gui") -- @dep expcore.gui
 local Roles = require("modules.exp_legacy.expcore.roles") -- @dep expcore.gui
 local Storage = require("modules/exp_util/storage") -- @dep utils.global
 local config = require("modules.exp_legacy.config.gui.autofill") -- @dep config.gui.autofill
 local Event = require("modules/exp_legacy/utils/event") -- @dep utils.event
 local table = require("modules.exp_legacy.overrides.table") -- @dep overrides.table
-
-local print_text = FloatingText.print -- (surface, position, text, color)
 
 --- Table that stores if autofill is enabled or not
 local autofill_player_settings = {}
@@ -324,7 +322,6 @@ local function entity_build(event)
     -- Get the inventory of the player
     local player_inventory = player.get_main_inventory() --- @cast player_inventory -nil
 
-    local text_position = { x = entity.position.x, y = entity.position.y }
     -- Loop over all possible items to insert into the entity
     for _, item in pairs(entity_settings.items) do
         -- Check if the item is enabled or goto next item
@@ -338,7 +335,6 @@ local function entity_build(event)
         local item_amount = player_inventory.get_item_count(item.name)
         if item_amount ~= 0 then
             local inserted
-            text_position.y = text_position.y - 0.5
             local color = { r = 0, g = 255, b = 0, a = 1 }
             if item_amount >= preferd_amount then
                 -- Can item be inserted? no, goto next item!
@@ -351,7 +347,12 @@ local function entity_build(event)
                 color = { r = 255, g = 165, b = 0, a = 1 }
             end
             player_inventory.remove{ name = item.name, count = inserted }
-            print_text(entity.surface, text_position, { "autofill.inserted", inserted, rich_img("item", item.name), rich_img("entity", entity.name) }, color)
+            FlyingText.create_above_entity{
+                target_entity = entity,
+                text = { "autofill.inserted", inserted, rich_img("item", item.name), rich_img("entity", entity.name) },
+                player = player,
+                color = color,
+            }
         end
         ::end_item::
     end

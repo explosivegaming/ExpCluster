@@ -3,6 +3,7 @@
 @module Gui
 ]]
 
+local ExpUtil = require("modules/exp_util")
 local Gui = require("modules.exp_legacy.expcore.gui.prototype")
 local mod_gui = require "mod-gui" --- @dep mod-gui
 
@@ -75,7 +76,7 @@ end)
 
 ]]
 function Gui._prototype_element:add_to_top_flow(authenticator)
-    _C.error_if_runtime()
+    ExpUtil.assert_not_runtime()
     if not self.name then error("Elements for the top flow must have a static name") end
     self.authenticator = authenticator or true
     table.insert(Gui.top_elements, self)

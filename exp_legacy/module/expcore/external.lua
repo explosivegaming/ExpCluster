@@ -129,7 +129,7 @@ end
 --[[-- Connect a player to the given server
 @tparam LuaPlayer player The player that you want to request to join a different server
 @tparam string server_id The internal id of the server to connect to, can also be any address but this will show Unknown Server
-@tparam[opt=false] boolean self_requested If the player requested the join them selfs, this will hide the message about being asked to switch
+@tparam[opt=false] boolean self_requested If the player requested the join themself, this will hide the message about being asked to switch
 
 @usage-- Request that a player joins a different server
 External.request_connection(player, 'eu-01')

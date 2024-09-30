@@ -110,7 +110,7 @@ local function miner_check(entity)
         local entities = es.find_entities_filtered{ area = { { ep.x - r, ep.y - r }, { ep.x + r, ep.y + r } }, type = { "mining-drill", "pipe", "pipe-to-ground" } }
         local entities_t = es.find_entities_filtered{ area = { { ep.x - r, ep.y - r }, { ep.x + r, ep.y + r } }, ghost_type = { "pipe", "pipe-to-ground" } }
 
-        table.array_insert(entities, entities_t)
+        table.insert_array(entities, entities_t)
 
         for _, e in pairs(entities) do
             if (e.position.x > ep.x) and (e.position.y == ep.y) then

@@ -21,12 +21,11 @@
     Warnings.clear_warnings('MrBiter', 'Cooldude2606')
 ]]
 
-local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
-local Game = require("modules.exp_legacy.utils.game") --- @dep utils.game
+local Event = require("modules/exp_legacy/utils/event")
 local Storage = require("modules/exp_util/storage")
-local config = require("modules.exp_legacy.config.warnings") --- @dep config.warnings
+local config = require("modules.exp_legacy.config.warnings")
 
-local valid_player = Game.get_player_from_any
+local valid_player = function(p) return type(p) == "userdata" and p or game.get_player(p) end
 
 --- Stores the quickbar filters for a player
 local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data

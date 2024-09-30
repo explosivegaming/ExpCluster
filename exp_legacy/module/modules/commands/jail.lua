@@ -3,9 +3,10 @@
     @commands Jail
 ]]
 
+local ExpUtil = require("modules/exp_util")
 local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
 local Jail = require("modules.exp_legacy.modules.control.jail") --- @dep modules.control.jail
-local format_chat_player_name = _C.format_chat_player_name --- @dep expcore.common
+local format_player_name = ExpUtil.format_player_name_locale --- @dep expcore.common
 require("modules.exp_legacy.config.expcore.command_role_parse")
 
 --- Puts a player into jail and removes all other roles.
@@ -18,8 +19,8 @@ Commands.new_command("jail", { "expcom-jail.description-jail" }, "Puts a player 
     :enable_auto_concat()
     :register(function(player, action_player, reason)
         reason = reason or "Non Given."
-        local action_player_name_color = format_chat_player_name(action_player)
-        local by_player_name_color = format_chat_player_name(player)
+        local action_player_name_color = format_player_name(action_player)
+        local by_player_name_color = format_player_name(player)
         local player_name = player and player.name or "<server>"
         if Jail.jail_player(action_player, player_name, reason) then
             game.print{ "expcom-jail.give", action_player_name_color, by_player_name_color, reason }
@@ -36,8 +37,8 @@ Commands.new_command("unjail", { "expcom-jail.description-unjail" }, "Removes a 
     :add_alias("clear-jail", "remove-jail")
     :enable_auto_concat()
     :register(function(player, action_player)
-        local action_player_name_color = format_chat_player_name(action_player)
-        local by_player_name_color = format_chat_player_name(player)
+        local action_player_name_color = format_player_name(action_player)
+        local by_player_name_color = format_player_name(player)
         local player_name = player and player.name or "<server>"
         if Jail.unjail_player(action_player, player_name) then
             game.print{ "expcom-jail.remove", action_player_name_color, by_player_name_color }

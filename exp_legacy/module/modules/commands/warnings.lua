@@ -3,9 +3,10 @@
     @commands Warnings
 ]]
 
+local ExpUtil = require("modules/exp_util")
 local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
 local Warnings = require("modules.exp_legacy.modules.control.warnings") --- @dep modules.control.warnings
-local format_chat_player_name = _C.format_chat_player_name --- @dep expcore.common
+local format_player_name = ExpUtil.format_player_name_locale
 local config = require("modules.exp_legacy.config.warnings") --- @dep config.warnings
 require("modules.exp_legacy.config.expcore.command_role_parse")
 
@@ -20,8 +21,8 @@ Commands.new_command("give-warning", { "expcom-warnings.description-give" }, "Gi
     :enable_auto_concat()
     :register(function(player, action_player, reason)
         Warnings.add_warning(action_player, player.name, reason)
-        local action_player_name_color = format_chat_player_name(action_player)
-        local by_player_name_color = format_chat_player_name(player)
+        local action_player_name_color = format_player_name(action_player)
+        local by_player_name_color = format_player_name(player)
         game.print{ "expcom-warnings.received", action_player_name_color, by_player_name_color, reason }
     end)
 
@@ -35,10 +36,10 @@ Commands.new_command("get-warnings", { "expcom-warnings.description-get" }, "Get
         if player then
             local warnings = Warnings.get_warnings(player)
             local script_warnings = Warnings.get_script_warnings(player)
-            local player_name_color = format_chat_player_name(player)
+            local player_name_color = format_player_name(player)
             Commands.print{ "expcom-warnings.player", player_name_color, #warnings, #script_warnings, config.temp_warning_limit }
             for _, warning in ipairs(warnings) do
-                Commands.print{ "expcom-warnings.player-detail", format_chat_player_name(warning.by_player_name), warning.reason }
+                Commands.print{ "expcom-warnings.player-detail", format_player_name(warning.by_player_name), warning.reason }
             end
         else
             local rtn = {}
@@ -56,7 +57,7 @@ Commands.new_command("get-warnings", { "expcom-warnings.description-get" }, "Get
 
             Commands.print{ "expcom-warnings.list-title" }
             for player_name, warnings in pairs(rtn) do
-                local player_name_color = format_chat_player_name(player_name)
+                local player_name_color = format_player_name(player_name)
                 Commands.print{ "expcom-warnings.list", player_name_color, warnings[1], warnings[2], config.temp_warning_limit }
             end
         end
@@ -70,7 +71,7 @@ Commands.new_command("clear-warnings", { "expcom-warnings.description-clear" }, 
     :register(function(player, action_player)
         Warnings.clear_warnings(action_player, player.name)
         Warnings.clear_script_warnings(action_player)
-        local action_player_name_color = format_chat_player_name(action_player)
-        local by_player_name_color = format_chat_player_name(player)
+        local action_player_name_color = format_player_name(action_player)
+        local by_player_name_color = format_player_name(player)
         game.print{ "expcom-warnings.cleared", action_player_name_color, by_player_name_color }
     end)

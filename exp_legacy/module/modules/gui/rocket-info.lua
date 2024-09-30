@@ -4,19 +4,19 @@
     @alias rocket_info
 ]]
 
+local ExpUtil = require("modules/exp_util")
 local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local config = require("modules.exp_legacy.config.gui.rockets") --- @dep config.gui.rockets
 local Colors = require("modules/exp_util/include/color")
 local Rockets = require("modules.exp_legacy.modules.control.rockets") --- @dep modules.control.rockets
-local format_time = _C.format_time --- @dep expcore.common
 
 local time_formats = {
-    caption = function(value) return format_time(value, { minutes = true, seconds = true }) end,
-    caption_hours = function(value) return format_time(value) end,
-    tooltip = function(value) return format_time(value, { minutes = true, seconds = true, long = true }) end,
-    tooltip_hours = function(value) return format_time(value, { hours = true, minutes = true, seconds = true, long = true }) end,
+    caption = ExpUtil.format_time_factory_locale{ format = "short", minutes = true, seconds = true },
+    caption_hours = ExpUtil.format_time_factory_locale{ format = "short", hours = true, minutes = true },
+    tooltip = ExpUtil.format_time_factory_locale{ format = "long", minutes = true, seconds = true },
+    tooltip_hours = ExpUtil.format_time_factory_locale{ format = "long", hours = true, minutes = true, seconds = true },
 }
 
 --- Check if a player is allowed to use certain interactions

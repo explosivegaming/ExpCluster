@@ -1,20 +1,21 @@
 --- Log certain actions into a file when events are triggered
 -- @addon Deconlog
 
+local ExpUtil = require("modules/exp_util")
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
-local format_time = _C.format_time --- @dep expcore.common
 local format_number = require("util").format_number --- @dep util
 local config = require("modules.exp_legacy.config.deconlog") --- @dep config.deconlog
 
 local filepath = "log/decon.log"
+local seconds_time_format = ExpUtil.format_time_factory{ format = "short", hours = true, minutes = true, seconds = true }
 
 local function add_log(data)
     game.write_file(filepath, data .. "\n", true, 0) -- write data
 end
 
 local function get_secs()
-    return format_time(game.tick, { hours = true, minutes = true, seconds = true, string = true })
+    return seconds_time_format(game.tick)
 end
 
 local function pos_to_string(pos)

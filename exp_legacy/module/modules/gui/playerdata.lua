@@ -1,12 +1,12 @@
 ---- module pd
 -- @gui PlayerData
 
+local ExpUtil = require("modules/exp_util")
 local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
 require("modules.exp_legacy.modules.data.statistics")
-local format_time = _C.format_time --- @dep expcore.common
 local format_number = require("util").format_number --- @dep util
 
 local pd_container
@@ -16,66 +16,60 @@ local label_width = {
     ["total"] = 480,
 }
 
-local function format_time_short(value)
-    return format_time(value * 3600, {
-        hours = true,
-        minutes = true,
-        seconds = false,
-    })
-end
+local short_time_format = ExpUtil.format_time_factory_locale{ format = "short", coefficient = 3600, hours = true, minutes = true }
 
 local function format_number_n(n)
     return format_number(math.floor(n)) .. string.format("%.2f", n % 1):sub(2)
 end
 
-local playerStats = PlayerData.Statistics
+local PlayerStats = PlayerData.Statistics
 local computed_stats = {
     DamageDeathRatio = {
         default = format_number_n(0),
         calculate = function(player_name)
-            return format_number_n(playerStats["DamageDealt"]:get(player_name, 0) / playerStats["Deaths"]:get(player_name, 1))
+            return format_number_n(PlayerStats["DamageDealt"]:get(player_name, 0) / PlayerStats["Deaths"]:get(player_name, 1))
         end,
     },
     KillDeathRatio = {
         default = format_number_n(0),
         calculate = function(player_name)
-            return format_number_n(playerStats["Kills"]:get(player_name, 0) / playerStats["Deaths"]:get(player_name, 1))
+            return format_number_n(PlayerStats["Kills"]:get(player_name, 0) / PlayerStats["Deaths"]:get(player_name, 1))
         end,
     },
     SessionTime = {
-        default = format_time_short(0),
+        default = short_time_format(0),
         calculate = function(player_name)
-            return format_time_short((playerStats["Playtime"]:get(player_name, 0) - playerStats["AfkTime"]:get(player_name, 0)) / playerStats["JoinCount"]:get(player_name, 1))
+            return short_time_format((PlayerStats["Playtime"]:get(player_name, 0) - PlayerStats["AfkTime"]:get(player_name, 0)) / PlayerStats["JoinCount"]:get(player_name, 1))
         end,
     },
     BuildRatio = {
         default = format_number_n(0),
         calculate = function(player_name)
-            return format_number_n(playerStats["MachinesBuilt"]:get(player_name, 0) / playerStats["MachinesRemoved"]:get(player_name, 1))
+            return format_number_n(PlayerStats["MachinesBuilt"]:get(player_name, 0) / PlayerStats["MachinesRemoved"]:get(player_name, 1))
         end,
     },
     RocketPerHour = {
         default = format_number_n(0),
         calculate = function(player_name)
-            return format_number_n(playerStats["RocketsLaunched"]:get(player_name, 0) * 60 / playerStats["Playtime"]:get(player_name, 1))
+            return format_number_n(PlayerStats["RocketsLaunched"]:get(player_name, 0) * 60 / PlayerStats["Playtime"]:get(player_name, 1))
         end,
     },
     TreeKillPerMinute = {
         default = format_number_n(0),
         calculate = function(player_name)
-            return format_number_n(playerStats["TreesDestroyed"]:get(player_name, 0) / playerStats["Playtime"]:get(player_name, 1))
+            return format_number_n(PlayerStats["TreesDestroyed"]:get(player_name, 0) / PlayerStats["Playtime"]:get(player_name, 1))
         end,
     },
     NetPlayTime = {
-        default = format_time_short(0),
+        default = short_time_format(0),
         calculate = function(player_name)
-            return format_time_short((playerStats["Playtime"]:get(player_name, 0) - playerStats["AfkTime"]:get(player_name, 0)))
+            return short_time_format((PlayerStats["Playtime"]:get(player_name, 0) - PlayerStats["AfkTime"]:get(player_name, 0)))
         end,
     },
     AFKTimeRatio = {
         default = format_number_n(0),
         calculate = function(player_name)
-            return format_number_n(playerStats["AfkTime"]:get(player_name, 0) * 100 / playerStats["Playtime"]:get(player_name, 1))
+            return format_number_n(PlayerStats["AfkTime"]:get(player_name, 0) * 100 / PlayerStats["Playtime"]:get(player_name, 1))
         end,
     },
 }

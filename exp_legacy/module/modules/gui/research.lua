@@ -1,12 +1,12 @@
 --- research gui
 -- @gui Research
 
+local ExpUtil = require("modules/exp_util")
 local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
 local Storage = require("modules/exp_util/storage")
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local config = require("modules.exp_legacy.config.research") --- @dep config.research
-local format_time = _C.format_time --- @dep expcore.common
 
 local research = {}
 Storage.register(research, function(tbl)
@@ -16,22 +16,8 @@ end)
 research.time = {}
 research.res_queue_enable = false
 
-local research_time_format = {
-    hours = true,
-    minutes = true,
-    seconds = true,
-    time = true,
-    string = true,
-}
-
-local empty_time = format_time(0, {
-    hours = true,
-    minutes = true,
-    seconds = true,
-    time = true,
-    string = true,
-    null = true,
-})
+local research_time_format = ExpUtil.format_time_factory{ format = "clock", hours = true, minutes = true, seconds = true }
+local empty_time = research_time_format(nil)
 
 local font_color = {
     -- positive
@@ -57,7 +43,7 @@ do
         res["disp"][i] = {
             raw_name = k,
             target = res_total,
-            target_disp = format_time(res_total, research_time_format),
+            target_disp = research_time_format(res_total),
         }
 
         i = i + 1
@@ -118,12 +104,12 @@ local function research_notification(event)
             end
         else
             if not (event.by_script) then
-                game.print{ "expcom-res.inf", format_time(game.tick, research_time_format), event.research.name, event.research.level - 1 }
+                game.print{ "expcom-res.inf", research_time_format(game.tick), event.research.name, event.research.level - 1 }
             end
         end
     else
         if not (event.by_script) then
-            game.print{ "expcom-res.msg", format_time(game.tick, research_time_format), event.research.name }
+            game.print{ "expcom-res.msg", research_time_format(game.tick), event.research.name }
         end
 
         if config.bonus_inventory.enabled then
@@ -159,13 +145,13 @@ local function research_gui_update()
                 res_disp[i]["difference_color"] = font_color[1]
             else
                 res_disp[i]["target"] = res["disp"][res_i].target_disp
-                res_disp[i]["attempt"] = format_time(research.time[res_i], research_time_format)
+                res_disp[i]["attempt"] = research_time_format(research.time[res_i])
 
                 if research.time[res_i] < res["disp"][res_i].target then
-                    res_disp[i]["difference"] = "-" .. format_time(res["disp"][res_i].target - research.time[res_i], research_time_format)
+                    res_disp[i]["difference"] = "-" .. research_time_format(res["disp"][res_i].target - research.time[res_i])
                     res_disp[i]["difference_color"] = font_color[1]
                 else
-                    res_disp[i]["difference"] = format_time(research.time[res_i] - res["disp"][res_i].target, research_time_format)
+                    res_disp[i]["difference"] = research_time_format(research.time[res_i] - res["disp"][res_i].target)
                     res_disp[i]["difference_color"] = font_color[2]
                 end
             end
@@ -313,7 +299,7 @@ Event.add(defines.events.on_research_finished, function(event)
 end)
 
 Event.on_nth_tick(60, function()
-    local current_time = format_time(game.tick, research_time_format)
+    local current_time = research_time_format(game.tick)
 
     for _, player in pairs(game.connected_players) do
         local frame = Gui.get_left_element(player, research_container)
