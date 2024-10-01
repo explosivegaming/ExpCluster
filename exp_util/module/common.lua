@@ -122,8 +122,9 @@ end
 --- @param level number? The level of the stack to get the file of, a value of 1 is the caller of this function
 --- @return string # The relative filepath of the given stack frame
 function Common.safe_file_path(level)
-    level = level or 1
-    return getinfo(level + 1, "S").short_src:sub(10, -5)
+    local debug_info = getinfo((level or 1) + 1, "Sn")
+    local safe_source = debug_info.source:find("__level__")
+    return safe_source == 1 and debug_info.short_src:sub(10, -5) or debug_info.source
 end
 
 --- Returns the name of your module, this assumes your module is stored within /modules (which it is for clustorio)
@@ -141,7 +142,7 @@ end
 
 --- Returns the name of a function in a safe and consistent format
 --- @param func number | function The level of the stack to get the name of, a value of 1 is the caller of this function
---- @param raw boolean When true there will not be any < > around the name
+--- @param raw boolean? When true there will not be any < > around the name
 --- @return string # The name of the function at the given stack frame or provided as an argument
 function Common.get_function_name(func, raw)
     local debug_info = getinfo(func, "Sn")
