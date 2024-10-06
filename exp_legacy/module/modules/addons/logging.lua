@@ -6,9 +6,11 @@ local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local config = require("modules.exp_legacy.config.logging") --- @dep config.logging
 local config_res = require("modules.exp_legacy.config.research") --- @dep config.research
 
+local write_file = helpers.write_file
+
 local function add_log(data)
-    game.write_file(config.file_name, data, true, 0)
-    game.write_file(config.file_name, "\n", true, 0)
+    write_file(config.file_name, data, true, 0)
+    write_file(config.file_name, "\n", true, 0)
 end
 
 Event.add(defines.events.on_rocket_launched, function(event)

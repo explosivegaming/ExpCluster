@@ -4,6 +4,8 @@ local statics = require("modules.exp_legacy.modules.graftorio.statics")
 local general = require("modules.exp_legacy.modules.graftorio.general")
 local forcestats = nil
 
+local table_to_json = helpers.table_to_json
+
 if config.modules.forcestats then
     forcestats = require("modules.exp_legacy.modules.graftorio.forcestats")
 end
@@ -22,6 +24,6 @@ Commands.new_command("collectdata", "Collect data for RCON usage")
             forcestats.collect_production()
             forcestats.collect_loginet()
         end
-        rcon.print(game.table_to_json(general.data.output))
+        rcon.print(table_to_json(general.data.output))
         return Commands.success()
     end)

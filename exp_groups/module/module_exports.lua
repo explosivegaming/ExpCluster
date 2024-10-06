@@ -1,5 +1,8 @@
 local Async = require("modules/exp_util/async")
 
+local table_to_json = helpers.table_to_json
+local json_to_table = helpers.json_to_table
+
 --- Top level module table, contains event handlers and public methods
 local Groups = {}
 
@@ -233,13 +236,13 @@ function Groups.get_actions_json()
         rtn_i = rtn_i + 1
     end
 
-    return game.table_to_json(rtn)
+    return table_to_json(rtn)
 end
 
 --- Convert a json string array into an array of input actions
 --- @param json string A json string representing a string array of actions
 function Groups.json_to_actions(json)
-    local tbl = game.json_to_table(json)
+    local tbl = json_to_table(json)
     assert(tbl, "Invalid Json String")
     --- @cast tbl string[]
     return names_to_actions(tbl)
@@ -262,15 +265,15 @@ function Groups._prototype:to_json(raw)
     end
 
     if allow_i >= disallow_i then
-        return raw and { true, disallow } or game.table_to_json{ true, disallow }
+        return raw and { true, disallow } or table_to_json{ true, disallow }
     end
-    return raw and { false, allow } or game.table_to_json{ false, allow }
+    return raw and { false, allow } or table_to_json{ false, allow }
 end
 
 --- Restores this group to the state given in a json string
 --- @param json string The json string to restore from
 function Groups._prototype:from_json(json)
-    local tbl = game.json_to_table(json)
+    local tbl = json_to_table(json)
     assert(tbl and type(tbl[1]) == "boolean" and type(tbl[2]) == "table", "Invalid Json String")
 
     if tbl[1] then

@@ -7,11 +7,13 @@ local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local format_number = require("util").format_number --- @dep util
 local config = require("modules.exp_legacy.config.deconlog") --- @dep config.deconlog
 
+local write_file = helpers.write_file
+
 local filepath = "log/decon.log"
 local seconds_time_format = ExpUtil.format_time_factory{ format = "short", hours = true, minutes = true, seconds = true }
 
 local function add_log(data)
-    game.write_file(filepath, data .. "\n", true, 0) -- write data
+    write_file(filepath, data .. "\n", true, 0) -- write data
 end
 
 local function get_secs()
@@ -36,7 +38,7 @@ local function print_to_players(admin, message)
 end
 
 Event.on_init(function()
-    game.write_file(filepath, "\n", false, 0) -- write data
+    write_file(filepath, "\n", false, 0) -- write data
 end)
 
 if config.decon_area then

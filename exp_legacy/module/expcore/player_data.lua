@@ -47,6 +47,9 @@ local Datastore = require("modules.exp_legacy.expcore.datastore") --- @dep expco
 local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
 require("modules.exp_legacy.config.expcore.command_general_parse") --- @dep config.expcore.command_general_parse
 
+local table_to_json = helpers.table_to_json
+local write_file = helpers.write_file
+
 --- Common player data that acts as the root store for player data
 local PlayerData = Datastore.connect("PlayerData", true) -- saveToDisk
 PlayerData:set_serializer(Datastore.name_serializer) -- use player name
@@ -83,7 +86,7 @@ Commands.new_command("preference", "Shows you what your current data saving pref
 Commands.new_command("save-data", "Writes all your player data to a file on your computer")
     :register(function(player)
         player.print{ "expcore-data.get-data" }
-        game.write_file("expgaming_player_data.json", game.table_to_json(PlayerData:get(player, {})), false, player.index)
+        write_file("expgaming_player_data.json", table_to_json(PlayerData:get(player, {})), false, player.index)
     end)
 
 --- Async function called after 5 seconds with no player data loaded

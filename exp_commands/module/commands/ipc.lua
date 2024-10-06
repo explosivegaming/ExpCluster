@@ -9,13 +9,15 @@ System command which sends an object to the clustorio api, should be used for de
 local Commands = require("modules/exp_commands")
 local Clustorio = require("modules/clusterio/api")
 
+local json_to_table = helpers.json_to_table
+
 Commands.new("_ipc", "Send an IPC message on the selected channel")
     :add_flags{ "system_only" }
     :enable_auto_concatenation()
     :argument("channel", "string")
     :argument("message", "string")
     :register(function(_, channel, message)
-        local tbl = game.json_to_table(message)
+        local tbl = json_to_table(message)
         if tbl == nil then
             return Commands.status.invalid_input("Invalid json string")
         else

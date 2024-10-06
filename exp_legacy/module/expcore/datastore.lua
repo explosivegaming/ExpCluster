@@ -154,6 +154,9 @@ local Datastore = {}
 local Data = {}
 local copy = table.deep_copy
 local trace = debug.traceback
+local table_to_json = helpers.table_to_json
+local json_to_table = helpers.json_to_table
+local write_file = helpers.write_file
 
 --- Save datastores in the global table
 Storage.register(Data, function(tbl)
@@ -242,11 +245,11 @@ function DatastoreManager.ingest(action, datastore_name, key, value_json)
     if action == "remove" then
         datastore:raw_set(key)
     elseif action == "message" then
-        local success, value = pcall(game.json_to_table, value_json)
+        local success, value = pcall(json_to_table, value_json)
         if not success or value == nil then value = tonumber(value_json) or value_json end
         datastore:raise_event("on_message", key, value)
     elseif action == "propagate" or action == "request" then
-        local success, value = pcall(game.json_to_table, value_json)
+        local success, value = pcall(json_to_table, value_json)
         if not success or value == nil then value = tonumber(value_json) or value_json end
         local old_value = datastore:raw_get(key)
         value = datastore:raise_event("on_load", key, value, old_value)
@@ -389,9 +392,9 @@ self:write_action('save', 'TestKey', 'Foo')
 function Datastore:write_action(action, key, value)
     local data = { action, self.name, key }
     if value ~= nil then
-        data[4] = type(value) == "table" and game.table_to_json(value) or value
+        data[4] = type(value) == "table" and table_to_json(value) or value
     end
-    game.write_file("ext/datastore.out", table.concat(data, " ") .. "\n", true, 0)
+    write_file("ext/datastore.out", table.concat(data, " ") .. "\n", true, 0)
 end
 
 ----- Datastore Local

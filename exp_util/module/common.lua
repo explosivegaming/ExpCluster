@@ -8,6 +8,9 @@ local traceback = debug.traceback
 local floor = math.floor
 local concat = table.concat
 
+local table_to_json = helpers.table_to_json
+local write_file = helpers.write_file
+
 local Common = {
     --- A large mapping of colour rgb values by their common name
     color = require("modules/exp_util/include/color"),
@@ -82,7 +85,7 @@ function Common.assert_argument_type(arg_value, type_name, arg_index, arg_name)
     end
 end
 
---- Write a luu table to a file as a json string, note the defaults are different to game.write_file
+--- Write a luu table to a file as a json string, note the defaults are different to write_file
 --- @param path string The path to write the json to
 --- @param tbl table The table to write to file
 --- @param overwrite boolean? When true the json replaces the full contents of the file
@@ -90,9 +93,9 @@ end
 --- @return nil
 function Common.write_json(path, tbl, overwrite, player_index)
     if player_index == -1 then
-        return game.write_file(path, game.table_to_json(tbl) .. "\n", not overwrite)
+        return write_file(path, table_to_json(tbl) .. "\n", not overwrite)
     end
-    return game.write_file(path, game.table_to_json(tbl) .. "\n", not overwrite, player_index or 0)
+    return write_file(path, table_to_json(tbl) .. "\n", not overwrite, player_index or 0)
 end
 
 --- Clear a file by replacing its contents with an empty string
@@ -101,9 +104,9 @@ end
 --- @return nil
 function Common.clear_file(path, player_index)
     if player_index == -1 then
-        return game.write_file(path, "", false)
+        return write_file(path, "", false)
     end
-    return game.write_file(path, "", false, player_index or 0)
+    return write_file(path, "", false, player_index or 0)
 end
 
 --- Same as require but will return nil if the module does not exist, all other errors will propagate to the caller
@@ -214,7 +217,7 @@ function Common.format_any(value, options)
     local formatted, is_locale_string = Common.safe_value(value)
     if type(formatted) == "table" and (not is_locale_string or options.no_locale_strings) then
         if options.as_json then
-            local success, rtn = pcall(game.table_to_json, value)
+            local success, rtn = pcall(table_to_json, value)
             if success then return rtn end
         end
         if options.max_line_count ~= 0 then

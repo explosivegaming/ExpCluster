@@ -8,6 +8,9 @@ local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local config = require("modules.exp_legacy.config.research") --- @dep config.research
 
+local table_to_json = helpers.table_to_json
+local write_file = helpers.write_file
+
 local research = {}
 Storage.register(research, function(tbl)
     research = tbl
@@ -57,7 +60,7 @@ local function research_add_log()
         result_data[res["disp"][i]["raw_name"]] = research.time[i]
     end
 
-    game.write_file(config.file_name, game.table_to_json(result_data) .. "\n", true, 0)
+    write_file(config.file_name, table_to_json(result_data) .. "\n", true, 0)
 end
 
 local function research_res_n(res_)
