@@ -136,7 +136,7 @@ end
 function Common.optional_require(module_path)
     local success, rtn = xpcall(require, traceback, module_path)
     if success then return rtn end
-    if not rtn:find("not found; no such file", 0, true) then
+    if not rtn:find("no such file", 0, true) then
         error(rtn, 2)
     end
 end
@@ -382,7 +382,7 @@ end
 --- @param options Common.format_time_factory_param
 --- @return fun(ticks: number|nil): LocalisedString
 function Common.format_time_factory_locale(options)
-    local formatter, format, coefficient = Common.format_local_time, options.format, options.coefficient
+    local formatter, format, coefficient = Common.format_time_locale, options.format, options.coefficient
     if coefficient then
         return function(ticks) return formatter(ticks and ticks * coefficient or nil, format, options) end
     end

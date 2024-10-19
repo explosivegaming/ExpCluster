@@ -11,11 +11,11 @@ local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore
 local interface_modules = {
     ["Commands"] = Commands,
     ["output"] = Commands.print,
-    ["Group"] = "expcore.permission_groups",
-    ["Roles"] = "expcore.roles",
-    ["Gui"] = "expcore.gui",
-    ["Datastore"] = "expcore.datastore",
-    ["External"] = "expcore.external",
+    ["Group"] = "modules.exp_legacy.expcore.permission_groups",
+    ["Roles"] = "modules.exp_legacy.expcore.roles",
+    ["Gui"] = "modules.exp_legacy.expcore.gui",
+    ["Datastore"] = "modules.exp_legacy.expcore.datastore",
+    ["External"] = "modules.exp_legacy.expcore.external",
 }
 
 -- loads all the modules given in the above table

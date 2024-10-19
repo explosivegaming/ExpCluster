@@ -1,5 +1,4 @@
 local Gui = require("modules.exp_legacy.utils.gui") --- @dep utils.gui
-local table = require("modules.exp_legacy.overrides.table") --- @dep overrides.table
 
 local gui_names = Gui.names
 local type = type

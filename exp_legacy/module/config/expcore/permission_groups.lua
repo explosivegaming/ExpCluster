@@ -60,7 +60,8 @@ Permission_Groups.new_group("Standard")
         "admin_action", -- trusted
         "change_programmable_speaker_alert_parameters", -- standard
         "drop_item",
-        "change_rocket_silo_mode",
+        "open_new_platform_button_from_rocket_silo",
+        "set_rocket_silo_send_to_orbit_automated_mode",
     }
 
 Permission_Groups.new_group("Guest")
@@ -81,7 +82,8 @@ Permission_Groups.new_group("Guest")
         "admin_action", -- trusted
         "change_programmable_speaker_alert_parameters", -- standard
         "drop_item",
-        "change_rocket_silo_mode",
+        "open_new_platform_button_from_rocket_silo",
+        "set_rocket_silo_send_to_orbit_automated_mode",
         "change_programmable_speaker_parameters", -- guest
         "change_train_stop_station",
         -- 'deconstruct',

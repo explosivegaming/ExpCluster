@@ -1,5 +1,4 @@
 local Event = require("modules/exp_legacy/utils/event")
-local table = require("modules.exp_legacy.overrides.table")
 local Gui = require("modules.exp_legacy.utils.gui")
 local Model = require("modules.exp_legacy.modules.gui.debug.model")
 

@@ -10,7 +10,6 @@ local Roles = require("modules.exp_legacy.expcore.roles") -- @dep expcore.gui
 local Storage = require("modules/exp_util/storage") -- @dep utils.global
 local config = require("modules.exp_legacy.config.gui.autofill") -- @dep config.gui.autofill
 local Event = require("modules/exp_legacy/utils/event") -- @dep utils.event
-local table = require("modules.exp_legacy.overrides.table") -- @dep overrides.table
 
 --- Table that stores if autofill is enabled or not
 local autofill_player_settings = {}

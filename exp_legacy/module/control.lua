@@ -33,6 +33,7 @@ local function error_handler(err)
         log("[ERROR] Failed to load: " .. currently_loading)
         errors[error_count] = debug.traceback(error_format:format(currently_loading, err))
     end
+    return err
 end
 
 -- Loads all files from the config and logs that they are loaded

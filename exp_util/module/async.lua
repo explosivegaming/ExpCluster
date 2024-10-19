@@ -245,13 +245,17 @@ end
 --- Status Returns.
 -- Return values used by async functions
 
+--- @alias Async.Status (fun(...: any): Async.Status, any[]) | (fun(...: any): Async.Status, number, any[])
+
 local empty_table = setmetatable({}, {
     __index = function() error("Field 'Returned' is Immutable") end,
     __newindex = function() error("Field 'Returned' is Immutable") end,
 })
 
 --- Default status, will raise on_function_complete
--- @param ... The return value of the async call
+--- @param ... any The return value of the async call
+--- @return Async.Status, any[]
+--- @type Async.Status
 function Async.status.complete(...)
     if ... == nil then
         return Async.status.complete, empty_table
@@ -260,7 +264,9 @@ function Async.status.complete(...)
 end
 
 --- Will queue the function to be called again on the next tick using the new arguments
--- @param ... The arguments to call the function with
+--- @param ... any The arguments to call the function with
+--- @return Async.Status, any[]
+--- @type Async.Status
 function Async.status.continue(...)
     if ... == nil then
         return Async.status.continue, empty_table
@@ -269,7 +275,10 @@ function Async.status.continue(...)
 end
 
 --- Will queue the function to be called again on a later tick using the new arguments
--- @param ... The arguments to call the function with
+--- @param ticks number The number of ticks to delay for
+--- @param ... any The arguments to call the function with
+--- @return Async.Status, number, any[]
+--- @type Async.Status
 function Async.status.delay(ticks, ...)
     ExpUtil.assert_argument_type(ticks, "number", 1, "ticks")
     assert(ticks > 0, "Ticks must be a positive number")
@@ -285,9 +294,12 @@ end
 local new_next, new_queue = {}, {} -- File scope to allow for reuse
 
 --- Executes an async function and processes the return value
+--- @param pending Async.AsyncReturn
+--- @param tick number
 local function exec(pending, tick)
-    if pending.cancelled then return end
-    local status, rtn1, rtn2 = Async._functions[pending.id](table.unpack(pending.args))
+    local async_func = Async._functions[pending.func_id]
+    if pending.canceled or async_func == nil then return end
+    local status, rtn1, rtn2 = async_func(table.unpack(pending.args))
     if status == Async.status.continue then
         resolve_next[#resolve_next + 1] = pending
         pending.tick = nil
@@ -298,7 +310,7 @@ local function exec(pending, tick)
         pending.args = rtn2
     elseif status == Async.status.complete or status == nil then
         -- The function has finished execution, raise the custom event
-        Async._queue_pressure[pending.id] = Async._queue_pressure[pending.id] - 1
+        Async._queue_pressure[pending.func_id] = Async._queue_pressure[pending.func_id] - 1
         pending.returned = rtn1
         if pending.next_id then
             resolve_next[#resolve_next + 1] = setmetatable({
@@ -307,7 +319,7 @@ local function exec(pending, tick)
             }, Async._return_metatable)
         end
     else
-        error("Async function " .. pending.id .. " returned an invalid status: " .. table.inspect(status))
+        error("Async function " .. pending.func_id .. " returned an invalid status: " .. table.inspect(status))
     end
 end
 
@@ -358,22 +370,20 @@ function Async.on_load()
 
     -- Rebuild the queue pressure table
     for _, pending in ipairs(resolve_next) do
-        local count = Async._queue_pressure[pending.id]
+        local count = Async._queue_pressure[pending.func_id]
         if count then
-            Async._queue_pressure[pending.id] = count + 1
+            Async._queue_pressure[pending.func_id] = count + 1
         else
-            log("Warning: Pending async function missing after load: " .. pending.id)
-            pending.canceled = true
+            log("Warning: Pending async function missing after load: " .. pending.func_id)
         end
     end
 
     for _, pending in ipairs(resolve_queue) do
-        local count = Async._queue_pressure[pending.id]
+        local count = Async._queue_pressure[pending.func_id]
         if count then
-            Async._queue_pressure[pending.id] = count + 1
+            Async._queue_pressure[pending.func_id] = count + 1
         else
-            log("Warning: Pending async function missing after load: " .. pending.id)
-            pending.canceled = true
+            log("Warning: Pending async function missing after load: " .. pending.func_id)
         end
     end
 end
@@ -381,7 +391,9 @@ end
 --- On init and server startup initialise the storage data
 function Async.on_init()
     if storage.exp_async_next == nil then
+        --- @type Async.AsyncReturn[]
         storage.exp_async_next = {}
+        --- @type Async.AsyncReturn[]
         storage.exp_async_queue = {}
     end
     Async.on_load()
