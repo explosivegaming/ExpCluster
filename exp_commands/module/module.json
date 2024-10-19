@@ -1,8 +1,11 @@
 {
 	"name": "exp_commands",
+	"load": [
+		"module_exports.lua"
+	],
 	"require": [
-		"commands/data_types.lua",
-		"commands/permission_authorities.lua",
+		"commands/types.lua",
+		"commands/authorities.lua",
 		"commands/help.lua",
 		"commands/rcon.lua",
 		"commands/sudo.lua",

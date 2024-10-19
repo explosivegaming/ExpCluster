@@ -2,12 +2,16 @@
 Adds some commonly used functions used in many modules
 ]]
 
+local type = type
 local assert = assert
+local getmetatable = getmetatable
 local getinfo = debug.getinfo
 local traceback = debug.traceback
 local floor = math.floor
+local round = math.round
 local concat = table.concat
-
+local inspect = table.inspect
+local format_string = string.format
 local table_to_json = helpers.table_to_json
 local write_file = helpers.write_file
 
@@ -57,6 +61,22 @@ local function check_type(value, type_name)
         end
     end
     return value == nil or value_type ~= type_name, value_type
+end
+
+--- Get the name of a class or object, better than just using type
+--- @param value any The value to get the class of
+--- @return string # One of type, object_name, __class
+function Common.get_class_name(value)
+    local value_type = type(value) --[[@as string]]
+    if value_type == "userdata" then
+        return value.object_name
+    elseif value_type == "table" then
+        local mt = getmetatable(value)
+        if mt and mt.__class then
+            return mt.__class
+        end
+    end
+    return value_type
 end
 
 local assert_type_fmt = "%s expected to be of type %s but got %s"
@@ -126,7 +146,7 @@ end
 --- @return string # The relative filepath of the given stack frame
 function Common.safe_file_path(level)
     local debug_info = getinfo((level or 1) + 1, "Sn")
-    local safe_source = debug_info.source:find("__level__")
+    local safe_source = debug_info.source:find("@__level__")
     return safe_source == 1 and debug_info.short_src:sub(10, -5) or debug_info.source
 end
 
@@ -149,7 +169,7 @@ end
 --- @return string # The name of the function at the given stack frame or provided as an argument
 function Common.get_function_name(func, raw)
     local debug_info = getinfo(func, "Sn")
-    local safe_source = debug_info.source:find("__level__")
+    local safe_source = debug_info.source:find("@__level__")
     local file_name = safe_source == 1 and debug_info.short_src:sub(10, -5) or debug_info.source
     local func_name = debug_info.name or debug_info.linedefined
     if raw then return file_name .. ":" .. func_name end
@@ -179,9 +199,9 @@ function Common.auto_complete(options, input, use_key, rtn_key)
     end
 end
 
---- Formats any value into a safe representation, useful with table.inspect
+--- Formats any value into a safe representation, useful with inspect
 --- @param value any The value to be formatted
---- @return string | LocalisedString # The formatted version of the value
+--- @return LocalisedString # The formatted version of the value
 --- @return boolean # True if value is a locale string, nil otherwise
 function Common.safe_value(value)
     if type(value) == "table" then
@@ -211,7 +231,7 @@ end
 --- Formats any value to be presented in a safe and human readable format
 --- @param value any The value to be formatted
 --- @param options Common.format_any_param? Options for the formatter
---- @return string | LocalisedString # The formatted version of the value
+--- @return LocalisedString # The formatted version of the value
 function Common.format_any(value, options)
     options = options or {}
     local formatted, is_locale_string = Common.safe_value(value)
@@ -221,10 +241,10 @@ function Common.format_any(value, options)
             if success then return rtn end
         end
         if options.max_line_count ~= 0 then
-            local rtn = table.inspect(value, { depth = options.depth or 5, indent = " ", newline = "\n", process = Common.safe_value })
+            local rtn = inspect(value, { depth = options.depth or 5, indent = " ", newline = "\n", process = Common.safe_value })
             if options.max_line_count == nil or select(2, rtn:gsub("\n", "")) < options.max_line_count then return rtn end
         end
-        return table.inspect(value, { depth = options.depth or 5, indent = "", newline = "", process = Common.safe_value })
+        return inspect(value, { depth = options.depth or 5, indent = "", newline = "", process = Common.safe_value })
     end
     return formatted
 end
@@ -309,7 +329,7 @@ function Common.format_time_locale(ticks, format, units)
     end
 
     local rtn = {}
-    local join = ", " --- @type string | LocalisedString
+    local join = ", " --- @type LocalisedString
     if format == "clock" then
         -- Example 12:34:56 or --:--:--
         if units.days then rtn[#rtn + 1] = rtn_days end
@@ -516,39 +536,47 @@ end
 
 --- Returns a message formatted for game chat using rich text colour tags
 --- @param message string
---- @param color Color | string
+--- @param color Color
 --- @return string
 function Common.format_rich_text_color(message, color)
-    color = color or Common.color.white
-    local color_tag = "[color=" .. math.round(color.r, 3) .. ", " .. math.round(color.g, 3) .. ", " .. math.round(color.b, 3) .. "]"
-    return string.format("%s%s[/color]", color_tag, message)
+    return format_string(
+        "[color=%s,%s,%s]%s[/color]",
+        round(color.r or color[1] or 0, 3),
+        round(color.g or color[2] or 0, 3),
+        round(color.b or color[3] or 0, 3),
+        message
+    )
 end
 
 --- Returns a message formatted for game chat using rich text colour tags
 --- @param message string
---- @param color Color | string
+--- @param color Color
 --- @return LocalisedString
 function Common.format_rich_text_color_locale(message, color)
-    color = color or Common.color.white
-    color = math.round(color.r, 3) .. ", " .. math.round(color.g, 3) .. ", " .. math.round(color.b, 3)
-    return { "color-tag", color, message }
+    return {
+        "color-tag",
+        round(color.r or color[1] or 0, 3),
+        round(color.g or color[2] or 0, 3),
+        round(color.b or color[3] or 0, 3),
+        message
+    }
 end
 
 --- Formats a players name using rich text color
---- @param player LuaPlayer
+--- @param player PlayerIdentification?
 --- @return string
 function Common.format_player_name(player)
-    local valid_player = type(player) == "userdata" and player or game.get_player(player)
+    local valid_player = type(player) == "userdata" and player or game.get_player(player --[[@as string|number]]) --[[@as LuaPlayer?]]
     local player_name = valid_player and valid_player.name or "<Server>"
     local player_chat_colour = valid_player and valid_player.chat_color or Common.color.white
     return Common.format_rich_text_color(player_name, player_chat_colour)
 end
 
 --- Formats a players name using rich text color
---- @param player LuaPlayer
+--- @param player PlayerIdentification?
 --- @return LocalisedString
 function Common.format_player_name_locale(player)
-    local valid_player = type(player) == "userdata" and player or game.get_player(player)
+    local valid_player = type(player) == "userdata" and player or game.get_player(player --[[@as string|number]]) --[[@as LuaPlayer?]]
     local player_name = valid_player and valid_player.name or "<Server>"
     local player_chat_colour = valid_player and valid_player.chat_color or Common.color.white
     return Common.format_rich_text_color_locale(player_name, player_chat_colour)

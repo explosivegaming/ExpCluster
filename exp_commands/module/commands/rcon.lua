@@ -2,16 +2,16 @@
 System command which runs arbitrary code within a custom (not sandboxed) environment
 @commands _system-rcon
 
-@usage-- Get the names of all online players, using rcon
+--- Get the names of all online players, using rcon
 /_system-rcon local names = {}; for index, player in pairs(game.connected_player) do names[index] = player.name end; return names;
 
-@usage-- Get the names of all online players, using clustorio ipcs
+--- Get the names of all online players, using clustorio ipcs
 /_system-rcon local names = {}; for index, player in pairs(game.connected_player) do names[index] = player.name end; ipc("online-players", names);
 ]]
 
 local ExpUtil = require("modules/exp_util")
 local Async = require("modules/exp_util/async")
-local Global = require("modules/exp_util/global")
+local Storage = require("modules/exp_util/storage")
 local Commands = require("modules/exp_commands")
 local Clustorio = require("modules/clusterio/api")
 
@@ -27,7 +27,7 @@ rcon_statics.Async = Async
 rcon_statics.ExpUtil = ExpUtil
 rcon_statics.Commands = Commands
 rcon_statics.Clustorio = Clustorio
-rcon_statics.output = Commands.print
+rcon_statics.print = Commands.print
 rcon_statics.ipc = Clustorio.send_json
 --- @diagnostic enable: name-style-check
 
@@ -45,7 +45,7 @@ function rcon_callbacks.entity(player) return player and player.selected end
 function rcon_callbacks.tile(player) return player and player.surface.get_tile(player.position) end
 
 --- The rcon env is saved between command runs to prevent desyncs
-Global.register(rcon_env, function(tbl)
+Storage.register(rcon_env, function(tbl)
     rcon_env = setmetatable(tbl, { __index = rcon_statics })
 end)
 
@@ -61,10 +61,10 @@ function Commands.add_rcon_callback(name, callback)
     rcon_callbacks[name] = callback
 end
 
-Commands.new("_rcon", "Execute arbitrary code within a custom environment")
+Commands.new("_rcon", { "exp-commands-rcon.description" })
     :add_flags{ "system_only" }
     :enable_auto_concatenation()
-    :argument("invocation", "string")
+    :argument("invocation", { "exp-commands-rcon.arg-invocation" }, Commands.types.string)
     :register(function(player, invocation_string)
         -- Construct the environment the command will run within
         local env = setmetatable({}, { __index = rcon_env, __newindex = rcon_env })
@@ -80,8 +80,7 @@ Commands.new("_rcon", "Execute arbitrary code within a custom environment")
         else
             local success, rtn = xpcall(invocation, debug.traceback)
             if success == false then
-                local err = rtn:gsub("%.%.%..-/temp/currently%-playing/", "")
-                return Commands.status.error(err)
+                return Commands.status.error(rtn)
             else
                 return Commands.status.success(rtn)
             end

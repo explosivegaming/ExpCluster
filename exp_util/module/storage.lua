@@ -37,6 +37,7 @@ local Clustorio = require("modules/clusterio/api")
 local ExpUtil = require("modules/exp_util/common")
 
 local Storage = {
+    --- @package
     registered = {}, -- Map of all registered values and their initial values
 }
 
@@ -67,6 +68,7 @@ function Storage.register_metatable(name, tbl)
 end
 
 --- Restore aliases on load, we do not need to initialise data during this event
+--- @package
 function Storage.on_load()
     local exp_storage = storage.exp_storage
     if exp_storage == nil then return end
@@ -78,6 +80,7 @@ function Storage.on_load()
 end
 
 --- Event Handler, sets initial values if needed and calls all callbacks
+--- @package
 function Storage.on_init()
     local exp_storage = storage.exp_storage
     if exp_storage == nil then
@@ -93,6 +96,7 @@ function Storage.on_init()
     end
 end
 
+--- @package
 Storage.events = {
     [Clustorio.events.on_server_startup] = Storage.on_init,
 }

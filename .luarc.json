@@ -1,12 +1,12 @@
 {
     "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
     "completion.requireSeparator": "/",
-    "doc.privateName": [ "__(\\w+)" ],
-    "doc.protectedName": [ "_(\\w+)" ],
+    "doc.privateName": [ "__([_%w]+)" ],
+    "doc.packageName": [ "_([_%w]+)" ],
     "runtime.pluginArgs": [
         "--clusterio-modules"
     ],
-    "diagnostics.unusedLocalExclude": [ "_", "i", "j", "k", "v" ],
+    "diagnostics.unusedLocalExclude": [ "_([_%w]*)", "i", "j", "k", "v" ],
     "diagnostics.groupFileStatus": {
         "ambiguity": "Any",
         "await": "None",
@@ -32,7 +32,7 @@
     "nameStyle.config": {
         "local_name_style": [{
             "type" : "pattern",
-            "param": "_?_?(\\w+)?",
+            "param": "_?_?(%w+)?",
             "$1": "snake_case"
         }],
         "module_local_name_style": [{

@@ -55,7 +55,7 @@ end
 --- Create flying above a player, overrides the position option of FlyingText.create
 --- @param options FlyingText.create_above_player_param
 function FlyingText.create_above_player(options)
-    local player = assert(options.target_player, "A target entity is required")
+    local player = assert(options.target_player, "A target player is required")
     local entity = player.character; if not entity then return end
     local size_y = entity.bounding_box.left_top.y - entity.bounding_box.right_bottom.y
 
@@ -73,7 +73,7 @@ end
 --- Create flying above a player, overrides the position and color option of FlyingText.create
 --- @param options FlyingText.create_as_player_param
 function FlyingText.create_as_player(options)
-    local player = assert(options.target_player, "A target entity is required")
+    local player = assert(options.target_player, "A target player is required")
     local entity = player.character; if not entity then return end
     local size_y = entity.bounding_box.left_top.y - entity.bounding_box.right_bottom.y
 

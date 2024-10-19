@@ -8,15 +8,15 @@ The default permission authorities controlled by the flags: admin_only, system_o
 /c require("modules/exp-commands").disable("my-command")
 ]]
 
-local Global = require("modules/exp_util/global")
+local Storage = require("modules/exp_util/storage")
 local Commands = require("modules/exp_commands")
 local add, allow, deny = Commands.add_permission_authority, Commands.status.success, Commands.status.unauthorised
 
-local permission_authorities = {}
+local authorities = {}
 
 local system_players = {}
 local disabled_commands = {}
-Global.register({
+Storage.register({
     system_players,
     disabled_commands,
 }, function(tbl)
@@ -25,13 +25,13 @@ Global.register({
 end)
 
 --- Allow a player access to system commands, use for debug purposes only
--- @tparam[opt] string player_name The name of the player to give access to, default is the current player
+--- @param player_name string? The name of the player to give access to, default is the current player
 function Commands.unlock_system_commands(player_name)
     system_players[player_name or game.player.name] = true
 end
 
 --- Remove access from system commands for a player, use for debug purposes only
--- @tparam[opt] string player_name The name of the player to give access to, default is the current player
+--- @param player_name string? The name of the player to give access to, default is the current player
 function Commands.lock_system_commands(player_name)
     system_players[player_name or game.player.name] = nil
 end
@@ -42,13 +42,13 @@ function Commands.get_system_command_players()
 end
 
 --- Stops a command from be used by any one
--- @tparam string command_name The name of the command to disable
+--- @param command_name string The name of the command to disable
 function Commands.disable(command_name)
     disabled_commands[command_name] = true
 end
 
 --- Allows a command to be used again after disable was used
--- @tparam string command_name The name of the command to enable
+--- @param command_name string The name of the command to enable
 function Commands.enable(command_name)
     disabled_commands[command_name] = nil
 end
@@ -59,7 +59,7 @@ function Commands.get_disabled_commands()
 end
 
 --- If a command has the flag "admin_only" then only admins can use the command#
-permission_authorities.admin_only =
+authorities.admin_only =
     add(function(player, command)
         if command.flags.admin_only and not player.admin then
             return deny{ "exp-commands-permissions.admin-only" }
@@ -69,7 +69,7 @@ permission_authorities.admin_only =
     end)
 
 --- If a command has the flag "system_only" then only rcon connections can use the command
-permission_authorities.system_only =
+authorities.system_only =
     add(function(player, command)
         if command.flags.system_only and not system_players[player.name] then
             return deny{ "exp-commands-permissions.system-only" }
@@ -79,8 +79,8 @@ permission_authorities.system_only =
     end)
 
 --- If Commands.disable was called then no one can use the command
-permission_authorities.disabled =
-    add(function(_, command)
+authorities.disabled =
+    add(function(_player, command)
         if disabled_commands[command.name] then
             return deny{ "exp-commands-permissions.disabled" }
         else
@@ -88,4 +88,4 @@ permission_authorities.disabled =
         end
     end)
 
-return permission_authorities
+return authorities
