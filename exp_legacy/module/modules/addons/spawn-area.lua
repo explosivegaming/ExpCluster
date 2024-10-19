@@ -222,7 +222,7 @@ Event.add(defines.events.on_player_created, function(event)
     if event.player_index ~= 1 then return end
     local player = game.players[event.player_index]
     local p = { x = 0, y = 0 }
-    local s = player.surface
+    local s = player.physical_surface
     get_spawn_force()
     spawn_area(s, p)
     if config.pattern.enabled then spawn_pattern(s, p) end

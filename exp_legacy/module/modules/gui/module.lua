@@ -60,6 +60,7 @@ local elem_filter = {
 }
 
 local function clear_module(player, area, machine)
+    -- Intentionally left as player.surface to allow use in remote view
     for _, entity in pairs(player.surface.find_entities_filtered{ area = area, name = machine, force = player.force }) do
         for _, r in pairs(player.surface.find_entities_filtered{ position = entity.position, name = "item-request-proxy", force = player.force }) do
             if r then
@@ -84,6 +85,7 @@ local function clear_module(player, area, machine)
 end
 
 local function apply_module(player, area, machine, modules)
+    -- Intentionally left as player.surface to allow use in remote view
     for _, entity in pairs(player.surface.find_entities_filtered{ area = area, name = machine, force = player.force }) do
         local m_current_recipe
 

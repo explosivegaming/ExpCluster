@@ -17,7 +17,9 @@ Commands.new_command("repair", { "expcom-repair.description" }, "Repairs entitie
         local revive_count = 0
         local heal_count = 0
         local range2 = range ^ 2
+        -- Intentionally left as player.surface to allow use in remote view
         local surface = player.surface
+        -- Intentionally left as player.position to allow use in remote view
         local center = player.position
         local area = { { x = center.x - range, y = center.y - range }, { x = center.x + range, y = center.y + range } }
         if config.allow_ghost_revive then

@@ -58,7 +58,27 @@ function Commands.get_disabled_commands()
     return table.get_keys(disabled_commands)
 end
 
---- If a command has the flag "admin_only" then only admins can use the command#
+--- If a command has the flag "character_only" then the command can only be used outside of remote view
+authorities.character_only =
+    add(function(player, command)
+        if command.flags.character_only and player.controller_type ~= defines.controllers.character then
+            return deny{ "exp-commands-permissions.character-only" }
+        else
+            return allow()
+        end
+    end)
+
+--- If a command has the flag "remote_only" then the command can only be used inside of remote view
+authorities.remote_only =
+    add(function(player, command)
+        if command.flags.character_only and player.controller_type ~= defines.controllers.remote then
+            return deny{ "exp-commands-permissions.remote-only" }
+        else
+            return allow()
+        end
+    end)
+
+--- If a command has the flag "admin_only" then only admins can use the command
 authorities.admin_only =
     add(function(player, command)
         if command.flags.admin_only and not player.admin then

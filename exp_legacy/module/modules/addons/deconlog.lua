@@ -98,7 +98,7 @@ if config.fired_rocket then
             return
         end
         if item.name == "rocket" then
-            add_log(get_secs() .. "," .. player.name .. ",shot-rocket," .. pos_to_string(player.position) .. "," .. pos_to_string(player.shooting_state.position))
+            add_log(get_secs() .. "," .. player.name .. ",shot-rocket," .. pos_to_string(player.physical_position) .. "," .. pos_to_string(player.shooting_state.position))
         end
     end)
 end
@@ -117,7 +117,7 @@ if config.fired_explosive_rocket then
             return
         end
         if item.name == "explosive-rocket" then
-            add_log(get_secs() .. "," .. player.name .. ",shot-explosive-rocket," .. pos_to_string(player.position) .. "," .. pos_to_string(player.shooting_state.position))
+            add_log(get_secs() .. "," .. player.name .. ",shot-explosive-rocket," .. pos_to_string(player.physical_position) .. "," .. pos_to_string(player.shooting_state.position))
         end
     end)
 end
@@ -138,7 +138,7 @@ if config.fired_nuke then
         end
 
         if item.name == "atomic-bomb" then
-            add_log(get_secs() .. "," .. player.name .. ",shot-nuke," .. pos_to_string(player.position) .. "," .. pos_to_string(player.shooting_state.position))
+            add_log(get_secs() .. "," .. player.name .. ",shot-nuke," .. pos_to_string(player.physical_position) .. "," .. pos_to_string(player.shooting_state.position))
         end
     end)
 end

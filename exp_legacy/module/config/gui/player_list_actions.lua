@@ -38,8 +38,8 @@ end
 
 -- teleports one player to another
 local function teleport(from_player, to_player)
-    local surface = to_player.surface
-    local position = surface.find_non_colliding_position("character", to_player.position, 32, 1)
+    local surface = to_player.physical_surface
+    local position = surface.find_non_colliding_position("character", to_player.physical_position, 32, 1)
     if not position then return false end -- return false if no new position
     if from_player.driving then from_player.driving = false end -- kicks a player out a vehicle if in one
     from_player.teleport(position, surface)

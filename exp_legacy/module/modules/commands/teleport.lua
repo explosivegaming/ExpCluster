@@ -7,8 +7,8 @@ local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore
 require("modules.exp_legacy.config.expcore.command_general_parse")
 
 local function teleport(from_player, to_player)
-    local surface = to_player.surface
-    local position = surface.find_non_colliding_position("character", to_player.position, 32, 1)
+    local surface = to_player.physical_surface
+    local position = surface.find_non_colliding_position("character", to_player.physical_position, 32, 1)
 
     -- return false if no new position
     if not position then

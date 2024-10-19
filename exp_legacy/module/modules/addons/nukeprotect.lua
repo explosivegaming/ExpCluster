@@ -27,7 +27,7 @@ local function check_items(player, type)
 
     ExpUtil.move_items_to_surface{
         items = items,
-        surface = player.surface,
+        surface = game.planets.nauvis.surface,
         allow_creation = true,
         name = "iron-chest",
     }

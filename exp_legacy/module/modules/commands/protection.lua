@@ -177,6 +177,7 @@ end)
 Event.add(Selection.events.on_player_selection_start, function(event)
     if event.selection ~= SelectionProtectEntity and event.selection ~= SelectionProtectArea then return end
     local player = game.players[event.player_index]
+    -- Intentionally left as player.surface to allow use in remote view
     local surface = player.surface
     renders[player.index] = {}
     -- Show protected entities

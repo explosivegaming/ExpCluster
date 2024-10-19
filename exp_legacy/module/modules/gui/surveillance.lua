@@ -52,7 +52,7 @@ local cctv_location =
     }:style{
         width = 48,
     }:on_click(function(player, element, _)
-        element.parent.parent.parent.cctv_display.position = player.position
+        element.parent.parent.parent.cctv_display.position = player.physical_position
     end)
 
 local zoom_in =
@@ -163,7 +163,7 @@ Event.add(defines.events.on_tick, function(_)
 
                 if selected_index ~= 0 then
                     selected_index = current_camera_set.buttons.table[cctv_player.name].items[selected_index]
-                    current_camera_set["cctv_display"].position = game.players[selected_index].position
+                    current_camera_set["cctv_display"].position = game.players[selected_index].physical_position
                     current_camera_set["cctv_display"].surface_index = game.players[selected_index].surface_index
                 else
                     current_camera_set["cctv_display"].position = { x = 0, y = 0 }

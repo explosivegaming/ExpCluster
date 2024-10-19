@@ -6,7 +6,7 @@
 @usage-- Making a new spawn warp
 local player = game.player
 local force = player.force
-local spawn_id = Warps.add_warp(force.name, player.surface, player.position, player.name, 'Spawn')
+local spawn_id = Warps.add_warp(force.name, player.physical_surface, player.physical_position, player.name, 'Spawn')
 
 Warps.set_spawn_warp(spawn_id, force)
 Warps.make_warp_tag(spawn_id)
@@ -14,7 +14,7 @@ Warps.make_warp_tag(spawn_id)
 @usage-- Making a new warp with a warp area
 local player = game.player
 local force = player.force
-local warp_id = Warps.add_warp(force.name, player.surface, player.position, player.name)
+local warp_id = Warps.add_warp(force.name, player.physical_surface, player.physical_position, player.name)
 
 Warps.make_warp_area(warp_id)
 Warps.make_warp_tag(warp_id)
@@ -313,7 +313,7 @@ end
 
 @usage-- Adding a new warp for your force at your position
 local player = game.player
-local warp_id = Warps.add_warp(player.force.name, player.surface, player.position, player.name)
+local warp_id = Warps.add_warp(player.force.name, player.physical_surface, player.physical_position, player.name)
 
 ]]
 function Warps.add_warp(force_name, surface, position, player_name, warp_name)

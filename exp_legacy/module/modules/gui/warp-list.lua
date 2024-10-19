@@ -89,9 +89,10 @@ local add_new_warp =
     :style(Styles.sprite22)
     :on_click(function(player, _)
         -- Add the new warp
+        if player.controller_type ~= defines.controllers.character then return end
         local force_name = player.force.name
-        local surface = player.surface
-        local position = player.position
+        local surface = player.physical_surface
+        local position = player.physical_position
 
         -- Check if the warp is too close to water
         local water_tiles = surface.find_tiles_filtered{ collision_mask = "water-tile", radius = config.standard_proximity_radius + 1, position = position }
@@ -783,7 +784,7 @@ Event.on_nth_tick(math.floor(60 / config.update_smoothing), function()
         local closest_distance = nil
         if #warp_ids > 0 then
             local surface = player.surface
-            local pos = player.position
+            local pos = player.physical_position
             local px, py = pos.x, pos.y
 
             -- Loop over each warp

@@ -80,7 +80,7 @@ Selection.on_selection(SelectionConvertArea, function(event)
         return nil
     end
 
-    local entities = player.surface.find_entities_filtered{ area = area, name = "steel-chest", force = player.force }
+    local entities = event.surface.find_entities_filtered{ area = area, name = "steel-chest", force = player.force }
     local frame = Gui.get_left_element(player, vlayer_container)
     local disp = frame.container["vlayer_st_2"].disp.table
     local target = vlayer_control_type_list[disp[vlayer_gui_control_type.name].selected_index]
@@ -114,16 +114,16 @@ Selection.on_selection(SelectionConvertArea, function(event)
     e.destroy()
 
     if target == "energy" then
-        if not vlayer.create_energy_interface(player.surface, e_pos, player) then
+        if not vlayer.create_energy_interface(event.surface, e_pos, player) then
             player.print{ "vlayer.result-unable", { "vlayer.control-type-energy" }, { "vlayer.result-space" } }
             return nil
         end
     elseif target == "circuit" then
-        vlayer.create_circuit_interface(player.surface, e_pos, e_circ, player)
+        vlayer.create_circuit_interface(event.surface, e_pos, e_circ, player)
     elseif target == "storage_input" then
-        vlayer.create_input_interface(player.surface, e_pos, e_circ, player)
+        vlayer.create_input_interface(event.surface, e_pos, e_circ, player)
     elseif target == "storage_output" then
-        vlayer.create_output_interface(player.surface, e_pos, e_circ, player)
+        vlayer.create_output_interface(event.surface, e_pos, e_circ, player)
     end
 
     game.print{ "vlayer.interface-result", player.name, pos_to_gps_string(e_pos), { "vlayer.result-build" }, { "vlayer.control-type-" .. target:gsub("_", "-") } }

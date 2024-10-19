@@ -11,6 +11,7 @@ Commands.new_command("clear-item-on-ground", { "expcom-surface-clearing.descript
     :add_param("range", false, "integer-range", 1, 1000)
     :register(function(player, range)
         local items = {} --- @type LuaItemStack[]
+        -- Intentionally left as player.position to allow use in remote view
         local entities = player.surface.find_entities_filtered{ position = player.position, radius = range, name = "item-on-ground" }
         for _, e in pairs(entities) do
             if e.stack then
@@ -31,6 +32,7 @@ Commands.new_command("clear-item-on-ground", { "expcom-surface-clearing.descript
 Commands.new_command("clear-blueprint", { "expcom-surface-clearing.description-cb" }, "Clear Blueprint")
     :add_param("range", false, "integer-range", 1, 1000)
     :register(function(player, range)
+        -- Intentionally left as player.position to allow use in remote view
         for _, e in pairs(player.surface.find_entities_filtered{ position = player.position, radius = range, type = "entity-ghost" }) do
             e.destroy()
         end

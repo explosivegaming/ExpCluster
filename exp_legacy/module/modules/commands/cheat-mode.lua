@@ -36,6 +36,7 @@ Commands.new_command("toggle-always-day", { "expcom-cheat.description-day" }, "T
     :set_flag("admin_only")
     :add_param("surface", true, "surface")
     :set_defaults{ surface = function(player)
+        -- Intentionally left as player.surface to allow use in remote view
         return player.surface
     end }
     :register(function(player, surface)

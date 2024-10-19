@@ -12,13 +12,13 @@ Event.add(defines.events.on_player_created, function(event)
         player.force.friendly_fire = config.friendly_fire
         game.map_settings.enemy_expansion.enabled = config.enemy_expansion
         local r = config.chart_radius
-        local p = player.position
-        player.force.chart(player.surface, { { p.x - r, p.y - r }, { p.x + r, p.y + r } })
+        local p = player.physical_position
+        player.force.chart(player.physical_surface, { { p.x - r, p.y - r }, { p.x + r, p.y + r } })
     end
     -- spawn items
     for item, callback in pairs(items) do
         if type(callback) == "function" then
-            local stats = player.force.get_item_production_statistics(player.surface)
+            local stats = player.force.get_item_production_statistics(player.physical_surface)
             local made = stats.get_input_count(item)
             local success, count = pcall(callback, made, stats.get_input_count, player)
             count = math.floor(count)

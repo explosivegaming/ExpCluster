@@ -13,6 +13,7 @@ Commands.new_command("lawnmower", "Clean up biter corpse, decoratives and nuclea
     :register(function(player, range)
         local tile_to_do = {}
 
+        -- Intentionally left as player.position to allow use in remote view
         player.surface.destroy_decoratives{ position = player.position, radius = range }
 
         local entities = player.surface.find_entities_filtered{ position = player.position, radius = range, type = "corpse" }

@@ -41,7 +41,7 @@ Selection.on_selection(SelectionConvertArea, function(event)
         return
     end
 
-    local entities = player.surface.find_entities_filtered{ area = area, name = "steel-chest" }
+    local entities = event.surface.find_entities_filtered{ area = area, name = "steel-chest" }
 
     if #entities == 0 then
         player.print("No steel chest found")
@@ -60,6 +60,7 @@ Selection.on_selection(SelectionConvertArea, function(event)
     for _, entity in pairs(entities) do
         if clf_exp >= 1 then
             if entity.get_inventory(defines.inventory.chest).is_empty() then
+                -- Intentionally left as player.position to allow use in report view
                 if (math.floor(player.position.x) ~= math.floor(entity.position.x)) or (math.floor(player.position.y) ~= math.floor(entity.position.y)) then
                     table.insert(tiles_to_make, { name = "water-mud", position = entity.position })
                     entity.destroy()

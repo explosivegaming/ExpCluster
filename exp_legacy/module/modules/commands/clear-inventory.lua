@@ -21,7 +21,7 @@ Commands.new_command("clear-inventory", { "expcom-clr-inv.description" }, "Clear
 
         ExpUtil.transfer_inventory_to_surface{
             inventory = inventory,
-            surface = player.surface,
+            surface = game.planets.nauvis.surface,
             name = "iron-chest",
             allow_creation = true,
         }

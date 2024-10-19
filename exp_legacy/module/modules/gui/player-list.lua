@@ -117,7 +117,7 @@ local add_player_base =
         local selected_player = game.players[selected_player_name]
         if event.button == defines.mouse_button_type.left then
             -- LMB will open the map to the selected player
-            local position = selected_player.position
+            local position = selected_player.physical_position
             event.player.zoom_to_world(position, 1.75)
         else
             -- RMB will toggle the settings

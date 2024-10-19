@@ -13,7 +13,7 @@ Storage.register(homes, function(tbl)
 end)
 
 local function teleport(player, position)
-    local surface = player.surface
+    local surface = player.physical_surface
     local pos = surface.find_non_colliding_position("character", position, 32, 1)
     if not position then return false end
     if player.driving then player.driving = false end -- kicks a player out a vehicle if in one
@@ -36,7 +36,7 @@ Commands.new_command("home", { "expcom-home.description-home" }, "Teleports you 
         if not home or not home[1] then
             return Commands.error{ "expcom-home.no-home" }
         end
-        local rtn = floor_pos(player.position)
+        local rtn = floor_pos(player.physical_position)
         teleport(player, home[1])
         home[2] = rtn
         Commands.print{ "expcom-home.return-set", rtn.x, rtn.y }
@@ -51,7 +51,7 @@ Commands.new_command("home-set", { "expcom-home.description-home-set" }, "Sets y
             home = {}
             homes[player.index] = home
         end
-        local pos = floor_pos(player.position)
+        local pos = floor_pos(player.physical_position)
         home[1] = pos
         Commands.print{ "expcom-home.home-set", pos.x, pos.y }
     end)
@@ -76,7 +76,7 @@ Commands.new_command("return", { "expcom-home.description-return" }, "Teleports 
         if not home or not home[2] then
             return Commands.error{ "expcom-home.no-return" }
         end
-        local rtn = floor_pos(player.position)
+        local rtn = floor_pos(player.physical_position)
         teleport(player, home[2])
         home[2] = rtn
         Commands.print{ "expcom-home.return-set", rtn.x, rtn.y }

@@ -75,8 +75,9 @@ end
 -- When the player changes position the tile will have a chance to downgrade, debug check is here
 Event.add(defines.events.on_player_changed_position, function(event)
     local player = game.players[event.player_index]
-    local surface = player.surface
-    local position = player.position
+    if player.controller_type ~= defines.controllers.character then return end
+    local surface = player.physical_surface
+    local position = player.physical_position
     local strength = get_tile_strength(surface, position)
     if not strength then return end
     if get_probability(strength) > math.random() then

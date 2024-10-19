@@ -9,6 +9,7 @@ local Selection = require("modules.exp_legacy.modules.control.selection") --- @d
 local SelectionArtyArea = "ArtyArea"
 
 local function location_break(player, pos)
+    -- Intentionally left as player.surface to allow use in remote view
     if player.force.is_chunk_charted(player.surface, { x = math.floor(pos.left_top.x / 32), y = math.floor(pos.left_top.y / 32) }) then
         return true
     elseif player.force.is_chunk_charted(player.surface, { x = math.floor(pos.left_top.x / 32), y = math.floor(pos.right_bottom.y / 32) }) then

@@ -27,7 +27,7 @@ local function create_map_tag(death)
         local time = map_tag_time_format(death.time_of_death)
         message = message .. " at " .. time
     end
-    death.tag = player.force.add_chart_tag(player.surface, {
+    death.tag = player.force.add_chart_tag(player.physical_surface, {
         position = death.position,
         icon = config.map_icon,
         text = message,
@@ -65,7 +65,7 @@ end
 --- @param event EventData.on_player_died
 Event.add(defines.events.on_player_died, function(event)
     local player = game.players[event.player_index]
-    local corpse = player.surface.find_entity("character-corpse", player.position)
+    local corpse = player.surface.find_entity("character-corpse", player.physical_position)
     if not corpse or not corpse.valid then return end
     if config.use_chests_as_bodies then
         local inventory = assert(corpse.get_inventory(defines.inventory.character_corpse))
@@ -83,7 +83,7 @@ Event.add(defines.events.on_player_died, function(event)
     local death = {
         player_name = player.name,
         time_of_death = event.tick,
-        position = player.position,
+        position = player.physical_position,
         corpse = corpse,
     }
     if config.show_map_markers then

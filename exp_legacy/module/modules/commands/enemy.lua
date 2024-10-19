@@ -17,6 +17,7 @@ Commands.new_command("remove-biters", { "expcom-enemy.description-remove" }, "Re
     :set_flag("admin_only")
     :add_param("surface", true, "surface")
     :set_defaults{ surface = function(player)
+        -- Intentionally left as player.surface to allow use in remote view
         return player.surface
     end }
     :register(function(_, surface)

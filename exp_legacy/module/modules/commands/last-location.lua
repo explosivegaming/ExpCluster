@@ -16,5 +16,5 @@ Commands.new_command("last-location", { "expcom-lastlocation.description" }, "Se
     :add_param("player", false, "player")
     :register(function(_, action_player)
         local action_player_name_color = format_player_name(action_player)
-        return Commands.success{ "expcom-lastlocation.response", action_player_name_color, string.format("%.1f", action_player.position.x), string.format("%.1f", action_player.position.y) }
+        return Commands.success{ "expcom-lastlocation.response", action_player_name_color, string.format("%.1f", action_player.physical_position.x), string.format("%.1f", action_player.physical_position.y) }
     end)

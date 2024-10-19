@@ -45,7 +45,10 @@ Event.add(defines.events.on_player_created, function(event)
     util.insert_safe(player, global.created_items)
 
     local r = global.chart_distance or 200
-    player.force.chart(player.surface, { { player.position.x - r, player.position.y - r }, { player.position.x + r, player.position.y + r } })
+    player.force.chart(player.physical_surface, {
+        { player.physical_position.x - r, player.physical_position.y - r },
+        { player.physical_position.x + r, player.physical_position.y + r }
+    })
 
     if not global.skip_intro then
         if game.is_multiplayer() then

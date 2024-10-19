@@ -11,6 +11,7 @@ Commands.new_command("pollution-clear", { "expcom-pol.description-clr" }, "Clear
     :add_alias("pol-clr")
     :add_param("surface", true, "surface")
     :set_defaults{ surface = function(player)
+        -- Intentionally left as player.surface to allow use in remote view
         return player.surface
     end }
     :register(function(player, surface)
