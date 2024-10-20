@@ -45,19 +45,22 @@ local function format_as_pages(commands, page_size)
             description = command.description
         end
 
-        local aliases = #command.aliases > 0 and { "exp-commands-help.aliases", table.concat(command.aliases, ", ") } or ""
-        pages[current_page][page_length] = { "exp-commands-help.format", command.name, description, aliases }
+        local aliases = #command.aliases > 0 and { "exp-commands_help.aliases", table.concat(command.aliases, ", ") } or ""
+        pages[current_page][page_length] = { "exp-commands_help.format", command.name, description, aliases }
     end
 
     return pages, total
 end
 
-Commands.new("commands", { "exp-commands-help.description" })
-    :add_aliases{ "chelp", "helpp" }
-    :optional("keyword", { "exp-commands-help.arg-keyword" }, Commands.types.string)
-    :optional("page", { "exp-commands-help.arg-page" }, Commands.types.integer)
+Commands.new("commands", { "exp-commands_help.description" })
+    :optional("keyword", { "exp-commands_help.arg-keyword" }, Commands.types.string)
+    :optional("page", { "exp-commands_help.arg-page" }, Commands.types.integer)
     :defaults{ keyword = "", page = 1 }
+    :add_aliases{ "chelp", "helpp" }
     :register(function(player, keyword, page)
+        --- @cast keyword string | number
+        --- @cast page number
+
         -- Allow listing of all commands
         local as_number = tonumber(keyword)
         local cache = search_cache[player.index]
@@ -81,20 +84,20 @@ Commands.new("commands", { "exp-commands-help.description" })
 
         -- Error if no pages found
         if found == 0 then
-            return Commands.status.success{ "exp-commands-help.no-results" }
+            return Commands.status.success{ "exp-commands_help.no-results" }
         end
 
         local page_data = pages[page]
         if page_data == nil then
             -- Page number was out of range for this search
-            return Commands.status.invalid_input{ "exp-commands-help.out-of-range", page, #pages }
+            return Commands.status.invalid_input{ "exp-commands_help.out-of-range", page, #pages }
         end
 
         -- Print selected page to the player
-        Commands.print{ "exp-commands-help.header", keyword == "" and "<all>" or keyword }
+        Commands.print{ "exp-commands_help.header", keyword == "" and "<all>" or keyword }
         for _, command in pairs(page_data) do
             Commands.print(command)
         end
 
-        return Commands.status.success{ "exp-commands-help.footer", found, page, #pages }
+        return Commands.status.success{ "exp-commands_help.footer", found, page, #pages }
     end)

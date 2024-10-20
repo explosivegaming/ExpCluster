@@ -1,8 +1,5 @@
 {
-	"extends": "../../../tsconfig.node.json",
-	"references": [
-		{ "path": "../../../packages/lib/tsconfig.node.json" },
-	],
+	"extends": "../tsconfig.node.json",
 	"include": ["./**/*.ts"],
 	"exclude": ["test/*", "./dist/*"],
 }

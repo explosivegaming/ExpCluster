@@ -83,7 +83,7 @@ function Commands.on_init() Search.prepare(Commands.registered_commands) end
 --- @package
 function Commands.on_load() Search.prepare(Commands.registered_commands) end
 
---- @alias Commands.Callback fun(player: LuaPlayer, ...: any): Commands.Status?, LocalisedString?
+--- @alias Commands.Callback fun(player: LuaPlayer, ...: any?): Commands.Status?, LocalisedString?
 --- This is a default callback that should never be called
 local function default_command_callback()
     return Commands.status.internal_error("No callback registered")
@@ -276,22 +276,29 @@ end
 --- @alias Commands.InputParserFactory fun(...: any): Commands.InputParser<T>
 
 --- Add a new input parser to the command library, this method validates that it does not already exist
+--- @generic T : Commands.InputParser | Commands.InputParserFactory
 --- @param data_type string The name of the data type the input parser reads in and validates, becomes a key of Commands.types
---- @param input_parser Commands.InputParser | Commands.InputParserFactory The function used to parse and validate the data type
---- @return string # The data type passed as the first argument
+--- @param input_parser `T` The function used to parse and validate the data type
+--- @return T # The function which was provided as the second argument
 function Commands.add_data_type(data_type, input_parser)
     if Commands.types[data_type] then
         local defined_at = ExpUtil.get_function_name(Commands.types[data_type], true)
         error("Data type \"" .. tostring(data_type) .. "\" already has a parser registered: " .. defined_at, 2)
     end
     Commands.types[data_type] = input_parser
-    return data_type
+    return input_parser
 end
 
 --- Remove an input parser for a data type, must be the same string that was passed to add_input_parser
---- @param data_type string The name of data type you want to remove the input parser for
+--- @param data_type string | Commands.InputParser | Commands.InputParserFactory The data type or input parser you want to remove the input parser for
 function Commands.remove_data_type(data_type)
     Commands.types[data_type] = nil
+    for k, v in pairs(Commands.types) do
+        if v == data_type then
+            Commands.types[k] = nil
+            return
+        end
+    end
 end
 
 --- Parse and validate an input string as a given data type

@@ -11,12 +11,15 @@ local Clustorio = require("modules/clusterio/api")
 
 local json_to_table = helpers.json_to_table
 
-Commands.new("_ipc", { "exp-commands-ipc.description" })
-    :add_flags{ "system_only" }
+Commands.new("_ipc", { "exp-commands_ipc.description" })
+    :argument("channel", { "exp-commands_ipc.arg-channel" }, Commands.types.string)
+    :argument("message", { "exp-commands_ipc.arg-message" }, Commands.types.string)
     :enable_auto_concatenation()
-    :argument("channel", { "exp-commands-ipc.arg-channel" }, Commands.types.string)
-    :argument("message", { "exp-commands-ipc.arg-message" }, Commands.types.string)
+    :add_flags{ "system_only" }
     :register(function(_player, channel, message)
+        --- @cast channel string
+        --- @cast message string
+
         local tbl = json_to_table(message)
         if tbl == nil then
             return Commands.status.invalid_input("Invalid json string")

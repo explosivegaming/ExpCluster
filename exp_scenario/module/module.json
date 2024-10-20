@@ -1,0 +1,13 @@
+{
+	"name": "exp_scenario",
+	"load": [
+	],
+	"require": [
+		"control.lua"
+	],
+	"dependencies": {
+		"clusterio": "*",
+		"exp_util": "*",
+		"exp_commands": "*"
+	}
+}

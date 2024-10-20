@@ -62,7 +62,7 @@ end
 authorities.character_only =
     add(function(player, command)
         if command.flags.character_only and player.controller_type ~= defines.controllers.character then
-            return deny{ "exp-commands-permissions.character-only" }
+            return deny{ "exp-commands-authorities.character-only" }
         else
             return allow()
         end
@@ -72,7 +72,7 @@ authorities.character_only =
 authorities.remote_only =
     add(function(player, command)
         if command.flags.character_only and player.controller_type ~= defines.controllers.remote then
-            return deny{ "exp-commands-permissions.remote-only" }
+            return deny{ "exp-commands-authorities.remote-only" }
         else
             return allow()
         end
@@ -82,7 +82,7 @@ authorities.remote_only =
 authorities.admin_only =
     add(function(player, command)
         if command.flags.admin_only and not player.admin then
-            return deny{ "exp-commands-permissions.admin-only" }
+            return deny{ "exp-commands-authorities.admin-only" }
         else
             return allow()
         end
@@ -92,7 +92,7 @@ authorities.admin_only =
 authorities.system_only =
     add(function(player, command)
         if command.flags.system_only and not system_players[player.name] then
-            return deny{ "exp-commands-permissions.system-only" }
+            return deny{ "exp-commands-authorities.system-only" }
         else
             return allow()
         end
@@ -102,7 +102,7 @@ authorities.system_only =
 authorities.disabled =
     add(function(_player, command)
         if disabled_commands[command.name] then
-            return deny{ "exp-commands-permissions.disabled" }
+            return deny{ "exp-commands-authorities.disabled" }
         else
             return allow()
         end

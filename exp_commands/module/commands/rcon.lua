@@ -61,11 +61,13 @@ function Commands.add_rcon_callback(name, callback)
     rcon_callbacks[name] = callback
 end
 
-Commands.new("_rcon", { "exp-commands-rcon.description" })
-    :add_flags{ "system_only" }
+Commands.new("_rcon", { "exp-commands_rcon.description" })
+    :argument("invocation", { "exp-commands_rcon.arg-invocation" }, Commands.types.string)
     :enable_auto_concatenation()
-    :argument("invocation", { "exp-commands-rcon.arg-invocation" }, Commands.types.string)
+    :add_flags{ "system_only" }
     :register(function(player, invocation_string)
+        --- @cast invocation_string string
+
         -- Construct the environment the command will run within
         local env = setmetatable({}, { __index = rcon_env, __newindex = rcon_env })
         for name, callback in pairs(rcon_callbacks) do

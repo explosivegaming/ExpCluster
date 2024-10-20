@@ -1,0 +1,7 @@
+{
+	"extends": "../../tsconfig.browser.json",
+	"references": [
+		{ "path": "../../packages/lib/tsconfig.browser.json" },
+		{ "path": "../../packages/web_ui/tsconfig.browser.json" },
+	]
+}
