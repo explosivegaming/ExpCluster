@@ -20,56 +20,36 @@
     <img src="https://discordapp.com/api/guilds/260843215836545025/widget.png?style=shield" alt="Discord">
   </a>
 </p>
-<h1 align="center">ExpGaming Scenario Repository</h2>
+<h1 align="center">ExpGaming Clusterio Repository</h2>
 
 ## Explosive Gaming
 
 Explosive Gaming (often ExpGaming) is a server hosting community with a strong focus on [Factorio][factorio] and games with similar themes. We are best known for our weekly reset Factorio server with a vanilla+ scenario where we add new features and mechanics that are balanced with base game progression. Although our servers tend to attract the more experienced players, our servers are open to everyone. You can find us through our [website], [discord], or the public server list with the name ExpGaming.
 
-## Use and Installation
+## Installation
 
-1) Download our [git repository][experimental-dl] for the latest version. For a stable release you can download from our [stable branch][stable-dl]. See [releases](#releases) for other major releases.
+This is a plugin collection for [Clustorio](https://github.com/clusterio/clusterio) which provides all our scenario features.
 
-2) Extract the downloaded zip file into your Factorio scenario directory:
-    * Windows: `%appdata%\Factorio\scenarios`
-    * Linux: `~/.factorio/scenarios`
+To use this plugin you must already have a clustorio instance running, see [here](https://github.com/clusterio/clusterio?tab=readme-ov-file#installation) for clustorio installation instructions.
 
-3) Within the scenario you can find `./config/_file_loader.lua` which contains a list of all the modules which will be loaded by the scenario. Comment out (or delete) lines for features you do not want. Be aware modules may load other modules as dependencies even when removed from the list.
+This module is currently not published and therefore can not be installed via `npm`. Instead follow the steps for [building from source](#building-from-source)
 
-4) More advanced users can adjust other configs files within `./config` but some files will require a basic understanding of lua.
+## Building from source
 
-5) Once you have made your config changes: open Factorio, select either single or multiplayer, select (host) new game, and finally select our scenario which will be called `scenario-stable` or `scenario-dev` under user scenarios.
-
-6) You will now be asked to generate your map and the scenario will load all selected modules. If any module does not load as expected please check `factorio-current.log` in your Factorio directory for errors and report them on our [issues page][issues].
+1) Create a `external_plugins` directory within your clustorio instance.
+2) Clone this repository into that directory: `git clone https://github.com/explosivegaming/ExpCluster`
+3) Install the package dev dependencies: `pnpm install`
+4) Add the plugins to your clustorio instance such as: `npx clustorioctl plugin add ./external_plugins/ExpCluster/exp_groups`
 
 ## Contributing
 
-All are welcome to make bug reports, feature requests, and pull requests for our scenario. We do not require you to have any lua or coding knowledge to make bug reports and feature requests. If you have any questions ask us in our [discord].
-
-For developers wanting to add features please follow these guidelines:
-
-* All code is documented using ldoc, the end result can be found [here][docs].
-* Changes should be made on your own fork and merged into `dev` through a pull request.
-* Each pull request should be limited to one feature or a few bug fixes.
-* Pull requests are automatically checked for lint and documentation errors.
-* Pull requests are manually reviewed to maintain code and language quality.
-* New features should have the branch names: `feature/feature-name`
-* Bug fixes should have the branch names: `fix/bug-name`
-* Commits should have meaningful messages.
-
-About our versioning and branch structure:
-
-* Versions track changes to the stable branch and are managed by organisation members.
-* Versions to not track changes on the dev branch which may contain some critical bugs.
-* Other branches may exist for alternative version of our scenario, these are not versioned.
-* Major releases contain significant changes to core modules.
-* Minor releases contain many new features and bug fixes.
-* Patch releases are only used for critical bugs.
+See [Contributing](CONTRIBUTING.md) for how to make pull requests and issues.
 
 ## Releases
 
 | Release* | Release Name | Factorio Version** |
 |---|---|---|
+| [6.4][s6.4] | Farewell Factorio 1.1 | [1.1.110][f1.1.110] |
 | [6.3][s6.3] | Feature Bundle 2: Electric Boogaloo | [1.1.101][f1.1.101] |
 | [6.2][s6.2] | Mega Feature Bundle | [1.1.32][f1.1.32] |
 | [6.1][s6.1] | External Data Overhaul | [1.0.0][f1.0.0] |
@@ -95,6 +75,7 @@ About our versioning and branch structure:
 
 \*\* Factorio versions show the version they were made for, often the minimum requirement to run the scenario.
 
+[s6.4]: https://github.com/explosivegaming/scenario/releases/tag/6.4.0
 [s6.3]: https://github.com/explosivegaming/scenario/releases/tag/6.3.0
 [s6.2]: https://github.com/explosivegaming/scenario/releases/tag/6.2.0
 [s6.1]: https://github.com/explosivegaming/scenario/releases/tag/6.1.0
@@ -116,6 +97,7 @@ About our versioning and branch structure:
 [s1.0]: https://github.com/explosivegaming/scenario/releases/tag/v1.0
 [s0.1]: https://github.com/explosivegaming/scenario/releases/tag/v0.1
 
+[f1.1.110]: https://wiki.factorio.com/Version_history/1.1.0#1.1.110
 [f1.1.101]: https://wiki.factorio.com/Version_history/1.1.0#1.1.101
 [f1.1.32]: https://wiki.factorio.com/Version_history/1.1.0#1.1.32
 [f1.0.0]: https://wiki.factorio.com/Version_history/1.0.0#1.0.0
@@ -138,7 +120,7 @@ About our versioning and branch structure:
 
 ## License
 
-The Explosive Gaming codebase is licensed under the [GNU General Public License v3.0](LICENSE)
+The Explosive Gaming codebase is licensed under the [MIT](LICENSE)
 
 [stable-dl]: https://github.com/explosivegaming/scenario/archive/master.zip
 [experimental-dl]: https://github.com/explosivegaming/scenario/archive/dev.zip

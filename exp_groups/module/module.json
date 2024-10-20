@@ -1,0 +1,12 @@
+{
+	"name": "exp_groups",
+	"load": [
+		"control.lua"
+	],
+	"require": [
+	],
+	"dependencies": {
+		"clusterio": "*",
+		"exp_util": "*"
+	}
+}

@@ -1,0 +1,40 @@
+{
+	"name": "exp_groups",
+	"version": "0.1.0",
+	"description": "Example Description. Package. Change me in package.json",
+	"main": "dist/node/index.js",
+	"scripts": {
+		"prepare": "tsc --build && webpack-cli --env production"
+	},
+	"engines": {
+		"node": ">=18"
+	},
+	"peerDependencies": {
+		"@clusterio/lib": "workspace:*"
+	},
+	"devDependencies": {
+		"@clusterio/lib": "workspace:*",
+		"@clusterio/web_ui": "workspace:*",
+		"@types/fs-extra": "^11.0.1",
+		"@types/node": "^20.4.5",
+		"@types/react": "^18.2.21",
+		"antd": "^5.13.0",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0",
+		"typescript": "^5.5.3",
+		"webpack": "^5.88.2",
+		"webpack-cli": "^5.1.4",
+		"webpack-merge": "^5.9.0"
+	},
+	"dependencies": {
+		"@sinclair/typebox": "^0.30.4",
+		"fs-extra": "^11.2.0"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"keywords": [
+		"clusterio",
+		"factorio"
+	]
+}

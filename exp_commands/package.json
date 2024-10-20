@@ -1,0 +1,33 @@
+{
+	"name": "@explosivegaming/commands",
+	"version": "0.0.1",
+	"description": "Clusterio module for command handling",
+	"author": "Cooldude2606 <https://github.com/Cooldude2606>",
+	"license": "MIT",
+	"repository": "explosivegaming/clustorio-exp-commands",
+	"main": "dist/node/index.js",
+	"scripts": {
+		"prepare": "tsc --build"
+	},
+	"engines": {
+		"node": ">=18"
+	},
+	"peerDependencies": {
+		"@clusterio/lib": "workspace:*"
+	},
+	"devDependencies": {
+		"@clusterio/lib": "workspace:*",
+		"@types/node": "^20.14.9",
+		"typescript": "^5.5.3"
+	},
+	"dependencies": {
+		"@sinclair/typebox": "^0.30.4"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"keywords": [
+		"clusterio",
+		"factorio"
+	]
+}

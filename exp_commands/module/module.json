@@ -1,0 +1,15 @@
+{
+	"name": "exp_commands",
+	"require": [
+		"commands/data_types.lua",
+		"commands/permission_authorities.lua",
+		"commands/help.lua",
+		"commands/rcon.lua",
+		"commands/sudo.lua",
+		"commands/ipc.lua"
+	],
+	"dependencies": {
+		"clusterio": "*",
+		"exp_util": "*"
+	}
+}

@@ -70,14 +70,6 @@ do -- Assume Factorio Control Stage as Default
     }
 end
 
-do -- RedMew and ExpGaming overrides
-    globals = {
-        'math', 'table',
-        'print', 'require', 'unpack', 'inspect', 'loadstring', 'ServerCommands', 'Debug',
-        '_C', '_DEBUG', '_CHEATS', '_DUMP_ENV', '_LIFECYCLE', '_STAGE',
-    }
-end
-
 do -- Set default prototype files
     files['**/data.lua'].std = STD_DATA
     files['**/data-updates.lua'].std = STD_DATA
@@ -221,7 +213,7 @@ do -- Factorio STDs--
                 fields = {
                     "on_event", "on_nth_tick", "on_configuration_changed", "on_init", "on_load", "generate_event_name",
                     "raise_event", "get_event_handler", "mod_name", "get_event_order",
-                    "is_game_in_debug_mode", "object_name", "set_event_filter", "get_event_filter",
+                    "is_game_in_debug_mode", "object_name", "set_event_filter", "get_event_filter", "register_metatable",
                     active_mods = {read_only = true, other_fields = true},
                 },
                 other_fields = false,
@@ -1026,21 +1018,6 @@ do -- Factorio Defines STDs--
                             'northwest'
                         }
                     },
-                    disconnect_reason = {
-                        fields = {
-                            'quit',
-                            'dropped',
-                            'reconnect',
-                            'wrong_input',
-                            'desync_limit_reached',
-                            'cannot_keep_up',
-                            'afk',
-                            'kicked',
-                            'kicked_and_deleted',
-                            'banned',
-                            'switching_servers'
-                        }
-                    },
                     distraction = {
                         fields = {
                             'by_enemy',
@@ -1095,10 +1072,8 @@ do -- Factorio Defines STDs--
                             'on_robot_built_entity',
                             'on_robot_pre_mined',
                             'on_robot_mined',
-                            'on_research_cancelled',
-                            'on_research_finished',
-                            'on_research_reversed',
                             'on_research_started',
+                            'on_research_finished',
                             'on_player_rotated_entity',
                             'on_player_set_quickbar_slot',
                             'on_marked_for_deconstruction',
@@ -1231,7 +1206,7 @@ do -- Factorio Defines STDs--
                     },
                     flow_precision_index = {
                         fields = {
-                            'five_seconds',
+                            'one_second',
                             'one_minute',
                             'ten_minutes',
                             'one_hour',
