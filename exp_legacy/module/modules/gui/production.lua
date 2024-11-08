@@ -129,8 +129,7 @@ end)
 Event.on_nth_tick(60, function()
     for _, player in pairs(game.connected_players) do
         local frame = Gui.get_left_element(player, production_container)
-        -- Intentionally left as player.surface to allow use in remote view
-        local stat = player.force.get_item_production_statistics(player.surface)
+        local stat = player.force.get_item_production_statistics(player.surface) -- Allow remote view
         local precision_value = precision[frame.container["production_st"].disp.table["production_0_e"].selected_index]
         local table = frame.container["production_st"].disp.table
 

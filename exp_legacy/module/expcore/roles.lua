@@ -311,6 +311,15 @@ function Roles.get_role_from_any(any)
     end
 end
 
+--- Returns all roles in order of index
+function Roles.get_roles_ordered()
+    local rtn = {}
+    for index, role_name in ipairs(Roles.config.order) do
+        rtn[index] = Roles.config.roles[role_name]
+    end
+    return rtn
+end
+
 --[[-- Gets all the roles of the given player, this will always contain the default role
 @tparam LuaPlayer player the player to get the roles of
 @treturn table a table where the values are the roles which the player has

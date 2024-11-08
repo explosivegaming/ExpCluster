@@ -6,8 +6,7 @@
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local config = require("modules.exp_legacy.config.bonus") --- @dep config.bonuses
-local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
-require("modules.exp_legacy.config.expcore.command_general_parse")
+local Commands = require("modules/exp_commands")
 
 -- Stores the bonus for the player
 local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
@@ -47,19 +46,16 @@ PlayerBonus:on_update(function(player_name, player_bonus)
 end)
 
 --- Changes the amount of bonus you receive
--- @command bonus
--- @tparam number amount range 0-10 the increase for your bonus
-Commands.new_command("bonus", "Changes the amount of bonus you receive")
-    :add_param("amount", "integer-range", 0, 10)
+Commands.new("bonus", { "bonus.description" })
+    :optional("amount", { "bonus.arg-amount" }, Commands.types.integer_range(0, 10))
     :register(function(player, amount)
-        if not Roles.player_allowed(player, "command/bonus") then
-            Commands.print{ "expcom-bonus.perm", 1 }
-            return
+        --- @cast amount number?
+        if amount then
+            PlayerBonus:set(player, amount)
+            return Commands.status.success{ "bonus.set", amount }
+        else
+            return Commands.status.success{ "bonus.get", PlayerBonus:get(player) }
         end
-
-        PlayerBonus:set(player, amount)
-
-        Commands.print{ "expcom-bonus.set", amount }
     end)
 
 --- When a player respawns re-apply bonus

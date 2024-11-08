@@ -24,7 +24,8 @@ function Public.show(container)
     local left_panel_style = left_panel.style
     left_panel_style.width = 300
 
-    for token_id in pairs(Storage.registered) do
+    --- @diagnostic disable-next-line invisible
+    for token_id in pairs(Storage._registered) do
         local header = left_panel.add{ type = "flow" }.add{ type = "label", name = header_name, caption = token_id }
         Gui.set_data(header, token_id)
     end

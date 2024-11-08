@@ -3,7 +3,7 @@
     @data Quickbar
 ]]
 
-local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+local Commands = require("modules/exp_commands")
 local config = require("modules.exp_legacy.config.preset_player_quickbar") --- @dep config.preset_player_quickbar
 
 --- Stores the quickbar filters for a player
@@ -32,7 +32,7 @@ PlayerFilters:on_load(function(player_name, filters)
     end
 end)
 
-local ignoredItems = {
+local ignored_items = {
     ["blueprint"] = true,
     ["blueprint-book"] = true,
     ["deconstruction-planner"] = true,
@@ -41,9 +41,8 @@ local ignoredItems = {
 }
 
 --- Saves your quickbar preset to the script-output folder
--- @command save-quickbar
-Commands.new_command("save-quickbar", "Saves your Quickbar preset items to file")
-    :add_alias("save-toolbar")
+Commands.new("save-quickbar", "Saves your Quickbar preset items to file")
+    :add_aliases{ "save-toolbar" }
     :register(function(player)
         local filters = {}
 
@@ -51,7 +50,7 @@ Commands.new_command("save-quickbar", "Saves your Quickbar preset items to file"
             local slot = player.get_quick_bar_slot(i)
             -- Need to filter out blueprint and blueprint books because the slot is a LuaItemPrototype and does not contain a way to export blueprint data
             if slot ~= nil then
-                local ignored = ignoredItems[slot.name]
+                local ignored = ignored_items[slot.name]
                 if ignored ~= true then
                     filters[i] = slot.name
                 end
@@ -64,5 +63,5 @@ Commands.new_command("save-quickbar", "Saves your Quickbar preset items to file"
             PlayerFilters:remove(player)
         end
 
-        return { "quickbar.saved" }
+        return Commands.status.success{ "quickbar.saved" }
     end)

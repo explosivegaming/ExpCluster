@@ -17,7 +17,7 @@ local main_frame_name = Gui.uid_name()
 local close_name = Gui.uid_name()
 local tab_name = Gui.uid_name()
 
-function Public.open_dubug(player)
+function Public.open_debug(player)
     for i = 1, #pages do
         local page = pages[i]
         local callback = page.on_open_debug

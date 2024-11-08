@@ -31,9 +31,11 @@ WrapData:set_serializer(function(raw_key) return raw_key.warp_id end)
 
 local Warps = {}
 
+--- @class ExpScenario_Warps.force_warps: { spawn: string, [number]: string }
+
 -- Storage lookup table for force name to task ids
 local force_warps = { _uid = 1 }
---- @cast force_warps table<string, { spawn: string, [number]: string }>
+--- @cast force_warps table<string, ExpScenario_Warps.force_warps>
 Storage.register(force_warps, function(tbl)
     force_warps = tbl
 end)
@@ -61,7 +63,7 @@ WrapData:on_update(function(warp_id, warp, old_warp)
         local warp_ids = force_warps[force_name]
         local spawn_id = warp_ids.spawn
 
-        local warp_names = {}
+        local warp_names = {} --- @type table<string, string>
         for _, next_warp_id in pairs(warp_ids) do
             local next_warp = WrapData:get(next_warp_id)
             if next_warp_id ~= spawn_id then
@@ -71,6 +73,7 @@ WrapData:on_update(function(warp_id, warp, old_warp)
 
         -- Sort the warp names in alphabetical order
         local new_warp_ids = table.get_values(table.key_sort(warp_names))
+        --- @cast new_warp_ids ExpScenario_Warps.force_warps
         table.insert(new_warp_ids, 1, spawn_id)
         new_warp_ids.spawn = spawn_id
         force_warps[force_name] = new_warp_ids

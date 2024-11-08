@@ -195,7 +195,7 @@ Gui.toggle_top_flow(game.player, true)
 ]]
 function Gui.toggle_top_flow(player, state)
     -- Get the top flow, we need the parent as we want to toggle the outer frame
-    local top_flow = Gui.get_top_flow(player).parent
+    local top_flow = Gui.get_top_flow(player).parent --- @cast top_flow -nil
     if state == nil then state = not top_flow.visible end
 
     -- Get the show button for the top flow

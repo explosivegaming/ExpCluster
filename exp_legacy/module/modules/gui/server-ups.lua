@@ -6,8 +6,8 @@
 
 local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
-local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
 local External = require("modules.exp_legacy.expcore.external") --- @dep expcore.external
+local Commands = require("modules/exp_commands")
 
 --- Stores the visible state of server ups
 local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
@@ -34,19 +34,19 @@ local server_ups =
 UsesServerUps:on_load(function(player_name, visible)
     local player = game.players[player_name]
     local label = player.gui.screen[server_ups.name]
+    --- @diagnostic disable-next-line undefined-field
     if not External.valid() or not global.ext.var.server_ups then visible = false end
     label.visible = visible
 end)
 
 --- Toggles if the server ups is visbile
--- @command server-ups
-Commands.new_command("server-ups", "Toggle the server UPS display")
-    :add_alias("sups", "ups")
+Commands.new("server-ups", { "server-ups.description" })
+    :add_aliases{ "sups", "ups" }
     :register(function(player)
         local label = player.gui.screen[server_ups.name]
         if not External.valid() then
             label.visible = false
-            return Commands.error{ "expcom-server-ups.no-ext" }
+            return Commands.status.error{ "server-ups.no-ext" }
         end
         label.visible = not label.visible
         UsesServerUps:set(player, label.visible)

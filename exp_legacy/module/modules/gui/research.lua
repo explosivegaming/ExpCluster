@@ -107,12 +107,12 @@ local function research_notification(event)
             end
         else
             if not (event.by_script) then
-                game.print{ "expcom-res.inf", research_time_format(game.tick), event.research.name, event.research.level - 1 }
+                game.print{ "research.inf", research_time_format(game.tick), event.research.name, event.research.level - 1 }
             end
         end
     else
         if not (event.by_script) then
-            game.print{ "expcom-res.msg", research_time_format(game.tick), event.research.name }
+            game.print{ "research.msg", research_time_format(game.tick), event.research.name }
         end
 
         if config.bonus_inventory.enabled then
@@ -139,7 +139,7 @@ local function research_gui_update()
         local res_i = res_n + i - 3
 
         if res["disp"][res_i] then
-            res_disp[i]["name"] = { "expcom-res.res-name", res["disp"][res_i]["raw_name"], prototypes.technology[res["disp"][res_i]["raw_name"]].localised_name }
+            res_disp[i]["name"] = { "research.res-name", res["disp"][res_i]["raw_name"], prototypes.technology[res["disp"][res_i]["raw_name"]].localised_name }
 
             if research.time[res_i] == 0 then
                 res_disp[i]["target"] = res["disp"][res_i].target_disp
@@ -237,10 +237,10 @@ local research_data_set =
         local res_disp = research_gui_update()
 
         research_data_group(disp, 0)
-        disp["research_0_name"].caption = { "expcom-res.name" }
-        disp["research_0_target"].caption = { "expcom-res.target" }
-        disp["research_0_attempt"].caption = { "expcom-res.attempt" }
-        disp["research_0_difference"].caption = { "expcom-res.difference" }
+        disp["research_0_name"].caption = { "research.name" }
+        disp["research_0_target"].caption = { "research.target" }
+        disp["research_0_attempt"].caption = { "research.attempt" }
+        disp["research_0_difference"].caption = { "research.difference" }
 
         for i = 1, 8, 1 do
             research_data_group(disp, i)
@@ -269,7 +269,7 @@ local research_container =
     :static_name(Gui.unique_static_name)
     :add_to_left_flow()
 
-Gui.left_toolbar_button("item/space-science-pack", { "expcom-res.main-tooltip" }, research_container, function(player)
+Gui.left_toolbar_button("item/space-science-pack", { "research.main-tooltip" }, research_container, function(player)
     return Roles.player_allowed(player, "gui/research")
 end)
 

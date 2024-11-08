@@ -3,11 +3,8 @@
     @data Tag
 ]]
 
-local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+local Commands = require("modules/exp_commands")
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
-require("modules.exp_legacy.config.expcore.command_general_parse")
-require("modules.exp_legacy.config.expcore.command_role_parse")
-require("modules.exp_legacy.config.expcore.command_color_parse")
 
 --- Stores the tag for a player
 local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
@@ -47,42 +44,39 @@ PlayerTagColors:on_update(function(player_name, player_tag_color)
 end)
 
 --- Sets your player tag.
--- @command tag
--- @tparam string tag the tag that will be after the name, there is a max length
-Commands.new_command("tag", "Sets your player tag.")
-    :add_param("tag", false, "string-max-length", 20)
-    :enable_auto_concat()
+Commands.new("tag", "Sets your player tag.")
+    :argument("tag", "", Commands.types.string_max_length(20))
+    :enable_auto_concatenation()
     :register(function(player, tag)
+        --- @cast tag string
         PlayerTags:set(player, tag)
     end)
 
 --- Sets your player tag color.
--- @command tag
--- @tparam string color name.
-Commands.new_command("tag-color", "Sets your player tag color.")
-    :add_param("color", false, "color")
-    :enable_auto_concat()
+Commands.new("tag-color", "Sets your player tag color.")
+    :argument("color", "", Commands.types.color)
+    :enable_auto_concatenation()
     :register(function(player, color)
+        --- @cast color Color
         PlayerTagColors:set(player, color)
     end)
 
 --- Clears your tag. Or another player if you are admin.
--- @command tag-clear
--- @tparam[opt=self] LuaPlayer player the player to remove the tag from, nil will apply to self
-Commands.new_command("tag-clear", "Clears your tag. Or another player if you are admin.")
-    :add_param("player", true, "player-role")
-    :set_defaults{ player = function(player)
-        return player -- default is the user using the command
-    end }
-    :register(function(player, action_player)
-        if action_player.index == player.index then
-            -- no player given so removes your tag
-            PlayerTags:remove(action_player)
+Commands.new("tag-clear", "Clears your tag. Or another player if you are admin.")
+    :optional("player", "", Commands.types.lower_role_player)
+    :defaults{
+        player = function(player) return player end
+    }
+    :register(function(player, other_player)
+        --- @cast other_player LuaPlayer
+        if other_player == player then
+            -- No player given so removes your tag
+            PlayerTags:remove(other_player)
         elseif Roles.player_allowed(player, "command/clear-tag/always") then
-            -- player given and user is admin so clears that player's tag
-            PlayerTags:remove(action_player)
+            -- Player given and user is admin so clears that player's tag
+            PlayerTags:remove(other_player)
         else
-            -- user is not admin and tried to clear another users tag
-            return Commands.error{ "expcore-commands.unauthorized" }
+            -- User is not admin and tried to clear another users tag
+            return Commands.status.unauthorised()
         end
     end)

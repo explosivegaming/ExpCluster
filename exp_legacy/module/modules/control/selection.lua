@@ -123,8 +123,8 @@ function Selection.is_selecting(player, selection_name)
 end
 
 --- Filter on_player_selected_area to this custom selection, appends the selection arguments
--- @tparam string selection_name The name of the selection to listen for
--- @tparam function handler The event handler
+-- @param string selection_name The name of the selection to listen for
+-- @param function handler The event handler
 function Selection.on_selection(selection_name, handler)
     Event.add(defines.events.on_player_selected_area, function(event)
         local selection = selections[event.player_index]

@@ -1,4 +1,4 @@
-local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+local Commands = require("modules/exp_commands")
 local config = require("modules.exp_legacy.config.personal_logistic") --- @dep config.personal-logistic
 
 local function pl(type, target, amount)
@@ -66,21 +66,20 @@ local function pl(type, target, amount)
     end
 end
 
-Commands.new_command("personal-logistic", "Set Personal Logistic (-1 to cancel all) (Select spidertron to edit spidertron)")
-    :add_param("amount", "integer-range", -1, 10)
-    :add_alias("pl")
+Commands.new("personal-logistic", "Set Personal Logistic (-1 to cancel all) (Select spidertron to edit spidertron)")
+    :argument("amount", "", Commands.types.integer_range(-1, 10))
+    :add_aliases{ "pl" }
     :register(function(player, amount)
+        --- @cast amount number
         if player.force.technologies["logistic-robotics"].researched then
             if player.selected ~= nil then
                 if player.selected.name == "spidertron" then
                     pl("s", player.selected, amount / 10)
-                    return Commands.success
                 end
             else
                 pl("p", player, amount / 10)
-                return Commands.success
             end
         else
-            player.print("Personal Logistic not researched")
+            return Commands.status.error("Personal Logistic not researched")
         end
     end)

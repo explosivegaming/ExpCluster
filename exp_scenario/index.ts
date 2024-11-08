@@ -25,9 +25,6 @@ export const plugin: lib.PluginDeclaration = {
 	instanceEntrypoint: "./dist/node/instance",
 
 	messages: [
-		Messages.PluginExampleEvent,
-		Messages.PluginExampleRequest,
-		Messages.ExampleSubscribableUpdate,
 	],
 
 	webEntrypoint: "./web",

@@ -60,9 +60,10 @@ local elem_filter = {
 }
 
 local function clear_module(player, area, machine)
-    -- Intentionally left as player.surface to allow use in remote view
-    for _, entity in pairs(player.surface.find_entities_filtered{ area = area, name = machine, force = player.force }) do
-        for _, r in pairs(player.surface.find_entities_filtered{ position = entity.position, name = "item-request-proxy", force = player.force }) do
+    local force = player.force
+    local surface = player.surface -- Allow remote view
+    for _, entity in pairs(surface.find_entities_filtered{ area = area, name = machine, force = force }) do
+        for _, r in pairs(surface.find_entities_filtered{ position = entity.position, name = "item-request-proxy", force = force }) do
             if r then
                 r.destroy{ raise_destroy = true }
             end
@@ -75,7 +76,7 @@ local function clear_module(player, area, machine)
 
             if m_current_module_content then
                 for k, m in pairs(m_current_module_content) do
-                    player.surface.spill_item_stack(entity.bounding_box.left_top, { name = k, count = m }, true, player.force, false)
+                    surface.spill_item_stack(entity.bounding_box.left_top, { name = k, count = m }, true, force, false)
                 end
             end
 

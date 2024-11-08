@@ -80,8 +80,8 @@ return {
             local options = { "?", ".", "!", "!!!" }
             return { "chat-bot.hodor", table.get_random(options) }
         end,
-        ["evolution"] = function(_player, _is_command)
-            return { "chat-bot.current-evolution", string.format("%.2f", game.forces["enemy"].evolution_factor) }
+        ["evolution"] = function(player, _is_command)
+            return { "chat-bot.current-evolution", string.format("%.2f", game.forces["enemy"].get_evolution_factor(player.surface)) }
         end,
         ["makepopcorn"] = function(player, _is_command)
             local timeout = math.floor(180 * (math.random() + 0.5))

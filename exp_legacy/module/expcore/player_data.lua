@@ -44,8 +44,7 @@ end)
 local Async = require("modules/exp_util/async")
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Datastore = require("modules.exp_legacy.expcore.datastore") --- @dep expcore.datastore
-local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
-require("modules.exp_legacy.config.expcore.command_general_parse") --- @dep config.expcore.command_general_parse
+local Commands = require("modules/exp_commands")
 
 local table_to_json = helpers.table_to_json
 local write_file = helpers.write_file
@@ -67,23 +66,20 @@ DataSavingPreference:set_metadata{
 }
 
 --- Sets your data saving preference
--- @command set-data-preference
-Commands.new_command("set-preference", "Allows you to set your data saving preference")
-    :add_param("option", false, "string-options", PreferenceEnum)
+Commands.new("data-preference", { "expcore-data.description-preference" })
+    :optional("option", { "expcore-data.arg-option" }, Commands.types.enum(PreferenceEnum))
     :register(function(player, option)
-        DataSavingPreference:set(player, option)
-        return { "expcore-data.set-preference", option }
-    end)
-
---- Gets your data saving preference
--- @command data-preference
-Commands.new_command("preference", "Shows you what your current data saving preference is")
-    :register(function(player)
-        return { "expcore-data.get-preference", DataSavingPreference:get(player) }
+        --- @cast option "All" | "Statistics" | "Settings" | "Required" | nil
+        if option then
+            DataSavingPreference:set(player, option)
+            return Commands.status.success{ "expcore-data.set-preference", option }
+        else
+            return Commands.status.success{ "expcore-data.get-preference", DataSavingPreference:get(player) }
+        end
     end)
 
 --- Gets your data and writes it to a file
-Commands.new_command("save-data", "Writes all your player data to a file on your computer")
+Commands.new("save-data", { "expcore-data.description-data" })
     :register(function(player)
         player.print{ "expcore-data.get-data" }
         write_file("expgaming_player_data.json", table_to_json(PlayerData:get(player, {})), false, player.index)

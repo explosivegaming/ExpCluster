@@ -42,6 +42,7 @@ end
 
 Event.add(defines.events.on_player_created, function(event)
     local player = game.players[event.player_index]
+    --- @diagnostic disable-next-line param-type-mismatch
     util.insert_safe(player, global.created_items)
 
     local r = global.chart_distance or 200
@@ -65,6 +66,7 @@ end)
 
 Event.add(defines.events.on_player_respawned, function(event)
     local player = game.players[event.player_index]
+    --- @diagnostic disable-next-line param-type-mismatch
     util.insert_safe(player, global.respawn_items)
     if use_silo_script then
         silo_script.on_event(event)

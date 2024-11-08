@@ -1,4 +1,4 @@
-local Commands = require("modules.exp_legacy.expcore.commands")
+local Commands = require("modules/exp_commands")
 local config = require("modules.exp_legacy.config.graftorio")
 local statics = require("modules.exp_legacy.modules.graftorio.statics")
 local general = require("modules.exp_legacy.modules.graftorio.general")
@@ -10,8 +10,8 @@ if config.modules.forcestats then
     forcestats = require("modules.exp_legacy.modules.graftorio.forcestats")
 end
 
-Commands.new_command("collectdata", "Collect data for RCON usage")
-    :add_param("location", true)
+Commands.new("collectdata", "Collect data for RCON usage")
+    :optional("location", "", Commands.types.string) -- Not sure what this is for, i didn't write this
     :register(function()
         -- this must be first as it overwrites the stats
         -- also makes the .other table for all forces
@@ -24,6 +24,5 @@ Commands.new_command("collectdata", "Collect data for RCON usage")
             forcestats.collect_production()
             forcestats.collect_loginet()
         end
-        rcon.print(table_to_json(general.data.output))
-        return Commands.success()
+        return Commands.status.success(table_to_json(general.data.output))
     end)
