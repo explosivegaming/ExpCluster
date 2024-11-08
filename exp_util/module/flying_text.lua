@@ -1,8 +1,10 @@
---[[-- Util Module - FlyingText
+--[[-- ExpUtil - FlyingText
 Provides a method of creating floating text and tags in the world
 ]]
 
+--- @class ExpUtil_FlyingText
 local FlyingText = {}
+
 FlyingText.color = require("modules/exp_util/include/color")
 
 --- @class FlyingText.create_param:LuaPlayer.create_local_flying_text_param

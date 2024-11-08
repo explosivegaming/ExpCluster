@@ -1,4 +1,5 @@
 -- luacheck:ignore global require
+--- @diagnostic disable
 
 local package = require("modules/exp_util/include/package")
 local loaded = package.loaded

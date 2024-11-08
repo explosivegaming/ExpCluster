@@ -17,6 +17,7 @@ package.lifecycle_stage = {
 }
 
 --- Stores the current lifecycle stage we are in, compare values against package.lifecycle_stage
+--- See also: https://forums.factorio.com/viewtopic.php?f=28&t=115622
 package.lifecycle = package.lifecycle_stage.control
 
 return setmetatable({
@@ -25,6 +26,7 @@ return setmetatable({
     on_configuration_changed = function() package.lifecycle = package.lifecycle_stage.config_change end,
     events = {
         -- TODO find a reliable way to set to runtime because currently it will desync if accessed before player joined
+        -- TODO make clusterio optional dependency
         [defines.events.on_player_joined_game] = function() package.lifecycle = package.lifecycle_stage.runtime end,
         [Clustorio.events.on_server_startup] = function() package.lifecycle = package.lifecycle_stage.runtime end,
     },

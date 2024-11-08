@@ -1,15 +1,12 @@
---[[ Util Module - Storage
+--[[ ExpUtil - Storage
 Provides a method of using storage with the guarantee that keys will not conflict
 
 --- Drop in boiler plate:
 -- Below is a drop in boiler plate which ensures your storage access will not conflict with other modules
-local storage =
-    Storage.register({
-        my_table = {},
-        my_primitive = 1,
-    }, function(tbl)
-        storage = tbl
-    end)
+local storage = {}
+Storage.register(storage, function(tbl)
+    storage = tbl
+end)
 
 --- Registering new storage tables:
 -- The boiler plate above is not recommend because it is not descriptive in its function
@@ -48,39 +45,37 @@ local my_metatable = Storage.register_metatable("MyMetaTable", {
 
 ]]
 
-local Clustorio = require("modules/clusterio/api")
 local ExpUtil = require("modules/exp_util/common")
 
+--- @class ExpUtil_Storage
 local Storage = {
-    --- @package
-    registered = {}, --- @type { [string]: { init: table, callback: fun(tbl: table) } } Map of all registered values and their initial values
+    _registered = {}, --- @type table<string, { init: table, callback: fun(tbl: table) }> Map of all registered values and their initial values
 }
 
 --- Register a new table to be stored in storage, can only be called once per file, can not be called during runtime
---- @param tbl table The initial value for the table you are registering, this should be a local variable
---- @param callback fun(tbl: table) The callback used to replace local references and metatables
---- @return table # The table passed as the first argument
+--- @generic T:table
+--- @param tbl T The initial value for the table you are registering, this should be a local variable
+--- @param callback fun(tbl: T) The callback used to replace local references and metatables
+-- This function does not return the table because the callback can't access the local it would be assigned to
 function Storage.register(tbl, callback)
     ExpUtil.assert_not_runtime()
     ExpUtil.assert_argument_type(tbl, "table", 1, "tbl")
     ExpUtil.assert_argument_type(callback, "function", 2, "callback")
 
     local name = ExpUtil.safe_file_path(2)
-    if Storage.registered[name] then
+    if Storage._registered[name] then
         error("Storage.register can only be called once per file", 2)
     end
 
-    Storage.registered[name] = {
+    Storage._registered[name] = {
         init = tbl,
         callback = callback,
     }
-
-    return tbl
 end
 
 --- Register a metatable which will be automatically restored during on_load
 --- @param name string The name of the metatable to register, must be unique within your module
---- @param tbl table The metatable to register
+--- @param tbl metatable The metatable to register
 --- @return table # The metatable passed as the second argument
 function Storage.register_metatable(name, tbl)
     local module_name = ExpUtil.get_module_name(2)
@@ -91,10 +86,10 @@ end
 --- Restore aliases on load, we do not need to initialise data during this event
 --- @package
 function Storage.on_load()
-    --- @type { [string]: table }
+    --- @type table<string, table>
     local exp_storage = storage.exp_storage
     if exp_storage == nil then return end
-    for name, info in pairs(Storage.registered) do
+    for name, info in pairs(Storage._registered) do
         if exp_storage[name] ~= nil then
             info.callback(exp_storage[name])
         end
@@ -104,14 +99,14 @@ end
 --- Event Handler, sets initial values if needed and calls all callbacks
 --- @package
 function Storage.on_init()
-    --- @type { [string]: table }
+    --- @type table<string, table>
     local exp_storage = storage.exp_storage
     if exp_storage == nil then
         exp_storage = {}
         storage.exp_storage = exp_storage
     end
 
-    for name, info in pairs(Storage.registered) do
+    for name, info in pairs(Storage._registered) do
         if exp_storage[name] == nil then
             exp_storage[name] = info.init
         end
@@ -119,9 +114,12 @@ function Storage.on_init()
     end
 end
 
---- @package
-Storage.events = {
-    [Clustorio.events.on_server_startup] = Storage.on_init,
-}
+local events = {}
 
+local Clustorio = ExpUtil.optional_require("modules/clusterio/api")
+if Clustorio then
+    events[Clustorio.events.on_server_startup] = Storage.on_init
+end
+
+Storage.events = events --- @package
 return Storage

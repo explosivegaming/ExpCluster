@@ -81,18 +81,20 @@ fill_table_async({}, "foo", 10):return_to(print_table_size_async)
 ]]
 
 local ExpUtil = require("modules/exp_util")
-local Clustorio = require("modules/clusterio/api")
 
+--- @class ExpUtil_Async
 local Async = {
-    status = {}, -- Stores the allowed return types from a async function
-    events = {}, -- Stores all event handlers for this module
-    _queue_pressure = {}, -- Stores the count of each function in the queue to avoid queue iteration during start_task
-    _functions = {}, -- Stores a reference to all registered functions
+    _queue_pressure = {}, --- @type table<string, number> Stores the count of each function in the queue to avoid queue iteration during start_task
+    _registered = {}, --- @type table<string, AsyncFunctionOpen> Stores a reference to all registered functions
 }
+
+--- @class ExpUtil_Async.status: table<string, Async.Status>
+--- Stores the allowed return types from a async function
+Async.status = {}
 
 --- @class Async.AsyncFunction
 --- @field id number The id of this async function
---- @operator call: function
+--- @operator call: Async.AsyncReturn
 Async._function_prototype = {}
 
 Async._function_metatable = {
@@ -170,15 +172,17 @@ end
 --- Async Function.
 -- Functions which can be put in storage and used as tasks to be completed over multiple ticks
 
+--- @alias AsyncFunctionOpen fun(...: any): Async.Status?, any?, any?
+
 --- Register a new async function
---- @param func function The function which becomes the async function
+--- @param func AsyncFunctionOpen The function which becomes the async function
 --- @return Async.AsyncFunction # The newly registered async function
 function Async.register(func)
     ExpUtil.assert_not_runtime()
     ExpUtil.assert_argument_type(func, "function", 1, "func")
 
     local id = ExpUtil.get_function_name(func)
-    Async._functions[id] = func
+    Async._registered[id] = func
     Async._queue_pressure[id] = 0
 
     return setmetatable({ id = id }, Async._function_metatable)
@@ -188,7 +192,7 @@ end
 --- @param ... any The arguments to call the function with
 --- @return Async.AsyncReturn
 function Async._function_prototype:start_soon(...)
-    assert(Async._functions[self.id], "Async function is not registered")
+    assert(Async._registered[self.id], "Async function is not registered")
     Async._queue_pressure[self.id] = Async._queue_pressure[self.id] + 1
     return add_to_next_tick(setmetatable({
         func_id = self.id,
@@ -203,7 +207,7 @@ end
 function Async._function_prototype:start_after(ticks, ...)
     ExpUtil.assert_argument_type(ticks, "number", 1, "ticks")
     assert(ticks > 0, "Ticks must be a positive number")
-    assert(Async._functions[self.id], "Async function is not registered")
+    assert(Async._registered[self.id], "Async function is not registered")
     Async._queue_pressure[self.id] = Async._queue_pressure[self.id] + 1
     return add_to_resolve_queue(setmetatable({
         func_id = self.id,
@@ -216,7 +220,7 @@ end
 --- @param ... any The arguments to call the function with
 --- @return Async.AsyncReturn | nil
 function Async._function_prototype:start_task(...)
-    assert(Async._functions[self.id], "Async function is not registered")
+    assert(Async._registered[self.id], "Async function is not registered")
     if Async._queue_pressure[self.id] > 0 then return end
     return self:start_soon(...)
 end
@@ -225,8 +229,8 @@ end
 --- @param ... any The arguments to call the function with
 --- @return Async.AsyncReturn
 function Async._function_prototype:start_now(...)
-    assert(Async._functions[self.id], "Async function is not registered")
-    local status, rtn1, rtn2 = Async._functions[self.id](...)
+    assert(Async._registered[self.id], "Async function is not registered")
+    local status, rtn1, rtn2 = Async._registered[self.id](...)
     if status == Async.status.continue then
         return self:start_soon(table.unpack(rtn1))
     elseif status == Async.status.delay then
@@ -297,7 +301,7 @@ local new_next, new_queue = {}, {} -- File scope to allow for reuse
 --- @param pending Async.AsyncReturn
 --- @param tick number
 local function exec(pending, tick)
-    local async_func = Async._functions[pending.func_id]
+    local async_func = Async._registered[pending.func_id]
     if pending.canceled or async_func == nil then return end
     local status, rtn1, rtn2 = async_func(table.unpack(pending.args))
     if status == Async.status.continue then
@@ -363,6 +367,7 @@ local function on_tick()
 end
 
 --- On load, check the queue status and update the pressure values
+--- @package
 function Async.on_load()
     if storage.exp_async_next == nil then return end
     resolve_next = storage.exp_async_next
@@ -389,6 +394,7 @@ function Async.on_load()
 end
 
 --- On init and server startup initialise the storage data
+--- @package
 function Async.on_init()
     if storage.exp_async_next == nil then
         --- @type Async.AsyncReturn[]
@@ -399,7 +405,16 @@ function Async.on_init()
     Async.on_load()
 end
 
-Async.events[defines.events.on_tick] = on_tick
-Async.events[Clustorio.events.on_server_startup] = Async.on_init
+local e = defines.events
+local events = {
+    [e.on_tick] = on_tick,
+}
+
+local Clustorio = ExpUtil.optional_require("modules/clusterio/api")
+if Clustorio then
+    events[Clustorio.events.on_server_startup] = Async.on_init
+end
+
 Async._function_metatable.__call = Async._function_prototype.start_soon
+Async.events = events --- @package
 return Async

@@ -1,12 +1,13 @@
 {
     "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
     "completion.requireSeparator": "/",
-    "doc.privateName": [ "__([_%w]+)" ],
-    "doc.packageName": [ "_([_%w]+)" ],
+    "doc.regengine": "glob",
+    "doc.privateName": [ "__*" ],
+    "doc.packageName": [ "_*" ],
     "runtime.pluginArgs": [
         "--clusterio-modules"
     ],
-    "diagnostics.unusedLocalExclude": [ "_([_%w]*)", "i", "j", "k", "v" ],
+    "diagnostics.unusedLocalExclude": [ "_*", "i", "j", "k", "v" ],
     "diagnostics.groupFileStatus": {
         "ambiguity": "Any",
         "await": "None",
@@ -32,49 +33,49 @@
     "nameStyle.config": {
         "local_name_style": [{
             "type" : "pattern",
-            "param": "_?_?(%w+)?",
+            "param": "_?_?(\\S*)",
             "$1": "snake_case"
         }],
         "module_local_name_style": [{
             "type" : "pattern",
-            "param": "_?_?(\\w+)",
+            "param": "_?_?(\\S*)",
             "$1": "snake_case"
         }, {
             "type" : "pattern",
-            "param": "_?_?(\\w+)",
+            "param": "_?_?(\\S*)",
             "$1": "upper_snake_case"
         }, {
             "type" : "pattern",
-            "param": "_?_?(\\w+)",
+            "param": "_?_?(\\S*)",
             "$1": "pascal_case"
         }],
         "function_param_name_style": [{
             "type" : "pattern",
-            "param": "_?_?(\\w+)?",
+            "param": "_?_?(\\S*)",
             "$1": "snake_case"
         }],
         "function_name_style": [{
             "type" : "pattern",
-            "param": "_?_?(\\w+)",
+            "param": "_?_?(\\S*)",
             "$1": "snake_case"
         }],
         "local_function_name_style": [{
             "type" : "pattern",
-            "param": "_?_?(\\w+)",
+            "param": "_?_?(\\S*)",
             "$1": "snake_case"
         }],
         "table_field_name_style": [{
             "type" : "pattern",
-            "param": "_?_?(\\w+)",
+            "param": "_?_?(\\S*)",
             "$1": "snake_case"
         }],
         "global_variable_name_style": [{
             "type" : "pattern",
-            "param": "_?_?(\\w+)",
+            "param": "_?_?(\\S*)",
             "$1": "snake_case"
         }, {
             "type" : "pattern",
-            "param": "_?_?(\\w+)",
+            "param": "_?_?(\\S*)",
             "$1": "upper_snake_case"
         }],
         "module_name_style": [ "pascal_case", "snake_case" ],
