@@ -3,8 +3,8 @@ local Search = {}
 local Storage = require("modules/exp_util/storage")
 
 --- Setup the storage to contain the pending translations and the completed ones
-local pending = {} --- @type { [uint]: { [1]: string, [2]: string }? }
-local translations = {} --- @type { [string]: { [string]: string } }
+local pending = {} --- @type { [1]: string, [2]: string }[]
+local translations = {} --- @type table<string, table<string, string>>
 Storage.register({
     pending,
     translations,
@@ -14,13 +14,13 @@ Storage.register({
 end)
 
 local command_names = {} --- @type string[]
-local command_objects = {} --- @type { [string]: Commands.Command }
+local command_objects = {} --- @type table<string, Commands.Command>
 local required_translations = {} --- @type LocalisedString[]
 
 --- Gets the descriptions of all commands, not including their aliases
---- @param custom_commands { [string]: Commands.ExpCommand } The complete list of registered custom commands
+--- @param custom_commands table<string, Commands.ExpCommand> The complete list of registered custom commands
 function Search.prepare(custom_commands)
-    local known_aliases = {} --- @type { [string]: string }
+    local known_aliases = {} --- @type table<string, string>
     for name, command in pairs(custom_commands) do
         for _, alias in ipairs(command.aliases) do
             known_aliases[alias] = name
@@ -85,11 +85,11 @@ end
 
 --- Searches all game commands and the provided custom commands for the given keyword
 --- @param keyword string The keyword to search for
---- @param custom_commands { [string]: Commands.ExpCommand } A dictionary of commands to search
+--- @param custom_commands table<string, Commands.ExpCommand> A dictionary of commands to search
 --- @param locale string? The local to search, default is english ("en")
---- @return { [string]: Commands.Command } # A dictionary of commands
+--- @return table<string, Commands.Command> # A dictionary of commands
 function Search.search_commands(keyword, custom_commands, locale)
-    local rtn = {} --- @type { [string]: Commands.Command }
+    local rtn = {} --- @type table<string, Commands.Command>
     keyword = keyword:lower()
     locale = locale or "en"
 

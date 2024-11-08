@@ -1,6 +1,5 @@
---[[-- Command Module - Help
+--[[-- Commands - Help
 Game command to list and search all registered commands in a nice format
-@commands _system-ipc
 
 --- Get all messages related to banning a player
 /commands ban
@@ -13,13 +12,16 @@ local Commands = require("modules/exp_commands")
 
 local PAGE_SIZE = 5
 
-local search_cache = {}
+--- @alias ResultsPage LocalisedString[]
+--- @class HelpCacheEntry: { keyword: string, pages: ResultsPage[], found: number }
+
+local search_cache = {} --- @type table<number, HelpCacheEntry>
 Storage.register(search_cache, function(tbl)
     search_cache = tbl
 end)
 
 --- Format commands into a strings across multiple pages
---- @param commands { [string]: Commands.Command } The commands to split into pages
+--- @param commands table<string, Commands.Command> The commands to split into pages
 --- @param page_size number The number of requests to show per page
 --- @return LocalisedString[][], number
 local function format_as_pages(commands, page_size)

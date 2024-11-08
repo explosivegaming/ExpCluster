@@ -1,6 +1,5 @@
---[[-- Command Module - Sudo
+--[[-- Commands - Sudo
 System command to execute a command as another player using their permissions (except for permissions group actions)
-@commands _system-sudo
 
 --- Run the example command as another player
 -- As Cooldude2606: /repeat 5

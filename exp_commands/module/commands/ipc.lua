@@ -1,6 +1,5 @@
---[[-- Command Module - IPC
+--[[-- Commands - IPC
 System command which sends an object to the clustorio api, should be used for debugging / echo commands
-@commands _system-ipc
 
 --- Send a message on your custom channel, message is a json string
 /_ipc myChannel { "myProperty": "foo", "playerName": "Cooldude2606" }

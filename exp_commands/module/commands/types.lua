@@ -25,10 +25,9 @@ local Commands = require("modules/exp_commands")
 local add, parse = Commands.add_data_type, Commands.parse_input
 local valid, invalid = Commands.status.success, Commands.status.invalid_input
 
-local types = {}
+local types = {} --- @class Commands._types
 
 --- A boolean value where true is one of: yes, y, true, 1
---- @type Commands.InputParser
 types.boolean =
     add("boolean", function(input)
         input = input:lower()
@@ -43,14 +42,12 @@ types.boolean =
     end)
 
 --- A string, validation does nothing but it is a requirement
---- @type Commands.InputParser
 types.string =
     add("string", function(input)
         return valid(input)
     end)
 
 --- A string from a set of options, takes one argument which is an array of options
---- @type Commands.InputParserFactory
 types.enum =
     add("enum", function(options)
         --- @cast options string[]
@@ -65,10 +62,9 @@ types.enum =
     end)
 
 --- A string which is the key of a table, takes one argument which is an map of string keys to values
---- @type Commands.InputParserFactory
 types.key_of =
     add("key_of", function(map)
-        --- @cast map { [string]: any }
+        --- @cast map table<string, any>
         return function(input)
             local option = auto_complete(map, input, true)
             if option == nil then
@@ -80,7 +76,6 @@ types.key_of =
     end)
 
 --- A string with a maximum length, takes one argument which is the maximum length of a string
---- @type Commands.InputParserFactory
 types.string_max_length =
     add("string_max_length", function(maximum)
         --- @cast maximum number
@@ -94,7 +89,6 @@ types.string_max_length =
     end)
 
 --- A number
---- @type Commands.InputParser
 types.number =
     add("number", function(input)
         local number = tonumber(input)
@@ -106,7 +100,6 @@ types.number =
     end)
 
 --- An integer, number which has been floored
---- @type Commands.InputParser
 types.integer =
     add("integer", function(input)
         local number = tonumber(input)
@@ -118,7 +111,6 @@ types.integer =
     end)
 
 --- A number in a given inclusive range
---- @type Commands.InputParserFactory
 types.number_range =
     add("number_range", function(minimum, maximum)
         --- @cast minimum number
@@ -137,7 +129,6 @@ types.number_range =
     end)
 
 --- An integer in a given inclusive range
---- @type Commands.InputParserFactory
 types.integer_range =
     add("integer_range", function(minimum, maximum)
         --- @cast minimum number
@@ -156,7 +147,6 @@ types.integer_range =
     end)
 
 --- A player who has joined the game at least once
---- @type Commands.InputParser
 types.player =
     add("player", function(input)
         local player = game.get_player(input)
@@ -168,7 +158,6 @@ types.player =
     end)
 
 --- A player who is online
---- @type Commands.InputParser
 types.player_online =
     add("player_online", function(input, player)
         local success, status, result = parse(input, player, Commands.types.player)
@@ -183,8 +172,7 @@ types.player_online =
     end)
 
 --- A player who is online and alive
---- @type Commands.InputParser
-types.player_online =
+types.player_alive =
     add("player_alive", function(input, player)
         local success, status, result = parse(input, player, Commands.types.player_online)
         --- @cast result LuaPlayer
@@ -198,7 +186,6 @@ types.player_online =
     end)
 
 --- A force within the game
---- @type Commands.InputParser
 types.force =
     add("force", function(input)
         local force = game.forces[input]
@@ -210,7 +197,6 @@ types.force =
     end)
 
 --- A surface within the game
---- @type Commands.InputParser
 types.surface =
     add("surface", function(input)
         local surface = game.surfaces[input]
@@ -222,7 +208,6 @@ types.surface =
     end)
 
 --- A planet within the game
---- @type Commands.InputParser
 types.planet =
     add("planet", function(input)
         local surface = game.planets[input]
@@ -234,7 +219,6 @@ types.planet =
     end)
 
 --- A name of a color from the predefined list, too many colours to use string-key
---- @type Commands.InputParser
 types.color =
     add("color", function(input)
         local color = auto_complete(Commands.color, input, true)

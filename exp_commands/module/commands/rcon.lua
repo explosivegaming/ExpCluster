@@ -1,6 +1,5 @@
---[[-- Command Module - Rcon
+--[[-- Commands - Rcon
 System command which runs arbitrary code within a custom (not sandboxed) environment
-@commands _system-rcon
 
 --- Get the names of all online players, using rcon
 /_system-rcon local names = {}; for index, player in pairs(game.connected_player) do names[index] = player.name end; return names;
@@ -12,53 +11,60 @@ System command which runs arbitrary code within a custom (not sandboxed) environ
 local ExpUtil = require("modules/exp_util")
 local Async = require("modules/exp_util/async")
 local Storage = require("modules/exp_util/storage")
-local Commands = require("modules/exp_commands")
 local Clustorio = require("modules/clusterio/api")
 
-local rcon_env = {}
-local rcon_statics = {}
-local rcon_callbacks = {}
-setmetatable(rcon_statics, { __index = _G })
-setmetatable(rcon_env, { __index = rcon_statics })
+local Commands = require("modules/exp_commands") --- @class Commands
+
+local rcon_env = {} --- @type table<string, any>
+local rcon_static = {} --- @type table<string, any>
+local rcon_dynamic = {} --- @type table<string, ExpCommand.RconDynamic>
+setmetatable(rcon_static, { __index = _G })
+setmetatable(rcon_env, { __index = rcon_static })
 
 --- Some common static values which can be added now
 --- @diagnostic disable: name-style-check
-rcon_statics.Async = Async
-rcon_statics.ExpUtil = ExpUtil
-rcon_statics.Commands = Commands
-rcon_statics.Clustorio = Clustorio
-rcon_statics.print = Commands.print
-rcon_statics.ipc = Clustorio.send_json
+rcon_static.Async = Async
+rcon_static.ExpUtil = ExpUtil
+rcon_static.Commands = Commands
+rcon_static.Clustorio = Clustorio
+rcon_static.print = Commands.print
+rcon_static.ipc = Clustorio.send_json
 --- @diagnostic enable: name-style-check
 
 --- Some common callback values which are useful when a player uses the command
-function rcon_callbacks.player(player) return player end
+--- @alias ExpCommand.RconDynamic fun(player: LuaPlayer?): any
 
-function rcon_callbacks.surface(player) return player and player.surface end
+function rcon_dynamic.player(player) return player end
 
-function rcon_callbacks.force(player) return player and player.force end
+function rcon_dynamic.surface(player) return player and player.surface end
 
-function rcon_callbacks.position(player) return player and player.position end
+function rcon_dynamic.force(player) return player and player.force end
 
-function rcon_callbacks.entity(player) return player and player.selected end
+function rcon_dynamic.position(player) return player and player.position end
 
-function rcon_callbacks.tile(player) return player and player.surface.get_tile(player.position) end
+function rcon_dynamic.entity(player) return player and player.selected end
+
+function rcon_dynamic.tile(player) return player and player.surface.get_tile(player.position.x, player.position.y) end
 
 --- The rcon env is saved between command runs to prevent desyncs
 Storage.register(rcon_env, function(tbl)
-    rcon_env = setmetatable(tbl, { __index = rcon_statics })
+    rcon_env = setmetatable(tbl, { __index = rcon_static })
 end)
 
 --- Static values can be added to the rcon env which are not stored in global such as modules
+--- @param name string Name of the value as it will appear in the rcon environment
+--- @param value any Value it is have
 function Commands.add_rcon_static(name, value)
     ExpUtil.assert_not_runtime()
-    rcon_statics[name] = value
+    rcon_static[name] = value
 end
 
 --- Callback values can be added to the rcon env, these are called on each invocation and should return one value
-function Commands.add_rcon_callback(name, callback)
+--- @param name string Name of the value as it will appear in the rcon environment
+--- @param callback ExpCommand.RconDynamic Callback called to get the current value
+function Commands.add_rcon_dynamic(name, callback)
     ExpUtil.assert_not_runtime()
-    rcon_callbacks[name] = callback
+    rcon_dynamic[name] = callback
 end
 
 Commands.new("_rcon", { "exp-commands_rcon.description" })
@@ -70,7 +76,7 @@ Commands.new("_rcon", { "exp-commands_rcon.description" })
 
         -- Construct the environment the command will run within
         local env = setmetatable({}, { __index = rcon_env, __newindex = rcon_env })
-        for name, callback in pairs(rcon_callbacks) do
+        for name, callback in pairs(rcon_dynamic) do
             local _, rtn = pcall(callback, player.index > 0 and player or nil)
             rawset(env, name, rtn)
         end

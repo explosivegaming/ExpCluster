@@ -57,6 +57,7 @@ end)
 local ExpUtil = require("modules/exp_util")
 local Search = require("modules/exp_commands/search")
 
+--- @class Commands
 local Commands = {
     color = ExpUtil.color,
     format_rich_text_color = ExpUtil.format_rich_text_color,
@@ -64,11 +65,9 @@ local Commands = {
     format_player_name = ExpUtil.format_player_name,
     format_player_name_locale = ExpUtil.format_player_name_locale,
 
-    types = {}, --- @type { [string]: Commands.InputParser | Commands.InputParserFactory } Stores all input parsers and validators for different data types
-    registered_commands = {}, --- @type { [string]: Commands.ExpCommand } Stores a reference to all registered commands
+    registered_commands = {}, --- @type table<string, Commands.ExpCommand> Stores a reference to all registered commands
     permission_authorities = {}, --- @type Commands.PermissionAuthority[] Stores a reference to all active permission authorities
-    status = {}, -- Contains the different status values a command can return
-
+    
     --- @package Stores the event handlers
     events = {
         [defines.events.on_player_locale_changed] = Search.on_player_locale_changed,
@@ -76,6 +75,14 @@ local Commands = {
         [defines.events.on_string_translated] = Search.on_string_translated,
     },
 }
+
+--- @class Commands._status: table<string, Commands.Status>
+--- Contains the different status values a command can return
+Commands.status = {}
+
+--- @class Commands._types: table<string, Commands.InputParser | Commands.InputParserFactory>
+--- Stores all input parsers and validators for different data types
+Commands.types = {}
 
 --- @package
 function Commands.on_init() Search.prepare(Commands.registered_commands) end
@@ -91,7 +98,7 @@ end
 
 --- @class Commands.Argument
 --- @field name string The name of the argument
---- @field description LocalisedString The description of the argument
+--- @field description LocalisedString? The description of the argument
 --- @field input_parser Commands.InputParser The input parser for the argument
 --- @field optional boolean True when the argument is optional
 --- @field default any? The default value of the argument
@@ -135,15 +142,17 @@ Commands.server = setmetatable({
     show_on_map = false,
     valid = true,
     object_name = "LuaPlayer",
+    print = rcon.print,
 }, {
+    -- To prevent unnecessary logging Commands.error is called here and error is filtered by command_callback
     __index = function(_, key)
         if key == "__self" or type(key) == "number" then return nil end
-        Commands.error("Command does not support rcon usage, requires reading player." .. key)
-        error("Command does not support rcon usage, requires reading player." .. key)
+        Commands.error("Command does not support rcon usage, requires LuaPlayer." .. key)
+        error("Command does not support rcon usage, requires LuaPlayer." .. key)
     end,
     __newindex = function(_, key)
-        Commands.error("Command does not support rcon usage, requires reading player." .. key)
-        error("Command does not support rcon usage, requires setting player." .. key)
+        Commands.error("Command does not support rcon usage, requires LuaPlayer." .. key)
+        error("Command does not support rcon usage, requires LuaPlayer." .. key)
     end,
 })
 
@@ -155,7 +164,6 @@ Commands.server = setmetatable({
 --- Used to signal success from a command, data type parser, or permission authority
 --- @param msg LocalisedString? An optional message to be included when a command completes (only has an effect in command callbacks)
 --- @return Commands.Status, LocalisedString # Should be returned directly without modification
---- @type Commands.Status
 function Commands.status.success(msg)
     return Commands.status.success, msg or { "exp-commands.success" }
 end
@@ -164,7 +172,6 @@ end
 --- For data type parsers and permission authority, an error return will prevent the command from being executed
 --- @param msg LocalisedString? An optional error message to be included in the output, a generic message is used if not provided
 --- @return Commands.Status, LocalisedString # Should be returned directly without modification
---- @type Commands.Status
 function Commands.status.error(msg)
     return Commands.status.error, { "exp-commands.error", msg or { "exp-commands.error-default" } }
 end
@@ -173,7 +180,6 @@ end
 --- For permission authorities, an unauthorised return will prevent the command from being executed
 --- @param msg LocalisedString? An optional error message to be included in the output, a generic message is used if not provided
 --- @return Commands.Status, LocalisedString # Should be returned directly without modification
---- @type Commands.Status
 function Commands.status.unauthorised(msg)
     return Commands.status.unauthorised, msg or { "exp-commands.unauthorized", msg or { "exp-commands.unauthorized-default" } }
 end
@@ -182,7 +188,6 @@ end
 --- For data type parsers, an invalid_input return will prevent the command from being executed
 --- @param msg LocalisedString? An optional error message to be included in the output, a generic message is used if not provided
 --- @return Commands.Status, LocalisedString # Should be returned directly without modification
---- @type Commands.Status
 function Commands.status.invalid_input(msg)
     return Commands.status.invalid_input, msg or { "exp-commands.invalid-input" }
 end
@@ -191,12 +196,11 @@ end
 --- @param msg LocalisedString A message detailing the error which has occurred, will be logged and outputted
 --- @return Commands.Status, LocalisedString # Should be returned directly without modification
 --- @package
---- @type Commands.Status
 function Commands.status.internal_error(msg)
     return Commands.status.internal_error, { "exp-commands.internal-error", msg }
 end
 
---- @type { [Commands.Status]: string }
+--- @type table<Commands.Status, string>
 local valid_command_status = {} -- Hashmap lookup for testing if a status is valid
 for name, status in pairs(Commands.status) do
     valid_command_status[status] = name
@@ -205,7 +209,7 @@ end
 --- Permission Authority.
 -- Functions that control who can use commands
 
---- @alias Commands.PermissionAuthority fun(player: LuaPlayer, command: Commands.ExpCommand): boolean | Commands.Status, LocalisedString?
+--- @alias Commands.PermissionAuthority fun(player: LuaPlayer, command: Commands.ExpCommand): boolean|Commands.Status, LocalisedString?
 
 --- Add a permission authority, a permission authority is a function which provides access control for commands, multiple can be active at once
 --- When multiple are active, all authorities must give permission for the command to execute, if any deny access then the command is not ran
@@ -241,7 +245,7 @@ end
 --- @param player LuaPlayer? The player to test the permission of, nil represents the server and always returns true
 --- @param command Commands.ExpCommand The command the player is attempting to use
 --- @return boolean # True if the player has permission to use the command
---- @return LocalisedString # When permission is denied, this is the reason permission was denied
+--- @return LocalisedString? # When permission is denied, this is the reason permission was denied
 function Commands.player_has_permission(player, command)
     if player == nil or player == Commands.server then return true end
 
@@ -257,9 +261,7 @@ function Commands.player_has_permission(player, command)
                 return false, msg
             end
         else
-            local class_name = ExpUtil.get_class_name(status)
-            local _, rtn_msg = Commands.status.internal_error("Permission authority returned unexpected value: " .. class_name)
-            return false, rtn_msg
+            error("Permission authority returned unexpected value: " .. ExpUtil.get_class_name(status))
         end
     end
 
@@ -269,16 +271,14 @@ end
 --- Data Type Parsing.
 -- Functions that parse and validate player input
 
---- @generic T
---- @alias Commands.InputParser (fun(input: string, player: LuaPlayer): T) | (fun(input: string, player: LuaPlayer): Commands.Status, LocalisedString | T)
+--- @alias Commands.InputParser<T> fun(input: string, player: LuaPlayer): Commands.Status, (T | LocalisedString)
 
---- @generic T
---- @alias Commands.InputParserFactory fun(...: any): Commands.InputParser<T>
+--- @alias Commands.InputParserFactory<T> fun(...: any): Commands.InputParser<T>
 
 --- Add a new input parser to the command library, this method validates that it does not already exist
 --- @generic T : Commands.InputParser | Commands.InputParserFactory
 --- @param data_type string The name of the data type the input parser reads in and validates, becomes a key of Commands.types
---- @param input_parser `T` The function used to parse and validate the data type
+--- @param input_parser T The function used to parse and validate the data type
 --- @return T # The function which was provided as the second argument
 function Commands.add_data_type(data_type, input_parser)
     if Commands.types[data_type] then
@@ -310,33 +310,25 @@ end
 --- @return Commands.Status status, T | LocalisedString result # If success is false then Remaining values should be returned directly without modification
 function Commands.parse_input(input, player, input_parser)
     local status, status_msg = input_parser(input, player)
-    if status == nil then
+    if status == nil or not valid_command_status[status] then
         local data_type = table.get_key(Commands.types, input_parser) or ExpUtil.get_function_name(input_parser, true)
-        local rtn_status, rtn_msg = Commands.status.internal_error("Parser for data type \"" .. data_type .. "\" returned a nil value")
-        return false, rtn_status, rtn_msg
-    elseif valid_command_status[status] then
-        if status ~= Commands.status.success then
-            return false, status, status_msg
-        else
-            return true, status, status_msg -- status_msg is the parsed data
-        end
-    else
-        return true, Commands.status.success, status -- status is the parsed data
+        error("Parser for data type \"" .. data_type .. "\" did not return a valid status got: " .. ExpUtil.get_class_name(status))
     end
+    return status == Commands.status.success, status, status_msg
 end
 
 --- List and Search
 -- Functions used to list and search for commands
 
 --- Returns a list of all registered custom commands
---- @return { [string]: Commands.ExpCommand } # A dictionary of commands
+--- @return table<string,Commands.ExpCommand> # A dictionary of commands
 function Commands.list_all()
     return Commands.registered_commands
 end
 
 --- Returns a list of all registered custom commands which the given player has permission to use
 --- @param player LuaPlayer? The player to get the command of, nil represents the server but list_all should be used
---- @return { [string]: Commands.ExpCommand } # A dictionary of commands
+--- @return table<string,Commands.ExpCommand>  # A dictionary of commands
 function Commands.list_for_player(player)
     local rtn = {}
 
@@ -351,7 +343,7 @@ end
 
 --- Searches all custom commands and game commands for the given keyword
 --- @param keyword string The keyword to search for
---- @return { [string]: Commands.Command } # A dictionary of commands
+--- @return table<string,Commands.Command>  # A dictionary of commands
 function Commands.search_all(keyword)
     return Search.search_commands(keyword, Commands.list_all(), "en")
 end
@@ -359,7 +351,7 @@ end
 --- Searches custom commands allowed for this player and all game commands for the given keyword
 --- @param keyword string The keyword to search for
 --- @param player LuaPlayer? The player to search the commands of, nil represents server but search_all should be used
---- @return { [string]: Commands.Command } # A dictionary of commands
+--- @return table<string,Commands.Command>  # A dictionary of commands
 function Commands.search_for_player(keyword, player)
     return Search.search_commands(keyword, Commands.list_for_player(player), player and player.locale)
 end
@@ -368,7 +360,13 @@ end
 -- Prints output to the player or rcon connection
 
 local print_format_options = { max_line_count = 20 }
-local print_default_settings = { sound_path = "utility/scenario_message" }
+local print_settings_default = { sound_path = "utility/scenario_message", color = ExpUtil.color.white }
+local print_settings_error = { sound_path = "utility/wire_pickup", color = ExpUtil.color.orange_red }
+
+Commands.print_settings = {
+    default = print_settings_default,
+    error = print_settings_error,
+}
 
 --- Print a message to the user of a command, accepts any value and will print in a readable and safe format
 --- @param message any The message / value to be printed
@@ -379,9 +377,9 @@ function Commands.print(message, settings)
         rcon.print(ExpUtil.format_any(message))
     else
         if not settings then
-            settings = print_default_settings
+            settings = print_settings_default
         elseif not settings.sound_path then
-            settings.sound_path = print_default_settings.sound_path
+            settings.sound_path = print_settings_default.sound_path
         end
         player.print(ExpUtil.format_any(message, print_format_options), settings)
     end
@@ -390,18 +388,21 @@ end
 --- Print an error message to the user of a command, accepts any value and will print in a readable and safe format
 --- @param message any The message / value to be printed
 function Commands.error(message)
-    Commands.print(message, {
-        color = ExpUtil.color.orange_red,
-        sound_path = "utility/wire_pickup",
-    })
+    Commands.print(message, print_settings_error)
 end
 
 --- Command Prototype
 -- The prototype definition for command objects
 
+local function assert_command_mutable(command)
+    if not Commands.registered_commands[command.name] then
+        error("Command cannot be modified after being registered.", 3)
+    end
+end
+
 --- Returns a new command object, this will not register the command but act as a way to start construction
 --- @param name string The name of the command as it will be registered later
---- @param description LocalisedString The description of the command displayed in the help message
+--- @param description LocalisedString? The description of the command displayed in the help message
 --- @return Commands.ExpCommand
 function Commands.new(name, description)
     ExpUtil.assert_argument_type(name, "string", 1, "name")
@@ -411,7 +412,7 @@ function Commands.new(name, description)
 
     return setmetatable({
         name = name,
-        description = description,
+        description = description or "",
         help_text = description, -- Will be replaced in command:register
         callback = default_command_callback, -- Will be replaced in command:register
         defined_at = ExpUtil.safe_file_path(2),
@@ -426,10 +427,11 @@ end
 
 --- Add a new required argument to the command of the given data type
 --- @param name string The name of the argument being added
---- @param description LocalisedString The description of the argument being added
+--- @param description LocalisedString? The description of the argument being added
 --- @param input_parser Commands.InputParser The input parser to be used for the argument
 --- @return Commands.ExpCommand
 function Commands._prototype:argument(name, description, input_parser)
+    assert_command_mutable(self)
     if self.min_arg_count ~= self.max_arg_count then
         error("Can not have required arguments after optional arguments", 2)
     end
@@ -446,10 +448,11 @@ end
 
 --- Add a new optional argument to the command of the given data type
 --- @param name string The name of the argument being added
---- @param description LocalisedString The description of the argument being added
+--- @param description LocalisedString? The description of the argument being added
 --- @param input_parser Commands.InputParser The input parser to be used for the argument
 --- @return Commands.ExpCommand
 function Commands._prototype:optional(name, description, input_parser)
+    assert_command_mutable(self)
     self.max_arg_count = self.max_arg_count + 1
     self.arguments[#self.arguments + 1] = {
         name = name,
@@ -461,9 +464,10 @@ function Commands._prototype:optional(name, description, input_parser)
 end
 
 --- Set the defaults for optional arguments, any not provided will have their value as nil
---- @param defaults table The default values for the optional arguments, the key is the name of the argument
+--- @param defaults table<string, (fun(player: LuaPlayer): any) | any> The default values for the optional arguments, the key is the name of the argument
 --- @return Commands.ExpCommand
 function Commands._prototype:defaults(defaults)
+    assert_command_mutable(self)
     local matched = {}
     for _, argument in ipairs(self.arguments) do
         if defaults[argument.name] then
@@ -489,6 +493,7 @@ end
 --- @param flags table An array of strings or a dictionary of flag names and values, when an array is used the flags values are set to true
 --- @return Commands.ExpCommand
 function Commands._prototype:add_flags(flags)
+    assert_command_mutable(self)
     for name, value in pairs(flags) do
         if type(name) == "number" then
             self.flags[value] = true
@@ -504,6 +509,7 @@ end
 --- @param aliases string[] An array of string names to use as aliases to this command
 --- @return Commands.ExpCommand
 function Commands._prototype:add_aliases(aliases)
+    assert_command_mutable(self)
     local start_index = #self.aliases
     for index, alias in ipairs(aliases) do
         self.aliases[start_index + index] = alias
@@ -515,32 +521,41 @@ end
 --- Enable concatenation of all arguments after the last, this should be used for user provided reason text
 --- @return Commands.ExpCommand
 function Commands._prototype:enable_auto_concatenation()
+    assert_command_mutable(self)
     self.auto_concat = true
     return self
 end
 
 --- Register the command to the game with the given callback, this must be the final step as the object becomes immutable afterwards
 --- @param callback Commands.Callback The function which is called to perform the command action
+--- @return Commands.ExpCommand
 function Commands._prototype:register(callback)
+    assert_command_mutable(self)
     Commands.registered_commands[self.name] = self
     self.callback = callback
 
     -- Generates a description to be used
     local argument_names = { "" } --- @type LocalisedString
-    local argument_help_text = { "", "" } --- @type LocalisedString
-    local help_text = { "exp-commands.help", argument_names, self.description, argument_help_text } --- @type LocalisedString
-    self.help_text = help_text
+    local argument_verbose = { "" } --- @type LocalisedString
+    self.help_text = { "exp-commands.help", argument_names, self.description, argument_verbose } --- @type LocalisedString
     if next(self.aliases) then
-        argument_help_text[2] = { "exp-commands.aliases", table.concat(self.aliases, ", ") }
+        argument_verbose[2] = { "exp-commands.aliases", table.concat(self.aliases, ", ") }
     end
 
+    local verbose_index = #argument_verbose
     for index, argument in pairs(self.arguments) do
         if argument.optional then
-            argument_names[index + 2] = { "exp-commands.optional", argument.name }
-            argument_help_text[index + 2] = { "exp-commands.optional-verbose", argument.name, argument.description }
+            argument_names[index + 1] = { "exp-commands.optional", argument.name }
+            if argument.description and argument.description ~= "" then
+                verbose_index = verbose_index + 1
+                argument_verbose[verbose_index] = { "exp-commands.optional-verbose", argument.name, argument.description }
+            end
         else
-            argument_names[index + 2] = { "exp-commands.argument", argument.name }
-            argument_help_text[index + 2] = { "exp-commands.argument-verbose", argument.name, argument.description }
+            argument_names[index + 1] = { "exp-commands.argument", argument.name }
+            if argument.description and argument.description ~= "" then
+                verbose_index = verbose_index + 1
+                argument_verbose[verbose_index] = { "exp-commands.argument-verbose", argument.name, argument.description }
+            end
         end
     end
 
@@ -565,6 +580,8 @@ function Commands._prototype:register(callback)
     for _, alias in ipairs(self.aliases) do
         commands.add_command(alias, self.help_text, command_callback)
     end
+
+    return self
 end
 
 --- Command Runner
@@ -633,7 +650,6 @@ end
 --- Internal event handler for the command event
 --- @param event CustomCommandData
 --- @return nil
---- @package
 function Commands._event_handler(event)
     local command = Commands.registered_commands[event.name]
     if command == nil then
@@ -695,20 +711,20 @@ function Commands._event_handler(event)
         end
     end
 
-    -- Run the command, dont need xpcall here because errors are caught in command_callback
+    -- Run the command, don't need xpcall here because errors are caught in command_callback
     local status, status_msg = command.callback(player, table.unpack(arguments))
-    if status and valid_command_status[status] then
-        if status ~= Commands.status.success then
-            log_command("Custom Error", command, player, event.parameter, status_msg)
-            return Commands.error(status_msg)
-        else
-            log_command("Command Ran", command, player, event.parameter)
-            return Commands.print(status_msg)
-        end
-    else
+    if status == nil then
         log_command("Command Ran", command, player, event.parameter)
         local _, msg = Commands.status.success()
         return Commands.print(msg)
+    elseif not valid_command_status[status] then
+        error("Command \"" .. command.name .. "\" did not return a valid status got: " .. ExpUtil.get_class_name(status))
+    elseif status ~= Commands.status.success then
+        log_command("Custom Error", command, player, event.parameter, status_msg)
+        return Commands.error(status_msg)
+    else
+        log_command("Command Ran", command, player, event.parameter)
+        return Commands.print(status_msg)
     end
 end
 

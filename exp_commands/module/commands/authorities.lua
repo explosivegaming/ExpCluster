@@ -9,13 +9,14 @@ The default permission authorities controlled by the flags: admin_only, system_o
 ]]
 
 local Storage = require("modules/exp_util/storage")
-local Commands = require("modules/exp_commands")
+
+local Commands = require("modules/exp_commands") --- @class Commands
 local add, allow, deny = Commands.add_permission_authority, Commands.status.success, Commands.status.unauthorised
 
 local authorities = {}
 
-local system_players = {}
-local disabled_commands = {}
+local system_players = {} --- @type table<string, boolean>
+local disabled_commands = {} --- @type table<string, boolean>
 Storage.register({
     system_players,
     disabled_commands,
@@ -100,7 +101,7 @@ authorities.system_only =
 
 --- If Commands.disable was called then no one can use the command
 authorities.disabled =
-    add(function(_player, command)
+    add(function(player, command)
         if disabled_commands[command.name] then
             return deny{ "exp-commands-authorities.disabled" }
         else
