@@ -20,8 +20,11 @@ local function bonus_gui_pts_needed(player)
         total = total + (disp["bonus_display_" .. k .. "_slider"].slider_value / config.player_bonus[v].cost_scale * config.player_bonus[v].cost)
     end
 
-    total = total +
-    (disp["bonus_display_personal_battery_recharge_slider"].slider_value / config.player_special_bonus["personal_battery_recharge"].cost_scale * config.player_special_bonus["personal_battery_recharge"].cost)
+    total = total + (
+        disp["bonus_display_personal_battery_recharge_slider"].slider_value
+        / config.player_special_bonus["personal_battery_recharge"].cost_scale
+        * config.player_special_bonus["personal_battery_recharge"].cost
+    )
 
     return total
 end
@@ -174,15 +177,15 @@ local bonus_gui_control_reset =
             disp[s].slider_value = config.player_bonus[v].value
 
             if config.player_bonus[v].is_percentage then
-                disp[disp[s].tags.counter].caption = format_number(disp[s].slider_value * 100) .. " %"
+                disp[disp[s].tags.counter].caption = format_number(disp[s].slider_value * 100, false) .. " %"
             else
-                disp[disp[s].tags.counter].caption = format_number(disp[s].slider_value)
+                disp[disp[s].tags.counter].caption = format_number(disp[s].slider_value, false)
             end
         end
 
         local slider = disp["bonus_display_personal_battery_recharge_slider"]
         slider.slider_value = config.player_special_bonus["personal_battery_recharge"].value
-        disp[slider.tags.counter].caption = format_number(slider.slider_value)
+        disp[slider.tags.counter].caption = format_number(slider.slider_value, false)
 
         local r = bonus_gui_pts_needed(player)
         element.parent[bonus_gui_control_pts_n_count.name].caption = r
@@ -246,9 +249,9 @@ local bonus_gui_slider =
         local value = bonus.value
 
         if bonus.is_percentage then
-            value = format_number(value * 100) .. " %"
+            value = format_number(value * 100, false) .. " %"
         else
-            value = format_number(value)
+            value = format_number(value, false)
         end
 
         local slider = parent.add{
@@ -279,9 +282,9 @@ local bonus_gui_slider =
     end)
     :on_value_changed(function(player, element, _event)
         if element.tags.is_percentage then
-            element.parent[element.tags.counter].caption = format_number(element.slider_value * 100) .. " %"
+            element.parent[element.tags.counter].caption = format_number(element.slider_value * 100, false) .. " %"
         else
-            element.parent[element.tags.counter].caption = format_number(element.slider_value)
+            element.parent[element.tags.counter].caption = format_number(element.slider_value, false)
         end
 
         local r = bonus_gui_pts_needed(player)

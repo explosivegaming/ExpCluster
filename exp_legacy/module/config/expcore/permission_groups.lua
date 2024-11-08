@@ -5,9 +5,9 @@
 -- @config Permission-Groups
 
 -- local Event = require("modules/exp_legacy/utils/event") -- @dep utils.event
-local Permission_Groups = require("modules.exp_legacy.expcore.permission_groups") --- @dep expcore.permission_groups
+local Groups = require("modules.exp_legacy.expcore.permission_groups") --- @dep expcore.permission_groups
 
-Permission_Groups.new_group("Admin")
+Groups.new_group("Admin")
     :allow_all()
     :disallow{
         "add_permission_group", -- admin
@@ -24,7 +24,7 @@ Permission_Groups.new_group("Admin")
         "set_infinity_pipe_filter",
     }
 
-Permission_Groups.new_group("Trusted")
+Groups.new_group("Trusted")
     :allow_all()
     :disallow{
         "add_permission_group", -- admin
@@ -42,7 +42,7 @@ Permission_Groups.new_group("Trusted")
         "admin_action", -- trusted
     }
 
-Permission_Groups.new_group("Standard")
+Groups.new_group("Standard")
     :allow_all()
     :disallow{
         "add_permission_group", -- admin
@@ -64,7 +64,7 @@ Permission_Groups.new_group("Standard")
         "set_rocket_silo_send_to_orbit_automated_mode",
     }
 
-Permission_Groups.new_group("Guest")
+Groups.new_group("Guest")
     :allow_all()
     :disallow{
         "add_permission_group", -- admin
@@ -99,7 +99,7 @@ Permission_Groups.new_group("Guest")
         "flush_opened_entity_specific_fluid",
     }
 
-Permission_Groups.new_group("Restricted")
+Groups.new_group("Restricted")
     :disallow_all()
     :allow("write_to_console")
 

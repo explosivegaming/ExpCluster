@@ -76,9 +76,12 @@ function Public.add_compilatron(entity, name)
     end
 
     Public.compilatrons[name] = entity
-    local message =
-        entity.surface.create_entity
-            { name = "compi-speech-bubble", text = messages[name][1], position = { 0, 0 }, source = entity }
+    local message = entity.surface.create_entity{
+        name = "compi-speech-bubble",
+        text = messages[name][1],
+        position = { 0, 0 },
+        source = entity,
+    }
 
     Public.current_messages[name] = { message = message, msg_number = 1 }
 end

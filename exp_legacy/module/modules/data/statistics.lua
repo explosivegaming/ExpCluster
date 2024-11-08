@@ -40,7 +40,7 @@ Statistics:on_load(function(player_name, player_statistics)
     if new_players[player_name] then
         new_players[player_name] = nil
         local ctn = player_statistics.MapsPlayed
-        player_statistics.MapsPlayed = ctn and ctn + 1 or 1
+        player_statistics["MapsPlayed"] = ctn and ctn + 1 or 1
     end
 
     return player_statistics

@@ -210,8 +210,8 @@ Roles.new_role("Veteran", "Vet")
             return true
         else
             local stats = Statistics:get(player, {})
-            local playTime, afkTime, mapCount = stats.Playtime or 0, stats.AfkTime or 0, stats.MapsPlayed or 0
-            return playTime - afkTime >= hours250 and mapCount >= 25
+            local playtime, afk_time, map_count = stats.Playtime or 0, stats.AfkTime or 0, stats.MapsPlayed or 0
+            return playtime - afk_time >= hours250 and map_count >= 25
         end
     end)
 
@@ -259,8 +259,8 @@ Roles.new_role("Regular", "Reg")
             return true
         else
             local stats = Statistics:get(player, {})
-            local playTime, afkTime, mapCount = stats.Playtime or 0, stats.AfkTime or 0, stats.MapsPlayed or 0
-            return playTime - afkTime >= hours15 and mapCount >= 5
+            local playtime, afk_time, map_count = stats.Playtime or 0, stats.AfkTime or 0, stats.MapsPlayed or 0
+            return playtime - afk_time >= hours15 and map_count >= 5
         end
     end)
 

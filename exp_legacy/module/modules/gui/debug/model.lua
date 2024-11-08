@@ -10,10 +10,10 @@ local rawset = rawset
 
 local Public = {}
 
-local luaObject = { "{", nil, ", name = '", nil, "'}" }
-local luaPlayer = { "{LuaPlayer, name = '", nil, "', index = ", nil, "}" }
-local luaEntity = { "{LuaEntity, name = '", nil, "', unit_number = ", nil, "}" }
-local luaGuiElement = { "{LuaGuiElement, name = '", nil, "'}" }
+local LuaObject = { "{", nil, ", name = '", nil, "'}" }
+local LuaPlayer = { "{LuaPlayer, name = '", nil, "', index = ", nil, "}" }
+local LuaEntity = { "{LuaEntity, name = '", nil, "', unit_number = ", nil, "}" }
+local LuaGuiElement = { "{LuaGuiElement, name = '", nil, "'}" }
 
 local function get(obj, prop)
     return obj[prop]
@@ -59,25 +59,25 @@ local function inspect_process(item)
     end
 
     if obj_type == "LuaPlayer" then
-        luaPlayer[2] = item.name or "nil"
-        luaPlayer[4] = item.index or "nil"
+        LuaPlayer[2] = item.name or "nil"
+        LuaPlayer[4] = item.index or "nil"
 
-        return concat(luaPlayer)
+        return concat(LuaPlayer)
     elseif obj_type == "LuaEntity" then
-        luaEntity[2] = item.name or "nil"
-        luaEntity[4] = item.unit_number or "nil"
+        LuaEntity[2] = item.name or "nil"
+        LuaEntity[4] = item.unit_number or "nil"
 
-        return concat(luaEntity)
+        return concat(LuaEntity)
     elseif obj_type == "LuaGuiElement" then
         local name = item.name
-        luaGuiElement[2] = gui_names and gui_names[name] or name or "nil"
+        LuaGuiElement[2] = gui_names and gui_names[name] or name or "nil"
 
-        return concat(luaGuiElement)
+        return concat(LuaGuiElement)
     else
-        luaObject[2] = obj_type
-        luaObject[4] = get_name_safe(item)
+        LuaObject[2] = obj_type
+        LuaObject[4] = get_name_safe(item)
 
-        return concat(luaObject)
+        return concat(LuaObject)
     end
 end
 

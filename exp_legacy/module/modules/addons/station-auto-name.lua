@@ -15,10 +15,10 @@ local directions = {
     ["SW"] = 0.875,
 }
 
-local function Angle(entity)
+local function get_direction(entity)
     local angle = math.atan2(entity.position.y, entity.position.x) / math.pi
-    for direction, requiredAngle in pairs(directions) do
-        if angle < requiredAngle then
+    for direction, required_angle in pairs(directions) do
+        if angle < required_angle then
             return direction
         end
     end
@@ -45,14 +45,14 @@ local function station_name_changer(event)
             return
         end
 
-        local boundingBox = entity.bounding_box
+        local bounding_box = entity.bounding_box
         -- expanded box for recourse search:
-        local bounding2 = { { boundingBox.left_top.x - 100, boundingBox.left_top.y - 100 }, { boundingBox.right_bottom.x + 100, boundingBox.right_bottom.y + 100 } }
+        local bounding2 = { { bounding_box.left_top.x - 100, bounding_box.left_top.y - 100 }, { bounding_box.right_bottom.x + 100, bounding_box.right_bottom.y + 100 } }
         -- gets all resources in bounding_box2:
         local recourses = game.surfaces[1].find_entities_filtered{ area = bounding2, type = "resource" }
         if #recourses > 0 then -- save cpu time if their are no recourses in bounding_box2
             local closest_distance
-            local px, py = boundingBox.left_top.x, boundingBox.left_top.y
+            local px, py = bounding_box.left_top.x, bounding_box.left_top.y
             local recourse_closed
 
             -- Check which recourse is closest
@@ -77,7 +77,7 @@ local function station_name_changer(event)
                 entity.backer_name = config.station_name:gsub("__icon__", "[img=" .. item_type .. "." .. item_name .. "]")
                     :gsub("__item_name__", item_name2)
                     :gsub("__backer_name__", entity.backer_name)
-                    :gsub("__direction__", Angle(entity))
+                    :gsub("__direction__", get_direction(entity))
                     :gsub("__x__", math.floor(entity.position.x))
                     :gsub("__y__", math.floor(entity.position.y))
             end

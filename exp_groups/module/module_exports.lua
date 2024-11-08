@@ -30,6 +30,7 @@ end
 --- Add a player to a permission group, requires edit_permission_group
 --- @param player LuaPlayer Player to add to the group
 --- @param group LuaPermissionGroup Group to add the player to
+--- @return boolean # True if successful
 local function add_player_to_group(player, group)
     return group.add_player(player)
 end
@@ -37,6 +38,7 @@ end
 --- Add a players to a permission group, requires edit_permission_group
 --- @param players LuaPlayer[] Players to add to the group
 --- @param group LuaPermissionGroup Group to add the players to
+--- @return boolean # True if successful
 local function add_players_to_group(players, group)
     local add_player = group.add_player
     if not add_player(players[1]) then
@@ -57,6 +59,7 @@ local add_players_to_group_async = Async.register(add_players_to_group)
 
 --- Gets the permission group proxy with the given name or group ID.
 --- @param group_name string|uint32 The name or id of the permission group
+--- @return ExpGroup?
 function Groups.get_group(group_name)
     local group = game.permissions.get_group(group_name)
     if group == nil then return nil end
@@ -67,6 +70,7 @@ end
 
 --- Gets the permission group proxy for a players group
 --- @param player LuaPlayer The player to get the group of
+--- @return ExpGroup?
 function Groups.get_player_group(player)
     local group = player.permission_group
     if group == nil then return nil end
@@ -77,6 +81,7 @@ end
 
 --- Creates a new permission group, requires add_permission_group
 --- @param group_name string Name of the group to create
+--- @return ExpGroup
 function Groups.new_group(group_name)
     local group = game.permissions.get_group(group_name)
     assert(group == nil, "Group already exists with name: " .. group_name)
@@ -89,6 +94,7 @@ end
 
 --- Get or create a permisison group, must use the group name not the group id
 --- @param group_name string Name of the group to create
+--- @return ExpGroup
 function Groups.get_or_create(group_name)
     local group = game.permissions.get_group(group_name)
     if group then
@@ -109,7 +115,7 @@ end
 --- @param move_to_name  string|uint32? The name or id of the permission group to move players to
 function Groups.destroy_group(group_name, move_to_name)
     local group = game.permissions.get_group(group_name)
-    if group == nil then return nil end
+    if group == nil then return end
 
     local players = group.players
     if #players > 0 then
@@ -128,23 +134,30 @@ end
 --- Add a player to the permission group
 --- @param player LuaPlayer The player to add to the group
 function Groups._prototype:add_player(player)
-    return add_player_to_group(player, self.group) or add_player_to_group_async(player, self.group)
+    if not add_player_to_group(player, self.group) then
+        add_player_to_group_async(player, self.group)
+    end
 end
 
 --- Add players to the permission group
 --- @param players LuaPlayer[] The player to add to the group
 function Groups._prototype:add_players(players)
-    return add_players_to_group(players, self.group) or add_players_to_group_async(players, self.group)
+    if not add_players_to_group(players, self.group) then
+        add_players_to_group_async(players, self.group)
+    end
 end
 
 --- Move all players to another group
 --- @param other_group ExpGroup The group to move players to, default is the Default group
 function Groups._prototype:move_players(other_group)
-    return add_players_to_group(self.group.players, other_group.group) or add_players_to_group_async(self.group.players, other_group.group)
+    if not add_players_to_group(self.group.players, other_group.group) then
+        add_players_to_group_async(self.group.players, other_group.group)
+    end
 end
 
 --- Allow a set of actions for this group
 --- @param actions defines.input_action[] Actions to allow
+--- @return ExpGroup
 function Groups._prototype:allow_actions(actions)
     local set_allow = self.group.set_allows_action
     for _, action in ipairs(actions) do
@@ -156,6 +169,7 @@ end
 
 --- Disallow a set of actions for this group
 --- @param actions defines.input_action[] Actions to disallow
+--- @return ExpGroup
 function Groups._prototype:disallow_actions(actions)
     local set_allow = self.group.set_allows_action
     for _, action in ipairs(actions) do
@@ -167,6 +181,7 @@ end
 
 --- Reset the allowed state of all actions
 --- @param allowed boolean? default true for allow all actions, false to disallow all actions
+--- @return ExpGroup
 function Groups._prototype:reset(allowed)
     local set_allow = self.group.set_allows_action
     if allowed == nil then allowed = true end
@@ -179,6 +194,7 @@ end
 
 --- Returns if the group is allowed a given action
 --- @param action string|defines.input_action Actions to test
+--- @return boolean # True if successful
 function Groups._prototype:allows(action)
     if type(action) == "string" then
         return self.group.allows_action(defines.input_action[action])
@@ -197,6 +213,7 @@ end
 
 --- Convert an array of strings into an array of action names
 --- @param actions_names string[] An array of action names
+--- @return defines.input_action[]
 local function names_to_actions(actions_names)
     local actions, invalid, invalid_i = {}, {}, 1
     for i, action_name in ipairs(actions_names) do
@@ -241,6 +258,7 @@ end
 
 --- Convert a json string array into an array of input actions
 --- @param json string A json string representing a string array of actions
+--- @return defines.input_action[]
 function Groups.json_to_actions(json)
     local tbl = json_to_table(json)
     assert(tbl, "Invalid Json String")
@@ -277,9 +295,10 @@ function Groups._prototype:from_json(json)
     assert(tbl and type(tbl[1]) == "boolean" and type(tbl[2]) == "table", "Invalid Json String")
 
     if tbl[1] then
-        return self:reset(true):disallow_actions(names_to_actions(tbl[2]))
+        self:reset(true):disallow_actions(names_to_actions(tbl[2]))
+        return
     end
-    return self:reset(false):allow_actions(names_to_actions(tbl[2]))
+    self:reset(false):allow_actions(names_to_actions(tbl[2]))
 end
 
 return Groups

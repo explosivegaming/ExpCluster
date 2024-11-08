@@ -372,7 +372,7 @@ define_tab({ "readme.data-tab" }, { "readme.data-tooltip" },
                     if metadata.stringify then
                         value = metadata.stringify(value)
                     else
-                        value = format_number(value or 0)
+                        value = format_number(value or 0, false)
                     end
                     Gui.centered_label(statistics, 150, metadata.name or { "exp-statistics." .. name }, metadata.tooltip or { "exp-statistics." .. name .. "-tooltip" })
                     Gui.centered_label(statistics, 130, { "readme.data-format", value, metadata.unit or "" }, metadata.value_tooltip or { "exp-statistics." .. name .. "-tooltip" })

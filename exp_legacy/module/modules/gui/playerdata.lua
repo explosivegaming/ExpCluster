@@ -19,7 +19,7 @@ local label_width = {
 local short_time_format = ExpUtil.format_time_factory_locale{ format = "short", coefficient = 3600, hours = true, minutes = true }
 
 local function format_number_n(n)
-    return format_number(math.floor(n)) .. string.format("%.2f", n % 1):sub(2)
+    return format_number(math.floor(n), false) .. string.format("%.2f", n % 1):sub(2)
 end
 
 local PlayerStats = PlayerData.Statistics
@@ -96,7 +96,7 @@ local pd_data_set =
         for _, stat_name in pairs(PlayerData.Statistics.metadata.display_order) do
             local child = PlayerData.Statistics[stat_name]
             local metadata = child.metadata
-            local value = metadata.stringify_short and metadata.stringify_short(0) or metadata.stringify and metadata.stringify(0) or format_number(0)
+            local value = metadata.stringify_short and metadata.stringify_short(0) or metadata.stringify and metadata.stringify(0) or format_number(0, false)
             label(disp, label_width["name"], metadata.name or { "exp-statistics." .. stat_name }, metadata.tooltip or { "exp-statistics." .. stat_name .. "-tooltip" })
             label(disp, label_width["count"], { "readme.data-format", value, metadata.unit or "" }, metadata.value_tooltip or { "exp-statistics." .. stat_name .. "-tooltip" }, stat_name)
         end
@@ -119,7 +119,7 @@ local function pd_update(table, player_name)
         elseif metadata.stringify then
             value = metadata.stringify(value or 0)
         else
-            value = format_number(value or 0)
+            value = format_number(value or 0, false)
         end
         table[stat_name].caption = { "readme.data-format", value, metadata.unit or "" }
     end

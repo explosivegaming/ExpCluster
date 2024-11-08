@@ -144,12 +144,11 @@ local subfooter_frame =
                 style = "subfooter_frame",
             }
         end
-    ):style
-        {
-            padding = 5,
-            use_header_filler = false,
-            horizontally_stretchable = true,
-        }
+    ):style{
+        padding = 5,
+        use_header_filler = false,
+        horizontally_stretchable = true,
+    }
 
 
 --- Label element preset
@@ -351,22 +350,21 @@ local task_message_textfield =
         name = Gui.unique_static_name,
         type = "text-box",
         text = "",
-    }:style
-        {
-            maximal_width = 268,
-            minimal_height = 100,
-            horizontally_stretchable = true,
-        }
+    }:style{
+        maximal_width = 268,
+        minimal_height = 100,
+        horizontally_stretchable = true,
+    }
     :on_text_changed(
         function(player, element, _)
-            local isEditing = PlayerIsEditing:get(player)
-            local isCreating = PlayerIsCreating:get(player)
+            local is_editing = PlayerIsEditing:get(player)
+            local is_creating = PlayerIsCreating:get(player)
 
             local valid = string.len(element.text) > 5
 
-            if isCreating then
+            if is_creating then
                 element.parent.actions[task_create_confirm_button.name].enabled = valid
-            elseif isEditing then
+            elseif is_editing then
                 element.parent.actions[task_edit_confirm_button.name].enabled = valid
             end
         end
@@ -676,8 +674,8 @@ PlayerSelected:on_update(
         local task_list_element = frame.container.scroll.task_list
         local view_flow = frame.container.view
         local edit_flow = frame.container.edit
-        local isEditing = PlayerIsEditing:get(player)
-        local isCreating = PlayerIsCreating:get(player)
+        local is_editing = PlayerIsEditing:get(player)
+        local is_creating = PlayerIsCreating:get(player)
 
         -- If the selection has an previous state re-enable the button list element
         if prev_state then
@@ -692,12 +690,12 @@ PlayerSelected:on_update(
             update_task_view_footer(player, curr_state)
 
             -- If a player is creating then remove the creation dialogue
-            if isCreating then
+            if is_creating then
                 PlayerIsCreating:set(player, false)
             end
 
             -- Depending on if the player is currently editing change the current task edit footer to the current task
-            if isEditing then
+            if is_editing then
                 update_task_edit_footer(player, curr_state)
                 Tasks.set_editing(prev_state, player.name, nil)
                 Tasks.set_editing(curr_state, player.name, true)
@@ -756,8 +754,8 @@ local function role_update_event(event)
     local has_permission = check_player_permissions(player)
     local add_new_task_element = container.header.alignment[add_new_task.name]
     add_new_task_element.visible = has_permission
-    local isCreating = PlayerIsCreating:get(player)
-    if isCreating and not has_permission then
+    local is_creating = PlayerIsCreating:get(player)
+    if is_creating and not has_permission then
         PlayerIsCreating:set(player, false)
     end
 end
