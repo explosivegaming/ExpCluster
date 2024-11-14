@@ -125,7 +125,7 @@ end
 Commands.new("search", { "exp-commands_search.description-search" })
     :argument("item", { "exp-commands_search.arg-item" }, parse_item)
     :enable_auto_concatenation()
-    :add_aliases{ "s" }
+    :add_aliases{ "si" } -- cant use /s
     :register(function(player, item)
         --- @cast item LuaItemPrototype
         local results = search_players(game.players, item)
@@ -172,7 +172,7 @@ end
 Commands.new("search-recent", { "exp-commands_search.description-recent" })
     :argument("item", { "exp-commands_search.arg-item" }, parse_item)
     :enable_auto_concatenation()
-    :add_aliases{ "sr" } -- cant use /sc
+    :add_aliases{ "sr" }
     :register(function(player, item)
         --- @cast item LuaItemPrototype
         local results = search_players(game.players, item)

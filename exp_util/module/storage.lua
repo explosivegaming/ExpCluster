@@ -45,7 +45,7 @@ local my_metatable = Storage.register_metatable("MyMetaTable", {
 
 ]]
 
-local ExpUtil = require("modules/exp_util/common")
+local ExpUtil = require("modules/exp_util")
 
 --- @class ExpUtil_Storage
 local Storage = {

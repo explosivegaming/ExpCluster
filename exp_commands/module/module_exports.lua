@@ -395,7 +395,7 @@ end
 -- The prototype definition for command objects
 
 local function assert_command_mutable(command)
-    if not Commands.registered_commands[command.name] then
+    if Commands.registered_commands[command.name] then
         error("Command cannot be modified after being registered.", 3)
     end
 end

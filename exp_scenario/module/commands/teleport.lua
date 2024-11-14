@@ -59,7 +59,7 @@ Commands.new("goto", { "exp-commands_teleport.description-goto" })
 
 --- Teleport to spawn
 Commands.new("spawn", { "exp-commands_teleport.description-spawn" })
-    :optional("player", { "exp-commands_teleport.arg-player-spawn" }, Commands.types.player_alive)
+    :optional("player", { "exp-commands_teleport.arg-player-from" }, Commands.types.player_alive)
     :defaults{
         player = function(player)
             if player.character and player.character.health > 0 then

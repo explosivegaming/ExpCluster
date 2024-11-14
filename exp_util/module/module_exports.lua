@@ -2,6 +2,10 @@
 Adds some commonly used functions used in many modules
 ]]
 
+-- Make sure these are loaded first so locals below work
+require("modules/exp_util/include/math")
+require("modules/exp_util/include/table")
+
 local type = type
 local assert = assert
 local getmetatable = getmetatable
@@ -158,7 +162,7 @@ end
 function ExpUtil.get_function_name(func, raw)
     local debug_info = getinfo(func, "Sn")
     local safe_source = debug_info.source:find("@__level__")
-    local file_name = safe_source == 1 and debug_info.short_src:sub(10, -5) or debug_info.source
+    local file_name = safe_source == 1 and debug_info.source:sub(12, -5) or debug_info.source
     local func_name = debug_info.name or debug_info.linedefined
     if raw then return file_name .. ":" .. func_name end
     return "<" .. file_name .. ":" .. func_name .. ">"
@@ -192,21 +196,25 @@ end
 --- @return LocalisedString # The formatted version of the value
 --- @return boolean # True if value is a locale string, nil otherwise
 function ExpUtil.safe_value(value)
-    if type(value) == "table" then
+    local _type = type(value)
+    if _type == "table" then
         local v1 = value[1]
         local str = tostring(value)
         if type(v1) == "string" and not v1:find("%s")
-        and (v1 == "" or v1 == "?" or v1:find(".+[.].+")) then
+        and (v1 == "" or v1 == "?" or v1:find(".+[.].+"))
+        and #value <= 20 then
             return value, true -- locale string
         elseif str ~= "table" then
             return str, false -- has __tostring metamethod
         else -- plain table
             return value, false
         end
-    elseif type(value) == "function" then -- function
+    elseif _type == "function" then -- function
         return "<function:" .. ExpUtil.get_function_name(value, true) .. ">", false
-    else -- not: table or function
+    elseif _type == "thread" or _type == "userdata" then -- unsafe value
         return tostring(value), false
+    else -- already safe value
+        return value, false
     end
 end
 

@@ -5,7 +5,7 @@ local ExpUtil = require("modules/exp_util")
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Jail = require("modules.exp_legacy.modules.control.jail") --- @dep modules.control.jail
 local Reports = require("modules.exp_legacy.modules.control.reports") --- @dep modules.control.reports
-local format_player_name = ExpUtil.format_player_name_locale --- @dep expcore.common
+local format_player_name = ExpUtil.format_player_name_locale
 
 --- Returns the playtime of the reporter. Used when calculating the total playtime of all reporters
 local function reporter_playtime(_, by_player_name, _)

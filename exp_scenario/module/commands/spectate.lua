@@ -17,12 +17,12 @@ Commands.new("spectate", { "exp-commands_spectate.description-spectate" })
 
 --- Enters follow mode for the caller, following the given player.
 Commands.new("follow", { "exp-commands_spectate.description-follow" })
-    :argument("player", { "exp-command_spectate.arg-player" }, Commands.types.player_online)
+    :argument("player", { "exp-commands_spectate.arg-player" }, Commands.types.player_online)
     :add_aliases{ "f" }
     :register(function(player, other_player)
         --- @cast other_player LuaPlayer
         if player == other_player then
-            return Commands.status.invalid_input{ "exp-command_spectate.follow-self" }
+            return Commands.status.invalid_input{ "exp-commands_spectate.follow-self" }
         else
             Spectate.start_follow(player, other_player)
         end

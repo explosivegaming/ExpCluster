@@ -6,7 +6,7 @@ local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Storage = require("modules/exp_util/storage") --- @dep utils.global
 local Jail = require("modules.exp_legacy.modules.control.jail") --- @dep modules.control.jail
 local Protection = require("modules.exp_legacy.modules.control.protection") --- @dep modules.control.protection
-local format_player_name = ExpUtil.format_player_name_locale --- @dep expcore.common
+local format_player_name = ExpUtil.format_player_name_locale
 
 --- Stores how many times the repeat violation was triggered
 local repeat_count = {}

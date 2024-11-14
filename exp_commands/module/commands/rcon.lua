@@ -86,6 +86,7 @@ Commands.new("_rcon", { "exp-commands_rcon.description" })
         if compile_error then
             return Commands.status.invalid_input(compile_error)
         else
+            --- @cast invocation -nil
             local success, rtn = xpcall(invocation, debug.traceback)
             if success == false then
                 return Commands.status.error(rtn)

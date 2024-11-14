@@ -23,6 +23,9 @@ end)
 
 local speech_bubble_async =
     Async.register(function(data)
+        --- @cast data { ent: LuaEntity, name: string, msg_number: number }
+        if not data.ent.valid then return end
+
         local message =
             data.ent.surface.create_entity{
                 name = "compi-speech-bubble",

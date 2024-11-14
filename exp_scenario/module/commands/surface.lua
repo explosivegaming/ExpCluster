@@ -71,7 +71,7 @@ Commands.new("clear-blueprints", { "exp-commands_surface.description-blueprints"
 
 --- Clear all blueprints in a radius around you
 Commands.new("clear-blueprints-radius", { "exp-commands_surface.description-radius" })
-    :argument("radius", { "exp-commands_surface.arg-radius" }, Commands.types.number_range(1, 1000))
+    :argument("radius", { "exp-commands_surface.arg-radius" }, Commands.types.number_range(1, 100))
     :register(function(player, radius)
         --- @cast radius number
         local player_name = format_player_name(player)

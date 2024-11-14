@@ -395,7 +395,7 @@ local vlayer_gui_control_build =
             Selection.stop(player)
         else
             Selection.start(player, SelectionConvertArea)
-            player.print{ "expcom-waterfill.entered-area-selection" }
+            player.print{ "exp-commands_waterfill.entered-area-selection" }
         end
 
         vlayer_gui_list_refresh(player)

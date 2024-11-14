@@ -22,6 +22,7 @@ end)
 Roles.new_role("System", "SYS")
     :set_permission_group("Default", true)
     :set_flag("is_admin")
+    :set_flag("is_system")
     :set_flag("is_spectator")
     :set_flag("report-immune")
     :set_flag("instant-respawn")
@@ -31,14 +32,15 @@ Roles.new_role("Senior Administrator", "SAdmin")
     :set_permission_group("Admin")
     :set_custom_color{ r = 233, g = 63, b = 233 }
     :set_flag("is_admin")
+    :set_flag("is_system")
     :set_flag("is_spectator")
     :set_flag("report-immune")
     :set_flag("instant-respawn")
     :set_parent("Administrator")
     :allow{
-        "command/interface",
+        "command/_rcon",
         "command/debug",
-        "command/toggle-cheat-mode",
+        "command/set-cheat-mode",
         "command/research-all",
     }
 
@@ -54,7 +56,6 @@ Roles.new_role("Administrator", "Admin")
         "gui/warp-list/bypass-proximity",
         "gui/warp-list/bypass-cooldown",
         "command/connect-all",
-        "command/collectdata",
     }
 
 Roles.new_role("Moderator", "Mod")
@@ -71,21 +72,29 @@ Roles.new_role("Moderator", "Mod")
         "command/repair",
         "command/kill/always",
         "command/clear-tag/always",
-        "command/go-to-spawn/always",
+        "command/spawn/always",
         "command/clear-reports",
         "command/clear-warnings",
+        "command/clear-script-warnings",
+        "command/clear-last-warnings",
         "command/clear-inventory",
-        -- 'command/bonus',
-        "gui/bonus",
+        "command/kill-enemies",
+        "command/remove-enemies",
+        --'command/bonus',
         "command/home",
-        "command/home-set",
-        "command/home-get",
+        "command/set-home",
+        "command/get-home",
         "command/return",
         "command/connect-player",
+        "command/set-bot-queue",
+        "command/set-game-speed",
+        "command/set-friendly-fire",
+        "command/set-always-day",
+        "command/set-pollution-enabled",
+        "command/clear-pollution",
         "gui/rocket-info/toggle-active",
         "gui/rocket-info/remote_launch",
-        "command/toggle-friendly-fire",
-        "command/toggle-always-day",
+        "gui/bonus",
         "fast-tree-decon",
     }
 
@@ -98,15 +107,15 @@ Roles.new_role("Trainee", "TrMod")
     :set_parent("Veteran")
     :allow{
         "command/admin-chat",
-        "command/admin-marker",
         "command/goto",
         "command/teleport",
         "command/bring",
-        "command/give-warning",
+        "command/create-warning",
         "command/get-warnings",
         "command/get-reports",
         "command/protect-entity",
         "command/protect-area",
+        "command/protect-tag",
         "command/jail",
         "command/unjail",
         "command/kick",
@@ -114,17 +123,10 @@ Roles.new_role("Trainee", "TrMod")
         "command/spectate",
         "command/follow",
         "command/search",
+        "command/search-online",
         "command/search-amount",
         "command/search-recent",
-        "command/search-online",
-        "command/personal-battery-recharge",
-        "command/pollution-off",
-        "command/pollution-clear",
-        "command/bot-queue-get",
-        "command/bot-queue-set",
-        "command/game-speed",
-        "command/kill-biters",
-        "command/remove-biters",
+        "command/clear-blueprints",
         "gui/playerdata",
     }
 
@@ -164,11 +166,11 @@ Roles.new_role("Sponsor", "Spon")
     :allow{
         "gui/rocket-info/toggle-active",
         "gui/rocket-info/remote_launch",
-        -- 'command/bonus',
         "gui/bonus",
+        --"command/bonus",
         "command/home",
-        "command/home-set",
-        "command/home-get",
+        "command/set-home",
+        "command/get-home",
         "command/return",
         "fast-tree-decon",
     }
@@ -182,8 +184,8 @@ Roles.new_role("Supporter", "Sup")
         "command/tag-color",
         "command/jail",
         "command/unjail",
-        "command/join-message",
-        "command/join-message-clear",
+        "command/set-join-message",
+        "command/remove-join-message",
     }
 
 Roles.new_role("Partner", "Part")
@@ -203,7 +205,10 @@ Roles.new_role("Veteran", "Vet")
     :set_parent("Member")
     :allow{
         "command/chat-bot",
-        "command/last-location",
+        "command/clear-ground-items",
+        "command/clear-blueprints-radius",
+        "command/set-trains-to-automatic",
+        "command/set-auto-research",
     }
     :set_auto_assign_condition(function(player)
         if player.online_time >= hours10 then
@@ -226,18 +231,14 @@ Roles.new_role("Member", "Mem")
         "gui/task-list/edit",
         "gui/warp-list/add",
         "gui/warp-list/edit",
-        "command/save-quickbar",
+        "gui/surveillance",
         "gui/vlayer-edit",
+        "command/save-quickbar",
         "command/vlayer-info",
         "command/personal-logistic",
-        "command/auto-research",
-        "command/set-trains-to-automatic",
         "command/lawnmower",
         "command/waterfill",
-        "command/artillery-target-remote",
-        "command/clear-item-on-ground",
-        "command/clear-blueprint",
-        "gui/surveillance",
+        "command/artillery",
     }
 
 local hours3, hours15 = 3 * 216000, 15 * 60
@@ -248,7 +249,7 @@ Roles.new_role("Regular", "Reg")
     :allow{
         "command/kill",
         "command/rainbow",
-        "command/go-to-spawn",
+        "command/spawn",
         "command/me",
         "standard-decon",
         "bypass-entity-protection",
@@ -271,15 +272,14 @@ local default = Roles.new_role("Guest", "")
     :allow{
         "command/tag",
         "command/tag-clear",
-        "command/search-help",
-        "command/list-roles",
-        "command/find-on-map",
-        "command/report",
+        "command/commands",
+        "command/get-role",
+        "command/locate",
+        "command/create-report",
         "command/ratio",
         "command/server-ups",
         "command/save-data",
-        "command/preference",
-        "command/set-preference",
+        "command/data-preference",
         "command/connect",
         "gui/player-list",
         "gui/rocket-info",

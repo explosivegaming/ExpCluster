@@ -92,28 +92,28 @@ local function remove_render(player, key)
 end
 
 --- Toggles entity protection selection
-Commands.new("protect-entity", { "exp-commands_protection.description-entity" })
+Commands.new("protect-entity", { "exp-commands_entity-protection.description-entity" })
     :add_aliases{ "pe" }
     :register(function(player)
         if Selection.is_selecting(player, SelectionNameEntity) then
             Selection.stop(player)
-            return Commands.status.success{ "exp-commands_protection.exit-entity" }
+            return Commands.status.success{ "exp-commands_entity-protection.exit-entity" }
         else
             Selection.start(player, SelectionNameEntity)
-            return Commands.status.success{ "exp-commands_protection.enter-entity" }
+            return Commands.status.success{ "exp-commands_entity-protection.enter-entity" }
         end
     end)
 
 --- Toggles area protection selection
-Commands.new("protect-area", { "exp-commands_protection.description-area" })
+Commands.new("protect-area", { "exp-commands_entity-protection.description-area" })
     :add_aliases{ "pa" }
     :register(function(player)
         if Selection.is_selecting(player, SelectionNameEntity) then
             Selection.stop(player)
-            return Commands.status.success{ "exp-commands_protection.exit-area" }
+            return Commands.status.success{ "exp-commands_entity-protection.exit-area" }
         else
             Selection.start(player, SelectionNameEntity)
-            return Commands.status.success{ "exp-commands_protection.enter-area" }
+            return Commands.status.success{ "exp-commands_entity-protection.enter-area" }
         end
     end)
 
@@ -126,7 +126,7 @@ Selection.on_selection(SelectionNameEntity, function(event)
         show_protected_entity(player, entity)
     end
 
-    player.print({ "exp-commands_protection.protected-entities", #event.entities }, Commands.print_settings.default)
+    player.print({ "exp-commands_entity-protection.protected-entities", #event.entities }, Commands.print_settings.default)
 end)
 
 --- When an area is selected to remove protection from entities
@@ -138,7 +138,7 @@ Selection.on_alt_selection(SelectionNameEntity, function(event)
         remove_render(player, get_entity_key(entity))
     end
 
-    player.print({ "exp-commands_protection.unprotected-entities", #event.entities }, Commands.print_settings.default)
+    player.print({ "exp-commands_entity-protection.unprotected-entities", #event.entities }, Commands.print_settings.default)
 end)
 
 --- When an area is selected to add protection to the area
@@ -150,13 +150,13 @@ Selection.on_selection(SelectionNameArea, function(event)
     local player = game.players[event.player_index]
     for _, next_area in pairs(areas) do
         if contains_area(next_area, area) then
-            return player.print({ "exp-commands_protection.already-protected" }, Commands.print_settings.error)
+            return player.print({ "exp-commands_entity-protection.already-protected" }, Commands.print_settings.error)
         end
     end
 
     EntityProtection.add_area(surface, area)
     show_protected_area(player, surface, area)
-    player.print({ "exp-commands_protection.protected-area" }, Commands.print_settings.default)
+    player.print({ "exp-commands_entity-protection.protected-area" }, Commands.print_settings.default)
 end)
 
 --- When an area is selected to remove protection from the area
@@ -169,7 +169,7 @@ Selection.on_alt_selection(SelectionNameArea, function(event)
     for _, next_area in pairs(areas) do
         if contains_area(area, next_area) then
             EntityProtection.remove_area(surface, next_area)
-            player.print({ "exp-commands_protection.unprotected-area" }, Commands.print_settings.default)
+            player.print({ "exp-commands_entity-protection.unprotected-area" }, Commands.print_settings.default)
             remove_render(player, get_area_key(next_area))
         end
     end
@@ -222,7 +222,7 @@ end
 --- When there is a repeat offence print it in chat
 local function on_repeat_violation(event)
     Roles.print_to_roles_higher("Regular", {
-        "exp-commands_protection.repeat-offence",
+        "exp-commands_entity-protection.repeat-offence",
         format_player_name(event.player_index),
         event.entity.localised_name,
         event.entity.position.x,

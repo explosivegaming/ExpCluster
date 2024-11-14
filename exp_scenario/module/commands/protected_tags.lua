@@ -18,17 +18,17 @@ Storage.register({
 end)
 
 --- Toggle admin marker mode, can only be applied to yourself
-local cmd_protected_tag =
-    Commands.new("protected-tag", { "exp-commands_protected-tags.description" })
+local cmd_protect_tag =
+    Commands.new("protect-tag", { "exp-commands_tag-protection.description" })
     :add_aliases{ "ptag" }
     :add_flags{ "admin_only" }
     :register(function(player)
         if active_players[player.index] then
             active_players[player.index] = nil
-            return Commands.status.success{ "exp-commands_protected-tags.exit" }
+            return Commands.status.success{ "exp-commands_tag-protection.exit" }
         else
             active_players[player.index] = true
-            return Commands.status.success{ "exp-commands_protected-tags.enter" }
+            return Commands.status.success{ "exp-commands_tag-protection.enter" }
         end
     end)
 
@@ -47,7 +47,7 @@ local function on_chart_tag_added(event)
     local tag = event.tag
     local player = game.players[event.player_index]
     map_tags[tag.force.name .. tag.tag_number] = true
-    player.print{ "exp-commands_protected-tags.create" }
+    player.print{ "exp-commands_tag-protection.create" }
 end
 
 --- Stop a tag from being edited or removed
@@ -60,7 +60,7 @@ local function on_chart_tag_removed_or_modified(event)
 
     -- Check if the player is in protected mode, and inform them that it was protected
     if active_players[event.player_index] then
-        player.print{ "exp-commands_protected-tags.edit" }
+        player.print{ "exp-commands_tag-protection.edit" }
         return
     end
 
@@ -92,12 +92,12 @@ local function on_chart_tag_removed_or_modified(event)
         map_tags[new_tag.force.name .. new_tag.tag_number] = true
     end
 
-    if Commands.player_has_permission(player, cmd_protected_tag) then
+    if Commands.player_has_permission(player, cmd_protect_tag) then
         -- Player is not in protected mode, but has access to the command
-        player.print({ "exp-commands_protected-tags.revert-has-access", cmd_protected_tag.name }, Commands.print_settings.error)
+        player.print({ "exp-commands_tag-protection.revert-has-access", cmd_protect_tag.name }, Commands.print_settings.error)
     else
         --- Player does not have access to protected mode
-        player.print({ "exp-commands_protected-tags.revert-no-access" }, Commands.print_settings.error)
+        player.print({ "exp-commands_tag-protection.revert-no-access" }, Commands.print_settings.error)
     end
 end
 

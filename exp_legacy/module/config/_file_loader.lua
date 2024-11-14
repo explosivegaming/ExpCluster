@@ -28,7 +28,6 @@ return {
     "modules.addons.nukeprotect",
     "modules.addons.inserter",
     "modules.addons.miner",
-    "modules.addons.lawnmower",
     "modules.addons.logging",
 
     -- Control

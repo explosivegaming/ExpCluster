@@ -8,7 +8,7 @@ local ExpUtil = require("modules/exp_util")
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
-local Commands = require("modules.exp_legacy.expcore.commands") --- @dep expcore.commands
+local Commands = require("modules/exp_commands") --- @dep expcore.commands
 local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
 local External = require("modules.exp_legacy.expcore.external") --- @dep expcore.external
 local format_number = require("util").format_number --- @dep util
@@ -193,9 +193,9 @@ define_tab({ "readme.commands-tab" }, { "readme.commands-tooltip" },
         commands.style.cell_padding = 0
 
         -- Add the rules to the table
-        for name, command in pairs(Commands.get(player)) do
+        for name, command in pairs(Commands.list_for_player(player)) do
             Gui.centered_label(commands, 120, name)
-            Gui.centered_label(commands, 450, command.help)
+            Gui.centered_label(commands, 450, command.description)
         end
 
         return container

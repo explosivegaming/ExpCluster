@@ -52,7 +52,7 @@ local function next_color(color, step)
 end
 
 --- Sends an rainbow message in the chat
-Commands.new("rainbow", { "exp-commands_rainbow" })
+Commands.new("rainbow", { "exp-commands_rainbow.description" })
     :argument("message", { "exp-commands_rainbow.arg-message" }, Commands.types.string)
     :enable_auto_concatenation()
     :register(function(player, message)

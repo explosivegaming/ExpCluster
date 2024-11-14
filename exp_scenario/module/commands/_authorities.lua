@@ -13,11 +13,19 @@ local authorities = {}
 --- If a command has the flag "character_only" then the command can only be used outside of remote view
 authorities.exp_permission =
     add(function(player, command)
-        if not player_allowed(player, command.flags.exp_permission or ("command/" .. command)) then
+        if not player_allowed(player, command.flags.exp_permission or ("command/" .. command.name)) then
             return deny{ "exp-commands-authorities_role.deny" }
         else
             return allow()
         end
     end)
+
+Roles.define_flag_trigger("is_system", function(player, state)
+    if state then
+        Commands.unlock_system_commands(player.name)
+    else
+        Commands.lock_system_commands(player.name)
+    end
+end)
 
 return authorities

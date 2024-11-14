@@ -4,23 +4,23 @@ Adds a command to calculate the number of machines needed to fulfil a desired pr
 
 local Commands = require("modules/exp_commands")
 
-Commands.new("ratio", { "exp-command_ratio.description" })
-    :optional("items-per-second", { "exp-command_ratio.arg-items-per-second" }, Commands.types.number)
+Commands.new("ratio", { "exp-commands_ratio.description" })
+    :optional("items-per-second", { "exp-commands_ratio.arg-items-per-second" }, Commands.types.number)
     :register(function(player, items_per_second)
         --- @cast items_per_second number?
 
         local machine = player.selected
         if not machine then
-            return Commands.status.error{ "exp-command_ratio.not-selecting" }
+            return Commands.status.error{ "exp-commands_ratio.not-selecting" }
         end
 
         if machine.type ~= "assembling-machine" and machine.type ~= "furnace" then
-            return Commands.status.error{ "exp-command_ratio.not-selecting" }
+            return Commands.status.error{ "exp-commands_ratio.not-selecting" }
         end
 
         local recipe = machine.get_recipe()
         if not recipe then
-            return Commands.status.error{ "exp-command_ratio.not-selecting" }
+            return Commands.status.error{ "exp-commands_ratio.not-selecting" }
         end
 
         local products = recipe.products
@@ -34,7 +34,7 @@ Commands.new("ratio", { "exp-command_ratio.description" })
 
         for _, ingredient in ipairs(ingredients) do
             Commands.print{
-                ingredient.type == "item" and "exp-command_ratio.item-out" or "exp-command_ratio.fluid-out",
+                ingredient.type == "item" and "exp-commands_ratio.item-out" or "exp-commands_ratio.fluid-out",
                 math.round(ingredient.amount * crafts_per_second, 3),
                 ingredient.name
             }
@@ -42,13 +42,13 @@ Commands.new("ratio", { "exp-command_ratio.description" })
 
         for i, product in ipairs(products) do
             Commands.print{
-                product.type == "item" and "exp-command_ratio.item-out" or "exp-command_ratio.fluid-out",
+                product.type == "item" and "exp-commands_ratio.item-out" or "exp-commands_ratio.fluid-out",
                 math.round(product.amount * crafts_per_second, 3),
                 product.name
             }
         end
 
         if amount_of_machines ~= 1 then
-            Commands.print{ "exp-command_ratio.machine-count", amount_of_machines }
+            Commands.print{ "exp-commands_ratio.machine-count", amount_of_machines }
         end
     end)

@@ -3,15 +3,6 @@
 -- all files which are loaded (including the config files) are present in ./config/file_loader.lua
 -- this file is the landing point for all scenarios please DO NOT edit directly, further comments are to aid development
 
-local _xpcall = xpcall
---- @diagnostic disable
-xpcall = function(func, error_handler, ...)
-    local rtn = { _xpcall(func, error_handler, ...) }
-    if not rtn[1] then error(rtn[2]) end
-    return table.unpack(rtn)
-end
---- @diagnostic enable
-
 log("[START] -----| Explosive Gaming Scenario Loader |-----")
 log("[INFO] Setting up lua environment")
 

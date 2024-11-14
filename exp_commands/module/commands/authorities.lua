@@ -38,25 +38,35 @@ function Commands.lock_system_commands(player_name)
 end
 
 --- Get a list of all players who have system commands unlocked
-function Commands.get_system_command_players()
+function Commands.get_system_players()
     return table.get_keys(system_players)
+end
+
+--- Check if a player is a system user
+function Commands.is_system_player(player_name)
+    return system_players[player_name] or false
 end
 
 --- Stops a command from be used by any one
 --- @param command_name string The name of the command to disable
-function Commands.disable(command_name)
+function Commands.disable_command(command_name)
     disabled_commands[command_name] = true
 end
 
 --- Allows a command to be used again after disable was used
 --- @param command_name string The name of the command to enable
-function Commands.enable(command_name)
+function Commands.enable_command(command_name)
     disabled_commands[command_name] = nil
 end
 
---- Get a list of all players who have system commands unlocked
+--- Get a list of all disabled commands_help
 function Commands.get_disabled_commands()
     return table.get_keys(disabled_commands)
+end
+
+--- Check if a player is a system user
+function Commands.is_disabled_command(command_name)
+    return disabled_commands[command_name] or false
 end
 
 --- If a command has the flag "character_only" then the command can only be used outside of remote view
@@ -89,7 +99,7 @@ authorities.admin_only =
         end
     end)
 
---- If a command has the flag "system_only" then only rcon connections can use the command
+--- If a command has the flag "system_only" then only rcon and system users can use the command
 authorities.system_only =
     add(function(player, command)
         if command.flags.system_only and not system_players[player.name] then
@@ -99,10 +109,10 @@ authorities.system_only =
         end
     end)
 
---- If Commands.disable was called then no one can use the command
+--- If Commands.disable_command was called then only rcon and system users can use the command
 authorities.disabled =
     add(function(player, command)
-        if disabled_commands[command.name] then
+        if disabled_commands[command.name] and not system_players[player.name] then
             return deny{ "exp-commands-authorities.disabled" }
         else
             return allow()

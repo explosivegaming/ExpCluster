@@ -12,7 +12,7 @@ local Reports = require("modules.exp_legacy.modules.control.reports") --- @dep m
 local Warnings = require("modules.exp_legacy.modules.control.warnings") --- @dep modules.control.warnings
 local Jail = require("modules.exp_legacy.modules.control.jail") --- @dep modules.control.jail
 local Colors = require("modules/exp_util/include/color")
-local format_player_name = ExpUtil.format_player_name_locale --- @dep expcore.common
+local format_player_name = ExpUtil.format_player_name_locale
 
 local SelectedPlayer, SelectedAction
 local function set_datastores(player, action)
@@ -91,7 +91,7 @@ local report_player = new_button("utility/spawn_flag", { "player-list.report-pla
     :on_click(function(player)
         local selected_player_name = get_action_player_name(player)
         if Reports.is_reported(selected_player_name, player.name) then
-            player.print({ "expcom-report.already-reported" }, Colors.orange_red)
+            player.print({ "exp-commands_report.already-reported" }, Colors.orange_red)
         else
             SelectedAction:set(player, "command/report")
         end
@@ -100,8 +100,8 @@ local report_player = new_button("utility/spawn_flag", { "player-list.report-pla
 local function report_player_callback(player, reason)
     local selected_player_name, selected_player_color = get_action_player_name(player)
     local by_player_name_color = format_player_name(player)
-    game.print{ "expcom-report.non-admin", selected_player_color, reason }
-    Roles.print_to_roles_higher("Trainee", { "expcom-report.admin", selected_player_color, by_player_name_color, reason })
+    game.print{ "exp-commands_reports.response", selected_player_color, reason }
+    Roles.print_to_roles_higher("Trainee", { "exp-commands_reports.response-admin", selected_player_color, by_player_name_color, reason })
     Reports.report_player(selected_player_name, player.name, reason)
 end
 
@@ -115,7 +115,7 @@ local warn_player = new_button("utility/spawn_flag", { "player-list.warn-player"
 local function warn_player_callback(player, reason)
     local selected_player_name, selected_player_color = get_action_player_name(player)
     local by_player_name_color = format_player_name(player)
-    game.print{ "expcom-warnings.received", selected_player_color, by_player_name_color, reason }
+    game.print{ "exp-commands_warnings.create", selected_player_color, by_player_name_color, reason }
     Warnings.add_warning(selected_player_name, player.name, reason)
 end
 
@@ -125,7 +125,7 @@ local jail_player = new_button("utility/multiplayer_waiting_icon", { "player-lis
     :on_click(function(player)
         local selected_player_name, selected_player_color = get_action_player_name(player)
         if Jail.is_jailed(selected_player_name) then
-            player.print({ "expcom-jail.already-jailed", selected_player_color }, Colors.orange_red)
+            player.print({ "exp-commands_jail.already-jailed", selected_player_color }, Colors.orange_red)
         else
             SelectedAction:set(player, "command/jail")
         end
@@ -134,7 +134,7 @@ local jail_player = new_button("utility/multiplayer_waiting_icon", { "player-lis
 local function jail_player_callback(player, reason)
     local selected_player_name, selected_player_color = get_action_player_name(player)
     local by_player_name_color = format_player_name(player)
-    game.print{ "expcom-jail.give", selected_player_color, by_player_name_color, reason }
+    game.print{ "exp-commands_jail.jailed", selected_player_color, by_player_name_color, reason }
     Jail.jail_player(selected_player_name, player.name, reason)
 end
 

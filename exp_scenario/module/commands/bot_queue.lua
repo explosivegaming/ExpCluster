@@ -5,8 +5,9 @@ Adds a command that allows viewing and changing the construction queue limits
 local Commands = require("modules/exp_commands")
 
 --- Get / Set the current values for the bot queue
-Commands.new("bot-queue", { "exp-commands_bot-queue.description" })
+Commands.new("set-bot-queue", { "exp-commands_bot-queue.description" })
     :optional("amount", { "exp-commands_bot-queue.arg-amount" }, Commands.types.integer_range(1, 20))
+    :add_aliases{ "bot-queue" }
     :add_flags{ "admin_only" }
     :register(function(player, amount)
         if amount then

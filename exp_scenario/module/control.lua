@@ -4,9 +4,9 @@ local event_handler = require("event_handler")
 local add = event_handler.add_lib
 
 --- Command Extensions
-require("modules.exp_scenario/commands/_authorities")
-require("modules.exp_scenario/commands/_rcon")
-require("modules.exp_scenario/commands/_types")
+require("modules/exp_scenario/commands/_authorities")
+require("modules/exp_scenario/commands/_rcon")
+require("modules/exp_scenario/commands/_types")
 
 --- Commands with events
 add(require("modules/exp_scenario/commands/protected_entities"))
@@ -16,7 +16,7 @@ add(require("modules/exp_scenario/commands/research"))
 --- Commands
 require("modules/exp_scenario/commands/admin_chat")
 require("modules/exp_scenario/commands/artillery")
-require("modules/exp_scenario/commands/bot_queues")
+require("modules/exp_scenario/commands/bot_queue")
 require("modules/exp_scenario/commands/cheat")
 require("modules/exp_scenario/commands/clear_inventory")
 require("modules/exp_scenario/commands/connect")

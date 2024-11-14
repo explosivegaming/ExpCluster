@@ -52,7 +52,7 @@ end
 --- Connect to a different server
 Commands.new("connect", { "exp-commands_connect.description" })
     :argument("server", { "exp-commands_connect.arg-server" }, Commands.types.string)
-    :optional("is-address", { "exp-commands_connect.is-address" }, Commands.types.boolean)
+    :optional("is-address", { "exp-commands_connect.arg-is-address" }, Commands.types.boolean)
     :add_aliases{ "join" }
     :register(function(player, server, is_address)
         --- @cast server string
@@ -72,7 +72,7 @@ Commands.new("connect", { "exp-commands_connect.description" })
 Commands.new("connect-player", { "exp-commands_connect.description-player" })
     :argument("player", { "exp-commands_connect.arg-player" }, Commands.types.player_online)
     :argument("server", { "exp-commands_connect.arg-server" }, Commands.types.string)
-    :optional("is-address", { "exp-commands_connect.is-address" }, Commands.types.boolean)
+    :optional("is-address", { "exp-commands_connect.arg-is-address" }, Commands.types.boolean)
     :add_flags{ "admin_only" }
     :register(function(player, other_player, server, is_address)
         --- @cast other_player LuaPlayer
@@ -92,7 +92,7 @@ Commands.new("connect-player", { "exp-commands_connect.description-player" })
 --- Connect all players to a different server
 Commands.new("connect-all", { "exp-commands_connect.description-all" })
     :argument("server", { "exp-commands_connect.arg-server" }, Commands.types.string)
-    :optional("is-address", { "exp-commands_connect.is-address" }, Commands.types.boolean)
+    :optional("is-address", { "exp-commands_connect.arg-is-address" }, Commands.types.boolean)
     :add_flags{ "admin_only" }
     :register(function(player, server, is_address)
         --- @cast server string
