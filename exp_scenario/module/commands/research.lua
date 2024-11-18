@@ -20,7 +20,14 @@ end)
 --- @param silent boolean True when no message should be printed
 local function res_queue(force, silent)
     local res_q = force.research_queue
-    local res = force.technologies["mining-productivity-4"]
+    local res
+
+    if script.active_mods["space-age"] then
+        res = force.technologies["mining-productivity-3"]
+
+    else
+        res = force.technologies["mining-productivity-4"]
+    end
 
     if #res_q < config.queue_amount then
         for i = 1, config.queue_amount - #res_q do
