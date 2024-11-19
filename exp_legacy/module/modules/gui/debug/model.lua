@@ -104,10 +104,10 @@ function Public.dump_ignore_builder(ignore)
 end
 
 function Public.dump_function(func)
-    local res = { "upvalues:\n" }
+    local res = { "upvalues:\n", "no longer available" }
 
     local i = 1
-    while true do
+    --[[while true do
         local n, v = debug.getupvalue(func, i)
 
         if n == nil then
@@ -120,7 +120,7 @@ function Public.dump_function(func)
         end
 
         i = i + 1
-    end
+    end]]
 
     return concat(res)
 end

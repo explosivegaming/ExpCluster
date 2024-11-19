@@ -17,18 +17,17 @@
         "global": "Any",
         "luadoc": "Opened",
         "redefined": "Opened",
-        "strict": "Fallback",
-        "strong": "Fallback",
+        "strict": "Any",
+        "strong": "Any",
         "type-check": "Any",
         "unbalanced": "Opened",
         "unused": "Opened"
     },
+    "$comment-name-style-check": "Disabled below until config issue fixed: https://github.com/LuaLS/lua-language-server/issues/2643",
     "diagnostics.neededFileStatus": {
-        "close-non-object": "Any",
-        "discard-returns": "Any",
-        "deprecated": "None",
-        "no-unknown": "None",
-        "spell-check": "None!"
+        "no-unknown": "None!",
+        "spell-check": "None!",
+        "name-style-check": "None!"
     },
     "nameStyle.config": {
         "local_name_style": [{

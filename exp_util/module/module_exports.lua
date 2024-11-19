@@ -124,7 +124,6 @@ end
 --- Same as require but will return nil if the module does not exist, all other errors will propagate to the caller
 --- @param module_path string The path to the module to require, same syntax as normal require
 --- @return any # The contents of the module, or nil if the module does not exist or did not return a value
---- @deprecated
 function ExpUtil.optional_require(module_path)
     local success, rtn = xpcall(require, traceback, module_path)
     if success then return rtn end

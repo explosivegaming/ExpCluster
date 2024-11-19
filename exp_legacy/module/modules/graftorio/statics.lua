@@ -18,7 +18,7 @@ lib.collect_statics = function()
     end
 
     stats.mods = {}
-    for name, version in pairs(game.active_mods) do
+    for name, version in pairs(script.active_mods) do
         stats.mods[name] = version
     end
 
