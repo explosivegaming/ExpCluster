@@ -78,7 +78,9 @@ end
 local function spawn_belts(surface, position)
     position = apply_offset(position, config.afk_belts.offset)
     local belt_type = config.afk_belts.belt_type
-    local belt_details = { { -0.5, -0.5, 2 }, { 0.5, -0.5, 4 }, { -0.5, 0.5, 0 }, { 0.5, 0.5, 6 } } -- x, y,dir
+    -- 2 4 0 6
+    local belt_details = { { -0.5, -0.5, defines.direction.east }, { 0.5, -0.5, defines.direction.south }, { -0.5, 0.5, defines.direction.north }, { 0.5, 0.5, defines.direction.west } } -- x, y, dir
+
 
     for _, belt_set in pairs(config.afk_belts.locations) do
         local set_position = apply_offset(position, belt_set)
