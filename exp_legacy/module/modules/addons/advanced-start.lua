@@ -25,14 +25,8 @@ Event.add(defines.events.on_player_created, function(event)
             if success and count > 0 then
                 player.insert{ name = item, count = count }
             end
-        end
-    end
-
-    if config.armor.enable then
-        player.insert{ name = config.armor.main, count = 1 }
-
-        for _, item in pairs(config.armor.item) do
-            player.insert{ name = item.equipment, count = item.count }
+        else
+            player.insert{ name = item, count = callback }
         end
     end
 end)

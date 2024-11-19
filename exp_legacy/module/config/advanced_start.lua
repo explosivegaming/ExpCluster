@@ -102,29 +102,12 @@ return {
         ["firearm-magazine"] = cutoff_amount_made_unless(100, 10, 0, "piercing-rounds-magazine", 100),
         ["piercing-rounds-magazine"] = cutoff_amount_made(100, 0, 10),
         --[[
-            ['construction-robot']=scale_amount_made(1, 10, 1)
+        ['construction-robot'] = 10,
+        ['modular-armor'] = 1,
+        ['solar-panel-equipment'] = 16,
+        ['belt-immunity-equipment'] = 1,
+        ['battery-equipment'] = 2,
+        ['personal-roboport-equipment'] = 1
         ]]
-    },
-    armor = {
-        enable = false,
-        main = "modular-armor",
-        item = {
-            {
-                equipment = "solar-panel-equipment",
-                count = 16,
-            },
-            {
-                equipment = "belt-immunity-equipment",
-                count = 1,
-            },
-            {
-                equipment = "battery-equipment",
-                count = 2,
-            },
-            {
-                equipment = "personal-roboport-equipment",
-                count = 1,
-            },
-        },
-    },
+    }
 }
