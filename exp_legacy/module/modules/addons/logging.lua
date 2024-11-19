@@ -15,7 +15,9 @@ end
 
 Event.add(defines.events.on_rocket_launched, function(event)
     if event and event.rocket and event.rocket.force and event.rocket.force.rockets_launched then
-        if config.rocket_launch_display[event.rocket.force.rockets_launched] then
+        if event.rocket.force.rockets_launched >= config.rocket_launch_display_rate and event.rocket.force.rockets_launched % config.rocket_launch_display_rate == 0 then
+            add_log("[ROCKET] " .. event.rocket.force.rockets_launched .. " rockets launched")
+        elseif config.rocket_launch_display[event.rocket.force.rockets_launched] then
             add_log("[ROCKET] " .. event.rocket.force.rockets_launched .. " rockets launched")
         end
     end
