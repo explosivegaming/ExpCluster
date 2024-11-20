@@ -77,7 +77,7 @@ if config.built_entity then
         if Roles.player_has_flag(player, "deconlog-bypass") then
             return
         end
-        local ent = e.created_entity
+        local ent = e.entity
         add_log(get_secs() .. "," .. player.name .. ",built_entity," .. ent.name .. "," .. pos_to_string(ent.position) .. "," .. tostring(ent.direction) .. "," .. tostring(ent.orientation))
     end)
 end
