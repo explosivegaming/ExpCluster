@@ -308,7 +308,7 @@ local function entity_build(event)
         return
     end
     -- Check if the entity is in the config and enabled
-    local entity = event.created_entity
+    local entity = event.entity
 
     -- Check if player has settings
     if not autofill_player_settings[player.name] then return end
