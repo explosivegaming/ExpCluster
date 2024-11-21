@@ -9,6 +9,10 @@ local tonumber = tonumber
 local pairs = pairs
 local table_size = table_size
 
+--- @generic T: table
+--- @type fun(table: T, metatable?: table|metatable): T
+setmetatable = setmetatable
+
 --- Adds all keys of the source table to destination table as a shallow copy
 --- @generic K, V
 --- @param dst table<K, V> Table to insert into

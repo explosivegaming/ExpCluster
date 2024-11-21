@@ -75,8 +75,14 @@ local function clear_module(player, area, machine)
             local m_current_module_content = m_current_module.get_contents()
 
             if m_current_module_content then
-                for k, m in pairs(m_current_module_content) do
-                    surface.spill_item_stack(entity.bounding_box.left_top, { name = k, count = m }, true, force, false)
+                for _, item in pairs(m_current_module_content) do
+                    surface.spill_item_stack{
+                        position = entity.bounding_box.left_top,
+                        stack = item --[[ @as ItemStackDefinition https://forums.factorio.com/viewtopic.php?f=233&t=122323]],
+                        enable_looted = true,
+                        force = force,
+                        allow_belts = false
+                    }
                 end
             end
 
@@ -90,7 +96,7 @@ local function apply_module(player, area, machine, modules)
     for _, entity in pairs(player.surface.find_entities_filtered{ area = area, name = machine, force = player.force }) do
         local m_current_recipe
 
-        if entity.prototype.crafting_speed then
+        if entity.prototype.get_crafting_speed() then
             m_current_recipe = entity.get_recipe()
         end
 

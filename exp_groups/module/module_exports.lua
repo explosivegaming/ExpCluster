@@ -6,12 +6,13 @@ local json_to_table = helpers.json_to_table
 --- Top level module table, contains event handlers and public methods
 local Groups = {}
 
---- @class ExpGroup
+--- @class ExpGroup : LuaPermissionGroup
 --- @field group LuaPermissionGroup The permission group for this group proxy
 Groups._prototype = {}
 
 Groups._metatable = {
     __index = setmetatable(Groups._prototype, {
+        --- @type any Annotation required because otherwise it is typed as 'table'
         __index = function(self, key)
             return self.group[key]
         end,

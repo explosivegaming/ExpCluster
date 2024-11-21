@@ -144,9 +144,11 @@ local function spawn_area(surface, position)
 
     local fr = config.spawn_area.landfill_radius
     local fr2 = fr ^ 2
+    --- @diagnostic disable-next-line Incorrect Api Type: https://forums.factorio.com/viewtopic.php?f=233&t=109145&p=593761&hilit=get_tile#p593761
     local fill_tile = surface.get_tile(position).name
 
     -- Make sure a non water tile is used for each tile
+    --- @diagnostic disable-next-line Incorrect Api Type: https://forums.factorio.com/viewtopic.php?f=233&t=109145&p=593761&hilit=get_tile#p593761
     if surface.get_tile(position).collides_with("player") then fill_tile = "landfill" end
     if decon_tile == nil then decon_tile = fill_tile end
 
@@ -160,6 +162,7 @@ local function spawn_area(surface, position)
             if dst < tr2 then
                 -- If it is inside the decon radius always set the tile
                 table.insert(tiles_to_make, { name = decon_tile, position = pos })
+                --- @diagnostic disable-next-line Incorrect Api Type: https://forums.factorio.com/viewtopic.php?f=233&t=109145&p=593761&hilit=get_tile#p593761
             elseif dst < fr2 and surface.get_tile(pos).collides_with("player") then
                 -- If it is inside the fill radius only set the tile if it is water
                 table.insert(tiles_to_make, { name = fill_tile, position = pos })

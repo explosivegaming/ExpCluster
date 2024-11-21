@@ -125,7 +125,6 @@ Commands._metatable = {
     __class = "ExpCommand",
 }
 
---- @type LuaPlayer
 Commands.server = setmetatable({
     index = 0,
     color = ExpUtil.color.white,
@@ -154,7 +153,7 @@ Commands.server = setmetatable({
         Commands.error("Command does not support rcon usage, requires LuaPlayer." .. key)
         error("Command does not support rcon usage, requires LuaPlayer." .. key)
     end,
-})
+}) --[[ @as LuaPlayer ]]
 
 --- Status Returns.
 -- Return values used by command callbacks

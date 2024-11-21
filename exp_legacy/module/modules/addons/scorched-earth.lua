@@ -14,6 +14,7 @@ end
 
 -- Will degrade a tile down to the next tile when called
 local function degrade(surface, position)
+    --- @diagnostic disable-next-line Incorrect Api Type: https://forums.factorio.com/viewtopic.php?f=233&t=109145&p=593761&hilit=get_tile#p593761
     local tile = surface.get_tile(position)
     local tile_name = tile.name
     local degrade_tile_name = config.degrade_order[tile_name]
@@ -55,6 +56,7 @@ end
 
 -- Gets the mean of the strengths around a tile to give the strength at that position
 local function get_tile_strength(surface, position)
+    --- @diagnostic disable-next-line Incorrect Api Type: https://forums.factorio.com/viewtopic.php?f=233&t=109145&p=593761&hilit=get_tile#p593761
     local tile = surface.get_tile(position)
     local tile_name = tile.name
     local strength = config.strengths[tile_name]
@@ -62,7 +64,7 @@ local function get_tile_strength(surface, position)
     for x = -1, 1 do -- x loop
         local px = position.x + x
         for y = -1, 1 do -- y loop
-            local check_tile = surface.get_tile{ x = px, y = position.y + y }
+            local check_tile = surface.get_tile(px, position.y + y)
             local check_tile_name = check_tile.name
             local check_strength = config.strengths[check_tile_name] or 0
             strength = strength + check_strength

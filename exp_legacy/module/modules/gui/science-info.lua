@@ -193,6 +193,7 @@ local function update_science_pack(pack_table, science_pack_data)
     pack_table.parent.non_made.visible = false
 
     -- Update the icon
+    --- @type LuaGuiElement
     local pack_icon = pack_table["icon-" .. science_pack] or science_pack_base(pack_table, science_pack_data)
     local icon_style = science_pack_data.icon_style
     pack_icon.style = icon_style

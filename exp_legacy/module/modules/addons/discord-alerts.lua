@@ -42,7 +42,7 @@ end
 
 local function emit_event(args)
     local title = args.title or ""
-    local color = args.color or "0x0"
+    local color = args.color or "0x0" --- @type string | Color
     local description = args.description or ""
 
     if type(color) == "table" then

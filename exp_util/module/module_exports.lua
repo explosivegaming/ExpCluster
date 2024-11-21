@@ -394,6 +394,8 @@ end
 --- @field surface LuaSurface The surface to search for targets on
 --- @field allow_creation boolean? If new entities can be create to store the items
 --- @field cache Common.get_or_create_storage_cache? Internal search cache passed between subsequent calls
+--- @field name? EntityID Entity to be created if allow_creation is true
+--- @field force? ForceID Force of the created entity, defaults to 'neutral'
 
 --- Find, or optionally create, a storage entity which a stack can be inserted into
 --- @param options Common.get_or_create_storage_param
