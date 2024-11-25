@@ -1,0 +1,72 @@
+name: FMTK Lint
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: Install FMTK
+        run: |
+          npm install factoriomod-debug
+          npx fmtk luals-addon
+          jq '.["workspace.library"] += ["${{ github.workspace }}/factorio/library"] | .["runtime.plugin"] = "${{ github.workspace }}/factorio/plugin.lua"' .luarc.json > temp.luarc.json
+          jq -s '.[0] * .[1].settings' temp.luarc.json ${{ github.workspace }}/factorio/config.json > check.luarc.json
+      - name: Install LuaLS
+        run: |
+          wget https://github.com/LuaLS/lua-language-server/releases/latest/download/lua-language-server-3.13.2-linux-x64.tar.gz -q -O lusls.tar.gz
+          mkdir luals && tar -xf lusls.tar.gz -C luals && rm lusls.tar.gz
+      - name: Run Lint Report
+        shell: bash
+        run: |
+          ./luals/bin/lua-language-server --check=. --logpath=. --configpath=check.luarc.json --checklevel=Information
+
+          # Credit to https://github.com/Krealle/luals-check-action/blob/main/action.yml
+          # Although some minor fixes were needed
+
+          # Format and print the messages (would be nice to format as a table, but that's too complex for jq)
+          cat check.json | \
+            jq -r \
+            'to_entries | map(.key as $file | .value[] | 
+              {
+                file: $file | sub("file://${{ github.workspace }}/./"; ""), 
+                code: .code, 
+                line: .range.start.line,
+                message: (.message | split("\n") 
+                  | map(if startswith("- ") then .[2:] else . end) 
+                  | join("\n")), 
+                severity: (if .severity <= 1 then "ERR" else "WARN" end)
+              }) | 
+              map("**[\(.severity)] \(.code):** \(.file)#L\(.line)<br><code>\(.message)</code>") | .[]' \
+            > $GITHUB_STEP_SUMMARY
+
+          echo ""
+
+          # Github Annotations (limited to 10)
+          cat check.json | \
+          jq -r \
+          'to_entries | map(.key as $file | .value[] | 
+            {
+              file: $file | sub("file://${{ github.workspace }}/./"; ""), 
+              title: .code, 
+              line: .range.start.line, 
+              endLine: .range.end.line, 
+              col: .range.start.character, 
+              endColumn: .range.end.character, 
+              message: .message | gsub("\n"; "\\\\n"; "m"), 
+              level: (if .severity <= 1 then "error" else "warning" end)
+            }) | 
+            map("::\(.level) file=\(.file),line=\(.line+1),endLine=\(.line+1),col=\(.col+1),endColumn=\(.endColumn+1),title=\(.title)::\(.message) (\(.title))") | .[]'
+
+          if [[ $(wc -l < check.json) > 1 ]] ; then
+            exit 1
+          else
+            echo "✅ All checks succeeded!" | tee $GITHUB_STEP_SUMMARY
+          fi
+          
