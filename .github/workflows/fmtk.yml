@@ -59,7 +59,7 @@ jobs:
               endLine: .range.end.line, 
               col: .range.start.character, 
               endColumn: .range.end.character, 
-              message: .message | gsub("\n"; "\\\\n"; "m"), 
+              message: .message | gsub("\n"; "%0A"; "m"), 
               level: (if .severity <= 1 then "error" else "warning" end)
             }) | 
             map("::\(.level) file=\(.file),line=\(.line+1),endLine=\(.line+1),col=\(.col+1),endColumn=\(.endColumn+1),title=\(.title)::\(.message) (\(.title))") | .[]'
