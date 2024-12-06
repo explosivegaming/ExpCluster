@@ -17,6 +17,8 @@ local function drop_target(entity)
 
         if #entities > 0 then
             return entities[1]
+        else
+            return nil
         end
     end
 end
@@ -27,9 +29,15 @@ local function check_entity(entity)
         return true
     end
 
-    if next(entity.circuit_connected_entities.red) ~= nil or next(entity.circuit_connected_entities.green) ~= nil then
-        -- connected to circuit network
-        return true
+    local egcn = entity.get_wire_connectors()
+
+    if egcn then
+        for k, _ in pairs(egcn) do
+            if k == defines.wire_connector_id.circuit_red or k == defines.wire_connector_id.circuit_green then
+                -- connected to circuit network
+                return true
+            end
+        end
     end
 
     if not entity.minable then
@@ -52,6 +60,10 @@ end
 
 local function chest_check(entity)
     local target = drop_target(entity)
+
+    if target == nil then
+        return
+    end
 
     if check_entity(entity) then
         return
