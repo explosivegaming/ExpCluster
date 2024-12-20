@@ -388,6 +388,8 @@ end)
 
 Event.on_nth_tick(config.player_special_bonus_rate, function(_)
     for _, player in pairs(game.connected_players) do
-        apply_periodic_bonus(player)
+        if player.character then
+            apply_periodic_bonus(player)
+        end
     end
 end)
