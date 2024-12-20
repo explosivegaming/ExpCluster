@@ -32,17 +32,17 @@ Event.add(defines.events.on_player_created, function(event)
 end)
 
 Event.on_init(function()
-    remote.call("freeplay", "set_created_items", {})
-    remote.call("freeplay", "set_chart_distance", 0)
-    remote.call("freeplay", "set_skip_intro", config.skip_intro)
-    if config.research_queue_from_start then
-        for _, force in pairs(game.forces) do
-            -- force.research_queue_enabled = true
-        end
+    if remote.interfaces["freeplay"] then
+        remote.call("freeplay", "set_created_items", {})
+        --remote.call("freeplay", "set_respawn_items", {})
+        remote.call("freeplay", "set_chart_distance", 0)
+        remote.call("freeplay", "set_disable_crashsite", true)
+        remote.call("freeplay", "set_skip_intro", config.skip_intro)
     end
-    if not config.disable_base_game_silo_script then
-        if config.skip_victory then
-            remote.call("silo_script", "set_no_victory", true)
-        end
+    if remote.interfaces["silo_script"] then
+        remote.call("silo_script", "set_no_victory", config.skip_victory)
+    end
+    if remote.interfaces["space_finish_script"] then
+        remote.call("space_finish_script", "set_no_victory", config.skip_victory)
     end
 end)
