@@ -11,13 +11,21 @@ local config = require("modules.exp_legacy.config.research") --- @dep config.res
 local table_to_json = helpers.table_to_json
 local write_file = helpers.write_file
 
-local research = {}
+local research = {
+    time = {},
+    res_queue_enable = false
+}
+
 Storage.register(research, function(tbl)
     research = tbl
 end)
 
-research.time = {}
-research.res_queue_enable = false
+for i = 1, #config.mod_set_lookup do
+    if script.active_mods[config.mod_set_lookup[i]] then
+        config.mod_set = config.mod_set_lookup[i]
+        break
+    end
+end
 
 local research_time_format = ExpUtil.format_time_factory{ format = "clock", hours = true, minutes = true, seconds = true }
 local empty_time = research_time_format(nil)
@@ -38,7 +46,7 @@ do
     local res_total = 0
     local i = 1
 
-    for k, v in pairs(config.milestone) do
+    for k, v in pairs(config.milestone[config.mod_set]) do
         research.time[i] = 0
         res["lookup_name"][k] = i
         res_total = res_total + v * 60
@@ -89,9 +97,9 @@ local function research_res_n(res_)
 end
 
 local function research_notification(event)
-    if config.inf_res[event.research.name] then
-        if event.research.name == "mining-productivity-4" then
-            if event.research.level == 5 then
+    if config.inf_res[config.mod_set][event.research.name] then
+        if event.research.name == config.bonus_inventory.res[config.mod_set].name then
+            if event.research.level == config.bonus_inventory.res[config.mod_set].level + 1 then
                 -- Add run result to log
                 research_add_log()
             end
