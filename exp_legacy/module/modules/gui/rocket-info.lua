@@ -574,8 +574,9 @@ Event.on_nth_tick(150, function()
 end)
 
 --- Adds a silo to the list when it is built
+--- @param event EventData.on_built_entity | EventData.on_robot_built_entity
 local function on_built(event)
-    local entity = event.created_entity
+    local entity = event.entity
     if entity.valid and entity.name == "rocket-silo" then
         update_rocket_gui_progress(entity.force.name)
     end
