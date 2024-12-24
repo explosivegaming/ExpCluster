@@ -1,7 +1,10 @@
 {
-	"name": "exp_legacy",
+	"name": "@expcluster/legacy",
 	"version": "0.1.0",
-	"description": "Example Description. Package. Change me in package.json",
+	"description": "Clusterio plugin implementing the legacy v6 scenario updated for factorio 2.0",
+	"author": "Cooldude2606 <https://github.com/Cooldude2606>",
+	"license": "MIT",
+	"repository": "explosivegaming/ExpCluster",
 	"main": "dist/node/index.js",
 	"scripts": {
 		"prepare": "tsc --build"
@@ -10,14 +13,16 @@
 		"node": ">=18"
 	},
 	"peerDependencies": {
-		"@clusterio/lib": "workspace:*"
+		"@clusterio/lib": "^2.0.0-alpha.19"
 	},
 	"devDependencies": {
 		"typescript": "^5.5.3",
 		"@types/node": "^20.4.5",
-		"@clusterio/lib": "workspace:*"
+		"@clusterio/lib": "^2.0.0-alpha.19"
 	},
 	"dependencies": {
+		"@expcluster/lib_commands": "workspace:*",
+		"@expcluster/lib_util": "workspace:*",
 		"@sinclair/typebox": "^0.30.4"
 	},
 	"publishConfig": {

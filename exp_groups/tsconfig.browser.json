@@ -1,8 +1,4 @@
 {
-	"extends": "../../../tsconfig.browser.json",
-	"references": [
-		{ "path": "../../../packages/lib/tsconfig.browser.json" },
-		{ "path": "../../../packages/web_ui/tsconfig.browser.json" },
-	],
+	"extends": "../tsconfig.browser.json",
 	"include": [ "web/**/*.tsx", "web/**/*.ts", "messages.ts", "package.json" ],
 }

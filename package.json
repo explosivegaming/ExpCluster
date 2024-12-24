@@ -1,0 +1,12 @@
+{
+	"name": "root",
+	"private": true,
+	"files": [],
+	"scripts": {
+		"build": "tsc --build",
+		"watch": "tsc --build --watch"
+	},
+	"devDependencies": {
+		"typescript": "^5.5.3"
+	}
+}

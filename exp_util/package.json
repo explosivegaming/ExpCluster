@@ -1,10 +1,10 @@
 {
-	"name": "@explosivegaming/util",
-	"version": "0.0.1",
-	"description": "Clusterio module for Lua overrides and compatibility utils",
+	"name": "@expcluster/lib_util",
+	"version": "0.1.0",
+	"description": "Clusterio plugin providing Lua libraries and other utilities.",
 	"author": "Cooldude2606 <https://github.com/Cooldude2606>",
 	"license": "MIT",
-	"repository": "explosivegaming/clustorio-exp-util",
+	"repository": "explosivegaming/ExpCluster",
 	"main": "dist/node/index.js",
 	"scripts": {
 		"prepare": "tsc --build"
@@ -13,10 +13,10 @@
 		"node": ">=18"
 	},
 	"peerDependencies": {
-		"@clusterio/lib": "workspace:*"
+		"@clusterio/lib": "^2.0.0-alpha.19"
 	},
 	"devDependencies": {
-		"@clusterio/lib": "workspace:*",
+		"@clusterio/lib": "^2.0.0-alpha.19",
 		"@types/node": "^20.14.9",
 		"typescript": "^5.5.3"
 	},
