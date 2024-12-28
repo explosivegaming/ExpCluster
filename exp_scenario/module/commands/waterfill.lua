@@ -29,19 +29,19 @@ Selection.on_selection(SelectionName, function(event)
     local surface = event.surface
 
     if surface.planet and surface.planet ~= game.planets.nauvis then
-        player.print({ "exp-cods_waterfill.nauvis-only" }, Commands.print_settings.error)
+        player.print({ "exp-commands_waterfill.nauvis-only" }, Commands.print_settings.error)
         return
     end
 
     local area_size = (area.right_bottom.x - area.left_top.x) * (area.right_bottom.y - area.left_top.y)
     if area_size > 1000 then
-        player.print({ "exp-cods_waterfill.area-too-large", 1000, area_size }, Commands.print_settings.error)
+        player.print({ "exp-commands_waterfill.area-too-large", 1000, area_size }, Commands.print_settings.error)
         return
     end
 
     local item_count = player.get_item_count("cliff-explosives")
     if item_count < area_size then
-        player.print({ "exp-cods_waterfill.too-few-explosives", area_size, item_count }, Commands.print_settings.error)
+        player.print({ "exp-commands_waterfill.too-few-explosives", area_size, item_count }, Commands.print_settings.error)
         return
     end
 
@@ -62,8 +62,8 @@ Selection.on_selection(SelectionName, function(event)
     player.remove_item{ name = "cliff-explosives", count = tile_count - remaining_tiles }
 
     if remaining_tiles > 0 then
-        player.print({ "exp-cods_waterfill.part-complete", tile_count, remaining_tiles }, Commands.print_settings.default)
+        player.print({ "exp-commands_waterfill.part-complete", tile_count, remaining_tiles }, Commands.print_settings.default)
     else
-        player.print({ "exp-cods_waterfill.complete", tile_count }, Commands.print_settings.default)
+        player.print({ "exp-commands_waterfill.complete", tile_count }, Commands.print_settings.default)
     end
 end)

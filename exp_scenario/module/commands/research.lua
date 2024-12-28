@@ -36,24 +36,34 @@ function module.res_queue(force, silent)
     end
 end
 
+--- @param state boolean? use nil to toggle current state
+--- @return boolean # New auto research state
+function module.set_auto_research(state)
+    local new_state
+    if state == nil then
+        new_state = not research.res_queue_enable
+    else
+        new_state = state ~= false
+    end
+
+    research.res_queue_enable = new_state
+    return new_state
+end
+
 --- Sets the auto research state
 Commands.new("set-auto-research", { "exp-commands_research.description" })
     :optional("state", { "exp-commands_research.arg-state" }, Commands.types.boolean)
     :add_aliases{ "auto-research" }
     :register(function(player, state)
         --- @cast state boolean?
-        if state == nil then
-            research.res_queue_enable = not research.res_queue_enable
-        else
-            research.res_queue_enable = state
-        end
+        local enabled = module.set_auto_research(state)
 
-        if research.res_queue_enable then
+        if enabled then
             module.res_queue(player.force --[[@as LuaForce]], true)
         end
 
         local player_name = format_player_name(player)
-        game.print{ "exp-commands_research.auto-research", player_name, research.res_queue_enable }
+        game.print{ "exp-commands_research.auto-research", player_name, enabled }
     end)
 
 --- @param event EventData.on_research_finished

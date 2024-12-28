@@ -31,9 +31,10 @@ Storage.register({
 end)
 
 --- Let a player select an area by providing a selection planner
--- @tparam LuaPlayer player The player to place into selection mode
--- @tparam string selection_name The name of the selection to start, used with on_selection
--- @tparam[opt=false] boolean single_use When true the selection will stop after first use
+--- @param player LuaPlayer The player to place into selection mode
+--- @param selection_name string The name of the selection to start, used with on_selection
+--- @param single_use boolean? When true the selection will stop after first use
+--- @param ... any Arguments to pass to the selection handler
 function Selection.start(player, selection_name, single_use, ...)
     if not player or not player.valid then return end
     if selections[player.index] then
@@ -67,10 +68,15 @@ function Selection.start(player, selection_name, single_use, ...)
     player.clear_cursor() -- Clear the current item
     player.cursor_stack.set_stack(selection_tool)
 
+    -- This does not work for selection planners, will make a feature request for it
+    --player.cursor_stack_temporary = true
+
     -- Make a slot to place the selection tool even if inventory is full
-    if not player.character then return end
     player.character_inventory_slots_bonus = player.character_inventory_slots_bonus + 1
-    player.hand_location = { inventory = defines.inventory.character_main, slot = #player.get_main_inventory() }
+    local inventory = player.get_main_inventory()
+    if inventory then
+        player.hand_location = { inventory = inventory.index, slot = #inventory }
+    end
 end
 
 --- Stop a player selection by removing the selection planner
@@ -150,6 +156,16 @@ Event.add(defines.events.on_player_cursor_stack_changed, function(event)
     if player.cursor_stack.is_selection_tool then return end
     Selection.stop(player)
 end)
+
+--- Make sure the hand location exists when the player returns from remote view
+Event.add(defines.events.on_player_controller_changed, function(event)
+    local player = game.players[event.player_index] --- @cast player -nil
+    local inventory = player.get_main_inventory()
+    if player.cursor_stack.is_selection_tool and inventory then
+        player.hand_location = { inventory = inventory.index, slot = #inventory }
+    end
+end)
+
 --- Stop selection after an event such as death or leaving the game
 local function stop_after_event(event)
     local player = game.players[event.player_index]

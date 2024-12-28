@@ -233,6 +233,7 @@ Roles.new_role("Member", "Mem")
         "gui/warp-list/edit",
         "gui/surveillance",
         "gui/vlayer-edit",
+        "gui/tool",
         "command/save-quickbar",
         "command/vlayer-info",
         "command/personal-logistic",
