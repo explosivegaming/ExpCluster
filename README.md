@@ -1,20 +1,17 @@
 <p align="center">
   <img alt="logo" src="https://avatars2.githubusercontent.com/u/39745392?s=200&v=4" width="120">
   <br>
-  <a href="https://github.com/explosivegaming/scenario/tags">
-    <img src="https://img.shields.io/github/tag/explosivegaming/scenario.svg?label=Release" alt="Release">
+  <a href="https://github.com/explosivegaming/expcluster/tags">
+    <img src="https://img.shields.io/github/tag/explosivegaming/expcluster.svg?label=Release" alt="Release">
   </a>
-  <a href="https://github.com/explosivegaming/scenario/archive/master.zip">
-    <img src="https://img.shields.io/github/downloads/explosivegaming/scenario/total.svg?label=Downloads" alt="Downloads">
+  <a href="https://github.com/explosivegaming/expcluster/archive/expcluster.zip">
+    <img src="https://img.shields.io/github/downloads/explosivegaming/expcluster/total.svg?label=Downloads" alt="Downloads">
   </a>
-  <a href="https://github.com/explosivegaming/scenario/stargazers">
-    <img src="https://img.shields.io/github/stars/explosivegaming/scenario.svg?label=Stars" alt="Star">
+  <a href="https://github.com/explosivegaming/expcluster/stargazers">
+    <img src="https://img.shields.io/github/stars/explosivegaming/expcluster.svg?label=Stars" alt="Star">
   </a>
-  <a href="http://github.com/explosivegaming/scenario/fork">
-    <img src="https://img.shields.io/github/forks/explosivegaming/scenario.svg?label=Forks" alt="Fork">
-  </a>
-  <a href="https://www.codefactor.io/repository/github/explosivegaming/scenario">
-    <img src="https://www.codefactor.io/repository/github/explosivegaming/scenario/badge" alt="CodeFactor">
+  <a href="http://github.com/explosivegaming/expcluster/fork">
+    <img src="https://img.shields.io/github/forks/explosivegaming/expcluster.svg?label=Forks" alt="Fork">
   </a>
   <a href="https://discord.explosivegaming.nl">
     <img src="https://discordapp.com/api/guilds/260843215836545025/widget.png?style=shield" alt="Discord">
@@ -28,9 +25,9 @@ Explosive Gaming (often ExpGaming) is a server hosting community with a strong f
 
 ## Installation
 
-This is a plugin collection for [Clusterio](https://github.com/clusterio/clusterio) which provides all our scenario features.
+This is a plugin collection for [Clusterio](https://github.com/clusterio/clusterio) which implements all our scenario features.
 
-To use this plugin you must already have a clusterio instance running, see [here](https://github.com/clusterio/clusterio?tab=readme-ov-file#installation) for clusterio installation instructions.
+To use this plugin you must have a clusterio instance running, see [here](https://github.com/clusterio/clusterio?tab=readme-ov-file#installation) for clusterio installation instructions.
 
 This module is currently not published and therefore can not be installed via `npm`. Instead follow the steps for [building from source](#building-from-source)
 
@@ -38,8 +35,8 @@ This module is currently not published and therefore can not be installed via `n
 
 1) Create a `external_plugins` directory within your clusterio instance.
 2) Clone this repository into that directory: `git clone https://github.com/explosivegaming/ExpCluster`
-3) Install the package dev dependencies: `pnpm install`
-4) Add the plugins to your clusterio instance such as: `npx clusteriocontroller plugin add ./external_plugins/ExpCluster/exp_groups`
+3) Install the package dev dependencies: `pnpm install` (`pnpm` is recommended over `npm`)
+4) Add supported plugins will be loaded on next controller / host restart.
 
 ## Contributing
 
@@ -71,7 +68,7 @@ See [Contributing](CONTRIBUTING.md) for how to make pull requests and issues.
 | [1.0][s1.0] | Modulation | [0.15][f0.15] |
 | [0.1][s0.1] | First Tracked Version | [0.14][f0.14] |
 
-\* Scenario patch releases have been omitted and can be found [here][releases].
+\* Scenario patch releases have been omitted and can be found [here](https://github.com/explosivegaming/scenario/releases).
 
 \*\* Factorio versions show the version they were made for, often the minimum requirement to run the scenario.
 
@@ -122,11 +119,6 @@ See [Contributing](CONTRIBUTING.md) for how to make pull requests and issues.
 
 The Explosive Gaming codebase is licensed under the [MIT](LICENSE)
 
-[stable-dl]: https://github.com/explosivegaming/scenario/archive/master.zip
-[experimental-dl]: https://github.com/explosivegaming/scenario/archive/dev.zip
-[releases]: https://github.com/explosivegaming/scenario/releases
 [factorio]: https://factorio.com
-[docs]: https://explosivegaming.github.io/scenario
-[issues]: https://github.com/explosivegaming/scenario/issues/new/choose
 [website]: https://explosivegaming.nl
 [discord]: https://discord.explosivegaming.nl
