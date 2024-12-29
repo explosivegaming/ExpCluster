@@ -15,7 +15,7 @@ return {
         always_day = false,
         solar_power_multiplier = 1,
         min_brightness = 0.15,
-        ticks_per_day = 25000,
+        ticks_per_day = 25200,
         daytime = 0,
         dusk = 0.25,
         evening = 0.45,
@@ -25,20 +25,20 @@ return {
 
     interface_limit = { --- @setting interface_limit Sets the limit for the number of vlayer interfaces that can be created
         energy = 1, -- >1 allows for disconnected power networks to receive power
-        circuit = 10, -- No caveats
-        storage_input = 10, -- No caveats
+        circuit = 20, -- No caveats
+        storage_input = 20, -- No caveats
         storage_output = 1, -- >0 allows for item teleportation (allowed_items only)
     },
 
     allowed_items = { --- @setting allowed_items List of all items allowed in vlayer storage and their properties
         --[[
             Allowed properties:
-            starting_value = 0: The amount of the item placed into the vlayer on game start, ignores area requirements
-            required_area = 0: When greater than 0 the items properties are not applied unless their is sufficient surplus surface area
-            production = 0: The energy production of the item in MW, used for solar panels
-            discharge = 0: The energy discharge of the item in MW, used for accumulators
-            capacity = 0: The energy capacity of the item in MJ, used for accumulators
-            surface_area = 0: The surface area provided by the item, used for landfill
+            starting_value : The amount of the item placed into the vlayer on game start, ignores area requirements
+            required_area : When greater than 0 the items properties are not applied unless their is sufficient surplus surface area
+            production : The energy production of the item in MW, used for solar panels
+            discharge : The energy discharge of the item in MW, used for accumulators
+            capacity : The energy capacity of the item in MJ, used for accumulators
+            surface_area : The surface area provided by the item, used for landfill
         ]]
         ["solar-panel"] = {
             starting_value = 0,
@@ -54,7 +54,7 @@ return {
         ["landfill"] = {
             starting_value = 0,
             required_area = 0,
-            surface_area = 6, -- Tiles
+            surface_area = 8, -- Tiles
         },
         ["wood"] = {
             starting_value = 0,
@@ -68,33 +68,42 @@ return {
             required_area = 0,
             surface_area = 0,
             fuel_value = 4, -- MJ
-            power = false, -- turn all coal to power to reduce trash
+            power = true, -- turn all coal to power to reduce trash
         },
+        ["solid-fuel"] = {
+            starting_value = 0,
+            required_area = 0,
+            surface_area = 0,
+            fuel_value = 12, -- MJ
+            power = true, -- turn all solid fuel to power to reduce trash
+        },
+        ["rocket-fuel"] = {
+            starting_value = 0,
+            required_area = 0,
+            surface_area = 0,
+            fuel_value = 100, -- MJ
+            power = true, -- turn all rocket fuel to power to reduce trash
+        }
         --[[
-        ['iron-ore'] = {
+        ["iron-ore"] = {
             starting_value = 0,
             required_area = 0,
-            surface_area = 0
+            surface_area = 0,
         },
-        ['copper-ore'] = {
+        ["copper-ore"] = {
             starting_value = 0,
             required_area = 0,
-            surface_area = 0
+            surface_area = 0,
         },
-        ['coal'] = {
+        ["stone"] = {
             starting_value = 0,
             required_area = 0,
-            surface_area = 0
+            surface_area = 0,
         },
-        ['stone'] = {
+        ["uranium-ore"] = {
             starting_value = 0,
             required_area = 0,
-            surface_area = 0
-        },
-        ['uranium-ore'] = {
-            starting_value = 0,
-            required_area = 0,
-            surface_area = 0
+            surface_area = 0,
         },
         ]]
     },
@@ -170,5 +179,5 @@ return {
             base_game_equivalent = "accumulator",
             multiplier = 16384,
         },
-    },
+    }
 }
