@@ -138,12 +138,14 @@ local rocket_entry =
         local player = Gui.get_player_from_element(parent)
 
         -- Add the toggle auto launch if the player is allowed it
-        if check_player_permissions(player, "toggle_active") then
+        -- Auto launch was removed from the api and no 2.0 equivalent was added
+        -- https://forums.factorio.com/viewtopic.php?f=28&t=118065&p=656502
+        --[[if check_player_permissions(player, "toggle_active") then
             local flow = parent.add{ type = "flow", name = "toggle-" .. silo_name }
             local button = toggle_launch(flow)
             button.tooltip = silo_data.toggle_tooltip
             button.sprite = silo_data.toggle_sprite
-        end
+        end]]
 
         -- Add the remote launch if the player is allowed it
         if check_player_permissions(player, "remote_launch") then
@@ -246,7 +248,7 @@ local function get_progress_data(force_name)
             -- Get the toggle button data
             local toggle_tooltip = { "rocket-info.toggle-rocket-tooltip-disabled" }
             local toggle_sprite = "utility/play"
-            if rocket_silo.auto_launch then
+            if false --[[rocket_silo.auto_launch]] then
                 toggle_tooltip = { "rocket-info.toggle-rocket-tooltip" }
                 toggle_sprite = "utility/stop"
             end
