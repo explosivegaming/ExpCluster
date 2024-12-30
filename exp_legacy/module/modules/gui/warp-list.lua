@@ -95,7 +95,7 @@ local add_new_warp =
         local position = player.physical_position
 
         -- Check if the warp is too close to water
-        local water_tiles = surface.find_tiles_filtered{ collision_mask = "water-tile", radius = config.standard_proximity_radius + 1, position = position }
+        local water_tiles = surface.find_tiles_filtered{ collision_mask = "water_tile", radius = config.standard_proximity_radius + 1, position = position }
         if #water_tiles > 0 then
             player.print(
                 { "expcore-commands.command-fail", { "warp-list.too-close-to-water", config.standard_proximity_radius + 1 } },
