@@ -372,7 +372,7 @@ local vlayer_gui_control_see =
             local entity = i[vlayer_control_type_list[target]][n]
             if entity and entity.valid then
                 player.set_controller{ type = defines.controllers.remote, position = entity.position, surface = entity.surface }
-                player.print{ "vlayer.result-interface-location", { "vlayer.control-type-" .. vlayer_control_type_list[target]:gsub("_", "-") }, pos_to_gps_string(pos) }
+                player.print{ "vlayer.result-interface-location", { "vlayer.control-type-" .. vlayer_control_type_list[target]:gsub("_", "-") }, pos_to_gps_string(entity.position) }
             end
         end
     end)
