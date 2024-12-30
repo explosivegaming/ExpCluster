@@ -46,7 +46,7 @@ return {
             cost_scale = 1,
             cost = 10,
             is_percentage = false,
-        }
+        },
     },
     player_bonus = {
         ["character_mining_speed_modifier"] = {
@@ -316,5 +316,5 @@ return {
             is_percentage = false,
         },
         ]]
-    }
+    },
 }
