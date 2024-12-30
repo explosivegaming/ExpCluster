@@ -230,8 +230,7 @@ local warp_label =
     :on_click(function(player, element, _)
         local warp_id = element.parent.caption
         local warp = Warps.get_warp(warp_id)
-        local position = warp.position
-        player.zoom_to_world(position, 1.5)
+        player.set_controller{ type = defines.controllers.remote, position = warp.position, surface = warp.surface }
     end)
     :static_name(Gui.unique_static_name)
 
