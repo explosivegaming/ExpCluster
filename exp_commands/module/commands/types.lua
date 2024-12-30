@@ -233,7 +233,7 @@ types.color =
 
 --- A player who has joined the game at least once, with a lower role
 types.lower_role_player =
-add("player", function(input, player)
+add("lower_role_player", function(input, player)
     local player_i = game.get_player(input)
     local player = game.get_player(player)
 
@@ -246,7 +246,7 @@ end)
 
 --- A role that is lower than given user
 types.lower_role =
-    add("role", function(input)
+    add("lower_role", function(input)
         local player = game.get_player(input)
 
         if Roles.config.roles[input] and (Roles.config.roles[input].index >= Roles.get_player_highest_role(player).index) then
