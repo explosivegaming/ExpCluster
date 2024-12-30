@@ -148,12 +148,13 @@ function Rockets.get_rolling_average(force_name, count)
 end
 
 --- Event used to update the stats and the hui when a rocket is launched
-Event.add(defines.events.on_cargo_pod_finished_ascending, function(event)
+--- @param event EventData.on_rocket_launched
+Event.add(defines.events.on_rocket_launched, function(event)
     local entity = event.rocket_silo
     local silo_data = Rockets.get_silo_data(entity)
     local force = event.rocket_silo.force
     local force_name = force.name
-    local rockets_launched = force.rockets_launched
+    local rockets_launched = force.rockets_launched + 1 -- Hasn't updated when this event fires
 
     --- Handles updates to the rocket stats
     local stats = rocket_stats[force_name]
