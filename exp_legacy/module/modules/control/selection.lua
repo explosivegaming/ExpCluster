@@ -153,7 +153,7 @@ end
 --- Stop selection if the selection tool is removed from the cursor
 Event.add(defines.events.on_player_cursor_stack_changed, function(event)
     local player = game.players[event.player_index] --- @cast player -nil
-    if player.cursor_stack.is_selection_tool then return end
+    if player.cursor_stack and player.cursor_stack.is_selection_tool then return end
     Selection.stop(player)
 end)
 
@@ -161,7 +161,7 @@ end)
 Event.add(defines.events.on_player_controller_changed, function(event)
     local player = game.players[event.player_index] --- @cast player -nil
     local inventory = player.get_main_inventory()
-    if player.cursor_stack.is_selection_tool and inventory then
+    if player.cursor_stack and player.cursor_stack.is_selection_tool and inventory then
         player.hand_location = { inventory = inventory.index, slot = #inventory }
     end
 end)
