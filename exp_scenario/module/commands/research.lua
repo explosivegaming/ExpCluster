@@ -71,7 +71,7 @@ local function on_research_finished(event)
     if not research.res_queue_enable then return end
 
     local force = event.research.force
-    if force.rockets_launched > 0 and force.technologies[config.bonus_inventory.res[config.mod_set].name].level > config.bonus_inventory.res[config.mod_set].level then
+    if force.technologies[config.bonus_inventory.res[config.mod_set].name].level > config.bonus_inventory.res[config.mod_set].level then
         module.res_queue(force, event.by_script)
     end
 end

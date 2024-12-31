@@ -369,14 +369,10 @@ local vlayer_gui_control_see =
 
         if target and vlayer_control_type_list[target] and n > 0 then
             local i = vlayer.get_interfaces()
-
-            if i and i[vlayer_control_type_list[target]] and i[vlayer_control_type_list[target]][n] then
-                local pos = i[vlayer_control_type_list[target]][n].position
-
-                if pos then
-                    player.zoom_to_world(pos, 2)
-                    player.print{ "vlayer.result-interface-location", { "vlayer.control-type-" .. vlayer_control_type_list[target]:gsub("_", "-") }, pos_to_gps_string(pos) }
-                end
+            local entity = i[vlayer_control_type_list[target]][n]
+            if entity and entity.valid then
+                player.set_controller{ type = defines.controllers.remote, position = entity.position, surface = entity.surface }
+                player.print{ "vlayer.result-interface-location", { "vlayer.control-type-" .. vlayer_control_type_list[target]:gsub("_", "-") }, pos_to_gps_string(entity.position) }
             end
         end
     end)
