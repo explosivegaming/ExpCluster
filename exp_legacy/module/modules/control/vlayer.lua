@@ -22,6 +22,7 @@ local vlayer_data = {
     properties = {
         total_surface_area = 0,
         used_surface_area = 0,
+        total_production = 0,
         production = 0,
         discharge = 0,
         capacity = 0,
@@ -155,7 +156,7 @@ local function get_production_multiplier()
     end
 
     if surface.darkness then
-        -- We are using a real surface, our config does not contain 'darkness'
+        -- We are using a real surface, our config does not contain "darkness"
         local brightness = 1 - surface.darkness
 
         if brightness >= surface.min_brightness then
@@ -212,7 +213,9 @@ function vlayer.allocate_item(item_name, count)
     assert(item_properties, "Item not allowed in vlayer: " .. tostring(item_name))
 
     if item_properties.production then
-        vlayer_data.properties.production = vlayer_data.properties.production + item_properties.production * count
+        local nc = item_properties.production * count
+        vlayer_data.properties.production = vlayer_data.properties.production + nc
+        vlayer_data.properties.total_production = vlayer_data.properties.total_production + nc
     end
 
     if item_properties.capacity then
@@ -229,6 +232,14 @@ function vlayer.allocate_item(item_name, count)
 
     if item_properties.required_area and item_properties.required_area > 0 then
         vlayer_data.properties.used_surface_area = vlayer_data.properties.used_surface_area + item_properties.required_area * count
+    end
+end
+
+function vlayer.unable_alloc_item_pwr_calc(item_name, count)
+    local item_properties = config.allowed_items[item_name]
+
+    if item_properties.production then
+        vlayer_data.properties.total_production = vlayer_data.properties.total_production + item_properties.production * count
     end
 end
 
@@ -260,7 +271,9 @@ function vlayer.insert_item(item_name, count)
             vlayer.allocate_item(item_name, allocate_count)
         end
 
-        vlayer_data.storage.unallocated[item_name] = vlayer_data.storage.unallocated[item_name] + count - allocate_count
+        local unallocated = count - allocate_count
+        vlayer_data.storage.unallocated[item_name] = vlayer_data.storage.unallocated[item_name] + unallocated
+        vlayer.unable_alloc_item_pwr_calc(item_name, unallocated)
     else
         vlayer.allocate_item(item_name, count)
     end
@@ -456,6 +469,7 @@ local function handle_unallocated()
         if allocation_count > 0 then
             vlayer_data.storage.unallocated[item_name] = vlayer_data.storage.unallocated[item_name] - allocation_count
             vlayer.allocate_item(item_name, allocation_count)
+            vlayer.unable_alloc_item_pwr_calc(item_name, -allocation_count)
         end
     end
 end
@@ -464,15 +478,19 @@ end
 function vlayer.get_statistics()
     local vdp = vlayer_data.properties.production * mega
     local gdm = get_production_multiplier()
+    local gsm = get_sustained_multiplier()
+    local gald = get_actual_land_defecit()
 
     return {
         total_surface_area = vlayer_data.properties.total_surface_area,
         used_surface_area = vlayer_data.properties.used_surface_area,
-        remaining_surface_area = get_actual_land_defecit(),
+        remaining_surface_area = gald,
+        surface_area = vlayer_data.properties.total_surface_area - gald,
         production_multiplier = gdm,
         energy_max = vdp,
         energy_production = vdp * gdm,
-        energy_sustained = vdp * get_sustained_multiplier(),
+        energy_total_production = vlayer_data.properties.total_production * gsm * mega,
+        energy_sustained = vdp * gsm,
         energy_capacity = vlayer_data.properties.capacity * mega,
         energy_storage = vlayer_data.storage.energy,
         day_time = math.floor(vlayer_data.surface.daytime * vlayer_data.surface.ticks_per_day),
