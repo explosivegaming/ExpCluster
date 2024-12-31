@@ -271,9 +271,9 @@ function vlayer.insert_item(item_name, count)
             vlayer.allocate_item(item_name, allocate_count)
         end
 
-        local nc = count - allocate_count
-        vlayer_data.storage.unallocated[item_name] = vlayer_data.storage.unallocated[item_name] + count - allocate_count
-        vlayer.unable_alloc_item_pwr_calc(item_name, nc)
+        local unallocated = count - allocate_count
+        vlayer_data.storage.unallocated[item_name] = vlayer_data.storage.unallocated[item_name] + unallocated
+        vlayer.unable_alloc_item_pwr_calc(item_name, unallocated)
     else
         vlayer.allocate_item(item_name, count)
     end
