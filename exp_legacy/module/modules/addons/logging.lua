@@ -13,12 +13,13 @@ local function add_log(data)
     write_file(config.file_name, "\n", true, 0)
 end
 
-Event.add(defines.events.on_rocket_launched, function(event)
-    if event and event.rocket and event.rocket.force and event.rocket.force.rockets_launched then
-        if event.rocket.force.rockets_launched >= config.rocket_launch_display_rate and event.rocket.force.rockets_launched % config.rocket_launch_display_rate == 0 then
-            add_log("[ROCKET] " .. event.rocket.force.rockets_launched .. " rockets launched")
-        elseif config.rocket_launch_display[event.rocket.force.rockets_launched] then
-            add_log("[ROCKET] " .. event.rocket.force.rockets_launched .. " rockets launched")
+Event.add(defines.events.on_cargo_pod_finished_ascending, function(event)
+    if event and event.launched_by_rocket then
+        local force = event.cargo_pod.force
+        if force.rockets_launched >= config.rocket_launch_display_rate and force.rockets_launched % config.rocket_launch_display_rate == 0 then
+            add_log("[ROCKET] " .. force.rockets_launched .. " rockets launched")
+        elseif config.rocket_launch_display[force.rockets_launched] then
+            add_log("[ROCKET] " .. force.rockets_launched .. " rockets launched")
         end
     end
 end)

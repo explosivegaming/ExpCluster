@@ -57,6 +57,10 @@ Commands.new("server-ups", { "server-ups.description" })
 local function set_location(event)
     local player = game.players[event.player_index]
     local label = player.gui.screen[server_ups.name]
+    if not label then
+        label = server_ups(player.gui.screen)
+        label.visible = UsesServerUps:get(player)
+    end
     local res = player.display_resolution
     local uis = player.display_scale
     -- below ups and clock
@@ -65,12 +69,7 @@ local function set_location(event)
 end
 
 -- Draw the label when the player joins
-Event.add(defines.events.on_player_created, function(event)
-    local player = game.players[event.player_index]
-    local label = server_ups(player.gui.screen)
-    label.visible = false
-    set_location(event)
-end)
+Event.add(defines.events.on_player_created, set_location)
 
 -- Update the caption for all online players
 -- percentage of game speed
