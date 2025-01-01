@@ -26,7 +26,7 @@ function module.res_queue(force, silent)
     local res = force.technologies[config.bonus_inventory.res[config.mod_set].name]
 
     if #res_q < config.queue_amount then
-        for i = 1, config.queue_amount - #res_q do
+        for i = #res_q, config.queue_amount - 1 do
             force.add_research(res)
 
             if not silent then
