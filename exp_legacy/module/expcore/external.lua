@@ -83,7 +83,7 @@ function External.get_current_server()
     assert(ext, "No external data was found, use External.valid() to ensure external data exists.")
     local servers = assert(ext.servers, "No server list was found, please ensure that the external service is running")
     local server_id = assert(ext.current, "No current id was found, please ensure that the external service is running")
-    return servers[server_id]
+    return assert(servers[server_id], "No details found for server with id: " .. tostring(server_id))
 end
 
 --[[-- Gets the details of the given server
@@ -97,7 +97,7 @@ local server = External.get_server_details('eu-01')
 function External.get_server_details(server_id)
     assert(ext, "No external data was found, use External.valid() to ensure external data exists.")
     local servers = assert(ext.servers, "No server list was found, please ensure that the external service is running")
-    return servers[server_id]
+    return assert(servers[server_id], "No details found for server with id: " .. tostring(server_id))
 end
 
 --[[-- Gets the status of the given server
@@ -113,7 +113,7 @@ function External.get_server_status(server_id, raw)
     assert(var, "No external data was found, use External.valid() to ensure external data exists.")
     local servers = assert(var.status, "No server status was found, please ensure that the external service is running")
     local current = assert(ext.current, "No current id was found, please ensure that the external service is running")
-    return not raw and server_id == current and "Current" or servers[server_id]
+    return not raw and server_id == current and "Current" or assert(servers[server_id], "No status found for server with id: " .. tostring(server_id))
 end
 
 --[[-- Gets the ups of the current server

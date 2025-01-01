@@ -451,6 +451,7 @@ end
 
 --- @class Common.copy_items_to_surface_param: Common.get_or_create_storage_param
 --- @field items ItemStackIdentification[] | LuaInventory The item stacks to copy
+--- @field item ItemStackIdentification? Overwritten internally
 
 --- Insert a copy of the given items into the found entities. If no entities are found then they will be created if possible.
 --- @param options Common.copy_items_to_surface_param
@@ -467,6 +468,7 @@ end
 
 --- @class Common.move_items_to_surface_param: Common.get_or_create_storage_param
 --- @field items LuaItemStack[] The item stacks to move
+--- @field item ItemStackIdentification? Overwritten internally
 
 --- Insert a copy of the given items into the found entities. If no entities are found then they will be created if possible.
 --- @param options Common.move_items_to_surface_param
@@ -484,6 +486,7 @@ end
 
 --- @class Common.transfer_inventory_to_surface_param: Common.copy_items_to_surface_param
 --- @field inventory LuaInventory The inventory to transfer
+--- @field items (ItemStackIdentification[] | LuaInventory)? Overwritten internally
 
 --- Move the given inventory into the found entities. If no entities are found then they will be created if possible.
 --- @param options Common.transfer_inventory_to_surface_param

@@ -140,12 +140,13 @@ local rocket_entry =
         -- Add the toggle auto launch if the player is allowed it
         -- Auto launch was removed from the api and no 2.0 equivalent was added
         -- https://forums.factorio.com/viewtopic.php?f=28&t=118065&p=656502
-        --[[if check_player_permissions(player, "toggle_active") then
-            local flow = parent.add{ type = "flow", name = "toggle-" .. silo_name }
+        if check_player_permissions(player, "toggle_active") then
+            parent.add{ type = "flow" }
+            --[[local flow = parent.add{ type = "flow", name = "toggle-" .. silo_name }
             local button = toggle_launch(flow)
             button.tooltip = silo_data.toggle_tooltip
-            button.sprite = silo_data.toggle_sprite
-        end]]
+            button.sprite = silo_data.toggle_sprite]]
+        end
 
         -- Add the remote launch if the player is allowed it
         if check_player_permissions(player, "remote_launch") then
@@ -544,9 +545,9 @@ local function update_rocket_gui_all(force_name)
 end
 
 --- Event used to update the stats when a rocket is launched
-Event.add(defines.events.on_rocket_launched, function(event)
-    local force = event.rocket_silo.force
-    update_rocket_gui_all(force.name)
+--- @param event EventData.on_cargo_pod_finished_ascending
+Event.add(defines.events.on_cargo_pod_finished_ascending, function(event)
+    update_rocket_gui_all(event.cargo_pod.force.name)
 end)
 
 --- Update only the progress gui for a force
@@ -560,11 +561,9 @@ local function update_rocket_gui_progress(force_name)
 end
 
 --- Event used to set a rocket silo to be awaiting reset
+--- @param event EventData.on_rocket_launch_ordered
 Event.add(defines.events.on_rocket_launch_ordered, function(event)
-    local silo = event.rocket_silo
-    local silo_data = Rockets.get_silo_data(silo)
-    silo_data.awaiting_reset = true
-    update_rocket_gui_progress(silo.force.name)
+    update_rocket_gui_progress(event.rocket_silo.force.name)
 end)
 
 Event.on_nth_tick(150, function()

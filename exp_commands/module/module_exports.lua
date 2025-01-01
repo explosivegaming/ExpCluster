@@ -164,7 +164,7 @@ Commands.server = setmetatable({
 --- @param msg LocalisedString? An optional message to be included when a command completes (only has an effect in command callbacks)
 --- @return Commands.Status, LocalisedString # Should be returned directly without modification
 function Commands.status.success(msg)
-    return Commands.status.success, msg or { "exp-commands.success" }
+    return Commands.status.success, msg == nil and { "exp-commands.success" } or msg
 end
 
 --- Used to signal an error has occurred in a command, data type parser, or permission authority
@@ -172,7 +172,7 @@ end
 --- @param msg LocalisedString? An optional error message to be included in the output, a generic message is used if not provided
 --- @return Commands.Status, LocalisedString # Should be returned directly without modification
 function Commands.status.error(msg)
-    return Commands.status.error, { "exp-commands.error", msg or { "exp-commands.error-default" } }
+    return Commands.status.error, { "exp-commands.error", msg == nil and { "exp-commands.error-default" } or msg }
 end
 
 --- Used to signal the player is unauthorised to use a command, primarily used by permission authorities but can be used in a command callback
@@ -180,7 +180,7 @@ end
 --- @param msg LocalisedString? An optional error message to be included in the output, a generic message is used if not provided
 --- @return Commands.Status, LocalisedString # Should be returned directly without modification
 function Commands.status.unauthorised(msg)
-    return Commands.status.unauthorised, msg or { "exp-commands.unauthorized", msg or { "exp-commands.unauthorized-default" } }
+    return Commands.status.unauthorised, { "exp-commands.unauthorized", msg == nil and { "exp-commands.unauthorized-default" } or msg }
 end
 
 --- Used to signal the player provided invalid input to an command, primarily used by data type parsers but can be used in a command callback
@@ -188,7 +188,7 @@ end
 --- @param msg LocalisedString? An optional error message to be included in the output, a generic message is used if not provided
 --- @return Commands.Status, LocalisedString # Should be returned directly without modification
 function Commands.status.invalid_input(msg)
-    return Commands.status.invalid_input, msg or { "exp-commands.invalid-input" }
+    return Commands.status.invalid_input, msg == nil and { "exp-commands.invalid-input" } or msg
 end
 
 --- Used to signal an internal error has occurred, this is reserved for internal use only
@@ -702,7 +702,7 @@ function Commands._event_handler(event)
             -- Parse the raw argument to get the correct data type
             local success, status, parsed = Commands.parse_input(input, player, argument.input_parser)
             if success == false then
-                log_command("Input parse failed", command, player, event.parameter, { status = valid_command_status[status], index = index, argument = argument, reason = parsed })
+                log_command("Input parse failed", command, player, event.parameter, { status = valid_command_status[status], index = index, argument = argument.name, reason = parsed })
                 return Commands.error{ "exp-commands.invalid-argument", argument.name, parsed }
             else
                 arguments[index] = parsed
