@@ -1,0 +1,12 @@
+{
+	"name": "exp_gui",
+	"load": [
+		"module_exports.lua"
+	],
+	"require": [
+	],
+	"dependencies": {
+		"clusterio": "*",
+		"exp_util": "*"
+	}
+}
