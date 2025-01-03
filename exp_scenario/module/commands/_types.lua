@@ -30,7 +30,7 @@ types.lower_role =
         --- @cast result any TODO role is not a defined type
 
         local player_highest = highest_role(player)
-        if player_highest.index >= result.index then
+        if player_highest.index < result.index then
             return invalid{ "exp-commands-parse_role.lower-role" }
         else
             return valid(result)
