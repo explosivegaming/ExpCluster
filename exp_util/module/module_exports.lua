@@ -406,7 +406,7 @@ function ExpUtil.get_storage_for_stack(options)
 
     -- Perform a search if on has not been done already
     local cache = options.cache
-    if cache then
+    if not cache then
         local entities = surface.find_entities_filtered(options)
         cache = {
             entities = entities,
@@ -415,7 +415,6 @@ function ExpUtil.get_storage_for_stack(options)
         }
         options.cache = cache
     end
-    --- @cast cache -nil
 
     -- Find a valid entity from the search results
     local current, count, entities = cache.current, cache.count, cache.entities
