@@ -1,6 +1,12 @@
+--[[-- ExpGui - GuiData
+Provides a method of storing elements created for a player and provide a global iterator for them.
+]]
 
 local ExpUtil = require("modules/exp_util")
 local Storage = require("modules/exp_util/storage")
+
+--- @alias ExpGui_GuiIter.FilterType LuaPlayer | LuaForce | LuaPlayer[] | nil
+--- @alias ExpGui_GuiIter.ReturnType ExpGui_GuiIter.ReturnType
 
 --- @type table<string, table<uint, table<uint, LuaGuiElement>>>
 local script_data = {}
@@ -29,17 +35,17 @@ local function next_valid_element(elements, prev_index)
 end
 
 --- Get the next valid player with elements
---- @param define_elements table<uint, table<uint, LuaGuiElement>>
+--- @param scope_elements table<uint, table<uint, LuaGuiElement>>
 --- @param players LuaPlayer[]
 --- @param prev_index uint?
 --- @param online boolean?
 --- @return uint?, LuaPlayer?, table<uint, LuaGuiElement>?
-local function next_valid_player(define_elements, players, prev_index, online)
+local function next_valid_player(scope_elements, players, prev_index, online)
     local index, player = nil, nil
     while true do
         index, player = next(players, prev_index)
         while player and not player.valid do
-            define_elements[player.index] = nil
+            scope_elements[player.index] = nil
             index, player = next(players, index)
         end
 
@@ -48,7 +54,7 @@ local function next_valid_player(define_elements, players, prev_index, online)
         end
 
         if online == nil or player.connected == online then
-            local player_elements = define_elements[player.index]
+            local player_elements = scope_elements[player.index]
             if player_elements and #player_elements > 0 then
                 return index, player, player_elements
             end
@@ -57,16 +63,16 @@ local function next_valid_player(define_elements, players, prev_index, online)
 end
 
 --- Iterate over all valid elements for a player
---- @param define_name string
+--- @param scope string
 --- @param player LuaPlayer
---- @return fun(): LuaPlayer?, LuaGuiElement?
-function GuiIter.player_elements(define_name, player)
+--- @return ExpGui_GuiIter.ReturnType
+function GuiIter.player_elements(scope, player)
     if not player.valid then return nop end
 
-    local define_elements = script_data[define_name]
-    if not define_elements then return nop end
+    local scope_elements = script_data[scope]
+    if not scope_elements then return nop end
 
-    local player_elements = define_elements[player.index]
+    local player_elements = scope_elements[player.index]
     if not player_elements then return nop end
 
     local element_index, element = nil, nil
@@ -78,13 +84,13 @@ function GuiIter.player_elements(define_name, player)
 end
 
 --- Iterate over all valid elements for a player
---- @param define_name string
+--- @param scope string
 --- @param players LuaPlayer[]
 --- @param online boolean?
---- @return fun(): LuaPlayer?, LuaGuiElement?
-function GuiIter.filtered_elements(define_name, players, online)
-    local define_elements = script_data[define_name]
-    if not define_elements then return nop end
+--- @return ExpGui_GuiIter.ReturnType
+function GuiIter.filtered_elements(scope, players, online)
+    local scope_elements = script_data[scope]
+    if not scope_elements then return nop end
 
     local index, player, player_elements = nil, nil, nil
     local element_index, element = nil, nil
@@ -92,7 +98,7 @@ function GuiIter.filtered_elements(define_name, players, online)
         while true do
             -- Get the next valid player elements if needed
             if element_index == nil then
-                index, player, player_elements = next_valid_player(define_elements, players, index, online)
+                index, player, player_elements = next_valid_player(scope_elements, players, index, online)
                 if index == nil then return nil, nil end
                 --- @cast player_elements -nil
             end
@@ -107,11 +113,11 @@ function GuiIter.filtered_elements(define_name, players, online)
 end
 
 --- Iterate over all valid elements
---- @param define_name string
---- @return fun(): LuaPlayer?, LuaGuiElement?
-function GuiIter.all_elements(define_name)
-    local define_elements = script_data[define_name]
-    if not define_elements then return nop end
+--- @param scope string
+--- @return ExpGui_GuiIter.ReturnType
+function GuiIter.all_elements(scope)
+    local scope_elements = script_data[scope]
+    if not scope_elements then return nop end
 
     local player_index, player_elements, player = nil, nil, nil
     local element_index, element = nil, nil
@@ -119,14 +125,14 @@ function GuiIter.all_elements(define_name)
         while true do
             if element_index == nil then
                 -- Get the next player
-                player_index, player_elements = next(define_elements, player_index)
+                player_index, player_elements = next(scope_elements, player_index)
                 if player_index == nil then return nil, nil end
                 player = game.get_player(player_index)
 
                 -- Ensure next player is valid
                 while player and not player.valid do
-                    define_elements[player_index] = nil
-                    player_index, player_elements = next(define_elements, player_index)
+                    scope_elements[player_index] = nil
+                    player_index, player_elements = next(scope_elements, player_index)
                     if player_index == nil then return nil, nil end
                     player = game.get_player(player_index)
                 end
@@ -142,65 +148,63 @@ function GuiIter.all_elements(define_name)
     end
 end
 
---- @alias FilterType LuaPlayer | LuaForce | LuaPlayer[] | nil
-
 --- Iterate over all valid gui elements for all players
---- @param define_name string
---- @param filter FilterType
---- @return fun(): LuaPlayer?, LuaGuiElement?
-function GuiIter.get_elements(define_name, filter)
+--- @param scope string
+--- @param filter ExpGui_GuiIter.FilterType
+--- @return ExpGui_GuiIter.ReturnType
+function GuiIter.get_tracked_elements(scope, filter)
     local class_name = ExpUtil.get_class_name(filter)
     if class_name == "nil" then
         --- @cast filter nil
-        return GuiIter.all_elements(define_name)
+        return GuiIter.all_elements(scope)
     elseif class_name == "LuaPlayer" then
         --- @cast filter LuaPlayer
-        return GuiIter.player_elements(define_name, filter)
+        return GuiIter.player_elements(scope, filter)
     elseif class_name == "LuaForce" then
         --- @cast filter LuaForce
-        return GuiIter.filtered_elements(define_name, filter.players)
+        return GuiIter.filtered_elements(scope, filter.players)
     elseif type(filter) == "table" and ExpUtil.get_class_name(filter[1]) == "LuaPlayer" then
         --- @cast filter LuaPlayer[]
-        return GuiIter.filtered_elements(define_name, filter)
+        return GuiIter.filtered_elements(scope, filter)
     else
         error("Unknown filter type: " .. class_name)
     end
 end
 
 --- Iterate over all valid gui elements for all online players
---- @param define_name string
---- @param filter FilterType
---- @return fun(): LuaPlayer?, LuaGuiElement?
-function GuiIter.get_online_elements(define_name, filter)
+--- @param scope string
+--- @param filter ExpGui_GuiIter.FilterType
+--- @return ExpGui_GuiIter.ReturnType
+function GuiIter.get_online_elements(scope, filter)
     local class_name = ExpUtil.get_class_name(filter)
     if class_name == "nil" then
         --- @cast filter nil
-        return GuiIter.filtered_elements(define_name, game.connected_players)
+        return GuiIter.filtered_elements(scope, game.connected_players)
     elseif class_name == "LuaPlayer" then
         --- @cast filter LuaPlayer
         if not filter.connected then return nop end
-        return GuiIter.player_elements(define_name, filter)
+        return GuiIter.player_elements(scope, filter)
     elseif class_name == "LuaForce" then
         --- @cast filter LuaForce
-        return GuiIter.filtered_elements(define_name, filter.connected_players)
+        return GuiIter.filtered_elements(scope, filter.connected_players)
     elseif type(filter) == "table" and ExpUtil.get_class_name(filter[1]) == "LuaPlayer" then
         --- @cast filter LuaPlayer[]
-        return GuiIter.filtered_elements(define_name, filter, true)
+        return GuiIter.filtered_elements(scope, filter, true)
     else
         error("Unknown filter type: " .. class_name)
     end
 end
 
 --- Add a new element to the global iter
---- @param define_name string
+--- @param scope string
 --- @param element LuaGuiElement
-function GuiIter.add_element(define_name, element)
+function GuiIter.add_element(scope, element)
     if not element.valid then return end
 
-    local define_elements = script_data[define_name]
-    if not define_elements then
-        define_elements = {}
-        script_data[define_name] = define_elements
+    local scope_elements = script_data[scope]
+    if not scope_elements then
+        scope_elements = {}
+        script_data[scope] = scope_elements
     end
 
     local player_elements = script_data[element.player_index]
@@ -210,6 +214,18 @@ function GuiIter.add_element(define_name, element)
     end
 
     player_elements[element.index] = element
+end
+
+--- Remove an element from the global iter
+--- @param scope string
+--- @param player_index uint
+--- @param element_index uint
+function GuiIter.remove_element(scope, player_index, element_index)
+    local scope_elements = script_data[scope]
+    if not scope_elements then return end
+    local player_elements = script_data[player_index]
+    if not player_elements then return end
+    player_elements[element_index] = nil
 end
 
 return GuiIter

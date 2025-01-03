@@ -1,37 +1,60 @@
+--[[-- ExpGui - GuiData
+Provides a method of storing data for elements, players, and forces under a given scope.
+This is not limited to GUI element definitions but this is the most common use case.
+]]
 
 local ExpUtil = require("modules/exp_util")
 local Storage = require("modules/exp_util/storage")
 
 --- @type table<string, ExpGui.GuiData>
+local registered_scopes = {}
+
+--- @type table<string, [table, table, table]>
 local script_data = {}
 Storage.register(script_data, function(tbl)
     script_data = tbl
+    for scope, data in pairs(tbl) do
+        local proxy = registered_scopes[scope]
+        if proxy then
+            proxy.element_data = data[1]
+            proxy.player_data = data[2]
+            proxy.force_data = data[3]
+        end
+    end
 end)
 
 --- @class ExpGui_GuiData
 local GuiData = {
-    _gui_data = script_data,
-    _registered = {}, --- @type table<string, ExpGui.GuiDataInit>
+    _data = script_data,
+    _scopes = registered_scopes,
 }
 
 --- @alias DataKey LuaGuiElement | LuaPlayer | LuaForce
 
---- @class ExpGui.GuiData: table<DataKey, any>
---- @field _init ExpGui.GuiDataInit
---- @field element_data table<uint, table<uint, any>>
---- @field player_data table<uint, any>
---- @field force_data table<uint, any>
-
---- @class ExpGui.GuiDataInit
+--- @class ExpGui.GuiData._init
 --- @field element any
 --- @field player any
 --- @field force any
+
+--- @class ExpGui.GuiData: table<DataKey, any>
+--- @field _scope string
+--- @field _init ExpGui.GuiData._init
+--- @field element_data table<uint, table<uint, any>>
+--- @field player_data table<uint, any>
+--- @field force_data table<uint, any>
+-- This class has no prototype methods
+
+GuiData._metatable = {
+    __class = "GuiData",
+}
+
+Storage.register_metatable(GuiData._metatable.__class, GuiData._metatable)
 
 --- Return the index for a given key
 --- @param self ExpGui.GuiData
 --- @param key DataKey
 --- @return any
-function GuiData.__index(self, key)
+function GuiData._metatable.__index(self, key)
     assert(type(key) == "userdata", "Index type '" .. ExpUtil.get_class_name(key) .. "' given to GuiData. Must be of type userdata.")
     local rtn, init
     local object_name = key.object_name
@@ -61,7 +84,7 @@ end
 --- @param self ExpGui.GuiData
 --- @param key DataKey
 --- @param value unknown
-function GuiData.__newindex(self, key, value)
+function GuiData._metatable.__newindex(self, key, value)
     assert(type(key) == "userdata", "Index type '" .. ExpUtil.get_class_name(key) .. "' given to GuiData. Must be of type userdata.")
     local object_name = key.object_name
     if object_name == "LuaGuiElement" then
@@ -80,43 +103,44 @@ function GuiData.__newindex(self, key, value)
     end
 end
 
-GuiData._metatable = {
-    __index = GuiData.__index,
-    __newindex = GuiData.__newindex,
-    __class = "GuiData",
-}
-
-Storage.register_metatable(GuiData._metatable.__class, GuiData._metatable)
-
---- Register the starting values for element data
---- @param define_name string
---- @param init_element any
---- @param init_player any
---- @param init_force any
-function GuiData.register(define_name, init_element, init_player, init_force)
-    assert(GuiData._registered[define_name] == nil, "Define already has data registered")
-    GuiData._registered[define_name] = {
-        element = init_element,
-        player = init_player,
-        force = init_force,
-    }
+--- Sallow copy the keys from the provided table into itself
+--- @param self ExpGui.GuiData
+--- @param data table
+function GuiData._metatable.__call(self, data)
+    for k, v in pairs(data) do
+        self[k] = v
+    end
 end
 
---- Create the data for an element definition
---- @param define_name string
+--- Create the data object for a given scope
+--- @param scope string
 --- @return ExpGui.GuiData
-function GuiData.create(define_name)
-    local init = assert(GuiData._registered[define_name], "Define does not have any registered data")
+function GuiData.create(scope)
+    assert(GuiData._scopes[scope] == nil, "Scope already exists with name: " .. scope)
 
-    local data = {
-        _init = init,
+    local instance = {
+        _init = {},
+        _scope = scope,
         element_data = {},
         player_data = {},
         force_data = {},
     }
 
-    script_data[define_name] = data
-    return setmetatable(data, GuiData._metatable)
+    script_data[scope] = {
+        instance.element_data,
+        instance.player_data,
+        instance.force_data,
+    }
+
+    GuiData._scopes[scope] = instance
+    return setmetatable(instance, GuiData._metatable)
+end
+
+--- Get the link to an existing data scope
+--- @param scope string
+--- @return ExpGui.GuiData
+function GuiData.get(scope)
+    return GuiData._scopes[scope]
 end
 
 return GuiData
