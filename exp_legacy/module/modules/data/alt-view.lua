@@ -14,7 +14,9 @@ UsesAlt:set_metadata{
 --- When your data loads apply alt view if you have it enabled
 UsesAlt:on_load(function(player_name, uses_alt)
     local player = game.players[player_name]
-    player.game_view_settings.show_entity_info = uses_alt or false
+    if uses_alt ~= nil then
+        player.game_view_settings.show_entity_info = uses_alt
+    end
 end)
 
 --- When alt view is toggled update this
