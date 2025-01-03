@@ -12,7 +12,7 @@ local ExpElement = {
 --- @alias ExpElement.DrawCallback fun(def: ExpElement, parent: LuaGuiElement, ...): LuaGuiElement?, function?
 --- @alias ExpElement.StyleCallback fun(def: ExpElement, element: LuaGuiElement?, parent: LuaGuiElement, ...): table?
 --- @alias ExpElement.DataCallback fun(def: ExpElement, element: LuaGuiElement?, parent: LuaGuiElement, ...): table?
---- @alias ExpElement.OnEventAdder<E> fun(self: ExpElement, handler: fun(event: E)): ExpElement
+--- @alias ExpElement.OnEventAdder<E> fun(self: ExpElement, handler: fun(def: ExpElement, event: E)): ExpElement
 
 --- @class ExpElement._debug
 --- @field defined_at string
@@ -32,7 +32,7 @@ local ExpElement = {
 --- @field _events table<defines.events, function[]>
 ExpElement._prototype = {
     _track_elements = false,
-    _tag_elements = false,
+    _has_handlers = false,
 }
 
 ExpElement._metatable = {
@@ -111,8 +111,8 @@ function ExpElement._prototype:create(parent, ...)
         self:track_element(element)
     end
 
-    if self._tag_elements and status ~= ExpElement._prototype.tag_element and status ~= ExpElement._prototype.untag_element then
-        self:tag_element(element)
+    if self._has_handlers and status ~= ExpElement._prototype.link_element and status ~= ExpElement._prototype.unlink_element then
+        self:link_element(element)
     end
 
     return element
@@ -231,11 +231,12 @@ function ExpElement._prototype:untrack_element(element)
     return element, ExpElement._prototype.untrack_element
 end
 
---- Tag an arbitrary element, tagged elements call event handlers
+--- Link an arbitrary element, linked elements call event handlers
 --- @param element LuaGuiElement
 --- @return LuaGuiElement
 --- @return function
-function ExpElement._prototype:tag_element(element)
+function ExpElement._prototype:link_element(element)
+    assert(self._has_handlers, "Element has no event handlers")
     local element_tags = element.tags
     if not element_tags then
         element_tags = {}
@@ -248,19 +249,20 @@ function ExpElement._prototype:tag_element(element)
     end
     --- @cast event_tags string[]
 
-    if not table.contains(event_tags, self.scope) then
+    if not table.array_contains(event_tags, self.scope) then
         event_tags[#event_tags + 1] = self.scope
     end
 
     element.tags = element_tags
-    return element, ExpElement._prototype.tag_element
+    return element, ExpElement._prototype.link_element
 end
 
---- Untag an arbitrary element, untagged elements do not call event handlers
+--- Unlink an arbitrary element, unlinked elements do not call event handlers
 --- @param element LuaGuiElement
 --- @return LuaGuiElement
 --- @return function
-function ExpElement._prototype:untag_element(element)
+function ExpElement._prototype:unlink_element(element)
+    assert(self._has_handlers, "Element has no event handlers")
     local element_tags = element.tags
     if not element_tags then
         element_tags = {}
@@ -275,7 +277,7 @@ function ExpElement._prototype:untag_element(element)
 
     table.remove_element(event_tags, self.scope)
     element.tags = element_tags
-    return element, ExpElement._prototype.untag_element
+    return element, ExpElement._prototype.unlink_element
 end
 
 local e = defines.events
@@ -304,7 +306,7 @@ local function event_factory(event_name)
     end
 
     return function(self, handler)
-        self._tag_elements = true
+        self._has_handlers = true
         local handlers = self._events[event_name]
         if not handlers then
             handlers = {}
@@ -321,7 +323,7 @@ function ExpElement._prototype:_raise_event(event)
     local handlers = self._events[event.name]
     if not handlers then return end
     for _, handler in ipairs(handlers) do
-        handler(event)
+        handler(self, event)
     end
 end
 
