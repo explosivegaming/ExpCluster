@@ -9,11 +9,19 @@ local Storage = require("modules/exp_util/storage")
 --- @type table<string, ExpGui.GuiData>
 local registered_scopes = {}
 
---- @type table<string, [table, table, table]>
-local script_data = {}
-Storage.register(script_data, function(tbl)
-    script_data = tbl
-    for scope, data in pairs(tbl) do
+--- @type table<uint, uint> Reg -> Player Index
+local registration_numbers = {} 
+local reg_obj = script.register_on_object_destroyed
+
+--- @type table<string, [table<uint, table<uint, any>>, table<uint, any>, table<uint, any>]>
+local scope_data = {}
+
+Storage.register({
+    scope_data = scope_data, 
+    registration_numbers = registration_numbers,
+}, function(tbl)
+    registration_numbers = tbl.registration_numbers
+    for scope, data in pairs(tbl.scope_data) do
         local proxy = registered_scopes[scope]
         if proxy then
             proxy.element_data = data[1]
@@ -25,7 +33,6 @@ end)
 
 --- @class ExpGui_GuiData
 local GuiData = {
-    _data = script_data,
     _scopes = registered_scopes,
 }
 
@@ -39,9 +46,11 @@ local GuiData = {
 --- @class ExpGui.GuiData: table<DataKey, any>
 --- @field _scope string
 --- @field _init ExpGui.GuiData._init
+--- @field _owner any
 --- @field element_data table<uint, table<uint, any>>
 --- @field player_data table<uint, any>
 --- @field force_data table<uint, any>
+--- @overload fun(data: table)
 -- This class has no prototype methods
 
 GuiData._metatable = {
@@ -94,6 +103,7 @@ function GuiData._metatable.__newindex(self, key, value)
             self.element_data[key.player_index] = player_elements
         end
         player_elements[key.index] = value
+        registration_numbers[reg_obj(key)] = key.player_index
     elseif object_name == "LuaPlayer" then
         self.player_data[key.index] = value
     elseif object_name == "LuaForce" then
@@ -106,27 +116,32 @@ end
 --- Sallow copy the keys from the provided table into itself
 --- @param self ExpGui.GuiData
 --- @param data table
+--- @return any
 function GuiData._metatable.__call(self, data)
+    assert(type(table) == "table", "Default data must be a table")
     for k, v in pairs(data) do
         self[k] = v
     end
+    return self._owner
 end
 
 --- Create the data object for a given scope
 --- @param scope string
+--- @param owner any
 --- @return ExpGui.GuiData
-function GuiData.create(scope)
+function GuiData.create(scope, owner)
     assert(GuiData._scopes[scope] == nil, "Scope already exists with name: " .. scope)
 
     local instance = {
         _init = {},
         _scope = scope,
+        _owner = owner,
         element_data = {},
         player_data = {},
         force_data = {},
     }
 
-    script_data[scope] = {
+    scope_data[scope] = {
         instance.element_data,
         instance.player_data,
         instance.force_data,
@@ -143,4 +158,47 @@ function GuiData.get(scope)
     return GuiData._scopes[scope]
 end
 
+--- Used to clean up data from destroyed elements
+--- @param event EventData.on_object_destroyed
+local function on_object_destroyed(event)
+    local player_index = registration_numbers[event.registration_number]
+    if not player_index then return end
+
+    local element_index = event.useful_id
+    registration_numbers[event.registration_number] = nil
+
+    for _, scope in pairs(registered_scopes) do
+        local player_elements = scope.element_data[player_index]
+        if player_elements then
+            player_elements[element_index] = nil
+        end
+    end
+end
+
+--- Used to clean up data from destroyed players
+--- @param event EventData.on_player_removed
+local function on_player_removed(event)
+    local player_index = event.player_index
+    for _, scope in pairs(registered_scopes) do
+        scope.player_data[player_index] = nil
+    end
+end
+
+--- Used to clean up data from destroyed forces
+--- @param event EventData.on_forces_merged
+local function on_forces_merged(event)
+    local force_index = event.source_index
+    for _, scope in pairs(registered_scopes) do
+        scope.force_data[force_index] = nil
+    end
+end
+
+local e = defines.events
+local events = {
+    [e.on_object_destroyed] = on_object_destroyed,
+    [e.on_player_removed] = on_player_removed,
+    [e.on_forces_merged] = on_forces_merged,
+}
+
+GuiData.events = events
 return GuiData

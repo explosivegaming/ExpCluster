@@ -9,14 +9,22 @@ local Storage = require("modules/exp_util/storage")
 --- @alias ExpGui_GuiIter.ReturnType ExpGui_GuiIter.ReturnType
 
 --- @type table<string, table<uint, table<uint, LuaGuiElement>>>
-local script_data = {}
-Storage.register(script_data, function(tbl)
-    script_data = tbl
+local registered_scopes = {}
+
+--- @type table<uint, uint> Reg -> Player Index
+local registration_numbers = {}
+local reg_obj = script.register_on_object_destroyed
+
+Storage.register({
+    registered_scopes = registered_scopes,
+    registration_numbers = registration_numbers,
+}, function(tbl)
+    registered_scopes = tbl.registered_scopes
+    registration_numbers = tbl.registration_numbers
 end)
 
 --- @class ExpGui_GuiIter
 local GuiIter = {
-    _elements = script_data,
 }
 
 local function nop() return nil, nil end
@@ -69,7 +77,7 @@ end
 function GuiIter.player_elements(scope, player)
     if not player.valid then return nop end
 
-    local scope_elements = script_data[scope]
+    local scope_elements = registered_scopes[scope]
     if not scope_elements then return nop end
 
     local player_elements = scope_elements[player.index]
@@ -89,7 +97,7 @@ end
 --- @param online boolean?
 --- @return ExpGui_GuiIter.ReturnType
 function GuiIter.filtered_elements(scope, players, online)
-    local scope_elements = script_data[scope]
+    local scope_elements = registered_scopes[scope]
     if not scope_elements then return nop end
 
     local index, player, player_elements = nil, nil, nil
@@ -116,7 +124,7 @@ end
 --- @param scope string
 --- @return ExpGui_GuiIter.ReturnType
 function GuiIter.all_elements(scope)
-    local scope_elements = script_data[scope]
+    local scope_elements = registered_scopes[scope]
     if not scope_elements then return nop end
 
     local player_index, player_elements, player = nil, nil, nil
@@ -201,19 +209,20 @@ end
 function GuiIter.add_element(scope, element)
     if not element.valid then return end
 
-    local scope_elements = script_data[scope]
+    local scope_elements = registered_scopes[scope]
     if not scope_elements then
         scope_elements = {}
-        script_data[scope] = scope_elements
+        registered_scopes[scope] = scope_elements
     end
 
-    local player_elements = script_data[element.player_index]
+    local player_elements = registered_scopes[element.player_index]
     if not player_elements then
         player_elements = {}
-        script_data[element.player_index] = player_elements
+        registered_scopes[element.player_index] = player_elements
     end
 
     player_elements[element.index] = element
+    registration_numbers[reg_obj(element)] = element.player_index
 end
 
 --- Remove an element from the global iter
@@ -221,11 +230,44 @@ end
 --- @param player_index uint
 --- @param element_index uint
 function GuiIter.remove_element(scope, player_index, element_index)
-    local scope_elements = script_data[scope]
+    local scope_elements = registered_scopes[scope]
     if not scope_elements then return end
-    local player_elements = script_data[player_index]
+    local player_elements = registered_scopes[player_index]
     if not player_elements then return end
     player_elements[element_index] = nil
 end
 
+--- Used to clean up data from destroyed elements
+--- @param event EventData.on_object_destroyed
+local function on_object_destroyed(event)
+    local player_index = registration_numbers[event.registration_number]
+    if not player_index then return end
+
+    local element_index = event.useful_id
+    registration_numbers[event.registration_number] = nil
+
+    for _, scope in pairs(registered_scopes) do
+        local player_elements = scope[player_index]
+        if player_elements then
+            player_elements[element_index] = nil
+        end
+    end
+end
+
+--- Used to clean up data from destroyed players
+--- @param event EventData.on_player_removed
+local function on_player_removed(event)
+    local player_index = event.player_index
+    for _, scope in pairs(registered_scopes) do
+        scope[player_index] = nil
+    end
+end
+
+local e = defines.events
+local events = {
+    [e.on_object_destroyed] = on_object_destroyed,
+    [e.on_player_removed] = on_player_removed,
+}
+
+GuiIter.events = events
 return GuiIter
