@@ -554,7 +554,7 @@ return {
             min = 50,
             max = 100,
         },
-        ["logistic-chest-passive-provider"] = {
+        ["passive-provider-chest"] = {
             key = 54,
             upgrade_of = nil,
             type = "chest",
@@ -562,7 +562,7 @@ return {
             min = 50,
             max = 50,
         },
-        ["logistic-chest-storage"] = {
+        ["storage-chest"] = {
             key = 55,
             upgrade_of = nil,
             type = "chest",
@@ -570,7 +570,7 @@ return {
             min = 50,
             max = 50,
         },
-        ["logistic-chest-requester"] = {
+        ["requester-chest"] = {
             key = 56,
             upgrade_of = nil,
             type = "chest",
@@ -578,7 +578,7 @@ return {
             min = 50,
             max = 50,
         },
-        ["logistic-chest-buffer"] = {
+        ["buffer-chest"] = {
             key = 57,
             upgrade_of = nil,
             type = "chest",
@@ -586,7 +586,7 @@ return {
             min = 50,
             max = 50,
         },
-        ["logistic-chest-active-provider"] = {
+        ["active-provider-chest"] = {
             key = 58,
             upgrade_of = nil,
             type = "chest",
