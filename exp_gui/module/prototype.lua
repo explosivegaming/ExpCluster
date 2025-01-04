@@ -27,7 +27,6 @@ local ExpElement = {
 
 --- @class ExpElement
 --- @field name string
---- @field scope string
 --- @field data ExpElement.data
 --- @field anchor ExpElement.anchor?
 --- @field _debug ExpElement._debug
@@ -37,6 +36,7 @@ local ExpElement = {
 --- @field _player_data ExpElement.DataCallback?
 --- @field _force_data ExpElement.DataCallback?
 --- @field _events table<defines.events, function[]>
+--- @overload fun(parent: LuaGuiElement, ...: any): LuaGuiElement
 ExpElement._prototype = {
     _track_elements = false,
     _has_handlers = false,
@@ -63,11 +63,9 @@ ExpElement._anchor_metatable = {
 function ExpElement.create(name)
     ExpUtil.assert_not_runtime()
     assert(ExpElement._elements[name] == nil, "ExpElement already defined with name: " .. name)
-    local scope = ExpUtil.get_module_name(2) .. "::" .. name
 
     local instance = {
         name = name,
-        scope = scope,
         _events = {},
         _debug = {
             defined_at = ExpUtil.safe_file_path(2),
@@ -75,7 +73,7 @@ function ExpElement.create(name)
     }
 
     ExpElement._elements[name] = instance
-    instance.data = GuiData.create(scope, instance)
+    instance.data = GuiData.create(name, instance)
     instance.anchor = setmetatable({}, ExpElement._anchor_metatable)
     return setmetatable(instance, ExpElement._metatable)
 end
@@ -220,14 +218,14 @@ end
 --- @param filter ExpGui_GuiIter.FilterType
 --- @return ExpGui_GuiIter.ReturnType
 function ExpElement._prototype:tracked_elements(filter)
-    return GuiIter.get_tracked_elements(self.scope, filter)
+    return GuiIter.get_tracked_elements(self.name, filter)
 end
 
 --- Iterate the tracked elements of all online players
 --- @param filter ExpGui_GuiIter.FilterType
 --- @return ExpGui_GuiIter.ReturnType
 function ExpElement._prototype:online_elements(filter)
-    return GuiIter.get_online_elements(self.scope, filter)
+    return GuiIter.get_online_elements(self.name, filter)
 end
 
 --- Track an arbitrary element, tracked elements can be iterated
@@ -235,7 +233,7 @@ end
 --- @return LuaGuiElement
 --- @return function
 function ExpElement._prototype:track_element(element)
-    GuiIter.add_element(self.scope, element)
+    GuiIter.add_element(self.name, element)
     return element, ExpElement._prototype.track_element
 end
 
@@ -244,7 +242,7 @@ end
 --- @return LuaGuiElement
 --- @return function
 function ExpElement._prototype:untrack_element(element)
-    GuiIter.remove_element(self.scope, element.player_index, element.index)
+    GuiIter.remove_element(self.name, element.player_index, element.index)
     return element, ExpElement._prototype.untrack_element
 end
 
@@ -266,8 +264,8 @@ function ExpElement._prototype:link_element(element)
     end
     --- @cast event_tags string[]
 
-    if not table.array_contains(event_tags, self.scope) then
-        event_tags[#event_tags + 1] = self.scope
+    if not table.array_contains(event_tags, self.name) then
+        event_tags[#event_tags + 1] = self.name
     end
 
     element.tags = element_tags
@@ -292,7 +290,7 @@ function ExpElement._prototype:unlink_element(element)
     end
     --- @cast event_tags string[]
 
-    table.remove_element(event_tags, self.scope)
+    table.remove_element(event_tags, self.name)
     element.tags = element_tags
     return element, ExpElement._prototype.unlink_element
 end

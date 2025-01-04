@@ -1,6 +1,9 @@
 {
 	"name": "exp_gui",
 	"load": [
+		"data.lua",
+		"iter.lua",
+		"prototype.lua",
 		"module_exports.lua"
 	],
 	"require": [
