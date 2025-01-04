@@ -30,13 +30,17 @@ Storage.register({
     selections = tbl.selections
 end)
 
+local function has_selection_tool_in_hand(player)
+    return player.cursor_stack and player.cursor_stack.valid_for_read and player.cursor_stack.name == "selection-tool"
+end
+
 --- Let a player select an area by providing a selection planner
 --- @param player LuaPlayer The player to place into selection mode
 --- @param selection_name string The name of the selection to start, used with on_selection
 --- @param single_use boolean? When true the selection will stop after first use
 --- @param ... any Arguments to pass to the selection handler
 function Selection.start(player, selection_name, single_use, ...)
-    if not player or not player.valid then return end
+    if not player or not player.valid or not player.cursor_stack then return end
     if selections[player.index] then
         -- Raise the end event if a selection was already in progress
         script.raise_event(Selection.events.on_player_selection_end, {
@@ -64,7 +68,7 @@ function Selection.start(player, selection_name, single_use, ...)
     })
 
     -- Give a selection tool if one is not in use
-    if player.cursor_stack.is_selection_tool then return end
+    if has_selection_tool_in_hand(player) then return end
     player.clear_cursor() -- Clear the current item
     player.cursor_stack.set_stack(selection_tool)
 
@@ -96,7 +100,7 @@ function Selection.stop(player)
     })
 
     -- Remove the selection tool
-    if player.cursor_stack.is_selection_tool then
+    if has_selection_tool_in_hand(player) then
         player.cursor_stack.clear()
     else
         player.remove_item(selection_tool)
@@ -124,7 +128,7 @@ function Selection.is_selecting(player, selection_name)
         if not selections[player.index] then return false end
         return selections[player.index].name == selection_name
     else
-        return player.cursor_stack.is_selection_tool
+        return has_selection_tool_in_hand(player)
     end
 end
 
@@ -153,7 +157,7 @@ end
 --- Stop selection if the selection tool is removed from the cursor
 Event.add(defines.events.on_player_cursor_stack_changed, function(event)
     local player = game.players[event.player_index] --- @cast player -nil
-    if player.cursor_stack and player.cursor_stack.is_selection_tool then return end
+    if has_selection_tool_in_hand(player) then return end
     Selection.stop(player)
 end)
 
@@ -161,7 +165,7 @@ end)
 Event.add(defines.events.on_player_controller_changed, function(event)
     local player = game.players[event.player_index] --- @cast player -nil
     local inventory = player.get_main_inventory()
-    if player.cursor_stack and player.cursor_stack.is_selection_tool and inventory then
+    if inventory and has_selection_tool_in_hand(player) then
         player.hand_location = { inventory = inventory.index, slot = #inventory }
     end
 end)
