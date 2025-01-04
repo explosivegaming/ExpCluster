@@ -332,7 +332,7 @@ end
 -- @tparam[opt] LuaPlayer player The player to show as the last user of the interface
 -- @treturn LuaEntity The entity that was created for the interface
 function vlayer.create_input_interface(surface, position, circuit, last_user)
-    local interface = surface.create_entity{ name = "logistic-chest-storage", position = position, force = "neutral" }
+    local interface = surface.create_entity{ name = "storage-chest", position = position, force = "neutral" }
     table.insert(vlayer_data.entity_interfaces.storage_input, interface)
 
     if last_user then
@@ -391,7 +391,7 @@ end
 -- @tparam[opt] LuaPlayer player The player to show as the last user of the interface
 -- @treturn LuaEntity The entity that was created for the interface
 function vlayer.create_output_interface(surface, position, circuit, last_user)
-    local interface = surface.create_entity{ name = "logistic-chest-requester", position = position, force = "neutral" }
+    local interface = surface.create_entity{ name = "requester-chest", position = position, force = "neutral" }
     table.insert(vlayer_data.entity_interfaces.storage_output, interface)
 
     if last_user then
@@ -682,7 +682,7 @@ end
 -- @treturn MapPosition The position the interface was at, or nil if no interface was found
 function vlayer.remove_interface(surface, position)
     local entities = surface.find_entities_filtered{
-        name = { "logistic-chest-storage", "logistic-chest-requester", "constant-combinator", "electric-energy-interface" },
+        name = { "storage-chest", "requester-chest", "constant-combinator", "electric-energy-interface" },
         force = "neutral",
         position = position,
         radius = 2,
@@ -699,7 +699,7 @@ function vlayer.remove_interface(surface, position)
     local pos = interface.position
 
     -- Return the type of interface removed and do some clean up
-    if name == "logistic-chest-storage" then
+    if name == "storage-chest" then
         local inventory = assert(interface.get_inventory(defines.inventory.chest))
         ExpUtil.transfer_inventory_to_surface{
             inventory = inventory,
@@ -711,7 +711,7 @@ function vlayer.remove_interface(surface, position)
         interface.destroy()
 
         return "storage-input", pos
-    elseif name == "logistic-chest-requester" then
+    elseif name == "requester-chest" then
         local inventory = assert(interface.get_inventory(defines.inventory.chest))
         ExpUtil.transfer_inventory_to_surface{
             inventory = inventory,
