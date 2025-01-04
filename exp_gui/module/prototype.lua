@@ -14,6 +14,12 @@ local ExpElement = {
 --- @alias ExpElement.DataCallback fun(def: ExpElement, element: LuaGuiElement?, parent: LuaGuiElement, ...): table?
 --- @alias ExpElement.OnEventAdder<E> fun(self: ExpElement, handler: fun(def: ExpElement, event: E)): ExpElement
 
+--- @class ExpElement.anchor: GuiAnchor
+--- @overload fun(anchor: GuiAnchor): ExpElement
+
+--- @class ExpElement.data: ExpGui.GuiData
+--- @overload fun(data: table): ExpElement
+
 --- @class ExpElement._debug
 --- @field defined_at string
 --- @field draw_src table?
@@ -22,7 +28,8 @@ local ExpElement = {
 --- @class ExpElement
 --- @field name string
 --- @field scope string
---- @field data ExpGui.GuiData
+--- @field data ExpElement.data
+--- @field anchor ExpElement.anchor?
 --- @field _debug ExpElement._debug
 --- @field _draw ExpElement.DrawCallback?
 --- @field _style ExpElement.StyleCallback?
@@ -41,6 +48,15 @@ ExpElement._metatable = {
     __class = "ExpGui",
 }
 
+ExpElement._anchor_metatable = {
+    __call = function(self, anchor)
+        assert(type(table) == "table", "Anchor must be a table")
+        for k, v in pairs(anchor) do
+            self[k] = v
+        end
+    end
+}
+
 --- Register a new instance of a prototype
 --- @param name string
 --- @return ExpElement
@@ -52,7 +68,6 @@ function ExpElement.create(name)
     local instance = {
         name = name,
         scope = scope,
-        data = GuiData.create(scope),
         _events = {},
         _debug = {
             defined_at = ExpUtil.safe_file_path(2),
@@ -60,6 +75,8 @@ function ExpElement.create(name)
     }
 
     ExpElement._elements[name] = instance
+    instance.data = GuiData.create(scope, instance)
+    instance.anchor = setmetatable({}, ExpElement._anchor_metatable)
     return setmetatable(instance, ExpElement._metatable)
 end
 
@@ -284,36 +301,21 @@ local e = defines.events
 local events = {
 }
 
---- Create a function to add event handlers to an element definition
---- @param event_name any
---- @return ExpElement.OnEventAdder<EventData>
-local function event_factory(event_name)
-    --- @param event EventData.on_gui_click
-    events[event_name] = function(event)
-        local element = event.element
-        if not element or not element.valid then return end
+--- Handle any gui events
+--- @param event EventData.on_gui_click
+local function event_handler(event)
+    local element = event.element
+    if not element or not element.valid then return end
 
-        local event_tags = element.tags and element.tags["ExpGui"]
-        if not event_tags then return end
-        --- @cast event_tags string[]
+    local event_tags = element.tags and element.tags["ExpGui"]
+    if not event_tags then return end
+    --- @cast event_tags string[]
 
-        for _, define_name in ipairs(event_tags) do
-            local define = ExpElement._elements[define_name]
-            if define then
-                define:_raise_event(event)
-            end
+    for _, define_name in ipairs(event_tags) do
+        local define = ExpElement._elements[define_name]
+        if define then
+            define:_raise_event(event)
         end
-    end
-
-    return function(self, handler)
-        self._has_handlers = true
-        local handlers = self._events[event_name]
-        if not handlers then
-            handlers = {}
-            self._events[event_name] = handlers
-        end
-        handlers[#handlers + 1] = handler
-        return self
     end
 end
 
@@ -324,6 +326,30 @@ function ExpElement._prototype:_raise_event(event)
     if not handlers then return end
     for _, handler in ipairs(handlers) do
         handler(self, event)
+    end
+end
+
+--- Add an event handler
+--- @param event defines.events
+--- @param handler fun(def: ExpElement, event: EventData)
+--- @return ExpElement
+function ExpElement._prototype:on_event(event, handler)
+    events[event] = event_handler
+    self._has_handlers = true
+
+    local handlers = self._events[event] or {}
+    handlers[#handlers + 1] = handler
+    self._events[event] = handlers
+
+    return self
+end
+
+--- Create a function to add event handlers to an element definition
+--- @param event defines.events
+--- @return ExpElement.OnEventAdder<EventData>
+local function event_factory(event)
+    return function(self, handler)
+        return self:on_event(event, handler)
     end
 end
 
