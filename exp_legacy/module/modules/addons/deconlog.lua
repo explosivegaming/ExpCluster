@@ -93,7 +93,7 @@ if config.mined_entity then
     end)
 end
 
-if config.fired_rocket then
+if config.fired_rocket or config.fired_explosive_rocket or config.fired_nuke then
     Event.add(defines.events.on_player_ammo_inventory_changed, function(e)
         local player = game.players[e.player_index]
         if Roles.player_has_flag(player, "deconlog-bypass") then
@@ -102,20 +102,20 @@ if config.fired_rocket then
         local ammo_inv = player.get_inventory(defines.inventory.character_ammo) --- @cast ammo_inv -nil
         if player.character then
             local item = ammo_inv[player.character.selected_gun_index]
-            local item_name = ""
+            local action_name
             if not item or not item.valid or not item.valid_for_read then
                 return
             end
-            if item.name == "rocket" then
-                item_name = "shot-rocket"
-            elseif item.name == "explosive-rocket" then
-                item_name = "shot-explosive-rocket"
-            elseif item.name == "atomic-bomb" then
-                item_name = "shot-nuke"
+            if config.fired_rocket and item.name == "rocket" then
+                action_name = ",shot-rocket,"
+            elseif config.fired_explosive_rocket and item.name == "explosive-rocket" then
+                action_name = ",shot-explosive-rocket,"
+            elseif config.fired_nuke and item.name == "atomic-bomb" then
+                action_name = ",shot-nuke,"
+            else
+                return
             end
-            if item.name == "rocket" then
-                add_log(get_secs() .. "," .. player.name .. "," .. item_name .. "," .. pos_to_string(player.physical_position) .. "," .. pos_to_string(player.shooting_state.position))
-            end
+            add_log(get_secs() .. "," .. player.name .. action_name .. pos_to_string(player.physical_position) .. "," .. pos_to_string(player.shooting_state.position))
         end
     end)
 end
