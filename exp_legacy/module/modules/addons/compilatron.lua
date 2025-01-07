@@ -44,7 +44,7 @@ local speech_bubble_async =
 local function circle_messages()
     for name, ent in pairs(Public.compilatrons) do
         if not ent.valid then
-            Public.spawn_compilatron(game.players[1].surface or game.surfaces[1], name)
+            Public.spawn_compilatron(game.players[1].surface, name)
         end
         local current_message = Public.current_messages[name]
         local msg_number
@@ -94,7 +94,7 @@ end
 -- @tparam string location the location tag that is in the config file
 function Public.spawn_compilatron(surface, location)
     local position = locations[location]
-    local pos = surface.find_non_colliding_position("small-biter", position, 1.5, 0.5)
+    local pos = surface.find_non_colliding_position("small-biter", position, 1.5, 0.5) or { x = 0, y = 0 }
     local compi = surface.create_entity{ name = "small-biter", position = pos, force = game.forces.neutral }
     Public.add_compilatron(compi, location)
 end
