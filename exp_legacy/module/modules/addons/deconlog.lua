@@ -100,12 +100,14 @@ if config.fired_rocket then
             return
         end
         local ammo_inv = player.get_inventory(defines.inventory.character_ammo) --- @cast ammo_inv -nil
-        local item = ammo_inv[player.character.selected_gun_index]
-        if not item or not item.valid or not item.valid_for_read then
-            return
-        end
-        if item.name == "rocket" then
-            add_log(get_secs() .. "," .. player.name .. ",shot-rocket," .. pos_to_string(player.physical_position) .. "," .. pos_to_string(player.shooting_state.position))
+        if player.character then
+            local item = ammo_inv[player.character.selected_gun_index]
+            if not item or not item.valid or not item.valid_for_read then
+                return
+            end
+            if item.name == "rocket" then
+                add_log(get_secs() .. "," .. player.name .. ",shot-rocket," .. pos_to_string(player.physical_position) .. "," .. pos_to_string(player.shooting_state.position))
+            end
         end
     end)
 end
