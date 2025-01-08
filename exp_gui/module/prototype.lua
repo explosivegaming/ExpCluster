@@ -6,8 +6,10 @@ local GuiIter = require("./iter")
 
 --- @class ExpGui_ExpElement
 local ExpElement = {
-    _elements = {}
+    _elements = {},
 }
+
+ExpElement.events = {}
 
 --- @alias ExpElement.DrawCallback fun(def: ExpElement, parent: LuaGuiElement, ...): LuaGuiElement?, function?
 --- @alias ExpElement.PostDrawCallback fun(def: ExpElement, element: LuaGuiElement?, parent: LuaGuiElement, ...): table?
@@ -162,6 +164,7 @@ end
 --- Enable tracking of all created elements
 --- @return ExpElement
 function ExpElement._prototype:track_all_elements()
+    ExpUtil.assert_not_runtime()
     self._track_elements = true
     return self
 end
@@ -170,6 +173,7 @@ end
 --- @param definition table | ExpElement.DrawCallback
 --- @return ExpElement
 function ExpElement._prototype:draw(definition)
+    ExpUtil.assert_not_runtime()
     if type(definition) == "function" then
         self._draw = definition
         return self
@@ -205,6 +209,7 @@ end
 --- @return ExpElement.PostDrawCallbackAdder
 local function definition_factory(prop_name, debug_def, debug_args)
     return function(self, definition)
+        ExpUtil.assert_not_runtime()
         if type(definition) == "function" then
             self[prop_name] = definition
             return self
@@ -335,10 +340,6 @@ function ExpElement._prototype:unlink_element(element)
     return element, ExpElement._prototype.unlink_element
 end
 
-local e = defines.events
-local events = {
-}
-
 --- Handle any gui events
 --- @param event EventData.on_gui_click
 local function event_handler(event)
@@ -372,7 +373,7 @@ end
 --- @param handler fun(def: ExpElement, event: EventData)
 --- @return ExpElement
 function ExpElement._prototype:on_event(event, handler)
-    events[event] = event_handler
+    ExpElement.events[event] = event_handler
     self._has_handlers = true
 
     local handlers = self._events[event] or {}
@@ -393,60 +394,59 @@ end
 
 --- Called when LuaGuiElement checked state is changed (related to checkboxes and radio buttons).
 --- @type ExpElement.OnEventAdder<EventData.on_gui_checked_state_changed>
-ExpElement._prototype.on_checked_state_changed = event_factory(e.on_gui_checked_state_changed)
+ExpElement._prototype.on_checked_state_changed = event_factory(defines.events.on_gui_checked_state_changed)
 
 --- Called when LuaGuiElement is clicked.
 --- @type ExpElement.OnEventAdder<EventData.on_gui_click>
-ExpElement._prototype.on_click = event_factory(e.on_gui_click)
+ExpElement._prototype.on_click = event_factory(defines.events.on_gui_click)
 
 --- Called when the player closes the GUI they have open.
 --- @type ExpElement.OnEventAdder<EventData.on_gui_closed>
-ExpElement._prototype.on_closed = event_factory(e.on_gui_closed)
+ExpElement._prototype.on_closed = event_factory(defines.events.on_gui_closed)
 
 --- Called when a LuaGuiElement is confirmed, for example by pressing Enter in a textfield.
 --- @type ExpElement.OnEventAdder<EventData.on_gui_confirmed>
-ExpElement._prototype.on_confirmed = event_factory(e.on_gui_confirmed)
+ExpElement._prototype.on_confirmed = event_factory(defines.events.on_gui_confirmed)
 
 --- Called when LuaGuiElement element value is changed (related to choose element buttons).
 --- @type ExpElement.OnEventAdder<EventData.on_gui_elem_changed>
-ExpElement._prototype.on_elem_changed = event_factory(e.on_gui_elem_changed)
+ExpElement._prototype.on_elem_changed = event_factory(defines.events.on_gui_elem_changed)
 
 --- Called when LuaGuiElement is hovered by the mouse.
 --- @type ExpElement.OnEventAdder<EventData.on_gui_hover>
-ExpElement._prototype.on_hover = event_factory(e.on_gui_hover)
+ExpElement._prototype.on_hover = event_factory(defines.events.on_gui_hover)
 
 --- Called when the player's cursor leaves a LuaGuiElement that was previously hovered.
 --- @type ExpElement.OnEventAdder<EventData.on_gui_leave>
-ExpElement._prototype.on_leave = event_factory(e.on_gui_leave)
+ExpElement._prototype.on_leave = event_factory(defines.events.on_gui_leave)
 
 --- Called when LuaGuiElement element location is changed (related to frames in player.gui.screen).
 --- @type ExpElement.OnEventAdder<EventData.on_gui_location_changed>
-ExpElement._prototype.on_location_changed = event_factory(e.on_gui_location_changed)
+ExpElement._prototype.on_location_changed = event_factory(defines.events.on_gui_location_changed)
 
 --- Called when the player opens a GUI.
 --- @type ExpElement.OnEventAdder<EventData.on_gui_opened>
-ExpElement._prototype.on_opened = event_factory(e.on_gui_opened)
+ExpElement._prototype.on_opened = event_factory(defines.events.on_gui_opened)
 
 --- Called when LuaGuiElement selected tab is changed (related to tabbed-panes).
 --- @type ExpElement.OnEventAdder<EventData.on_gui_selected_tab_changed>
-ExpElement._prototype.on_selected_tab_changed = event_factory(e.on_gui_selected_tab_changed)
+ExpElement._prototype.on_selected_tab_changed = event_factory(defines.events.on_gui_selected_tab_changed)
 
 --- Called when LuaGuiElement selection state is changed (related to drop-downs and listboxes).
 --- @type ExpElement.OnEventAdder<EventData.on_gui_selection_state_changed>
-ExpElement._prototype.on_selection_state_changed = event_factory(e.on_gui_selection_state_changed)
+ExpElement._prototype.on_selection_state_changed = event_factory(defines.events.on_gui_selection_state_changed)
 
 --- Called when LuaGuiElement switch state is changed (related to switches).
 --- @type ExpElement.OnEventAdder<EventData.on_gui_switch_state_changed>
-ExpElement._prototype.on_switch_state_changed = event_factory(e.on_gui_switch_state_changed)
+ExpElement._prototype.on_switch_state_changed = event_factory(defines.events.on_gui_switch_state_changed)
 
 --- Called when LuaGuiElement text is changed by the player.
 --- @type ExpElement.OnEventAdder<EventData.on_gui_text_changed>
-ExpElement._prototype.on_text_changed = event_factory(e.on_gui_text_changed)
+ExpElement._prototype.on_text_changed = event_factory(defines.events.on_gui_text_changed)
 
 --- Called when LuaGuiElement slider value is changed (related to the slider element).
 --- @type ExpElement.OnEventAdder<EventData.on_gui_value_changed>
-ExpElement._prototype.on_value_changed = event_factory(e.on_gui_value_changed)
+ExpElement._prototype.on_value_changed = event_factory(defines.events.on_gui_value_changed)
 
 ExpElement._metatable.__call = ExpElement._prototype.create
-ExpElement.events = events --- @package
 return ExpElement

@@ -101,6 +101,7 @@ end
 --- @param scope string
 --- @return ExpGui.GuiData
 function GuiData.create(scope)
+    ExpUtil.assert_not_runtime()
     assert(GuiData._scopes[scope] == nil, "Scope already exists with name: " .. scope)
 
     local instance = {
