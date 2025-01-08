@@ -420,6 +420,16 @@ function ExpUtil.get_storage_for_stack(options)
     local current, count, entities = cache.current, cache.count, cache.entities
     for i = 1, cache.count do
         local entity = entities[((current + i - 1) % count) + 1]
+        if entity == nil then
+            -- See Github Issue #352 <https://github.com/explosivegaming/ExpCluster/issues/352>
+            error("entity was nil, context:\n" .. ExpUtil.format_any({
+                cache = cache,
+                i = i,
+            }, {
+                max_line_count = 0,
+                no_locale_strings = true
+            }))
+        end
         if entity.can_insert(item) then
             cache.current = current + 1
             return entity
