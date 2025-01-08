@@ -10,10 +10,10 @@ local Storage = require("modules/exp_util/storage")
 local registered_scopes = {}
 
 --- @type table<uint, uint> Reg -> Player Index
-local registration_numbers = {} 
+local registration_numbers = {}
 local reg_obj = script.register_on_object_destroyed
 
---- @type table<string, [table<uint, table<uint, any>>, table<uint, any>, table<uint, any>]>
+--- @type table<string, [table<uint, table<uint, any>>, table<uint, any>, table<uint, any>, table]>
 local scope_data = {}
 
 Storage.register({
@@ -27,6 +27,7 @@ Storage.register({
             proxy.element_data = data[1]
             proxy.player_data = data[2]
             proxy.force_data = data[3]
+            proxy.global_data = data[4]
         end
     end
 end)
@@ -38,19 +39,13 @@ local GuiData = {
 
 --- @alias DataKey LuaGuiElement | LuaPlayer | LuaForce
 
---- @class ExpGui.GuiData._init
---- @field element any
---- @field player any
---- @field force any
-
 --- @class ExpGui.GuiData: table<DataKey, any>
 --- @field _scope string
---- @field _init ExpGui.GuiData._init
 --- @field _owner any
 --- @field element_data table<uint, table<uint, any>>
 --- @field player_data table<uint, any>
 --- @field force_data table<uint, any>
---- @overload fun(data: table)
+--- @field global_data table
 -- This class has no prototype methods
 
 GuiData._metatable = {
@@ -65,28 +60,17 @@ Storage.register_metatable(GuiData._metatable.__class, GuiData._metatable)
 --- @return any
 function GuiData._metatable.__index(self, key)
     assert(type(key) == "userdata", "Index type '" .. ExpUtil.get_class_name(key) .. "' given to GuiData. Must be of type userdata.")
-    local rtn, init
     local object_name = key.object_name
     if object_name == "LuaGuiElement" then
         local player_elements = self.element_data[key.player_index]
-        rtn = player_elements and player_elements[key.index]
-        init = self._init.element
+        return player_elements and player_elements[key.index]
     elseif object_name == "LuaPlayer" then
-        rtn = self.player_data[key.index]
-        init = self._init.player
+        return self.player_data[key.index]
     elseif object_name == "LuaForce" then
-        rtn = self.force_data[key.index]
-        init = self._init.force
+        return self.force_data[key.index]
     else
         error("Unsupported object class '" .. object_name .. "' given as index to GuiData.")
     end
-
-    if rtn == nil then
-        rtn = table.deep_copy(init)
-        self[key] = rtn
-    end
-
-    return rtn
 end
 
 --- Set the value index of a given key
@@ -113,38 +97,25 @@ function GuiData._metatable.__newindex(self, key, value)
     end
 end
 
---- Sallow copy the keys from the provided table into itself
---- @param self ExpGui.GuiData
---- @param data table
---- @return any
-function GuiData._metatable.__call(self, data)
-    assert(type(table) == "table", "Default data must be a table")
-    for k, v in pairs(data) do
-        self[k] = v
-    end
-    return self._owner
-end
-
 --- Create the data object for a given scope
 --- @param scope string
---- @param owner any
 --- @return ExpGui.GuiData
-function GuiData.create(scope, owner)
+function GuiData.create(scope)
     assert(GuiData._scopes[scope] == nil, "Scope already exists with name: " .. scope)
 
     local instance = {
-        _init = {},
         _scope = scope,
-        _owner = owner,
         element_data = {},
         player_data = {},
         force_data = {},
+        global_data = {},
     }
 
     scope_data[scope] = {
         instance.element_data,
         instance.player_data,
         instance.force_data,
+        instance.global_data,
     }
 
     GuiData._scopes[scope] = instance

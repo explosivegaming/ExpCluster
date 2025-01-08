@@ -10,31 +10,40 @@ local ExpElement = {
 }
 
 --- @alias ExpElement.DrawCallback fun(def: ExpElement, parent: LuaGuiElement, ...): LuaGuiElement?, function?
---- @alias ExpElement.StyleCallback fun(def: ExpElement, element: LuaGuiElement?, parent: LuaGuiElement, ...): table?
---- @alias ExpElement.DataCallback fun(def: ExpElement, element: LuaGuiElement?, parent: LuaGuiElement, ...): table?
+--- @alias ExpElement.PostDrawCallback fun(def: ExpElement, element: LuaGuiElement?, parent: LuaGuiElement, ...): table?
+--- @alias ExpElement.PostDrawCallbackAdder fun(self: ExpElement, definition: table | ExpElement.PostDrawCallback): ExpElement
 --- @alias ExpElement.OnEventAdder<E> fun(self: ExpElement, handler: fun(def: ExpElement, event: E)): ExpElement
 
 --- @class ExpElement.anchor: GuiAnchor
+--- @field _def ExpElement
 --- @overload fun(anchor: GuiAnchor): ExpElement
-
---- @class ExpElement.data: ExpGui.GuiData
---- @overload fun(data: table): ExpElement
 
 --- @class ExpElement._debug
 --- @field defined_at string
---- @field draw_src table?
---- @field style_src table?
+--- @field draw_definition table?
+--- @field draw_from_args table?
+--- @field style_definition table?
+--- @field style_from_args table?
+--- @field element_data_definition table?
+--- @field element_data_from_args table?
+--- @field player_data_definition table?
+--- @field player_data_from_args table?
+--- @field force_data_definition table?
+--- @field force_data_from_args table?
+--- @field global_data_definition table?
+--- @field global_data_from_args table?
 
 --- @class ExpElement
 --- @field name string
---- @field data ExpElement.data
+--- @field data ExpGui.GuiData
 --- @field anchor ExpElement.anchor?
 --- @field _debug ExpElement._debug
 --- @field _draw ExpElement.DrawCallback?
---- @field _style ExpElement.StyleCallback?
---- @field _element_data ExpElement.DataCallback?
---- @field _player_data ExpElement.DataCallback?
---- @field _force_data ExpElement.DataCallback?
+--- @field _style ExpElement.PostDrawCallback?
+--- @field _element_data ExpElement.PostDrawCallback?
+--- @field _player_data ExpElement.PostDrawCallback?
+--- @field _force_data ExpElement.PostDrawCallback?
+--- @field _global_data ExpElement.PostDrawCallback?
 --- @field _events table<defines.events, function[]>
 --- @overload fun(parent: LuaGuiElement, ...: any): LuaGuiElement
 ExpElement._prototype = {
@@ -54,8 +63,31 @@ ExpElement._anchor_metatable = {
         for k, v in pairs(anchor) do
             self[k] = v
         end
+        return self._def
     end
 }
+
+--- Used to signal that a property should be taken from the arguments
+--- @param arg_number number?
+--- @return [function, number?]
+function ExpElement.property_from_args(arg_number)
+    return { ExpElement.property_from_args, arg_number }
+end
+
+--- Extract the from args properties from a definition
+--- @param definition table
+--- @return string[]
+local function extract_from_args(definition)
+    local from_args = {}
+    for k, v in pairs(definition) do
+        if v == ExpElement.property_from_args then
+            from_args[#from_args + 1] = k
+        elseif type(v) == "table" and v[1] == ExpElement.property_from_args then
+            from_args[v[2] or (#from_args + 1)] = k
+        end
+    end
+    return from_args
+end
 
 --- Register a new instance of a prototype
 --- @param name string
@@ -73,8 +105,8 @@ function ExpElement.create(name)
     }
 
     ExpElement._elements[name] = instance
-    instance.data = GuiData.create(name, instance)
-    instance.anchor = setmetatable({}, ExpElement._anchor_metatable)
+    instance.data = GuiData.create(name)
+    instance.anchor = setmetatable({ _def = instance }, ExpElement._anchor_metatable)
     return setmetatable(instance, ExpElement._metatable)
 end
 
@@ -120,6 +152,16 @@ function ExpElement._prototype:create(parent, ...)
         end
     end
 
+    if self._global_data then
+        local data = self:_global_data(element, parent, ...)
+        if data then
+            local global_data = self.data.global_data
+            for k, v in pairs(data) do
+                global_data[k] = v
+            end
+        end
+    end
+
     if not element then return end
 
     if self._track_elements and status ~= ExpElement._prototype.track_element and status ~= ExpElement._prototype.untrack_element then
@@ -144,75 +186,89 @@ end
 --- @param definition table | ExpElement.DrawCallback
 --- @return ExpElement
 function ExpElement._prototype:draw(definition)
-    if type(definition) == "table" then
-        self._debug.draw_src = definition
+    if type(definition) == "function" then
+        self._draw = definition
+        return self
+    end
+
+    assert(type(definition) == "table", "Definition is not a table or function")
+    local from_args = extract_from_args(definition)
+    self._debug.draw_definition = definition
+
+    if #from_args == 0 then
         self._draw = function(_, parent)
             return parent.add(definition)
         end
-    else
-        self._draw = definition
+        return self
+    end
+
+    self._debug.draw_from_args = from_args
+    self._draw = function(_, parent, ...)
+        local args = { ... }
+        for i, k in pairs(from_args) do
+            definition[k] = args[i]
+        end
+        return parent.add(definition)
     end
 
     return self
+end
+
+--- Create a definition adder for anything other than draaw
+--- @param prop_name string
+--- @param debug_def string
+--- @param debug_args string
+--- @return ExpElement.PostDrawCallbackAdder
+local function definition_factory(prop_name, debug_def, debug_args)
+    return function(self, definition)
+        if type(definition) == "function" then
+            self[prop_name] = definition
+            return self
+        end
+
+        assert(type(definition) == "table", "Definition is not a table or function")
+        local from_args = extract_from_args(definition)
+        self._debug[debug_def] = definition
+
+        if #from_args == 0 then
+            self[prop_name] = function(_, _, _)
+                return definition
+            end
+            return self
+        end
+
+        self._debug[debug_args] = from_args
+        self[prop_name] = function(_, _, _, ...)
+            local args = { ... }
+            for i, k in pairs(from_args) do
+                definition[k] = args[i]
+            end
+            return definition
+        end
+
+        return self
+    end
 end
 
 --- Set the style definition
---- @param definition table | ExpElement.StyleCallback
---- @return ExpElement
-function ExpElement._prototype:style(definition)
-    if type(definition) == "table" then
-        self._debug.style_src = definition
-        self._style = function(_, parent)
-            return parent.add(definition)
-        end
-    else
-        self._style = definition
-    end
-
-    return self
-end
+--- @type ExpElement.PostDrawCallbackAdder
+ExpElement._prototype.style = definition_factory("_style", "style_definition", "style_from_args")
 
 --- Set the default element data
---- @param definition table | ExpElement.DataCallback
---- @return ExpElement
-function ExpElement._prototype:element_data(definition)
-    if type(definition) == "table" then
-        --- @diagnostic disable-next-line invisible
-        self.data._init.element = definition
-    else
-        self._element_data = definition
-    end
-
-    return self
-end
+--- @type ExpElement.PostDrawCallbackAdder
+ExpElement._prototype.element_data = definition_factory("_element_data", "element_data_definition", "element_data_from_args")
 
 --- Set the default player data
---- @param definition table | ExpElement.DataCallback
---- @return ExpElement
-function ExpElement._prototype:player_data(definition)
-    if type(definition) == "table" then
-        --- @diagnostic disable-next-line invisible
-        self.data._init.player = definition
-    else
-        self._player_data = definition
-    end
-
-    return self
-end
+--- @type ExpElement.PostDrawCallbackAdder
+ExpElement._prototype.player_data = definition_factory("_player_data", "player_data_definition", "player_data_from_args")
 
 --- Set the default force data
---- @param definition table | ExpElement.DataCallback
---- @return ExpElement
-function ExpElement._prototype:force_data(definition)
-    if type(definition) == "table" then
-        --- @diagnostic disable-next-line invisible
-        self.data._init.force = definition
-    else
-        self._force_data = definition
-    end
+--- @type ExpElement.PostDrawCallbackAdder
+ExpElement._prototype.force_data = definition_factory("_force_data", "force_data_definition", "force_data_from_args")
 
-    return self
-end
+--- Set the default global data
+--- @type ExpElement.PostDrawCallbackAdder
+ExpElement._prototype.global_data = definition_factory("_global_data", "global_data_definition", "global_data_from_args")
 
 --- Iterate the tracked elements of all players
 --- @param filter ExpGui_GuiIter.FilterType
