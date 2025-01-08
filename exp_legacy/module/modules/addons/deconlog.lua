@@ -99,8 +99,8 @@ if config.fired_rocket or config.fired_explosive_rocket or config.fired_nuke the
         if Roles.player_has_flag(player, "deconlog-bypass") then
             return
         end
-        local ammo_inv = player.get_inventory(defines.inventory.character_ammo) --- @cast ammo_inv -nil
         if player.character then
+            local ammo_inv = player.get_inventory(defines.inventory.character_ammo) --- @cast ammo_inv -nil
             local item = ammo_inv[player.character.selected_gun_index]
             local action_name
             if not item or not item.valid or not item.valid_for_read then
