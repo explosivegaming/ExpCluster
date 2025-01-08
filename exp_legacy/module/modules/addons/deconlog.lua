@@ -24,8 +24,8 @@ local function pos_to_string(pos)
     return tostring(pos.x) .. "," .. tostring(pos.y)
 end
 
-local function pos_to_gps_string(pos)
-    return "[gps=" .. string.format("%.1f", pos.x) .. "," .. string.format("%.1f", pos.y) .. "]"
+local function pos_to_gps_string(pos, surface_name)
+    return "[gps=" .. string.format("%.1f", pos.x) .. "," .. string.format("%.1f", pos.y) .. "," .. surface_name "]"
 end
 
 --- Print a message to all players who match the value of admin
@@ -59,9 +59,8 @@ if config.decon_area then
             print_to_players(true, {
                 "deconlog.decon",
                 player.name,
-                e.surface.localised_name,
-                pos_to_gps_string(e.area.left_top),
-                pos_to_gps_string(e.area.right_bottom),
+                pos_to_gps_string(e.area.left_top, e.surface.name),
+                pos_to_gps_string(e.area.right_bottom, e.surface.name),
                 format_number(#items, false),
             })
         end
