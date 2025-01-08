@@ -14,10 +14,6 @@ local ExpElement = {
 --- @alias ExpElement.PostDrawCallbackAdder fun(self: ExpElement, definition: table | ExpElement.PostDrawCallback): ExpElement
 --- @alias ExpElement.OnEventAdder<E> fun(self: ExpElement, handler: fun(def: ExpElement, event: E)): ExpElement
 
---- @class ExpElement.anchor: GuiAnchor
---- @field _def ExpElement
---- @overload fun(anchor: GuiAnchor): ExpElement
-
 --- @class ExpElement._debug
 --- @field defined_at string
 --- @field draw_definition table?
@@ -36,7 +32,6 @@ local ExpElement = {
 --- @class ExpElement
 --- @field name string
 --- @field data ExpGui.GuiData
---- @field anchor ExpElement.anchor?
 --- @field _debug ExpElement._debug
 --- @field _draw ExpElement.DrawCallback?
 --- @field _style ExpElement.PostDrawCallback?
@@ -55,16 +50,6 @@ ExpElement._metatable = {
     __call = nil, -- ExpElement._prototype.create
     __index = ExpElement._prototype,
     __class = "ExpGui",
-}
-
-ExpElement._anchor_metatable = {
-    __call = function(self, anchor)
-        assert(type(table) == "table", "Anchor must be a table")
-        for k, v in pairs(anchor) do
-            self[k] = v
-        end
-        return self._def
-    end
 }
 
 --- Used to signal that a property should be taken from the arguments
@@ -98,6 +83,7 @@ function ExpElement.create(name)
 
     local instance = {
         name = name,
+        data = GuiData.create(name),
         _events = {},
         _debug = {
             defined_at = ExpUtil.safe_file_path(2),
@@ -105,8 +91,6 @@ function ExpElement.create(name)
     }
 
     ExpElement._elements[name] = instance
-    instance.data = GuiData.create(name)
-    instance.anchor = setmetatable({ _def = instance }, ExpElement._anchor_metatable)
     return setmetatable(instance, ExpElement._metatable)
 end
 
