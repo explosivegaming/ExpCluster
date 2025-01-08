@@ -420,21 +420,8 @@ function ExpUtil.get_storage_for_stack(options)
     local current, count, entities = cache.current, cache.count, cache.entities
     for i = 1, cache.count do
         local entity = entities[((current + i - 1) % count) + 1]
-        local entity = entities[((current + i - 1) % count) + 1]
-        --[[
-            PR 349 https://github.com/explosivegaming/ExpCluster/pull/349
-
-            Error while running event level::on_character_corpse_expired (ID 103)
-            level/modules/exp_util/module_exports.lua:423: attempt to index local 'entity' (a nil value)
-            stack traceback:
-            level/modules/exp_util/module_exports.lua:423: in function 'get_storage_for_stack'
-            level/modules/exp_util/module_exports.lua:462: in function 'copy_items_to_surface'
-            level/modules/exp_util/module_exports.lua:495: in function 'transfer_inventory_to_surface'
-            ...vel__/modules/exp_legacy/modules/addons/death-logger.lua:155: in function 'handler'
-            level/modules/exp_legacy/utils/event.lua:22: in function 'handler'
-            core/lualib/event_handler.lua:47: in function <core/lualib/event_handler.lua:45>
-        ]]
         if entity == nil then
+            -- See Github Issue #352 <https://github.com/explosivegaming/ExpCluster/issues/352>
             error("entity was nil, context:\n" .. ExpUtil.format_any({
                 cache = cache,
                 i = i,
