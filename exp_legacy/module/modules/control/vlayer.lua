@@ -372,14 +372,14 @@ local function handle_input_interfaces()
                     local count_deduct
                     local count_add
 
-                    if prototypes.quality[v.quality].level == 1 then
+                    if prototypes.quality[v.quality].level == 0 then
                         count_deduct = v.count
                         count_add = v.count
 
-                    elseif prototypes.quality[v.quality].level > 1 and v.count >= 10 then
+                    elseif prototypes.quality[v.quality].level > 0 and v.count >= 10 then
                         local batch = math.floor(v.count / 10)
                         count_deduct = batch * 10
-                        count_add = batch * (7 + (prototypes.quality[v.quality].level * 3))
+                        count_add = batch * (10 + (prototypes.quality[v.quality].level * 3))
                     end
 
                     if count_deduct and count_add then
