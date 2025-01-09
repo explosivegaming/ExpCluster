@@ -43,6 +43,7 @@ local function format_energy(amount, unit)
 
     local suffix = ""
     local suffix_list = {
+        ["P"] = 1000000000000000,
         ["T"] = 1000000000000,
         ["G"] = 1000000000,
         ["M"] = 1000000,
