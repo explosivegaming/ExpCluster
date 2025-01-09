@@ -84,28 +84,6 @@ return {
             fuel_value = 100, -- MJ
             power = false, -- turn all rocket fuel to power to reduce trash
         }
-        --[[
-        ["iron-ore"] = {
-            starting_value = 0,
-            required_area = 0,
-            surface_area = 0,
-        },
-        ["copper-ore"] = {
-            starting_value = 0,
-            required_area = 0,
-            surface_area = 0,
-        },
-        ["stone"] = {
-            starting_value = 0,
-            required_area = 0,
-            surface_area = 0,
-        },
-        ["uranium-ore"] = {
-            starting_value = 0,
-            required_area = 0,
-            surface_area = 0,
-        },
-        ]]
     },
 
     modded_items = { --- @setting modded_items List of all modded items allowed in vlayer storage and their base game equivalent
