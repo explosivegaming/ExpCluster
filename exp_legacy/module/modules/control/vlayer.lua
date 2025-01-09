@@ -133,10 +133,10 @@ end
 
 --[[
     25,200 / 420 s
-    昼      208秒   ソーラー効率100%
-    夕方    83秒    1秒ごとにソーラー発電量が約1.2%ずつ下がり、やがて0%になる
-    夜      41秒    ソーラー発電量が0%になる
-    朝方    83秒    1秒ごとにソーラー発電量が約1.2%ずつ上がり、やがて100%になる
+    昼      210秒   ソーラー効率100%
+    夕方    84秒    1秒ごとにソーラー発電量が約1.2%ずつ下がり、やがて0%になる
+    夜      42秒    ソーラー発電量が0%になる
+    朝方    84秒    1秒ごとにソーラー発電量が約1.2%ずつ上がり、やがて100%になる
 
     (surface.dawn)      0.75    18,900   Day         12,600  210s
                         0.00    0       Noon
@@ -365,7 +365,6 @@ local function handle_input_interfaces()
             for _, v in pairs(inventory.get_contents()) do
                 if config.allowed_items[v.name] then
                     --[[
-                        TODO
                         there are no quality support currently.
                         so instead, using the stats projection value for higher quality.
                     ]]
