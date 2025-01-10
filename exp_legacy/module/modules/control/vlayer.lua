@@ -132,17 +132,17 @@ function vlayer.get_interfaces()
 end
 
 --[[
-    25,000 / 416 s
-    昼      208秒   ソーラー効率100%
-    夕方    83秒    1秒ごとにソーラー発電量が約1.2%ずつ下がり、やがて0%になる
-    夜      41秒    ソーラー発電量が0%になる
-    朝方    83秒    1秒ごとにソーラー発電量が約1.2%ずつ上がり、やがて100%になる
+    25,200 / 420 s
+    昼      210秒   ソーラー効率100%
+    夕方    84秒    1秒ごとにソーラー発電量が約1.2%ずつ下がり、やがて0%になる
+    夜      42秒    ソーラー発電量が0%になる
+    朝方    84秒    1秒ごとにソーラー発電量が約1.2%ずつ上がり、やがて100%になる
 
-    (surface.dawn)      0.75    18,750   Day         12,500  208s
+    (surface.dawn)      0.75    18,900   Day         12,600  210s
                         0.00    0       Noon
-    (surface.dusk)      0.25    6,250    Sunset      5,000   83s
-    (surface.evening)   0.45    11,250   Night       2,500   41s
-    (surface.morning)   0.55    13,750   Sunrise     5,000   83s
+    (surface.dusk)      0.25    6,300    Sunset      5,040   84s
+    (surface.evening)   0.45    11,340   Night       2,520   42s
+    (surface.morning)   0.55    13,860   Sunrise     5,040   84s
 ]]
 
 --- Get the power multiplier based on the surface time
@@ -194,7 +194,7 @@ local function get_sustained_multiplier()
         return mul
     end
 
-    -- For nauvis vanilla: 208s + (1/2 x (83s + 83s))
+    -- For nauvis vanilla: 210s + (1/2 x (84s + 84s))
     local day_duration = 1 - surface.dawn + surface.dusk
     local sunset_duration = surface.evening - surface.dusk
     local sunrise_duration = surface.dawn - surface.morning
@@ -362,23 +362,42 @@ local function handle_input_interfaces()
         else
             local inventory = interface.get_inventory(defines.inventory.chest)
 
-            for name, count in pairs(inventory.get_contents()) do
-                if config.allowed_items[name] then
-                    if config.allowed_items[name].modded then
-                        if config.modded_auto_downgrade then
-                            vlayer.insert_item(config.modded_items[name].base_game_equivalent, count * config.modded_items[name].multiplier)
-                        else
-                            vlayer.insert_item(name, count)
-                        end
-                    else
-                        if vlayer_data.storage.power_items[name] then
-                            vlayer_data.storage.power_items[name].count = vlayer_data.storage.power_items[name].count + count
-                        else
-                            vlayer.insert_item(name, count)
-                        end
+            for _, v in pairs(inventory.get_contents()) do
+                if config.allowed_items[v.name] then
+                    --[[
+                        there are no quality support currently.
+                        so instead, using the stats projection value for higher quality.
+                    ]]
+                    local count_deduct
+                    local count_add
+
+                    if prototypes.quality[v.quality].level == 0 then
+                        count_deduct = v.count
+                        count_add = v.count
+
+                    elseif prototypes.quality[v.quality].level > 0 and v.count >= 10 then
+                        local batch = math.floor(v.count / 10)
+                        count_deduct = batch * 10
+                        count_add = batch * (10 + (prototypes.quality[v.quality].level * 3))
                     end
 
-                    inventory.remove{ name = name, count = count }
+                    if count_deduct and count_add then
+                        if config.allowed_items[v.name].modded then
+                            if config.modded_auto_downgrade then
+                                vlayer.insert_item(config.modded_items[v.name].base_game_equivalent, count_add * config.modded_items[v.name].multiplier)
+                            else
+                                vlayer.insert_item(v.name, count_add)
+                            end
+                        else
+                            if vlayer_data.storage.power_items[v.name] then
+                                vlayer_data.storage.power_items[v.name].count = vlayer_data.storage.power_items[v.name].count + count_add
+                            else
+                                vlayer.insert_item(v.name, count_add)
+                            end
+                        end
+
+                        inventory.remove{ name = v.name, count = count_deduct, quality = v.quality }
+                    end
                 end
             end
         end
@@ -557,19 +576,18 @@ local function handle_circuit_interfaces()
         if not interface.valid then
             vlayer_data.entity_interfaces.circuit[index] = nil
         else
-            local circuit_oc = interface.get_or_create_control_behavior()
-            local max_signals = circuit_oc.signals_count
+            local circuit_oc = interface.get_or_create_control_behavior().sections[1]
             local signal_index = 1
             local circuit = vlayer.get_circuits()
 
             -- Set the virtual signals based on the vlayer stats
             for stat_name, signal_name in pairs(circuit) do
                 if stat_name:find("energy") then
-                    circuit_oc.set_signal(signal_index, { signal = { type = "virtual", name = signal_name }, count = math.floor(stats[stat_name] / mega) })
+                    circuit_oc.set_slot(signal_index, { value = { type = "virtual", name = signal_name, quality	= "normal" }, min = math.floor(stats[stat_name] / mega) })
                 elseif stat_name == "production_multiplier" then
-                    circuit_oc.set_signal(signal_index, { signal = { type = "virtual", name = signal_name }, count = math.floor(stats[stat_name] * 10000) })
+                    circuit_oc.set_slot(signal_index, { value = { type = "virtual", name = signal_name, quality	= "normal" }, min = math.floor(stats[stat_name] * 10000) })
                 else
-                    circuit_oc.set_signal(signal_index, { signal = { type = "virtual", name = signal_name }, count = math.floor(stats[stat_name]) })
+                    circuit_oc.set_slot(signal_index, { value = { type = "virtual", name = signal_name, quality	= "normal" }, min = math.floor(stats[stat_name]) })
                 end
 
                 signal_index = signal_index + 1
@@ -578,21 +596,18 @@ local function handle_circuit_interfaces()
             -- Set the item signals based on stored items
             for item_name, count in pairs(vlayer_data.storage.items) do
                 if prototypes.item[item_name] and count > 0 then
-                    circuit_oc.set_signal(signal_index, { signal = { type = "item", name = item_name }, count = count })
+                    circuit_oc.set_slot(signal_index, { value = { type = "item", name = item_name, quality	= "normal" }, min = count })
                     signal_index = signal_index + 1
-                    if signal_index > max_signals then
-                        return -- No more signals can be added
-                    end
                 end
             end
 
             -- Clear remaining signals to prevent outdated values being present (caused by count > 0 check)
-            for clear_index = signal_index, max_signals do
-                if not circuit_oc.get_signal(clear_index).signal then
+            for clear_index = signal_index, #circuit do
+                if not circuit_oc.get_slot(clear_index).signal then
                     break -- There are no more signals to clear
                 end
 
-                circuit_oc.set_signal(clear_index, nil)
+                circuit_oc.clear_slot(clear_index)
             end
         end
     end
