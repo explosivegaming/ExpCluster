@@ -565,7 +565,7 @@ function Commands._prototype:register(callback)
         local success, traceback = xpcall(Commands._event_handler, debug.traceback, event)
         --- @cast traceback string
         if not success and not traceback:find("Command does not support rcon usage") then
-            local key = "<" .. table.concat({ event.name, event.player_index, event.tick }, ":") .. ">"
+            local key = "<" .. table.concat({ event.name, event.player_index or 0, event.tick }, ":") .. ">"
             local _, msg = Commands.status.internal_error(key)
             Commands.error(msg)
             log("Internal Command Error " .. key .. "\n" .. traceback)

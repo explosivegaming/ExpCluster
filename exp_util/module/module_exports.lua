@@ -145,7 +145,7 @@ end
 --- @param level number? The level of the stack to get the module of, a value of 1 is the caller of this function
 --- @return string # The name of the module at the given stack frame
 function ExpUtil.get_module_name(level)
-    local file_within_module = getinfo((level or 1) + 1, "S").short_src:sub(18, -5)
+    local file_within_module = getinfo((level or 1) + 1, "S").short_src:sub(19, -5)
     local next_slash = file_within_module:find("/")
     if next_slash then
         return file_within_module:sub(1, next_slash - 1)
@@ -197,7 +197,7 @@ end
 function ExpUtil.safe_value(value)
     local _type = type(value)
     if _type == "table" then
-        local v1 = value[1]
+        local v1 = rawget(value, 1)
         local str = tostring(value)
         if type(v1) == "string" and not v1:find("%s")
         and (v1 == "" or v1 == "?" or v1:find(".+[.].+"))
