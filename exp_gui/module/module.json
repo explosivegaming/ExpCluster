@@ -4,9 +4,11 @@
 		"data.lua",
 		"iter.lua",
 		"prototype.lua",
-		"module_exports.lua"
+		"control.lua"
 	],
 	"require": [
+		"core_elements.lua",
+		"test.lua"
 	],
 	"dependencies": {
 		"clusterio": "*",

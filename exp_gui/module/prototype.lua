@@ -1,8 +1,8 @@
 
 local ExpUtil = require("modules/exp_util")
 
-local GuiData = require("./data")
-local GuiIter = require("./iter")
+local GuiData = require("modules/exp_gui/data")
+local GuiIter = require("modules/exp_gui/iter")
 
 --- @class ExpGui_ExpElement
 local ExpElement = {
@@ -54,6 +54,12 @@ ExpElement._metatable = {
     __class = "ExpGui",
 }
 
+--- Used to signal that the property should be the same as the define name
+--- @return function
+function ExpElement.property_from_name()
+    return ExpElement.property_from_name
+end
+
 --- Used to signal that a property should be taken from the arguments
 --- @param arg_number number?
 --- @return [function, number?]
@@ -64,11 +70,13 @@ end
 --- Extract the from args properties from a definition
 --- @param definition table
 --- @return string[]
-local function extract_from_args(definition)
+function ExpElement._prototype:_extract_signals(definition)
     local from_args = {}
     for k, v in pairs(definition) do
         if v == ExpElement.property_from_args then
             from_args[#from_args + 1] = k
+        elseif v == ExpElement.property_from_name then
+            definition[k] = self.name
         elseif type(v) == "table" and v[1] == ExpElement.property_from_args then
             from_args[v[2] or (#from_args + 1)] = k
         end
@@ -81,18 +89,20 @@ end
 --- @return ExpElement
 function ExpElement.create(name)
     ExpUtil.assert_not_runtime()
-    assert(ExpElement._elements[name] == nil, "ExpElement already defined with name: " .. name)
+    local module_name = ExpUtil.get_module_name(2)
+    local element_name = module_name .. "/" .. name
+    assert(ExpElement._elements[element_name] == nil, "ExpElement already defined with name: " .. name)
 
     local instance = {
-        name = name,
-        data = GuiData.create(name),
+        name = element_name,
+        data = GuiData.create(element_name),
         _events = {},
         _debug = {
             defined_at = ExpUtil.safe_file_path(2),
         },
     }
 
-    ExpElement._elements[name] = instance
+    ExpElement._elements[element_name] = instance
     return setmetatable(instance, ExpElement._metatable)
 end
 
@@ -180,7 +190,7 @@ function ExpElement._prototype:draw(definition)
     end
 
     assert(type(definition) == "table", "Definition is not a table or function")
-    local from_args = extract_from_args(definition)
+    local from_args = self:_extract_signals(definition)
     self._debug.draw_definition = definition
 
     if #from_args == 0 then
@@ -216,7 +226,7 @@ local function definition_factory(prop_name, debug_def, debug_args)
         end
 
         assert(type(definition) == "table", "Definition is not a table or function")
-        local from_args = extract_from_args(definition)
+        local from_args = self:_extract_signals(definition)
         self._debug[debug_def] = definition
 
         if #from_args == 0 then

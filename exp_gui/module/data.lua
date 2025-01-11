@@ -56,7 +56,7 @@ local GuiData = {
 -- This class has no prototype methods
 -- Do add keys to _raw without also referencing scope_data
 
---- @class ExpGui.GuiData: table
+--- @class ExpGui.GuiData: ExpGui.GuiData_Internal
 --- @field element_data table<uint, table<uint, any>>
 --- @field player_data table<uint, any>
 --- @field force_data table<uint, any>
