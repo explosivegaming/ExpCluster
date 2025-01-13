@@ -403,6 +403,7 @@ end
 function ExpUtil.get_storage_for_stack(options)
     local surface = assert(options.surface, "A surface must be provided")
     local item = assert(options.item, "An item stack must be provided")
+    assert(type(item) ~= "userdata" or item.valid_for_read, "Invalid stack provided")
 
     -- Perform a search if on has not been done already
     local cache = options.cache
@@ -420,16 +421,6 @@ function ExpUtil.get_storage_for_stack(options)
     local current, count, entities = cache.current, cache.count, cache.entities
     for i = 1, cache.count do
         local entity = entities[((current + i - 1) % count) + 1]
-        if entity == nil then
-            -- See Github Issue #352 <https://github.com/explosivegaming/ExpCluster/issues/352>
-            error("entity was nil, context:\n" .. ExpUtil.format_any({
-                cache = cache,
-                i = i,
-            }, {
-                max_line_count = 0,
-                no_locale_strings = true
-            }))
-        end
         if entity.can_insert(item) then
             cache.current = current + 1
             return entity
@@ -454,7 +445,7 @@ function ExpUtil.get_storage_for_stack(options)
     assert(entity, "Failed to create a new entity")
 
     cache.count = count + 1
-    entities[count] = entity
+    entities[count + 1] = entity
     return entity
 end
 
@@ -468,9 +459,12 @@ end
 function ExpUtil.copy_items_to_surface(options)
     local entity
     for item_index = 1, #options.items do
-        options.item = options.items[item_index]
-        entity = ExpUtil.get_storage_for_stack(options)
-        entity.insert(options.item)
+        local item = options.items[item_index]
+        if type(item) ~= "userdata" or item.valid_for_read then
+            options.item = item
+            entity = ExpUtil.get_storage_for_stack(options)
+            entity.insert(options.item)
+        end
     end
     return entity
 end
@@ -485,10 +479,13 @@ end
 function ExpUtil.move_items_to_surface(options)
     local entity
     for item_index = 1, #options.items do
-        options.item = options.items[item_index]
-        entity = ExpUtil.get_storage_for_stack(options)
-        entity.insert(options.item)
-        options.item.clear()
+        local item = options.items[item_index]
+        if type(item) ~= "userdata" or item.valid_for_read then
+            options.item = item
+            entity = ExpUtil.get_storage_for_stack(options)
+            entity.insert(options.item)
+            options.item.clear()
+        end
     end
     return entity
 end
