@@ -82,7 +82,7 @@ authorities.character_only =
 --- If a command has the flag "remote_only" then the command can only be used inside of remote view
 authorities.remote_only =
     add(function(player, command)
-        if command.flags.character_only and player.controller_type ~= defines.controllers.remote then
+        if command.flags.remote_only and player.controller_type ~= defines.controllers.remote then
             return deny{ "exp-commands-authorities.remote-only" }
         else
             return allow()
