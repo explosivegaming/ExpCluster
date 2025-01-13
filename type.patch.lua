@@ -29,7 +29,11 @@ script = {
     ---
     --- Type patched in 2.0.28: [Bug Report](https://forums.factorio.com/viewtopic.php?f=233&t=125062)
     --- Changed "event" from "string | integer" to "LuaEventType"
+    --- Resolved in 2.0.29, this patch will be removed was version is stable
     ---@param event LuaEventType ID or name of the event to raise.
     ---@param data table Table with extra data that will be passed to the event handler. Any invalid LuaObjects will silently stop the event from being raised.
     raise_event = function(event, data) end;
 }
+
+---@class LuaObject:userdata
+--https://github.com/justarandomgeek/vscode-factoriomod-debug/issues/165
