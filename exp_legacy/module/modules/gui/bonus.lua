@@ -75,10 +75,10 @@ local function apply_periodic_bonus(player)
     local disp = frame.container["bonus_st_2"].disp.table
 
     if vlayer.get_statistics()["energy_sustained"] > 0 then
-        local armor = player.get_inventory(defines.inventory.character_armor)[1]
+        local armor = player.get_inventory(defines.inventory.character_armor)
 
         if armor then
-            local armor_grid = armor.grid
+            local armor_grid = armor[1].grid
 
             if armor_grid then
                 local slider = disp["bonus_display_personal_battery_recharge_slider"].slider_value * 100000 * config.player_special_bonus_rate / 6
