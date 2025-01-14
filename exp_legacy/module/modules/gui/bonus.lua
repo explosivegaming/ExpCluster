@@ -75,18 +75,22 @@ local function apply_periodic_bonus(player)
     local disp = frame.container["bonus_st_2"].disp.table
 
     if vlayer.get_statistics()["energy_sustained"] > 0 then
-        local armor = player.get_inventory(defines.inventory.character_armor)[1].grid
+        local armor = player.get_inventory(defines.inventory.character_armor)[1]
 
         if armor then
-            local slider = disp["bonus_display_personal_battery_recharge_slider"].slider_value * 100000 * config.player_special_bonus_rate / 6
+            local armor_grid = armor.grid
 
-            for i = 1, #armor.equipment do
-                if armor.equipment[i].energy < armor.equipment[i].max_energy then
-                    local energy_required = math.min(math.floor(armor.equipment[i].max_energy - armor.equipment[i].energy), vlayer.get_statistics()["energy_storage"], slider)
-                    armor.equipment[i].energy = armor.equipment[i].energy + energy_required
-                    vlayer.energy_changed(-energy_required)
+            if armor_grid then
+                local slider = disp["bonus_display_personal_battery_recharge_slider"].slider_value * 100000 * config.player_special_bonus_rate / 6
 
-                    slider = slider - energy_required
+                for i = 1, #armor_grid.equipment do
+                    if armor_grid.equipment[i].energy < armor_grid.equipment[i].max_energy then
+                        local energy_required = math.min(math.floor(armor_grid.equipment[i].max_energy - armor_grid.equipment[i].energy), vlayer.get_statistics()["energy_storage"], slider)
+                        armor_grid.equipment[i].energy = armor_grid.equipment[i].energy + energy_required
+                        vlayer.energy_changed(-energy_required)
+
+                        slider = slider - energy_required
+                    end
                 end
             end
         end
