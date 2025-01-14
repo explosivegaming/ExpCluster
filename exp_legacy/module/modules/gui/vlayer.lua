@@ -32,8 +32,8 @@ local vlayer_control_type_list = {
     [4] = "storage_output",
 }
 
-local function pos_to_gps_string(pos)
-    return "[gps=" .. string.format("%.1f", pos.x) .. "," .. string.format("%.1f", pos.y) .. "]"
+local function pos_to_gps_string(pos, surface_name)
+    return "[gps=" .. string.format("%.1f", pos.x) .. "," .. string.format("%.1f", pos.y) .. "," .. surface_name .. "]"
 end
 
 local function format_energy(amount, unit)
@@ -127,7 +127,7 @@ Selection.on_selection(SelectionConvertArea, function(event)
         vlayer.create_output_interface(event.surface, e_pos, e_circ, player)
     end
 
-    game.print{ "vlayer.interface-result", player.name, pos_to_gps_string(e_pos), { "vlayer.result-build" }, { "vlayer.control-type-" .. target:gsub("_", "-") } }
+    game.print{ "vlayer.interface-result", player.name, pos_to_gps_string(e_pos, event.surface), { "vlayer.result-build" }, { "vlayer.control-type-" .. target:gsub("_", "-") } }
 end)
 
 --- Display label for the number of solar panels
@@ -373,7 +373,7 @@ local vlayer_gui_control_see =
             local entity = i[vlayer_control_type_list[target]][n]
             if entity and entity.valid then
                 player.set_controller{ type = defines.controllers.remote, position = entity.position, surface = entity.surface }
-                player.print{ "vlayer.result-interface-location", { "vlayer.control-type-" .. vlayer_control_type_list[target]:gsub("_", "-") }, pos_to_gps_string(entity.position) }
+                player.print{ "vlayer.result-interface-location", { "vlayer.control-type-" .. vlayer_control_type_list[target]:gsub("_", "-") }, pos_to_gps_string(entity.position, entity.surface) }
             end
         end
     end)
@@ -415,10 +415,10 @@ local vlayer_gui_control_remove =
             local i = vlayer.get_interfaces()
 
             if i and i[vlayer_control_type_list[target]] then
-                local interface_type, interface_position = vlayer.remove_interface(i[vlayer_control_type_list[target]][n].surface, i[vlayer_control_type_list[target]][n].position)
+                local interface_type, interface_surface, interface_position = vlayer.remove_interface(i[vlayer_control_type_list[target]][n].surface, i[vlayer_control_type_list[target]][n].position)
 
                 if interface_type then
-                    game.print{ "vlayer.interface-result", player.name, pos_to_gps_string(interface_position), { "vlayer.result-remove" }, { "vlayer.control-type-" .. interface_type } }
+                    game.print{ "vlayer.interface-result", player.name, pos_to_gps_string(interface_position, interface_surface), { "vlayer.result-remove" }, { "vlayer.control-type-" .. interface_type } }
                 end
             end
         end
