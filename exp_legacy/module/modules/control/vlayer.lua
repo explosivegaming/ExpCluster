@@ -706,11 +706,12 @@ function vlayer.remove_interface(surface, position)
 
     -- Get the details which will be returned
     if #entities == 0 then
-        return nil, nil
+        return nil, nil, nil
     end
 
     local interface = entities[1]
     local name = interface.name
+    local sur = interface.surface
     local pos = interface.position
 
     -- Return the type of interface removed and do some clean up
@@ -725,7 +726,7 @@ function vlayer.remove_interface(surface, position)
         table.remove_element(vlayer_data.entity_interfaces.storage_input, interface)
         interface.destroy()
 
-        return "storage-input", pos
+        return "storage-input", sur, pos
     elseif name == "requester-chest" then
         local inventory = assert(interface.get_inventory(defines.inventory.chest))
         ExpUtil.transfer_inventory_to_surface{
@@ -737,18 +738,18 @@ function vlayer.remove_interface(surface, position)
         table.remove_element(vlayer_data.entity_interfaces.storage_output, interface)
         interface.destroy()
 
-        return "storage-output", pos
+        return "storage-output", sur, pos
     elseif name == "constant-combinator" then
         table.remove_element(vlayer_data.entity_interfaces.circuit, interface)
         interface.destroy()
 
-        return "circuit", pos
+        return "circuit", sur, pos
     elseif name == "electric-energy-interface" then
         vlayer_data.storage.energy = vlayer_data.storage.energy + interface.energy
         table.remove_element(vlayer_data.entity_interfaces.energy, interface)
         interface.destroy()
 
-        return "energy", pos
+        return "energy", sur, pos
     end
 end
 
