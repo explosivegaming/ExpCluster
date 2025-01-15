@@ -172,18 +172,20 @@ end
 --- @param input string The user input string which should be matched to an option
 --- @param use_key boolean? When true the keys will be searched, when false the values will be searched
 --- @param rtn_key boolean? When true the selected key will be returned, when false the selected value will be returned
+--- @param use_pattern boolean? When true the input will be treated as a lua pattern string
 --- @return any # The selected key or value which first matches the input text
-function ExpUtil.auto_complete(options, input, use_key, rtn_key)
+function ExpUtil.auto_complete(options, input, use_key, rtn_key, use_pattern)
     input = input:lower()
+    local plain = use_pattern ~= true
     if use_key then
         for k, v in pairs(options) do
-            if k:lower():find(input) then
+            if k:lower():find(input, nil, plain) then
                 if rtn_key then return k else return v end
             end
         end
     else
         for k, v in pairs(options) do
-            if v:lower():find(input) then
+            if v:lower():find(input, nil, plain) then
                 if rtn_key then return k else return v end
             end
         end
@@ -572,7 +574,8 @@ end
 --- @param player PlayerIdentification?
 --- @return string
 function ExpUtil.format_player_name(player)
-    local valid_player = type(player) == "userdata" and player or game.get_player(player --[[@as string|number]]) --[[@as LuaPlayer?]]
+    local player_type = type(player)
+    local valid_player = player_type == "userdata" and player or (player_type == "string" or player_type == "number") and assert(game.get_player(player))
     local player_name = valid_player and valid_player.name or "<Server>"
     local player_chat_colour = valid_player and valid_player.chat_color or ExpUtil.color.white
     return ExpUtil.format_rich_text_color(player_name, player_chat_colour)
@@ -582,7 +585,8 @@ end
 --- @param player PlayerIdentification?
 --- @return LocalisedString
 function ExpUtil.format_player_name_locale(player)
-    local valid_player = type(player) == "userdata" and player or game.get_player(player --[[@as string|number]]) --[[@as LuaPlayer?]]
+    local player_type = type(player)
+    local valid_player = player_type == "userdata" and player or (player_type == "string" or player_type == "number") and assert(game.get_player(player))
     local player_name = valid_player and valid_player.name or "<Server>"
     local player_chat_colour = valid_player and valid_player.chat_color or ExpUtil.color.white
     return ExpUtil.format_rich_text_color_locale(player_name, player_chat_colour)

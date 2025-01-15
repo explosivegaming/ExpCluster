@@ -11,7 +11,7 @@ local Commands = require("modules/exp_commands")
 Commands.new("_sudo", { "exp-commands_sudo.description" })
     :argument("player", { "exp-commands_sudo.arg-player" }, Commands.types.player)
     :argument("command", { "exp-commands_sudo.arg-command" }, Commands.types.key_of(Commands.registered_commands))
-    :argument("arguments", { "exp-commands_sudo.arg-arguments" }, Commands.types.string)
+    :optional("arguments", { "exp-commands_sudo.arg-arguments" }, Commands.types.string)
     :enable_auto_concatenation()
     :add_flags{ "system_only" }
     :register(function(_player, player, command, parameter)
