@@ -54,7 +54,7 @@ return {
         ["landfill"] = {
             starting_value = 0,
             required_area = 0,
-            surface_area = 8, -- Tiles
+            surface_area = 20, -- Tiles
         },
         ["wood"] = {
             starting_value = 0,
