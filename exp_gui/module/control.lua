@@ -31,9 +31,12 @@ ExpGui.get_top_flow = mod_gui.get_button_flow
 ExpGui.get_left_flow = mod_gui.get_frame_flow
 
 --- Get a player from an element or gui event
---- @param input LuaGuiElement | { player_index: uint }
+--- @param input LuaGuiElement | { player_index: uint } | { element: LuaGuiElement }
 --- @return LuaPlayer
 function ExpGui.get_player(input)
+    if type(input) == "table" and not input.player_index then
+        return assert(game.get_player(input.element.player_index))
+    end
     return assert(game.get_player(input.player_index))
 end
 

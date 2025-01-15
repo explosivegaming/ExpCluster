@@ -6,7 +6,7 @@ local GuiIter = require("modules/exp_gui/iter")
 
 --- @class ExpGui_ExpElement
 local ExpElement = {
-    _elements = {},
+    _elements = {}, --- @type table<string, LuaGuiElement>
 }
 
 ExpElement.events = {}
@@ -51,7 +51,7 @@ ExpElement._prototype = {
 ExpElement._metatable = {
     __call = nil, -- ExpElement._prototype.create
     __index = ExpElement._prototype,
-    __class = "ExpGui",
+    __class = "ExpElement",
 }
 
 --- Used to signal that the property should be the same as the define name

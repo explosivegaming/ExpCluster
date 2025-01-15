@@ -43,25 +43,25 @@ return {
     "modules.data.language",
 
     --- GUI
-    "modules.gui.readme",
-    "modules.gui.rocket-info",
-    "modules.gui.science-info",
-    "modules.gui.autofill",
-    "modules.gui.warp-list",
-    "modules.gui.task-list",
-    "modules.gui.player-list",
-    "modules.gui.server-ups",
-    "modules.gui.bonus",
-    "modules.gui.vlayer",
-    "modules.gui.research",
-    "modules.gui.module",
-    "modules.gui.landfill",
-    "modules.gui.tool",
-    "modules.gui.production",
-    "modules.gui.playerdata",
-    "modules.gui.surveillance",
-    "modules.graftorio.require", -- graftorio
-    "modules.gui.toolbar", -- must be loaded last to register toolbar handlers
+    --"modules.gui.readme",
+    --"modules.gui.rocket-info",
+    --"modules.gui.science-info",
+    --"modules.gui.autofill",
+    --"modules.gui.task-list",
+    --"modules.gui.warp-list",
+    --"modules.gui.player-list",
+    --"modules.gui.server-ups",
+    --"modules.gui.bonus",
+    --"modules.gui.vlayer",
+    --"modules.gui.research",
+    --"modules.gui.module",
+    --"modules.gui.landfill",
+    --"modules.gui.tool",
+    --"modules.gui.production",
+    --"modules.gui.playerdata",
+    --"modules.gui.surveillance",
+    --"modules.graftorio.require", -- graftorio
+    --"modules.gui.toolbar", -- must be loaded last to register toolbar handlers
 
     --- Config Files
     "config.expcore.permission_groups", -- loads some predefined permission groups

@@ -7,8 +7,7 @@
 		"control.lua"
 	],
 	"require": [
-		"core_elements.lua",
-		"test.lua"
+		"core_elements.lua"
 	],
 	"dependencies": {
 		"clusterio": "*",

@@ -1,4 +1,5 @@
 local Event = require("modules/exp_legacy/utils/event")
+local Storage = require("modules/exp_util/storage")
 local Gui = require("modules.exp_legacy.utils.gui")
 local Model = require("modules.exp_legacy.modules.gui.debug.model")
 
@@ -20,6 +21,11 @@ local name_lookup = {}
 local checkbox_name = Gui.uid_name()
 local filter_name = Gui.uid_name()
 local clear_filter_name = Gui.uid_name()
+
+local storage = {}
+Storage.register(storage, function(tbl)
+    storage = tbl
+end)
 
 -- storage tables
 local enabled = {}

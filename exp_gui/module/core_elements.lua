@@ -11,6 +11,12 @@ local elements = {} --- @type table<string, ExpElement>
 local buttons_with_left_element = {} --- @type table<string, ExpElement>
 local left_elements_with_button = {} --- @type table<string, ExpElement>
 
+ExpGui.on_toolbar_button_toggled = script.generate_event_name()
+
+--- @class EventData.on_toolbar_button_toggled: EventData
+--- @field element LuaGuiElement
+--- @field state boolean
+
 --- Set the style of a toolbar button
 --- @param element LuaGuiElement
 --- @param state boolean?
@@ -137,6 +143,10 @@ function ExpGui.create_toolbar_button(options)
                 local player = ExpGui.get_player(event)
                 ExpGui.set_left_element_visible(left_element, player, state)
             end
+            script.raise_event(ExpGui.on_toolbar_button_toggled, {
+                element = event.element,
+                state = state,
+            })
         end)
     end
 
