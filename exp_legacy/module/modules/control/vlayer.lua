@@ -40,10 +40,6 @@ Storage.register(vlayer_data, function(tbl)
     vlayer_data = tbl
 end)
 
-if script.active_mods["space-age"] then
-    config.allowed_items.landfill.surface_area = math.floor(config.allowed_items.landfill.surface_area * 2.5)
-end
-
 for name, properties in pairs(config.allowed_items) do
     properties.modded = false
 
