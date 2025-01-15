@@ -77,7 +77,7 @@ local function apply_periodic_bonus(player)
     if vlayer.get_statistics()["energy_sustained"] > 0 then
         local armor = player.get_inventory(defines.inventory.character_armor)
 
-        if armor and armor[1] then
+        if armor and armor[1] and armor[1].valid_for_read then
             local armor_grid = armor[1].grid
 
             if armor_grid then
