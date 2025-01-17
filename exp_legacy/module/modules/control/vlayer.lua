@@ -439,19 +439,20 @@ local function handle_output_interfaces()
             vlayer_data.entity_interfaces.storage_output[index] = nil
         else
             local inventory = interface.get_inventory(defines.inventory.chest)
+            local inventory_request_sections = interface.get_or_create_control_behavior().sections
 
-            for i = 1, interface.request_slot_count do
-                local request = interface.get_request_slot(i)
+            for i = 1, #inventory_request_sections do
+                for _, v in pairs(inventory_request_sections[i].filters) do
+                    if v.value and config.allowed_items[v.value.name] then
+                        local current_amount = inventory.get_item_count(v.value.name)
+                        local request_amount = math.min(v.min - current_amount, vlayer_data.storage.items[v.value.name])
 
-                if request and config.allowed_items[request.name] then
-                    local current_amount = inventory.get_item_count(request.name)
-                    local request_amount = math.min(request.count - current_amount, vlayer_data.storage.items[request.name])
+                        if request_amount > 0 and inventory.can_insert{ name = v.value.name, count = request_amount } then
+                            local removed_item_count = vlayer.remove_item(v.value.name, request_amount)
 
-                    if request_amount > 0 and inventory.can_insert{ name = request.name, count = request_amount } then
-                        local removed_item_count = vlayer.remove_item(request.name, request_amount)
-
-                        if removed_item_count > 0 then
-                            inventory.insert{ name = request.name, count = removed_item_count }
+                            if removed_item_count > 0 then
+                                inventory.insert{ name = v.value.name, count = removed_item_count, quality = "normal" }
+                            end
                         end
                     end
                 end
