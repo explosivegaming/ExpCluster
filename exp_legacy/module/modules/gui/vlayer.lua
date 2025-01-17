@@ -390,9 +390,10 @@ local vlayer_gui_control_build =
     }:on_click(function(player, _, _)
         if Selection.is_selecting(player, SelectionConvertArea) then
             Selection.stop(player)
+            player.print{ "vlayer.exit" }
         else
             Selection.start(player, SelectionConvertArea)
-            player.print{ "exp-commands_waterfill.entered-area-selection" }
+            player.print{ "vlayer.enter" }
         end
 
         vlayer_gui_list_refresh(player)
