@@ -114,9 +114,9 @@ return {
             -- Robot Speed
             ["worker-robots-speed-7"] = 7,
             -- Laser Damage
-            ["energy-weapons-damage-7"] = 7,
+            ["laser-weapons-damage-7"] = 7,
             -- Electric Damage
-            ["electric-weapons-damage-3"] = 3,
+            ["electric-weapons-damage-4"] = 4,
             -- Explosive Damage
             ["stronger-explosives-7"] = 7,
             -- Bullet Damage
