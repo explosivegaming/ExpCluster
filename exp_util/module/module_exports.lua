@@ -247,6 +247,8 @@ function ExpUtil.format_any(value, options)
 end
 
 --- @alias Common.format_time_param_format "short" | "long" | "clock"
+-- TODO a single common function for calculating units for format_time and format_time_locale
+-- TODO fix nil times because {"days", "--"} is not a valid locale string
 
 --- @class Common.format_time_param_units
 --- @field days boolean? True if days are included
@@ -274,11 +276,16 @@ function ExpUtil.format_time(ticks, format, units)
         if not units.days then rtn_hours = rtn_hours + rtn_days * 24 end
         if not units.hours then rtn_minutes = rtn_minutes + rtn_hours * 60 end
         if not units.minutes then rtn_seconds = rtn_seconds + rtn_minutes * 60 end
-        --- @diagnostic enable: cast-local-type
     end
 
     local rtn = {}
     if format == "clock" then
+        if ticks then
+            -- When ticks is not nil, all rtn values are numbers
+            local f = "%02d"
+            rtn_days, rtn_hours = f:format(rtn_days), f:format(rtn_hours)
+            rtn_minutes, rtn_seconds = f:format(rtn_minutes), f:format(rtn_seconds)
+        end
         -- Example 12:34:56 or --:--:--
         if units.days then rtn[#rtn + 1] = rtn_days end
         if units.hours then rtn[#rtn + 1] = rtn_hours end
@@ -298,7 +305,9 @@ function ExpUtil.format_time(ticks, format, units)
         if units.hours then rtn[#rtn + 1] = rtn_hours .. " hours" end
         if units.minutes then rtn[#rtn + 1] = rtn_minutes .. " minutes" end
         if units.seconds then rtn[#rtn + 1] = rtn_seconds .. " seconds" end
-        rtn[#rtn] = "and " .. rtn[#rtn]
+        if #rtn > 1 then
+            rtn[#rtn] = "and " .. rtn[#rtn]
+        end
         return concat(rtn, ", ")
     end
 end
@@ -329,6 +338,12 @@ function ExpUtil.format_time_locale(ticks, format, units)
     local join = ", " --- @type LocalisedString
     if format == "clock" then
         -- Example 12:34:56 or --:--:--
+        if ticks then
+            -- When ticks is not nil, all rtn values are numbers
+            local f = "%02d"
+            rtn_days, rtn_hours = f:format(rtn_days), f:format(rtn_hours)
+            rtn_minutes, rtn_seconds = f:format(rtn_minutes), f:format(rtn_seconds)
+        end
         if units.days then rtn[#rtn + 1] = rtn_days end
         if units.hours then rtn[#rtn + 1] = rtn_hours end
         if units.minutes then rtn[#rtn + 1] = rtn_minutes end
@@ -347,7 +362,9 @@ function ExpUtil.format_time_locale(ticks, format, units)
         if units.hours then rtn[#rtn + 1] = { "hours", rtn_hours } end
         if units.minutes then rtn[#rtn + 1] = { "minutes", rtn_minutes } end
         if units.seconds then rtn[#rtn + 1] = { "seconds", rtn_seconds } end
-        rtn[#rtn] = { "", { "and" }, " ", rtn[#rtn] }
+        if #rtn > 1 then
+            rtn[#rtn] = { "", { "and" }, " ", rtn[#rtn] }
+        end
     end
 
     --- @type LocalisedString
@@ -356,6 +373,9 @@ function ExpUtil.format_time_locale(ticks, format, units)
         joined[2 * k] = v
         joined[2 * k + 1] = join
     end
+
+    -- Remove the last element which is a join component
+    joined[#joined] = nil
 
     return joined
 end
