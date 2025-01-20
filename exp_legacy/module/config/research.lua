@@ -106,7 +106,9 @@ return {
             -- Artillery Range
             ["artillery-shell-range-1"] = 1,
             -- Artillery Speed
-            ["artillery-shell-speed-1"] = 1
+            ["artillery-shell-speed-1"] = 1,
+            -- Follower Robot Count
+            ["follower-robot-count-5"] = 5,
         },
         ["space-age"] = {
             -- Mining Productivity
@@ -152,7 +154,9 @@ return {
             -- Rocket Fuel Productivity
             ["rocket-fuel-productivity"] = 1,
             -- Rocket Part Productivity
-            ["rocket-part-productivity"] = 1
+            ["rocket-part-productivity"] = 1,
+            -- Follower Robot Count
+            ["follower-robot-count-5"] = 5,
         }
     },
 }
