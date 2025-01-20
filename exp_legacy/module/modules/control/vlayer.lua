@@ -439,7 +439,7 @@ local function handle_output_interfaces()
             vlayer_data.entity_interfaces.storage_output[index] = nil
         else
             local inventory = interface.get_inventory(defines.inventory.chest)
-            local inventory_request_sections = interface.get_or_create_control_behavior().sections
+            local inventory_request_sections = interface.get_logistic_sections().sections
 
             for i = 1, #inventory_request_sections do
                 for _, v in pairs(inventory_request_sections[i].filters) do
