@@ -254,51 +254,81 @@ end
 --- @field minutes boolean? True if minutes are included
 --- @field seconds boolean? True if seconds are included
 
+--- @class Common.extract_time_units_return
+--- @field days number? Amount of days represented
+--- @field hours number? Amount of hours represented
+--- @field minutes number? Amount of minutes represented
+--- @field seconds number? Amount of seconds represented
+
+--- Extract different time units from an amount of ticks
+--- @param ticks number The number of ticks which will be represented, can be any duration or time value
+--- @param units Common.format_time_param_units A table selecting which units should be displayed, options are: days, hours, minutes, seconds
+--- @return Common.extract_time_units_return
+function ExpUtil.extract_time_units(ticks, units)
+    -- Calculate the values to be determine the display values
+    local max_days, max_hours, max_minutes, max_seconds = ticks / 5184000, ticks / 216000, ticks / 3600, ticks / 60
+
+    local rtn = {
+        day = floor(max_days),
+        hours = floor(max_hours - floor(max_days) * 24),
+        minutes = floor(max_minutes - floor(max_hours) * 60),
+        seconds = floor(max_seconds - floor(max_minutes) * 60),
+    }
+
+    -- Remove units that are not requested
+    if not units.days then
+        rtn.hours = rtn.hours + rtn.days * 24
+        rtn.days = nil
+    end
+    if not units.hours then
+        rtn.minutes = rtn.minutes + rtn.hours * 60
+        rtn.hours = nil
+    end
+    if not units.minutes then
+        rtn.seconds = rtn.seconds + rtn.minutes * 60
+        rtn.minutes = nil
+    end
+    if not units.seconds then
+        rtn.seconds = nil
+    end
+
+    return rtn
+end
+
 --- Format a tick value into one of a selection of pre-defined formats (short, long, clock)
 --- @param ticks number|nil The number of ticks which will be represented, can be any duration or time value
 --- @param format Common.format_time_param_format format to display, must be one of: short, long, clock
 --- @param units Common.format_time_param_units A table selecting which units should be displayed, options are: days, hours, minutes, seconds
 --- @return string # The ticks formatted into a string of the desired format
 function ExpUtil.format_time(ticks, format, units)
-    --- @type string | number, string | number, string | number, string | number
-    local rtn_days, rtn_hours, rtn_minutes, rtn_seconds = "--", "--", "--", "--"
-
-    if ticks ~= nil then
-        -- Calculate the values to be determine the display values
-        local max_days, max_hours, max_minutes, max_seconds = ticks / 5184000, ticks / 216000, ticks / 3600, ticks / 60
-        local days, hours = max_days, max_hours - floor(max_days) * 24
-        local minutes, seconds = max_minutes - floor(max_hours) * 60, max_seconds - floor(max_minutes) * 60
-
-        -- Calculate rhw units to be displayed
-        rtn_days, rtn_hours, rtn_minutes, rtn_seconds = floor(days), floor(hours), floor(minutes), floor(seconds)
-        if not units.days then rtn_hours = rtn_hours + rtn_days * 24 end
-        if not units.hours then rtn_minutes = rtn_minutes + rtn_hours * 60 end
-        if not units.minutes then rtn_seconds = rtn_seconds + rtn_minutes * 60 end
-        --- @diagnostic enable: cast-local-type
-    end
+    local times = ticks and ExpUtil.extract_time_units(ticks, units) or {}
 
     local rtn = {}
     if format == "clock" then
-        -- Example 12:34:56 or --:--:--
-        if units.days then rtn[#rtn + 1] = rtn_days end
-        if units.hours then rtn[#rtn + 1] = rtn_hours end
-        if units.minutes then rtn[#rtn + 1] = rtn_minutes end
-        if units.seconds then rtn[#rtn + 1] = rtn_seconds end
+        -- Example '12:34:56' or '--:--:--'
+        local f = "%02d"
+        if units.days then rtn[#rtn + 1] = ticks and f:format(times.days) or "--" end
+        if units.hours then rtn[#rtn + 1] = ticks and f:format(times.hours) or "--" end
+        if units.minutes then rtn[#rtn + 1] = ticks and f:format(times.minutes) or "--" end
+        if units.seconds then rtn[#rtn + 1] = ticks and f:format(times.seconds) or "--" end
         return concat(rtn, ":")
     elseif format == "short" then
-        -- Example 12d 34h 56m or --d --h --m
-        if units.days then rtn[#rtn + 1] = rtn_days .. "d" end
-        if units.hours then rtn[#rtn + 1] = rtn_hours .. "h" end
-        if units.minutes then rtn[#rtn + 1] = rtn_minutes .. "m" end
-        if units.seconds then rtn[#rtn + 1] = rtn_seconds .. "s" end
+        -- Example '12d 34h 56m' or '--d --h --m'
+        if units.days then rtn[#rtn + 1] = (times.days or "--") .. "d" end
+        if units.hours then rtn[#rtn + 1] = (times.hours or "--") .. "h" end
+        if units.minutes then rtn[#rtn + 1] = (times.minutes or "--") .. "m" end
+        if units.seconds then rtn[#rtn + 1] = (times.seconds or "--") .. "s" end
         return concat(rtn, " ")
     else
-        -- Example 12 days, 34 hours, and 56 minutes or -- days, -- hours, and -- minutes
-        if units.days then rtn[#rtn + 1] = rtn_days .. " days" end
-        if units.hours then rtn[#rtn + 1] = rtn_hours .. " hours" end
-        if units.minutes then rtn[#rtn + 1] = rtn_minutes .. " minutes" end
-        if units.seconds then rtn[#rtn + 1] = rtn_seconds .. " seconds" end
-        rtn[#rtn] = "and " .. rtn[#rtn]
+        -- Example '12 days, 34 hours, and 56 minutes' or 'nan days, nan hours, and nan minutes'
+        local nan = 0 / 0
+        if units.days then rtn[#rtn + 1] = (times.days or nan) .. " days" end
+        if units.hours then rtn[#rtn + 1] = (times.hours or nan) .. " hours" end
+        if units.minutes then rtn[#rtn + 1] = (times.minutes or nan) .. " minutes" end
+        if units.seconds then rtn[#rtn + 1] = (times.seconds or nan) .. " seconds" end
+        if #rtn > 1 then
+            rtn[#rtn] = "and " .. rtn[#rtn]
+        end
         return concat(rtn, ", ")
     end
 end
@@ -309,45 +339,35 @@ end
 --- @param units Common.format_time_param_units A table selecting which units should be displayed, options are: days, hours, minutes, seconds
 --- @return LocalisedString # The ticks formatted into a string of the desired format
 function ExpUtil.format_time_locale(ticks, format, units)
-    --- @type string | number, string | number, string | number, string | number
-    local rtn_days, rtn_hours, rtn_minutes, rtn_seconds = "--", "--", "--", "--"
-
-    if ticks ~= nil then
-        -- Calculate the values to be determine the display values
-        local max_days, max_hours, max_minutes, max_seconds = ticks / 5184000, ticks / 216000, ticks / 3600, ticks / 60
-        local days, hours = max_days, max_hours - floor(max_days) * 24
-        local minutes, seconds = max_minutes - floor(max_hours) * 60, max_seconds - floor(max_minutes) * 60
-
-        -- Calculate rhw units to be displayed
-        rtn_days, rtn_hours, rtn_minutes, rtn_seconds = floor(days), floor(hours), floor(minutes), floor(seconds)
-        if not units.days then rtn_hours = rtn_hours + rtn_days * 24 end
-        if not units.hours then rtn_minutes = rtn_minutes + rtn_hours * 60 end
-        if not units.minutes then rtn_seconds = rtn_seconds + rtn_minutes * 60 end
-    end
+    local times = ticks and ExpUtil.extract_time_units(ticks, units) or {}
 
     local rtn = {}
     local join = ", " --- @type LocalisedString
     if format == "clock" then
-        -- Example 12:34:56 or --:--:--
-        if units.days then rtn[#rtn + 1] = rtn_days end
-        if units.hours then rtn[#rtn + 1] = rtn_hours end
-        if units.minutes then rtn[#rtn + 1] = rtn_minutes end
-        if units.seconds then rtn[#rtn + 1] = rtn_seconds end
+        -- Example '12:34:56' or '--:--:--'
+        local f = "%02d"
+        if units.days then rtn[#rtn + 1] = ticks and f:format(times.days) or "--" end
+        if units.hours then rtn[#rtn + 1] = ticks and f:format(times.hours) or "--" end
+        if units.minutes then rtn[#rtn + 1] = ticks and f:format(times.minutes) or "--" end
+        if units.seconds then rtn[#rtn + 1] = ticks and f:format(times.seconds) or "--" end
         join = { "colon" }
     elseif format == "short" then
-        -- Example 12d 34h 56m or --d --h --m
-        if units.days then rtn[#rtn + 1] = { "?", { "time-symbol-days-short", rtn_days }, rtn_days .. "d" } end
-        if units.hours then rtn[#rtn + 1] = { "time-symbol-hours-short", rtn_hours } end
-        if units.minutes then rtn[#rtn + 1] = { "time-symbol-minutes-short", rtn_minutes } end
-        if units.seconds then rtn[#rtn + 1] = { "time-symbol-seconds-short", rtn_seconds } end
+        -- Example '12d 34h 56m' or '--d --h --m'
+        if units.days then rtn[#rtn + 1] = { "?", { "time-symbol-days-short", times.days or "--" }, (times.days or "--") .. "d" } end
+        if units.hours then rtn[#rtn + 1] = { "time-symbol-hours-short", times.hours or "--" } end
+        if units.minutes then rtn[#rtn + 1] = { "time-symbol-minutes-short", times.minutes or "--" } end
+        if units.seconds then rtn[#rtn + 1] = { "time-symbol-seconds-short", times.seconds or "--" } end
         join = " "
     else
-        -- Example 12 days, 34 hours, and 56 minutes or -- days, -- hours, and -- minutes
-        if units.days then rtn[#rtn + 1] = { "days", rtn_days } end
-        if units.hours then rtn[#rtn + 1] = { "hours", rtn_hours } end
-        if units.minutes then rtn[#rtn + 1] = { "minutes", rtn_minutes } end
-        if units.seconds then rtn[#rtn + 1] = { "seconds", rtn_seconds } end
-        rtn[#rtn] = { "", { "and" }, " ", rtn[#rtn] }
+        -- Example '12 days, 34 hours, and 56 minutes' or 'nan days, nan hours, and nan minutes'
+        local nan = 0 / 0
+        if units.days then rtn[#rtn + 1] = { "days", times.days or nan } end
+        if units.hours then rtn[#rtn + 1] = { "hours", times.hours or nan } end
+        if units.minutes then rtn[#rtn + 1] = { "minutes", times.minutes or nan } end
+        if units.seconds then rtn[#rtn + 1] = { "seconds", times.seconds or nan } end
+        if #rtn > 1 then
+            rtn[#rtn] = { "", { "and" }, " ", rtn[#rtn] }
+        end
     end
 
     --- @type LocalisedString
@@ -356,6 +376,9 @@ function ExpUtil.format_time_locale(ticks, format, units)
         joined[2 * k] = v
         joined[2 * k + 1] = join
     end
+
+    -- Remove the last element which is a join component
+    joined[#joined] = nil
 
     return joined
 end
