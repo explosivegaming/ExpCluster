@@ -268,6 +268,7 @@ function ExpUtil.extract_time_units(ticks, units)
     -- Calculate the values to be determine the display values
     local max_days, max_hours, max_minutes, max_seconds = ticks / 5184000, ticks / 216000, ticks / 3600, ticks / 60
 
+    --- @type Common.extract_time_units_return
     local rtn = {
         days = floor(max_days),
         hours = floor(max_hours - floor(max_days) * 24),
