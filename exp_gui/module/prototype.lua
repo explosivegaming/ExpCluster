@@ -60,24 +60,24 @@ function ExpElement.property_from_name()
     return ExpElement.property_from_name
 end
 
---- Used to signal that a property should be taken from the arguments
---- @param arg_number number?
---- @return [function, number?]
-function ExpElement.property_from_args(arg_number)
-    return { ExpElement.property_from_args, arg_number }
+--- Used to signal that a property should be taken from the arguments, a string means key of last arg
+--- @param arg number|string|nil
+--- @return [function, number|string|nil]
+function ExpElement.property_from_arg(arg)
+    return { ExpElement.property_from_arg, arg }
 end
 
 --- Extract the from args properties from a definition
 --- @param definition table
---- @return string[]
+--- @return table<string|number, string>
 function ExpElement._prototype:_extract_signals(definition)
     local from_args = {}
     for k, v in pairs(definition) do
-        if v == ExpElement.property_from_args then
+        if v == ExpElement.property_from_arg then
             from_args[#from_args + 1] = k
         elseif v == ExpElement.property_from_name then
             definition[k] = self.name
-        elseif type(v) == "table" and v[1] == ExpElement.property_from_args then
+        elseif type(v) == "table" and rawget(v, 1) == ExpElement.property_from_arg then
             from_args[v[2] or (#from_args + 1)] = k
         end
     end
@@ -179,8 +179,10 @@ function ExpElement._prototype:track_all_elements()
     return self
 end
 
+--- @alias ExpElement.add_param LuaGuiElement.add_param | table<string, [function, number|string|nil] | function>
+
 --- Set the draw definition
---- @param definition table | ExpElement.DrawCallback
+--- @param definition ExpElement.add_param | ExpElement.DrawCallback
 --- @return ExpElement
 function ExpElement._prototype:draw(definition)
     ExpUtil.assert_not_runtime()
@@ -193,7 +195,7 @@ function ExpElement._prototype:draw(definition)
     local from_args = self:_extract_signals(definition)
     self._debug.draw_definition = definition
 
-    if #from_args == 0 then
+    if not next(from_args) then
         self._draw = function(_, parent)
             return parent.add(definition)
         end
@@ -203,8 +205,14 @@ function ExpElement._prototype:draw(definition)
     self._debug.draw_from_args = from_args
     self._draw = function(_, parent, ...)
         local args = { ... }
+        local last = args[#args] or args
+        -- 'or args' used instead of empty table
         for i, k in pairs(from_args) do
-            definition[k] = args[i]
+            if type(i) == "string" then
+                definition[k] = last[i]
+            else
+                definition[k] = args[i]
+            end
         end
         return parent.add(definition)
     end
