@@ -86,7 +86,7 @@ Selection.on_selection(SelectionConvertArea, function(event)
     local target = vlayer_control_type_list[disp[vlayer_gui_control_type.name].selected_index]
     local entities
 
-    if event.surface and event.surface.platform and target == "energy" then
+    if config.power_on_space and event.surface and event.surface.platform and target == "energy" then
         entities = event.surface.find_entities_filtered{ area = area, name = "constant-combinator", force = player.force }
     else
         entities = event.surface.find_entities_filtered{ area = area, name = "steel-chest", force = player.force }
