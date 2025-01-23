@@ -63,7 +63,7 @@ Selection.on_selection(SelectionName, function(event)
     local remaining_tiles = surface.count_tiles_filtered{ area = area, name = "water-mud" }
     local t_diff = tile_count - remaining_tiles
 
-    if item_count_cliff >= area_size then
+    if item_count_cliff >= t_diff then
         player.remove_item{ name = "cliff-explosives", count = t_diff }
     else
         player.remove_item{ name = "explosives", count = 10 * t_diff }
