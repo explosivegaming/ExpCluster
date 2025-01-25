@@ -329,7 +329,7 @@ local roles = Roles.get_player_roles(game.player)
 
 ]]
 function Roles.get_player_roles(player)
-    if not player then return { Roles.config.roles[Roles.config.internal.root] } end
+    if not player or player.index == 0 then return { Roles.config.roles[Roles.config.internal.root] } end
     local roles = Roles.config.players[player.name] or {}
     local default = Roles.config.roles[Roles.config.internal.default]
     local rtn = { default }
