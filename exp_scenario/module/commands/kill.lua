@@ -23,8 +23,7 @@ Commands.new("kill", { "exp-commands_kill.description" })
         elseif (other_player == player) or (highest_role(other_player).index < highest_role(player).index) then
             -- You can always kill yourself or can kill lower role players
             if script.active_mods["space-age"] then
-                local pos = other_player.position
-                other_player.surface.create_entity{ name = "lightning", position = { pos.x, pos.y - 16 }, target = other_player.character }
+                other_player.surface.create_entity{ name = "lightning", position = { other_player.position.x, other_player.position.y - 16 }, target = other_player.character }
             end
             other_player.character.die()
         else
