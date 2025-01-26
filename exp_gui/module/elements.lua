@@ -145,7 +145,9 @@ elements.subframe_base = ExpGui.element("container_subframe")
         style = ExpGui.property_from_arg(1),
     }
     :style{
-        padding = { 2, 4 },
+        height = 0,
+        minimal_height = 36,
+        padding = { 3, 4 },
         use_header_filler = false,
         horizontally_stretchable = true,
     }

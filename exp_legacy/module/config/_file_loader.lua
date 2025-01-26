@@ -47,7 +47,7 @@ return {
     "modules.gui.rocket-info",
     "modules.gui.science-info",
     "modules.gui.autofill",
-    --"modules.gui.task-list",
+    "modules.gui.task-list",
     --"modules.gui.warp-list",
     --"modules.gui.player-list",
     --"modules.gui.server-ups",
@@ -55,14 +55,14 @@ return {
     --"modules.gui.vlayer",
     --"modules.gui.research",
     --"modules.gui.module",
-    --"modules.gui.landfill",
-    --"modules.gui.tool",
-    --"modules.gui.production",
+    "modules.gui.landfill",
+    "modules.gui.tool",
+    "modules.gui.production",
     --"modules.gui.playerdata",
     --"modules.gui.surveillance",
-    --"modules.graftorio.require", -- graftorio
     --"modules.gui.toolbar", -- must be loaded last to register toolbar handlers
-
+    
+    "modules.graftorio.require", -- graftorio
     --- Config Files
     "config.expcore.permission_groups", -- loads some predefined permission groups
     "config.expcore.roles", -- loads some predefined roles

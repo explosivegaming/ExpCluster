@@ -164,6 +164,10 @@ Storage.register(Data, function(tbl)
     for name, datastore in pairs(Datastores) do
         datastore.data = Data[name]
     end
+end, function(tbl)
+    for name in pairs(Datastores) do
+        tbl[name] = tbl[name] or {}
+    end
 end)
 
 ----- Datastore Manager
