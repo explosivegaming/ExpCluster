@@ -4,7 +4,7 @@
     @alias server_ups
 ]]
 
-local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local Gui = require("modules/exp_gui")
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local External = require("modules.exp_legacy.expcore.external") --- @dep expcore.external
 local Commands = require("modules/exp_commands")
@@ -20,11 +20,11 @@ UsesServerUps:set_metadata{
 
 --- Label to show the server ups
 -- @element server_ups
-local server_ups =
-    Gui.element{
+local server_ups = Gui.element("server_ups")
+    :draw{
         type = "label",
         caption = "SUPS = 60.0",
-        name = Gui.unique_static_name,
+        name = Gui.property_from_name,
     }
     :style{
         font = "default-game",
@@ -70,6 +70,7 @@ end
 
 -- Draw the label when the player joins
 Event.add(defines.events.on_player_created, set_location)
+Event.add(defines.events.on_player_joined_game, set_location)
 
 -- Update the caption for all online players
 -- percentage of game speed

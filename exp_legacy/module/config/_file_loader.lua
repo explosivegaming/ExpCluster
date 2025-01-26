@@ -50,16 +50,16 @@ return {
     "modules.gui.task-list",
     --"modules.gui.warp-list",
     --"modules.gui.player-list",
-    --"modules.gui.server-ups",
-    --"modules.gui.bonus",
+    "modules.gui.server-ups",
+    "modules.gui.bonus",
     --"modules.gui.vlayer",
-    --"modules.gui.research",
+    "modules.gui.research",
     --"modules.gui.module",
     "modules.gui.landfill",
     "modules.gui.tool",
     "modules.gui.production",
     --"modules.gui.playerdata",
-    --"modules.gui.surveillance",
+    "modules.gui.surveillance",
     --"modules.gui.toolbar", -- must be loaded last to register toolbar handlers
     
     "modules.graftorio.require", -- graftorio
