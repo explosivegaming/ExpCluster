@@ -38,6 +38,13 @@ function ExpGui.set_toolbar_button_style(element, state)
     return state
 end
 
+--- Get the state of a toolbar button
+--- @param element LuaGuiElement
+--- @return boolean
+function ExpGui.get_toolbar_button_state(element)
+    return element.style.name == toolbar_button_active_style
+end
+
 --- Set the visible state of the top flow for a player
 --- @param player LuaPlayer
 --- @param state boolean?

@@ -6,7 +6,7 @@ local GuiIter = require("modules/exp_gui/iter")
 
 --- @class ExpGui_ExpElement
 local ExpElement = {
-    _elements = {}, --- @type table<string, LuaGuiElement>
+    _elements = {}, --- @type table<string, ExpElement>
 }
 
 ExpElement.events = {}

@@ -168,7 +168,7 @@ elements.header = ExpGui.element("container_header")
             }
         end
 
-        return elements.aligned_flow(subframe, { name = "flow" })
+        return opts.no_flow and subframe or elements.aligned_flow(subframe, { name = "flow" })
     end)
 
 --- A footer frame within a container
@@ -187,7 +187,7 @@ elements.footer = ExpGui.element("container_footer")
             }
         end
 
-        return elements.aligned_flow(subframe, { name = "flow" })
+        return opts.no_flow and subframe or elements.aligned_flow(subframe, { name = "flow" })
     end)
 
 return elements
