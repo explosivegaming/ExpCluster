@@ -44,9 +44,9 @@ return {
 
     --- GUI
     "modules.gui.readme",
-    --"modules.gui.rocket-info",
+    "modules.gui.rocket-info",
     "modules.gui.science-info",
-    --"modules.gui.autofill",
+    "modules.gui.autofill",
     --"modules.gui.task-list",
     --"modules.gui.warp-list",
     --"modules.gui.player-list",

@@ -14,7 +14,7 @@ ExpElement.events = {}
 --- @alias ExpElement.DrawCallback fun(def: ExpElement, parent: LuaGuiElement, ...): LuaGuiElement?, function?
 --- @alias ExpElement.PostDrawCallback fun(def: ExpElement, element: LuaGuiElement?, parent: LuaGuiElement, ...): table?
 --- @alias ExpElement.PostDrawCallbackAdder fun(self: ExpElement, definition: table | ExpElement.PostDrawCallback): ExpElement
---- @alias ExpElement.OnEventAdder<E> fun(self: ExpElement, handler: fun(def: ExpElement, event: E)): ExpElement
+--- @alias ExpElement.OnEventAdder<E> fun(self: ExpElement, handler: fun(def: ExpElement, event: E, element: LuaGuiElement)): ExpElement
 
 --- @class ExpElement._debug
 --- @field defined_at string
@@ -343,7 +343,7 @@ function ExpElement._prototype:unlink_element(element)
     assert(self._has_handlers, "Element has no event handlers")
     local element_tags = element.tags
     if not element_tags then
-        element_tags = {}
+        return element, ExpElement._prototype.unlink_element
     end
 
     local event_tags = element_tags["ExpGui"]
@@ -371,24 +371,24 @@ local function event_handler(event)
     for _, define_name in ipairs(event_tags) do
         local define = ExpElement._elements[define_name]
         if define then
-            define:_raise_event(event)
+            define:raise_event(event)
         end
     end
 end
 
 --- Raise all handlers for an event on this definition
---- @param event EventData
-function ExpElement._prototype:_raise_event(event)
+--- @param event EventData | { element: LuaGuiElement }
+function ExpElement._prototype:raise_event(event)
     local handlers = self._events[event.name]
     if not handlers then return end
     for _, handler in ipairs(handlers) do
-        handler(self, event)
+        handler(self, event, event.element)
     end
 end
 
 --- Add an event handler
 --- @param event defines.events
---- @param handler fun(def: ExpElement, event: EventData)
+--- @param handler fun(def: ExpElement, event: EventData, element: LuaGuiElement)
 --- @return ExpElement
 function ExpElement._prototype:on_event(event, handler)
     ExpElement.events[event] = event_handler

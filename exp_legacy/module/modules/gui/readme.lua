@@ -441,11 +441,11 @@ local readme = Gui.element("readme")
         local button = Gui.get_top_element(readme_toggle, player)
         Gui.set_toolbar_button_style(button, true)
     end)
-    :on_closed(function(def, event)
+    :on_closed(function(def, event, element)
         local player = Gui.get_player(event)
         local button = Gui.get_top_element(readme_toggle, player)
         Gui.set_toolbar_button_style(button, false)
-        Gui.destroy_if_valid(event.element)
+        Gui.destroy_if_valid(element)
     end)
 
 --- Toggle button for the readme gui

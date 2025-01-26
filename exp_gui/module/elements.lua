@@ -13,12 +13,14 @@ elements.aligned_flow = ExpGui.element("aligned_flow")
     }
     :style(function(def, element, parent, opts)
         opts = opts or {}
+        local vertical_align = opts.vertical_align or "center"
+        local horizontal_align = opts.horizontal_align or "right"
         return {
             padding = { 1, 2 },
-            vertical_align = opts.vertical_align or "center",
-            horizontal_align = opts.horizontal_align or "right",
-            vertically_stretchable = opts.vertical_align and opts.vertical_align ~= "center",
-            horizontally_stretchable = opts.horizontal_align and opts.horizontal_align ~= "center",
+            vertical_align = vertical_align,
+            horizontal_align = horizontal_align,
+            vertically_stretchable = vertical_align ~= "center",
+            horizontally_stretchable = horizontal_align ~= "center",
         }
     end)
 

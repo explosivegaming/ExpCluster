@@ -138,7 +138,7 @@ local function ensure_elements(player, element_defines, elements, parent)
     local done = {}
     for define, visible in pairs(element_defines) do
         local element = elements[define.name]
-        if not element then
+        if not element or not element.valid then
             element = define(parent)
             elements[define.name] = element
             assert(element, "Element define did not return an element: " .. define.name)
@@ -200,7 +200,7 @@ local function on_gui_opened(event)
         if visible then
             event.element = element
             --- @diagnostic disable-next-line invisible
-            define:_raise_event(event)
+            define:raise_event(event)
         end
     end
 
