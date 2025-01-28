@@ -174,22 +174,51 @@ end
 --- @param rtn_key boolean? When true the selected key will be returned, when false the selected value will be returned
 --- @param use_pattern boolean? When true the input will be treated as a lua pattern string
 --- @return any # The selected key or value which first matches the input text
+function ExpUtil.auto_complete_first(options, input, use_key, rtn_key, use_pattern)
+    input = input:lower()
+    local plain = use_pattern ~= true
+    for k, v in pairs(options) do
+        local str = use_key and k or v
+        if str:lower():find(input, nil, plain) then
+            if rtn_key then return k else return v end
+        end
+    end
+end
+
+--- Attempt a simple autocomplete search from a set of options
+--- @param options table The table representing the possible options which can be selected
+--- @param input string The user input string which should be matched to an option
+--- @param use_key boolean? When true the keys will be searched, when false the values will be searched
+--- @param rtn_key boolean? When true the selected key will be returned, when false the selected value will be returned
+--- @param use_pattern boolean? When true the input will be treated as a lua pattern string
+--- @return any # The selected key or value which first matches the input text
 function ExpUtil.auto_complete(options, input, use_key, rtn_key, use_pattern)
     input = input:lower()
     local plain = use_pattern ~= true
-    if use_key then
-        for k, v in pairs(options) do
-            if k:lower():find(input, nil, plain) then
-                if rtn_key then return k else return v end
-            end
-        end
-    else
-        for k, v in pairs(options) do
-            if v:lower():find(input, nil, plain) then
-                if rtn_key then return k else return v end
+    local found = {} --- @type { length: number, index: number, start: boolean, value: any }
+    for k, v in pairs(options) do
+        local str = use_key and k or v
+        local index = str:lower():find(input, nil, plain)
+        if index then
+            local length = #str
+            local start = index == 1 or str:sub(index - 1, index - 1) == " "
+            if found.value == nil -- None found yet
+            or not found.start and start -- Prefer matches at the start of words
+            or found.length > length -- Prefer shorter matches
+            or found.index > index -- Prefer earlier matches
+            then
+                found.length = length
+                found.index = index
+                found.start = start
+                if rtn_key then
+                    found.value = k
+                else
+                    found.value = v
+                end
             end
         end
     end
+    return found.value
 end
 
 --- Formats any value into a safe representation, useful with inspect

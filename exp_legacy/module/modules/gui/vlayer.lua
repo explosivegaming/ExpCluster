@@ -81,10 +81,16 @@ Selection.on_selection(SelectionConvertArea, function(event)
         return nil
     end
 
-    local entities = event.surface.find_entities_filtered{ area = area, name = "steel-chest", force = player.force }
     local frame = Gui.get_left_element(player, vlayer_container)
     local disp = frame.container["vlayer_st_2"].disp.table
     local target = vlayer_control_type_list[disp[vlayer_gui_control_type.name].selected_index]
+    local entities
+
+    if config.power_on_space and event.surface and event.surface.platform and target == "energy" then
+        entities = event.surface.find_entities_filtered{ area = area, name = "constant-combinator", force = player.force }
+    else
+        entities = event.surface.find_entities_filtered{ area = area, name = "steel-chest", force = player.force }
+    end
 
     if #entities == 0 then
         player.print{ "vlayer.steel-chest-detect" }
@@ -100,9 +106,9 @@ Selection.on_selection(SelectionConvertArea, function(event)
 
     local e = entities[1]
     local e_pos = { x = string.format("%.1f", e.position.x), y = string.format("%.1f", e.position.y) }
-    local e_circ = {} -- e.circuit_connected_entities --- TODO use new circuit api
+    local e_circ = nil -- e.get_wire_connectors{ or_create = false }
 
-    if not e.get_inventory(defines.inventory.chest).is_empty() then
+    if e.name and e.name == "steel-chest" and (not e.get_inventory(defines.inventory.chest).is_empty()) then
         player.print{ "vlayer.steel-chest-empty" }
         return nil
     end

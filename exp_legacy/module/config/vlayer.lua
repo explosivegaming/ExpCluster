@@ -9,6 +9,7 @@ return {
     unlimited_capacity = false, --- @setting unlimited_capacity When true the vlayer has an unlimited energy capacity, accumulators are not required
     unlimited_surface_area = false, --- @setting unlimited_surface_area When true the vlayer has an unlimited surface area, landfill is not required
     modded_auto_downgrade = false, --- @setting modded_auto_downgrade When true modded items will be converted into their base game equivalent, original items can not be recovered
+    power_on_space = false, --- @setting power_on_space When true allow on spaceship
 
     mimic_surface = "nauvis", --- @setting mimic_surface Surface name/index the vlayer will copy its settings from, use nil to use the settings below
     surface = { --- @setting surface When mimic_surface is nil these settings will be used instead, see LuaSurface for details

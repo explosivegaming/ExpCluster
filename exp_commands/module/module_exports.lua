@@ -106,6 +106,7 @@ end
 --- @class Commands.Command
 --- @field name string The name of the command
 --- @field description LocalisedString The description of the command
+--- @field usage LocalisedString The usage of the command
 --- @field help_text LocalisedString The full help text for the command
 --- @field aliases string[] Aliases that the command will also be registered under
 --- @field defined_at? string If present then this is an ExpCommand
@@ -536,6 +537,7 @@ function Commands._prototype:register(callback)
     -- Generates a description to be used
     local argument_names = { "" } --- @type LocalisedString
     local argument_verbose = { "" } --- @type LocalisedString
+    self.usage = { "exp-commands.usage", self.name, argument_names }
     self.help_text = { "exp-commands.help", argument_names, self.description, argument_verbose } --- @type LocalisedString
     if next(self.aliases) then
         argument_verbose[2] = { "exp-commands.aliases", table.concat(self.aliases, ", ") }
@@ -670,20 +672,20 @@ function Commands._event_handler(event)
     -- Check the edge case of parameter being nil
     if command.min_arg_count > 0 and event.parameter == nil then
         log_command("Too few arguments", command, player, event.parameter, { minimum = command.min_arg_count, maximum = command.max_arg_count })
-        return Commands.error{ "exp-commands.invalid-usage", command.name, command.description }
+        return Commands.error{ "exp-commands.invalid-usage", command.usage }
     end
 
     -- Get the arguments for the command, returns nil if there are too many arguments
     local raw_arguments = extract_arguments(event.parameter, command.max_arg_count, command.auto_concat)
     if raw_arguments == nil then
         log_command("Too many arguments", command, player, event.parameter, { minimum = command.min_arg_count, maximum = command.max_arg_count })
-        return Commands.error{ "exp-commands.invalid-usage", command.name, command.description }
+        return Commands.error{ "exp-commands.invalid-usage", command.usage }
     end
 
     -- Check the minimum number of arguments is fulfilled
     if #raw_arguments < command.min_arg_count then
         log_command("Too few arguments", command, player, event.parameter, { minimum = command.min_arg_count, maximum = command.max_arg_count })
-        return Commands.error{ "exp-commands.invalid-usage", command.name, command.description }
+        return Commands.error{ "exp-commands.invalid-usage", command.usage }
     end
 
     -- Parse the arguments, optional arguments will attempt to use a default if provided
