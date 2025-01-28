@@ -87,7 +87,12 @@ Selection.on_selection(SelectionConvertArea, function(event)
     local entities
 
     if config.power_on_space and event.surface and event.surface.platform and target == "energy" then
-        entities = event.surface.find_entities_filtered{ area = area, name = "constant-combinator", force = player.force }
+        if player.force.technologies[config.power_on_space_research.name].level >= config.power_on_space_research.level then
+            entities = event.surface.find_entities_filtered{ area = area, name = "constant-combinator", force = player.force }
+        else
+            player.print{ "vlayer.power-on-space-research", config.power_on_space_research.name, config.power_on_space_research.level }
+            return nil
+        end
     else
         entities = event.surface.find_entities_filtered{ area = area, name = "steel-chest", force = player.force }
     end
