@@ -128,7 +128,7 @@ local cctv_container = Gui.element("cctv_container")
 
 --- Add the element to the left flow with a toolbar button
 Gui.add_left_element(cctv_container, false)
-Gui.create_toolbar_button{
+Gui.toolbar.create_button{
     name = "cctv_toggle",
     left_element = cctv_container,
     sprite = "entity/radar",

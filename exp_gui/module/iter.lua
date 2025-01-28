@@ -6,7 +6,7 @@ local ExpUtil = require("modules/exp_util")
 local Storage = require("modules/exp_util/storage")
 
 --- @alias ExpGui_GuiIter.FilterType LuaPlayer | LuaForce | LuaPlayer[] | nil
---- @alias ExpGui_GuiIter.ReturnType ExpGui_GuiIter.ReturnType
+--- @alias ExpGui_GuiIter.ReturnType fun(): LuaPlayer?, LuaGuiElement?
 
 --- @type table<string, table<uint, table<uint, LuaGuiElement>>>
 local registered_scopes = {}
@@ -25,6 +25,7 @@ end)
 
 --- @class ExpGui_GuiIter
 local GuiIter = {
+    _scopes = registered_scopes,
 }
 
 local function nop() return nil, nil end
@@ -215,10 +216,10 @@ function GuiIter.add_element(scope, element)
         registered_scopes[scope] = scope_elements
     end
 
-    local player_elements = registered_scopes[element.player_index]
+    local player_elements = scope_elements[element.player_index]
     if not player_elements then
         player_elements = {}
-        registered_scopes[element.player_index] = player_elements
+        scope_elements[element.player_index] = player_elements
     end
 
     player_elements[element.index] = element

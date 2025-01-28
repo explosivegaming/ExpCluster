@@ -41,6 +41,7 @@ return {
     -- 'modules.data.bonus',
     "modules.data.personal-logistic",
     "modules.data.language",
+    --"modules.data.toolbar",
 
     --- GUI
     "modules.gui.readme",
@@ -60,7 +61,6 @@ return {
     "modules.gui.production",
     "modules.gui.playerdata",
     "modules.gui.surveillance",
-    --"modules.gui.toolbar", -- must be loaded last to register toolbar handlers
     
     "modules.graftorio.require", -- graftorio
     --- Config Files

@@ -343,7 +343,7 @@ bonus_container = Gui.element("bonus_container")
 
 --- Add the element to the left flow with a toolbar button
 Gui.add_left_element(bonus_container, false)
-Gui.create_toolbar_button{
+Gui.toolbar.create_button{
     name = "bonus_toggle",
     left_element = bonus_container,
     sprite = "item/exoskeleton-equipment",

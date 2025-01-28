@@ -557,7 +557,7 @@ Gui.add_left_element(task_list_container, function(player)
     local task_ids = Tasks.get_force_task_ids(player.force.name)
     return #task_ids > 0
 end)
-Gui.create_toolbar_button{
+Gui.toolbar.create_button{
     name = "task_list_toggle",
     left_element = task_list_container,
     sprite = "utility/not_enough_repair_packs_icon",

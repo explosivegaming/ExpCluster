@@ -1,4 +1,6 @@
 local ExpElement = require("modules/exp_gui/prototype")
+local ExpData = require("modules/exp_gui/data")
+local ExpIter = require("modules/exp_gui/iter")
 local Color = require("modules/exp_util/include/color")
 
 local Gui = require("modules.exp_legacy.utils.gui") --- @dep utils.gui
@@ -87,11 +89,23 @@ Gui.on_click(
         element.style.font_color = Color.orange
         data.selected_header = element
 
-        input_text_box.text = concat{ "ExpElement._elements[", element_name, "]" }
+        input_text_box.text = concat{ "ExpElement._elements[\"", element_name, "\"]" }
         input_text_box.style.font_color = Color.black
 
         --- @diagnostic disable-next-line invisible
-        local content = dump(ExpElement._elements[element_name]) or "nil"
+        local define = ExpElement._elements[element_name]
+        local content = dump({
+            --- @diagnostic disable-next-line invisible
+            debug = define._debug,
+            --- @diagnostic disable-next-line invisible
+            has_handlers = define._has_handlers,
+            --- @diagnostic disable-next-line invisible
+            track_elements = define._track_elements,
+            --- @diagnostic disable-next-line invisible
+            elements = ExpIter._scopes[element_name],
+            --- @diagnostic disable-next-line invisible
+            data = ExpData._scopes[element_name]._raw,
+        }) or "nil"
         right_panel.text = content
     end
 )

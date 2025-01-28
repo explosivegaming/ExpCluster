@@ -296,7 +296,7 @@ autofill_container = Gui.element("autofill_container")
 
 --- Add the element to the left flow with a toolbar button
 Gui.add_left_element(autofill_container, false)
-Gui.create_toolbar_button{
+Gui.toolbar.create_button{
     name = "autofill_toggle",
     left_element = autofill_container,
     sprite = config.icon,

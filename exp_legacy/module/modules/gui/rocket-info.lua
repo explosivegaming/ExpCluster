@@ -494,7 +494,7 @@ local rocket_list_container = Gui.element("rocket_list_container")
 Gui.add_left_element(rocket_list_container, function(player, element)
     return player.force.rockets_launched > 0 and Roles.player_allowed(player, "gui/rocket-info")
 end)
-Gui.create_toolbar_button{
+Gui.toolbar.create_button{
     name = "rocket_list_toggle",
     left_element = rocket_list_container,
     sprite = "item/rocket-silo",

@@ -469,7 +469,7 @@ vlayer_container = Gui.element("vlayer_container")
 
 --- Add the element to the left flow with a toolbar button
 Gui.add_left_element(vlayer_container, false)
-Gui.create_toolbar_button{
+Gui.toolbar.create_button{
     name = "vlayer_toggle",
     left_element = vlayer_container,
     sprite = "entity/solar-panel",

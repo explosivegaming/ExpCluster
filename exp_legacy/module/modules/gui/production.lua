@@ -122,7 +122,7 @@ production_container = Gui.element("production_container")
 
 --- Add the element to the left flow with a toolbar button
 Gui.add_left_element(production_container, false)
-Gui.create_toolbar_button{
+Gui.toolbar.create_button{
     name = "production_toggle",
     left_element = production_container,
     sprite = "entity/assembling-machine-3",

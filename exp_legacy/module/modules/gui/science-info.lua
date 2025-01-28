@@ -333,7 +333,7 @@ local science_info = Gui.element("science_info")
 
 --- Add the element to the left flow with a toolbar button
 Gui.add_left_element(science_info, false)
-Gui.create_toolbar_button{
+Gui.toolbar.create_button{
     name = "science_info_toggle",
     left_element = science_info,
     sprite = "entity/lab",

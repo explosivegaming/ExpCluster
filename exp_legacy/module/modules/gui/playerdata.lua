@@ -191,7 +191,7 @@ pd_container = Gui.element("pd_container")
 
 --- Add the element to the left flow with a toolbar button
 Gui.add_left_element(pd_container, false)
-Gui.create_toolbar_button{
+Gui.toolbar.create_button{
     name = "player_data_toggle",
     left_element = pd_container,
     sprite = "item/power-armor-mk2",

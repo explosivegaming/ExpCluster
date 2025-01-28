@@ -252,7 +252,7 @@ tool_container = Gui.element("tool_container")
 
 --- Add the element to the left flow with a toolbar button
 Gui.add_left_element(tool_container, false)
-Gui.create_toolbar_button{
+Gui.toolbar.create_button{
     name = "tool_toggle",
     left_element = tool_container,
     sprite = "item/repair-pack",

@@ -438,19 +438,17 @@ local readme = Gui.element("readme")
     end)
     :on_opened(function(def, event)
         local player = Gui.get_player(event)
-        local button = Gui.get_top_element(readme_toggle, player)
-        Gui.set_toolbar_button_style(button, true)
+        Gui.toolbar.set_button_toggled_state(readme_toggle, player, true)
     end)
     :on_closed(function(def, event, element)
         local player = Gui.get_player(event)
-        local button = Gui.get_top_element(readme_toggle, player)
-        Gui.set_toolbar_button_style(button, false)
+        Gui.toolbar.set_button_toggled_state(readme_toggle, player, false)
         Gui.destroy_if_valid(element)
     end)
 
 --- Toggle button for the readme gui
 readme_toggle =
-    Gui.create_toolbar_button{
+    Gui.toolbar.create_button{
         name = "readme_toggle",
         auto_toggle = true,
         sprite = "virtual-signal/signal-info",

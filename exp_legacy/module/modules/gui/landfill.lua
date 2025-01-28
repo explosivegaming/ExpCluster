@@ -167,7 +167,7 @@ local function landfill_gui_add_landfill(blueprint)
 end
 
 --- Add the toolbar button
-Gui.create_toolbar_button{
+Gui.toolbar.create_button{
     name = "landfill",
     sprite = "item/landfill",
     tooltip = { "landfill.main-tooltip" },

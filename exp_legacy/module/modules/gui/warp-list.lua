@@ -703,7 +703,7 @@ warp_list_container = Gui.element("warp_list_container")
 
 --- Add the element to the left flow with a toolbar button
 Gui.add_left_element(warp_list_container, false)
-Gui.create_toolbar_button{
+Gui.toolbar.create_button{
     name = "warp_list_toggle",
     left_element = warp_list_container,
     sprite = config.default_icon.type .. "/" .. config.default_icon.name,
@@ -714,7 +714,7 @@ Gui.create_toolbar_button{
 }:on_click(function(def, event, element)
     -- Set gui keep open state for player that clicked the button: true if visible, false if invisible
     local player = Gui.get_player(event)
-    keep_gui_open[player.name] = Gui.get_toolbar_button_state(element)
+    keep_gui_open[player.name] = Gui.toolbar.get_button_toggled_state(def, player)
 end)
 
 --- When the name of a warp is updated this is triggered
@@ -733,7 +733,7 @@ PlayerInRange:on_update(function(player_name, warp_id)
 
     -- Change if the frame is visible based on if the player is in range
     if not keep_gui_open[player.name] then
-        Gui.set_left_element_visible(warp_list_container, player, warp_id ~= nil)
+        Gui.toolbar.set_left_element_visible_state(warp_list_container, player, warp_id ~= nil)
     end
 
     update_all_warp_elements(player, nil, warp_id)

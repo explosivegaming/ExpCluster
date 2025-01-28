@@ -103,7 +103,7 @@ end
 --- @param player LuaPlayer
 --- @return LuaGuiElement
 function ExpGui.get_top_element(define, player)
-    return player_elements[player.index].top[define.name]
+    return assert(player_elements[player.index].top[define.name], "Element is not on the top flow")
 end
 
 --- Register a element define to be drawn to the left flow on join
@@ -111,7 +111,7 @@ end
 --- @param player LuaPlayer
 --- @return LuaGuiElement
 function ExpGui.get_left_element(define, player)
-    return player_elements[player.index].left[define.name]
+    return assert(player_elements[player.index].left[define.name], "Element is not on the left flow")
 end
 
 --- Register a element define to be drawn to the relative flow on join
@@ -119,14 +119,7 @@ end
 --- @param player LuaPlayer
 --- @return LuaGuiElement
 function ExpGui.get_relative_element(define, player)
-    return player_elements[player.index].relative[define.name]
-end
-
---- Return all top level elements for a player
----@param player LuaPlayer
----@return ExpGui.player_elements
-function ExpGui._get_player_elements(player)
-    return player_elements[player.index]
+    return assert(player_elements[player.index].relative[define.name], "Element is not on the relative flow")
 end
 
 --- Ensure all the correct elements are visible and exist
@@ -177,10 +170,10 @@ function ExpGui._ensure_elements(event)
     ensure_elements(player, ExpGui.left_elements, elements.left, ExpGui.get_left_flow(player))
     ensure_elements(player, ExpGui.relative_elements, elements.relative, player.gui.relative)
 
-    -- Check technically not needed, but makes it easier to use this lib without the core defines
-    if ExpGui.apply_consistency_checks then
-        ExpGui.apply_consistency_checks(player, true)
-    end
+    --- @diagnostic disable-next-line invisible
+    ExpGui.toolbar._ensure_elements(player)
+    --- @diagnostic disable-next-line invisible
+    ExpGui.toolbar._ensure_consistency(player)
 end
 
 --- Rerun the visible check for relative elements

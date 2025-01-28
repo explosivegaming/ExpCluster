@@ -7,9 +7,9 @@
 		"control.lua"
 	],
 	"require": [
-		"core_elements.lua",
 		"elements.lua",
-		"styles.lua"
+		"styles.lua",
+		"toolbar.lua"
 	],
 	"dependencies": {
 		"clusterio": "*",

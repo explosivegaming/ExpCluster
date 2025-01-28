@@ -98,12 +98,19 @@ function ExpElement.create(name)
         data = GuiData.create(element_name),
         _events = {},
         _debug = {
-            defined_at = ExpUtil.safe_file_path(2),
+            defined_at = ExpUtil.get_current_line(2),
         },
     }
 
     ExpElement._elements[element_name] = instance
     return setmetatable(instance, ExpElement._metatable)
+end
+
+--- Get an element by its name
+--- @param name string
+--- @return ExpElement
+function ExpElement.get(name)
+    return assert(ExpElement._elements[name], "ExpElement is not defined: " .. tostring(name))
 end
 
 --- Create a new instance of this element definition
@@ -177,6 +184,15 @@ function ExpElement._prototype:track_all_elements()
     ExpUtil.assert_not_runtime()
     self._track_elements = true
     return self
+end
+
+--- Add a temp draw definition, useful for when working top down
+--- @return ExpElement
+function ExpElement._prototype:dev()
+    log("Dev draw used for " .. self.name)
+    return self:draw{
+        type = "flow"
+    }
 end
 
 --- @alias ExpElement.add_param LuaGuiElement.add_param | table<string, [function, number|string|nil] | function>

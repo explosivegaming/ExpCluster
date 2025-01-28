@@ -271,7 +271,7 @@ local player_list_container = Gui.element("player_list_container")
 
 --- Add the element to the left flow with a toolbar button
 Gui.add_left_element(player_list_container, true)
-Gui.create_toolbar_button{
+Gui.toolbar.create_button{
     name = "player_list_toggle",
     left_element = player_list_container,
     sprite = "entity/character",

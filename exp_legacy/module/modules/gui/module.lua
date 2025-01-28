@@ -306,7 +306,7 @@ module_container = Gui.element("module_container")
 
 --- Add the element to the left flow with a toolbar button
 Gui.add_left_element(module_container, false)
-Gui.create_toolbar_button{
+Gui.toolbar.create_button{
     name = "module_toggle",
     left_element = module_container,
     sprite = "item/productivity-module-3",

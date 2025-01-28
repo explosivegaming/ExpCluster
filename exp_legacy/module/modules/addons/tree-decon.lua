@@ -35,7 +35,7 @@ end
 local HasEnabledDecon = PlayerData.Settings:combine("HasEnabledDecon")
 HasEnabledDecon:set_default(false)
 
-Gui.create_toolbar_button{
+Gui.toolbar.create_button{
     name = "toggle-tree-decon",
     sprite = "entity/tree-01",
     tooltip = { "tree-decon.main-tooltip" },
@@ -43,11 +43,11 @@ Gui.create_toolbar_button{
     visible = function(player, _)
         return Roles.player_allowed(player, "fast-tree-decon")
     end
-}:on_event(Gui.on_toolbar_button_toggled, function(def, event)
-    --- @cast event EventData.on_toolbar_button_toggled
+}:on_click(function(def, event, element)
     local player = Gui.get_player(event)
-    HasEnabledDecon:set(player, event.state)
-    player.print{ "tree-decon.toggle-msg", event.state and { "tree-decon.enabled" } or { "tree-decon.disabled" } }
+    local state = Gui.toolbar.get_button_toggled_state(def, player)
+    HasEnabledDecon:set(player, state)
+    player.print{ "tree-decon.toggle-msg", state and { "tree-decon.enabled" } or { "tree-decon.disabled" } }
 end)
 
 -- Add trees to queue when marked, only allows simple entities and for players with role permission
