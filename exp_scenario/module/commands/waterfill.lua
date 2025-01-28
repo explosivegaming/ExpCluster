@@ -72,11 +72,15 @@ Selection.on_selection(SelectionName, function(event)
     if item_count_cliff >= t_diff then
         player.remove_item{ name = "cliff-explosives", count = t_diff }
     else
+        if item_count_cliff > 0 then
+            player.remove_item{ name = "cliff-explosives", count = item_count_cliff }
+        end
         local item_count_needed = t_diff - item_count_cliff
-        player.remove_item{ name = "cliff-explosives", count = item_count_cliff }
-        player.remove_item{ name = "explosives", count = 10 * item_count_needed }
-        player.remove_item{ name = "barrel", count = item_count_needed }
-        player.remove_item{ name = "grenade", count = item_count_needed }
+        if item_count_needed > 0 then
+            player.remove_item{ name = "explosives", count = 10 * item_count_needed }
+            player.remove_item{ name = "barrel", count = item_count_needed }
+            player.remove_item{ name = "grenade", count = item_count_needed }
+        end
     end
 
     if remaining_tiles > 0 then
