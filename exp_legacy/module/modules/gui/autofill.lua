@@ -7,7 +7,7 @@
 local Storage = require("modules/exp_util/storage")
 local FlyingText = require("modules/exp_util/flying_text")
 local Gui = require("modules/exp_gui")
-local Roles = require("modules.exp_legacy.expcore.roles") -- @dep expcore.gui
+local Roles = require("modules.exp_legacy.expcore.roles")
 local config = require("modules.exp_legacy.config.gui.autofill") -- @dep config.gui.autofill
 local Event = require("modules/exp_legacy/utils/event") -- @dep utils.event
 

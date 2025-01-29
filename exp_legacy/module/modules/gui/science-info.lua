@@ -6,7 +6,7 @@
 
 local ExpUtil = require("modules/exp_util")
 local Gui = require("modules/exp_gui")
-local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.gui
+local Roles = require("modules.exp_legacy.expcore.roles")
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local config = require("modules.exp_legacy.config.gui.science") --- @dep config.gui.science
 local Production = require("modules.exp_legacy.modules.control.production") --- @dep modules.control.production
