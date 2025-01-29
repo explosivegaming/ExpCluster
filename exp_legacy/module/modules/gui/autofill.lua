@@ -36,7 +36,7 @@ local toggle_section = Gui.element("autofill_toggle_section")
     :style(Gui.styles.sprite{
         size = 20
     })
-    :on_click(function(def, event, element)
+    :on_click(function(def, player, element)
         local header_flow = assert(element.parent)
         local flow_name = header_flow.caption
         local flow = header_flow.parent.parent[flow_name]
@@ -64,8 +64,7 @@ local entity_toggle = Gui.element("entity_toggle")
     :style(Gui.styles.sprite{
         size = 22
     })
-    :on_click(function(def, event, element)
-        local player = Gui.get_player(event)
+    :on_click(function(def, player, element)
         local entity_name = string.match(element.parent.parent.name, "(.*)%-header")
         if not autofill_player_settings[player.name] then return end
         local setting = autofill_player_settings[player.name][entity_name]
@@ -115,7 +114,7 @@ local section = Gui.element("autofill_section")
 
         return def:unlink_element(section_table)
     end)
-    :on_click(function(def, event, element)
+    :on_click(function(def, player, element, event)
         event.element = element.parent.alignment[toggle_section.name]
         toggle_section:raise_event(event)
     end)
@@ -135,8 +134,7 @@ local toggle_item_button = Gui.element("toggle_item_button")
         size = 32,
         right_margin = -3,
     })
-    :on_click(function(def, event, element)
-        local player = Gui.get_player(event)
+    :on_click(function(def, player, element)
         local item_name = element.parent.tooltip
         local entity_name = element.parent.parent.parent.name
         if not autofill_player_settings[player.name] then return end
@@ -178,10 +176,9 @@ local amount_textfield = Gui.element("amount_textfield")
         height = 31,
         padding = -2,
     }
-    :on_text_changed(function(def, event, element)
+    :on_text_changed(function(def, player, element)
         local value = tonumber(element.text)
         if not value then value = 0 end
-        local player = Gui.get_player(event)
         local clamped = math.clamp(value, 0, 1000)
         local item_name = element.parent.tooltip
         local entity_name = element.parent.parent.parent.name

@@ -49,7 +49,7 @@ local toggle_launch = Gui.element("toggle_launch")
     :style(Gui.styles.sprite{
         size = 16,
     })
-    :on_click(function(def, event, element)
+    :on_click(function(def, player, element)
         local rocket_silo_name = element.parent.name:sub(8)
         local rocket_silo = Rockets.get_silo_entity(rocket_silo_name)
         if rocket_silo.auto_launch then
@@ -106,8 +106,7 @@ local silo_cords = Gui.element("silo_cords")
             definition:link_element(label_y)
         end
     end)
-    :on_click(function(def, event, element)
-        local player = Gui.get_player(event)
+    :on_click(function(def, player, element)
         local rocket_silo_name = element.parent.caption
         local rocket_silo = Rockets.get_silo_entity(rocket_silo_name)
         player.set_controller{ type = defines.controllers.remote, position = rocket_silo.position, surface = rocket_silo.surface }
@@ -405,7 +404,7 @@ local toggle_section = Gui.element("rocket_info_toggle_section")
     :style(Gui.styles.sprite{
         size = 20,
     })
-    :on_click(function(def, event, element)
+    :on_click(function(def, player, element)
         local header_flow = assert(element.parent)
         local flow_name = header_flow.caption
         local flow = header_flow.parent.parent[flow_name]
@@ -443,7 +442,7 @@ local section = Gui.element("rocket_info_section")
         -- Return the flow table
         return definition:unlink_element(scroll_table)
     end)
-    :on_click(function(def, event, element)
+    :on_click(function(def, player, element, event)
         event.element = element.parent.alignment[toggle_section.name]
         toggle_section:raise_event(event)
     end)

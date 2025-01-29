@@ -176,8 +176,7 @@ local bonus_gui_control_reset = Gui.element("bonus_gui_control_reset")
         caption = { "bonus.control-reset" },
     }:style{
         width = config.gui_display_width["half"],
-    }:on_click(function(def, event, element)
-        local player = Gui.get_player(event)
+    }:on_click(function(def, player, element)
         local container = Gui.get_left_element(bonus_container, player)
         local disp = container.frame["bonus_st_2"].disp.table
 
@@ -210,8 +209,7 @@ local bonus_gui_control_apply = Gui.element("bonus_gui_control_apply")
         caption = { "bonus.control-apply" },
     }:style{
         width = config.gui_display_width["half"],
-    }:on_click(function(def, event, element)
-        local player = Gui.get_player(event)
+    }:on_click(function(def, player, element)
         local n = bonus_gui_pts_needed(player)
         element.parent[bonus_gui_control_pts_n_count.name].caption = n
         local r = tonumber(element.parent[bonus_gui_control_pts_a_count.name].caption) - n
@@ -290,8 +288,7 @@ local bonus_gui_slider = Gui.element("bonus_gui_slider")
 
         return slider
     end)
-    :on_value_changed(function(def, event, element)
-        local player = Gui.get_player(event)
+    :on_value_changed(function(def, player, element)
         if element.tags.is_percentage then
             element.parent[element.tags.counter].caption = format_number(element.slider_value * 100, false) .. " %"
         else

@@ -36,8 +36,7 @@ local open_action_bar = Gui.element("open_action_bar")
         width = 8,
         height = 14,
     }
-    :on_click(function(def, event, element)
-        local player = Gui.get_player(event)
+    :on_click(function(def, player, element)
         local selected_player_name = element.parent.name
         local old_selected_player_name = SelectedPlayer:get(player)
         if selected_player_name == old_selected_player_name then
@@ -62,8 +61,7 @@ local close_action_bar = Gui.element("close_action_bar")
         top_margin = -1,
         right_margin = -1,
     })
-    :on_click(function(def, event, element)
-        local player = Gui.get_player(event)
+    :on_click(function(def, player, element)
         SelectedPlayer:remove(player)
         SelectedAction:remove(player)
     end)
@@ -83,8 +81,7 @@ local reason_confirm = Gui.element("reason_confirm")
         left_margin = -2,
         right_margin = -1,
     })
-    :on_click(function(def, event, element)
-        local player = Gui.get_player(event)
+    :on_click(function(def, player, element)
         local reason = element.parent.entry.text
         local action_name = SelectedAction:get(player)
         local reason_callback = config.buttons[action_name].reason_callback
@@ -125,8 +122,7 @@ local add_player_base = Gui.element("add_player_base")
 
         return player_name
     end)
-    :on_click(function(def, event, element)
-        local player = Gui.get_player(event)
+    :on_click(function(def, player, element, event)
         local selected_player_name = element.caption
         local selected_player = game.players[selected_player_name]
         if event.button == defines.mouse_button_type.left then

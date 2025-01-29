@@ -25,7 +25,7 @@ local cctv_status = Gui.element("cctv_status")
         selected_index = 2,
     }:style{
         width = 96,
-    }:on_selection_state_changed(function(def, event, element)
+    }:on_selection_state_changed(function(def, player, element)
         if element.selected_index == 1 then
             element.parent.parent.parent.cctv_display.visible = true
         else
@@ -50,8 +50,7 @@ local cctv_location = Gui.element("cctv_location")
         caption = { "surveillance.func-set" },
     }:style{
         width = 48,
-    }:on_click(function(def, event, element)
-        local player = Gui.get_player(event)
+    }:on_click(function(def, player, element)
         element.parent.parent.parent.cctv_display.position = player.physical_position
     end)
 
@@ -62,7 +61,7 @@ local zoom_in = Gui.element("zoom_in")
         caption = "+",
     }:style{
         width = 32,
-    }:on_click(function(def, event, element)
+    }:on_click(function(def, player, element)
         local display = element.parent.parent.parent.cctv_display
         if display.zoom < 2.0 then
             display.zoom = display.zoom + 0.05
@@ -76,7 +75,7 @@ local zoom_out = Gui.element("zoom_out")
         caption = "-",
     }:style{
         width = 32,
-    }:on_click(function(def, event, element)
+    }:on_click(function(def, player, element)
         local display = element.parent.parent.parent.cctv_display
         if display.zoom > 0.2 then
             display.zoom = display.zoom - 0.05

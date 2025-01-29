@@ -93,8 +93,7 @@ local add_new_task = Gui.element("add_new_task")
     }
     :style(Styles.sprite22)
     :on_click(
-        function(def, event, element)
-            local player = Gui.get_player(event)
+        function(def, player, element)
             -- Disable editing
             PlayerIsEditing:set(player, false)
             -- Clear selected
@@ -198,8 +197,7 @@ local task_list_item = Gui.element("task_list_item")
         end
     )
     :on_click(
-        function(def, event, element)
-            local player = Gui.get_player(event)
+        function(def, player, element)
             local task_id = element.parent.caption
             PlayerSelected:set(player, task_id)
         end
@@ -266,8 +264,7 @@ local task_view_close_button = Gui.element("task_view_close_button")
     }
     :style(Styles.sprite22)
     :on_click(
-        function(def, event, element)
-            local player = Gui.get_player(event)
+        function(def, player, element)
             PlayerSelected:set(player, nil)
         end
     )
@@ -284,8 +281,7 @@ local task_view_delete_button = Gui.element("task_view_delete_button")
     }
     :style(Styles.footer_button)
     :on_click(
-        function(def, event, element)
-            local player = Gui.get_player(event)
+        function(def, player, element)
             local selected = PlayerSelected:get(player)
             PlayerSelected:set(player, nil)
             Tasks.remove_task(selected)
@@ -361,8 +357,7 @@ local task_message_textfield = Gui.element("task_message_textfield")
         horizontally_stretchable = true,
     }
     :on_text_changed(
-        function(def, event, element)
-            local player = Gui.get_player(event)
+        function(def, player, element)
             local is_editing = PlayerIsEditing:get(player)
             local is_creating = PlayerIsCreating:get(player)
 
@@ -388,8 +383,7 @@ task_edit_confirm_button = Gui.element("task_edit_confirm_button")
     }
     :style(Styles.footer_button)
     :on_click(
-        function(def, event, element)
-            local player = Gui.get_player(event)
+        function(def, player, element)
             local selected = PlayerSelected:get(player)
             PlayerIsEditing:set(player, false)
             local new_message = element.parent.parent[task_message_textfield.name].text
@@ -410,8 +404,7 @@ local edit_task_discard_button = Gui.element("edit_task_discard_button")
     }
     :style(Styles.footer_button)
     :on_click(
-        function(def, event, element)
-            local player = Gui.get_player(event)
+        function(def, player, element)
             local selected = PlayerSelected:get(player)
             Tasks.set_editing(selected, player.name, nil)
             PlayerIsEditing:set(player, false)
@@ -450,8 +443,7 @@ task_create_confirm_button = Gui.element("task_create_confirm_button")
     }
     :style(Styles.footer_button)
     :on_click(
-        function(def, event, element)
-            local player = Gui.get_player(event)
+        function(def, player, element)
             local message = element.parent.parent[task_message_textfield.name].text
             PlayerIsCreating:set(player, false)
             local parsed = parse_message(message)
@@ -471,8 +463,7 @@ local task_create_discard_button = Gui.element("task_create_discard_button")
     }
     :style(Styles.footer_button)
     :on_click(
-        function(def, event, element)
-            local player = Gui.get_player(event)
+        function(def, player, element)
             PlayerIsCreating:set(player, false)
         end
     )

@@ -204,8 +204,7 @@ function Toolbar.create_button(options)
 
     -- Setup auto toggle, required if there is a left element
     if auto_toggle or left_element then
-        toolbar_button:on_click(function(def, event)
-            local player = ExpGui.get_player(event)
+        toolbar_button:on_click(function(def, player)
             if left_element then
                 Toolbar.set_left_element_visible_state(left_element, player)
             else
@@ -233,8 +232,7 @@ elements.close_toolbar = ExpGui.element("close_toolbar")
         width = 18,
         height = 36,
     }
-    :on_click(function(def, event, element)
-        local player = ExpGui.get_player(event)
+    :on_click(function(def, player, element, event)
         if event.button == defines.mouse_button_type.left then
             Toolbar.set_left_element_visible_state(elements.toolbar_settings, player)
         else
@@ -256,8 +254,7 @@ elements.open_toolbar = ExpGui.element("open_toolbar")
         width = 18,
         height = 20,
     }
-    :on_click(function(def, event, element)
-        local player = ExpGui.get_player(event)
+    :on_click(function(def, player, element, event)
         if event.button == defines.mouse_button_type.left then
             Toolbar.set_left_element_visible_state(elements.toolbar_settings, player)
         else
@@ -279,9 +276,8 @@ elements.clear_left_flow = ExpGui.element("clear_left_flow")
         width = 18,
         height = 20,
     }
-    :on_click(function(def, event, element)
+    :on_click(function(def, player, element)
         element.visible = false
-        local player = ExpGui.get_player(event)
         for define in pairs(ExpGui.left_elements) do
             if define ~= elements.core_button_flow then
                 Toolbar.set_left_element_visible_state(define, player, false, true)
@@ -564,8 +560,7 @@ elements.toggle_toolbar = ExpGui.element("toggle_toolbar")
     :style(ExpGui.styles.sprite{
         size = 22,
     })
-    :on_click(function(def, event, element)
-        local player = ExpGui.get_player(event)
+    :on_click(function(def, player, element)
         Toolbar.set_visible_state(player, element.toggled)
     end)
 
@@ -581,8 +576,7 @@ elements.reset_toolbar = ExpGui.element("reset_toolbar")
         size = 22,
         padding = -1,
     })
-    :on_click(function(def, event, element)
-        local player = ExpGui.get_player(event)
+    :on_click(function(def, player, element)
         Toolbar.set_order(player, Toolbar.get_default_order())
     end)
 
@@ -596,8 +590,7 @@ elements.move_item_up = ExpGui.element("move_item_up")
     :style(ExpGui.styles.sprite{
         size = toolbar_button_small,
     })
-    :on_click(function(def, event, element)
-        local player = ExpGui.get_player(event)
+    :on_click(function(def, player, element)
         local item = assert(element.parent.parent)
         move_toolbar_button(player, item, -1)
     end)
@@ -612,8 +605,7 @@ elements.move_item_down = ExpGui.element("move_item_down")
     :style(ExpGui.styles.sprite{
         size = toolbar_button_small,
     })
-    :on_click(function(def, event, element)
-        local player = ExpGui.get_player(event)
+    :on_click(function(def, player, element)
         local item = assert(element.parent.parent)
         move_toolbar_button(player, item, 1)
     end)
@@ -637,8 +629,7 @@ elements.set_favourite = ExpGui.element("set_favourite")
     :style{
         width = 180,
     }
-    :on_checked_state_changed(function(def, event, element)
-        local player = ExpGui.get_player(event)
+    :on_checked_state_changed(function(def, player, element)
         local define = ExpElement.get(element.tags.element_name --[[ @as string ]])
         local top_element = ExpGui.get_top_element(define, player)
         local had_visible = Toolbar.has_visible_buttons(player)

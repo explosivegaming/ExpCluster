@@ -87,8 +87,7 @@ local add_new_warp = Gui.element("add_new_warp")
         name = Gui.property_from_name,
     }
     :style(Styles.sprite22)
-    :on_click(function(def, event, element)
-        local player = Gui.get_player(event)
+    :on_click(function(def, player, element)
         if player.controller_type ~= defines.controllers.character then return end
         -- Add the new warp
         local force_name = player.force.name
@@ -179,9 +178,8 @@ local warp_icon_button = Gui.element("warp_icon_button")
         }
     end)
     :style(Styles.sprite32)
-    :on_click(function(def, event, element)
+    :on_click(function(def, player, element)
         if element.type == "choose-elem-button" then return end
-        local player = Gui.get_player(event)
         local warp_id = element.parent.caption
         Warps.teleport_player(warp_id, player)
 
@@ -227,8 +225,7 @@ local warp_label = Gui.element("warp_label")
         right_padding = 2,
         horizontally_stretchable = true,
     }
-    :on_click(function(def, event, element)
-        local player = Gui.get_player(event)
+    :on_click(function(def, player, element)
         local warp_id = element.parent.caption
         local warp = Warps.get_warp(warp_id)
         player.set_controller{ type = defines.controllers.remote, position = warp.position, surface = warp.surface }
@@ -273,8 +270,7 @@ local warp_textfield = Gui.element("warp_textfield")
         left_margin = 2,
         right_margin = 2,
     }
-    :on_confirmed(function(def, event, element)
-        local player = Gui.get_player(event)
+    :on_confirmed(function(def, player, element)
         local warp_id = element.parent.caption
         local warp_name = element.text
         local warp_icon = element.parent.parent["icon-" .. warp_id][warp_icon_editing.name].elem_value --[[ @as SignalID ]]
@@ -294,8 +290,7 @@ local confirm_edit_button = Gui.element("confirm_edit_button")
         name = Gui.property_from_name,
     }
     :style(Styles.sprite22)
-    :on_click(function(def, event, element)
-        local player = Gui.get_player(event)
+    :on_click(function(def, player, element)
         local warp_id = element.parent.caption
         local warp_name = element.parent.parent["name-" .. warp_id][warp_textfield.name].text
         local warp_icon = element.parent.parent["icon-" .. warp_id][warp_icon_editing.name].elem_value --[[ @as SignalID ]]
@@ -315,8 +310,7 @@ local cancel_edit_button = Gui.element("cancel_edit_button")
         name = Gui.property_from_name,
     }
     :style(Styles.sprite22)
-    :on_click(function(def, event, element)
-        local player = Gui.get_player(event)
+    :on_click(function(def, player, element)
         local warp_id = element.parent.caption
         -- Check if this is the first edit, if so remove the warp.
         local warp = Warps.get_warp(warp_id)
@@ -338,7 +332,7 @@ local remove_warp_button = Gui.element("remove_warp_button")
         name = Gui.property_from_name,
     }
     :style(Styles.sprite22)
-    :on_click(function(def, event, element)
+    :on_click(function(def, player, element)
         local warp_id = element.parent.caption
         Warps.remove_warp(warp_id)
     end)
@@ -354,8 +348,7 @@ local edit_warp_button = Gui.element("edit_warp_button")
         name = Gui.property_from_name,
     }
     :style(Styles.sprite22)
-    :on_click(function(def, event, element)
-        local player = Gui.get_player(event)
+    :on_click(function(def, player, element)
         local warp_id = element.parent.caption
         Warps.set_editing(warp_id, player.name, true)
     end)
@@ -711,9 +704,8 @@ Gui.toolbar.create_button{
     visible = function(player, element)
         return Roles.player_allowed(player, "gui/warp-list")
     end
-}:on_click(function(def, event, element)
+}:on_click(function(def, player, element)
     -- Set gui keep open state for player that clicked the button: true if visible, false if invisible
-    local player = Gui.get_player(event)
     keep_gui_open[player.name] = Gui.toolbar.get_button_toggled_state(def, player)
 end)
 

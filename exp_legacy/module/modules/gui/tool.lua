@@ -47,8 +47,7 @@ local tool_gui_arty_b = Gui.element("tool_gui_arty_b")
         caption = { "tool.apply" }
     }:style(
         style.button
-    ):on_click(function(def, event, element)
-        local player = Gui.get_player(event)
+    ):on_click(function(def, player, element)
         if Selection.is_selecting(player, SelectionArtyArea) then
             Selection.stop(player)
 
@@ -80,8 +79,7 @@ local tool_gui_waterfill_b = Gui.element("tool_gui_waterfill_b")
         caption = { "tool.apply" }
     }:style(
         style.button
-    ):on_click(function(def, event, element)
-        local player = Gui.get_player(event)
+    ):on_click(function(def, player, element)
         if Selection.is_selecting(player, SelectionWaterfillArea) then
             Selection.stop(player)
             return player.print{ "exp-commands_waterfill.exit" }
@@ -115,8 +113,7 @@ local tool_gui_train_b = Gui.element("tool_gui_train_b")
         caption = { "tool.apply" }
     }:style(
         style.button
-    ):on_click(function(def, event, element)
-        local player = Gui.get_player(event)
+    ):on_click(function(def, player, element)
         addon_train.manual(player)
     end)
 
@@ -142,8 +139,7 @@ local tool_gui_research_b = Gui.element("tool_gui_research_b")
         caption = { "tool.apply" }
     }:style(
         style.button
-    ):on_click(function(def, event, element)
-        local player = Gui.get_player(event)
+    ):on_click(function(def, player, element)
         local enabled = addon_research.set_auto_research()
 
         if enabled then
@@ -176,8 +172,7 @@ local tool_gui_spawn_b = Gui.element("tool_gui_spawn_b")
         caption = { "tool.apply" }
     }:style(
         style.button
-    ):on_click(function(def, event, element)
-        local player = Gui.get_player(event)
+    ):on_click(function(def, player, element)
         if not player.character
         or player.character.health <= 0
         or not ExpUtil.teleport_player(player, game.surfaces.nauvis, { 0, 0 }, "dismount") then

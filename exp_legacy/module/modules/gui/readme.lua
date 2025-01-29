@@ -103,9 +103,8 @@ local join_server = Gui.element("readme_join_server")
         size = 20,
         padding = -1,
     }
-    :on_click(function(def, event)
-        local player = Gui.get_player(event)
-        local server_id = event.element.parent.name
+    :on_click(function(def, player, element)
+        local server_id = element.parent.name
         External.request_connection(player, server_id, true)
     end)
 
@@ -436,12 +435,10 @@ local readme = Gui.element("readme")
 
         return container
     end)
-    :on_opened(function(def, event)
-        local player = Gui.get_player(event)
+    :on_opened(function(def, player, element)
         Gui.toolbar.set_button_toggled_state(readme_toggle, player, true)
     end)
-    :on_closed(function(def, event, element)
-        local player = Gui.get_player(event)
+    :on_closed(function(def, player, element)
         Gui.toolbar.set_button_toggled_state(readme_toggle, player, false)
         Gui.destroy_if_valid(element)
     end)
@@ -457,8 +454,7 @@ readme_toggle =
             return Roles.player_allowed(player, "gui/readme")
         end
     }
-    :on_click(function(def, event)
-        local player = Gui.get_player(event)
+    :on_click(function(def, player, element)
         local center = player.gui.center
         if center[readme.name] then
             player.opened = nil

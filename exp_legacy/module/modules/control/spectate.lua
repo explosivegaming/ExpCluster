@@ -123,11 +123,13 @@ follow_label = Gui.element("follow-label")
 
         return label
     end)
-    :on_click(Public.stop_follow)
-    :on_closed(function(def, event)
+    :on_click(function(def, player, element)
+        Public.stop_follow(player)
+    end)
+    :on_closed(function(def, player, element)
         -- Don't call set_controller during on_close as it invalidates the controller
         -- Setting an invalid position (as to not equal their current) will call stop_follow on the next tick
-        following[event.player_index][3] = {}
+        following[player.index][3] = {}
     end)
 
 ----- Events -----

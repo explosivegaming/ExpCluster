@@ -334,8 +334,8 @@ vlayer_gui_control_type = Gui.element("vlayer_gui_control_type")
         selected_index = 1,
     }:style{
         width = 200,
-    }:on_selection_state_changed(function(def, event, element)
-        vlayer_gui_list_refresh(Gui.get_player(event))
+    }:on_selection_state_changed(function(def, player, element)
+        vlayer_gui_list_refresh(player)
     end)
 
 --- A drop down list to see the exact item to remove
@@ -357,8 +357,8 @@ local vlayer_gui_control_refresh = Gui.element("vlayer_gui_control_refresh")
         caption = { "vlayer.control-refresh" },
     }:style{
         width = 200,
-    }:on_click(function(def, event, element)
-        vlayer_gui_list_refresh(Gui.get_player(event))
+    }:on_click(function(def, player, element)
+        vlayer_gui_list_refresh(player)
     end)
 
 --- A button to check if the item is the one wanted to remove
@@ -370,7 +370,7 @@ local vlayer_gui_control_see = Gui.element("vlayer_gui_control_see")
         caption = { "vlayer.control-see" },
     }:style{
         width = 200,
-    }:on_click(function(def, event, element)
+    }:on_click(function(def, player, element, event)
         local target = element.parent[vlayer_gui_control_type.name].selected_index
         local n = element.parent[vlayer_gui_control_list.name].selected_index
         
@@ -394,8 +394,7 @@ local vlayer_gui_control_build = Gui.element("vlayer_gui_control_build")
         caption = { "vlayer.control-build" },
     }:style{
         width = 200,
-    }:on_click(function(def, event, element)
-        local player = Gui.get_player(event)
+    }:on_click(function(def, player, element)
         if Selection.is_selecting(player, SelectionConvertArea) then
             Selection.stop(player)
             player.print{ "vlayer.exit" }
@@ -416,8 +415,7 @@ local vlayer_gui_control_remove = Gui.element("vlayer_gui_control_remove")
         caption = { "vlayer.control-remove" },
     }:style{
         width = 200,
-    }:on_click(function(def, event, element)
-        local player = Gui.get_player(event)
+    }:on_click(function(def, player, element)
         local target = element.parent[vlayer_gui_control_type.name].selected_index
         local n = element.parent[vlayer_gui_control_list.name].selected_index
 

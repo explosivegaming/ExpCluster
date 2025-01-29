@@ -174,8 +174,7 @@ Gui.toolbar.create_button{
     visible = function(player, element)
         return Roles.player_allowed(player, "gui/landfill")
     end
-}:on_click(function(def, event, element)
-    local player = Gui.get_player(event)
+}:on_click(function(def, player, element)
     if player.cursor_stack and player.cursor_stack.valid_for_read then
         if player.cursor_stack.type == "blueprint" and player.cursor_stack.is_blueprint_setup() then
             local modified = landfill_gui_add_landfill(player.cursor_stack)

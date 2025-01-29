@@ -252,7 +252,7 @@ local button_apply = Gui.element("button_apply")
         type = "button",
         caption = { "module.apply" },
         style = "button",
-    }:on_click(function(player)
+    }:on_click(function(def, player, element)
         if Selection.is_selecting(player, SelectionModuleArea) then
             Selection.stop(player)
         else
@@ -268,7 +268,7 @@ module_container = Gui.element("module_container")
         })
 
         local slots_per_row = config.module_slots_per_row + 1
-        local scroll_table = Gui.elements.scroll_table(container, (config.module_slots_per_row + 2) * 36, slots_per_row)
+        local scroll_table = Gui.elements.scroll_table(container, (config.module_slots_per_row + 2) * 36, slots_per_row, "scroll")
 
         for i = 1, config.default_module_row_count do
             scroll_table.add{

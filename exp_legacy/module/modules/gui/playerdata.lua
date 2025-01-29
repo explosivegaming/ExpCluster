@@ -140,7 +140,7 @@ local pd_username_player = Gui.element("pd_username_player")
     end)
     :style{
         horizontally_stretchable = true,
-    }:on_selection_state_changed(function(def, event, element)
+    }:on_selection_state_changed(function(def, player, element)
         local player_name = game.connected_players[element.selected_index]
         local table = element.parent.parent.parent.parent["pd_st_2"].disp.table
         pd_update(table, player_name)
@@ -153,7 +153,7 @@ local pd_username_update = Gui.element("pd_username_update")
         caption = "update",
     }:style{
         width = 128,
-    }:on_click(function(def, event, element)
+    }:on_click(function(def, player, element)
         local player_index = element.parent[pd_username_player.name].selected_index
 
         if player_index > 0 then

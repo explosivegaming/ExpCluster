@@ -14,7 +14,8 @@ ExpElement.events = {}
 --- @alias ExpElement.DrawCallback fun(def: ExpElement, parent: LuaGuiElement, ...): LuaGuiElement?, function?
 --- @alias ExpElement.PostDrawCallback fun(def: ExpElement, element: LuaGuiElement?, parent: LuaGuiElement, ...): table?
 --- @alias ExpElement.PostDrawCallbackAdder fun(self: ExpElement, definition: table | ExpElement.PostDrawCallback): ExpElement
---- @alias ExpElement.OnEventAdder<E> fun(self: ExpElement, handler: fun(def: ExpElement, event: E, element: LuaGuiElement)): ExpElement
+--- @alias ExpElement.EventHandler<E> fun(def: ExpElement, player: LuaPlayer, element: LuaGuiElement, event: E)
+--- @alias ExpElement.OnEventAdder<E> fun(self: ExpElement, handler: fun(def: ExpElement, player: LuaPlayer, element: LuaGuiElement, event: E)): ExpElement
 
 --- @class ExpElement._debug
 --- @field defined_at string
@@ -41,7 +42,7 @@ ExpElement.events = {}
 --- @field _player_data ExpElement.PostDrawCallback?
 --- @field _force_data ExpElement.PostDrawCallback?
 --- @field _global_data ExpElement.PostDrawCallback?
---- @field _events table<defines.events, function[]>
+--- @field _events table<defines.events, ExpElement.EventHandler<EventData>[]>
 --- @overload fun(parent: LuaGuiElement, ...: any): LuaGuiElement
 ExpElement._prototype = {
     _track_elements = false,
@@ -393,18 +394,22 @@ local function event_handler(event)
 end
 
 --- Raise all handlers for an event on this definition
---- @param event EventData | { element: LuaGuiElement }
+--- @param event EventData | { element: LuaGuiElement, player_index: number? }
 function ExpElement._prototype:raise_event(event)
     local handlers = self._events[event.name]
     if not handlers then return end
+    local player = event.player_index and game.get_player(event.player_index)
+    if event.element then player = game.get_player(event.element.player_index) end
     for _, handler in ipairs(handlers) do
-        handler(self, event, event.element)
+        -- All gui elements will contain player and element, other events might have these as nil
+        -- Therefore only the signature of on_event has these values as optional
+        handler(self, player --[[ @as LuaPlayer ]], event.element, event --[[ @as EventData ]])
     end
 end
 
 --- Add an event handler
 --- @param event defines.events
---- @param handler fun(def: ExpElement, event: EventData, element: LuaGuiElement)
+--- @param handler fun(def: ExpElement, player: LuaPlayer?, element: LuaGuiElement?, event: EventData)
 --- @return ExpElement
 function ExpElement._prototype:on_event(event, handler)
     ExpElement.events[event] = event_handler
