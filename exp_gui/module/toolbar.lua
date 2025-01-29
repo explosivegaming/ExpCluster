@@ -16,6 +16,7 @@ ExpGui.toolbar = Toolbar
 local elements = {}
 Toolbar.elements = elements
 
+local toolbar_buttons = {} --- @type ExpElement[]
 local left_elements_with_button = {} --- @type table<ExpElement, ExpElement>
 local buttons_with_left_element = {} --- @type table<string, ExpElement>
 
@@ -214,36 +215,9 @@ function Toolbar.create_button(options)
     end
 
     -- Add the define to the top flow and return
+    toolbar_buttons[#toolbar_buttons + 1] = toolbar_button
     ExpGui.add_top_element(toolbar_button, visible)
     return toolbar_button
-end
-
---- Ensure all the toolbar buttons are in a consistent state
---- @param player LuaPlayer
-function Toolbar._ensure_consistency(player)
-    -- Update clear_left_flow
-    local has_visible = Toolbar.has_visible_left_elements(player)
-    for _, clear_left_flow in elements.clear_left_flow:tracked_elements(player) do
-        clear_left_flow.visible = has_visible
-    end
-
-    -- Update open_toolbar
-    local top_flow = assert(ExpGui.get_top_flow(player).parent)
-    for _, open_toolbar in elements.open_toolbar:tracked_elements(player) do
-        open_toolbar.visible = not top_flow.visible
-    end
-
-    -- Update toggle_toolbar
-    local has_buttons = Toolbar.has_visible_buttons(player)
-    for _, toggle_toolbar in elements.toggle_toolbar:tracked_elements(player) do
-        toggle_toolbar.enabled = has_buttons
-    end
-
-    -- Update the state of buttons with left elements
-    for left_element, button in pairs(left_elements_with_button) do
-        local element = ExpGui.get_left_element(left_element, player)
-        Toolbar.set_button_toggled_state(button, player, element.visible)
-    end
 end
 
 --- Toggles the toolbar settings, RMB will instead hide the toolbar
@@ -388,13 +362,6 @@ local function move_toolbar_button(player, item, offset)
         item_data.move_item_down.enabled = false
         other_item_data.move_item_down.enabled = true
     end
-
-    --[[ Update the datastore state
-    ToolbarState:update(player, function(_, order)
-        local tmp = order[old_index]
-        order[old_index] = order[new_index]
-        order[new_index] = tmp
-    end)]]
 end
 
 --- @alias ExpGui.ToolbarOrder { name: string, favourite: boolean }[]
@@ -404,35 +371,35 @@ end
 --- @param order ExpGui.ToolbarOrder
 function Toolbar.set_order(player, order)
     local list = elements.toolbar_settings.data[player] --[[ @as LuaGuiElement ]]
+    local left_flow = ExpGui.get_left_flow(player)
     local top_flow = ExpGui.get_top_flow(player)
 
     -- Reorder the buttons
+    local left_index = 1
     local last_index = #order
     for index, item_state in ipairs(order) do
         -- Switch item order
         local item = assert(list[item_state.name], "Missing toolbox item for " .. tostring(item_state.name))
         list.swap_children(index, item.get_index_in_parent())
 
-        -- Update the item visibility
+        -- Switch the toolbar button order
         local element_define = ExpElement.get(item_state.name)
-        local allowed = ExpGui.top_elements[element_define]
         local toolbar_button = ExpGui.get_top_element(element_define, player)
-        if type(allowed) == "function" then allowed = allowed(player, toolbar_button) end
         top_flow.swap_children(index + 1, toolbar_button.get_index_in_parent())
-        toolbar_button.visible = allowed and item_state.favourite or false
-        item.visible = toolbar_button.visible
 
         -- Update the children buttons
         local data = elements.toolbar_list_item.data[item]
         data.set_favourite.state = item_state.favourite
         data.move_item_up.enabled = index ~= 1
         data.move_item_down.enabled = index ~= last_index
-    end
 
-    -- Update the state of the toggle button
-    local has_buttons = Toolbar.has_visible_buttons(player)
-    for _, toggle_toolbar in elements.toggle_toolbar:tracked_elements(player) do
-        toggle_toolbar.enabled = has_buttons
+        -- Switch the left element order
+        local left_define = buttons_with_left_element[item_state.name]
+        if left_define then
+            local left_element = ExpGui.get_left_element(left_define, player)
+            left_flow.swap_children(left_index, left_element.get_index_in_parent())
+            left_index = left_index + 1
+        end
     end
 end
 
@@ -470,11 +437,35 @@ function Toolbar.set_state(player, state)
     end
 end
 
+--- Get the full toolbar state for a player
+--- @param player LuaPlayer
+--- @return ExpGui.ToolbarState
+function Toolbar.get_state(player)
+    -- Get the order of toolbar buttons
+    local order = {}
+    local list = elements.toolbar_settings.data[player] --[[ @as LuaGuiElement ]]
+    for index, item in pairs(list.children) do
+        order[index] = { name = item.name, favourite = elements.toolbar_list_item.data[item].set_favourite.state }
+    end
+
+    -- Get the names of all open left elements
+    local open, open_index = {}, 1
+    for left_element in pairs(ExpGui.left_elements) do
+        if Toolbar.get_left_element_visible_state(left_element, player) then
+            open[open_index] = left_element.name
+            open_index = open_index + 1
+        end
+    end
+
+    return { order = order, open = open, visible = Toolbar.get_visible_state(player) }
+end
+
 --- Ensure the toolbar settings gui has all its elements
 --- @param player LuaPlayer
-function Toolbar._ensure_elements(player)
+function Toolbar._create_elements(player)
     -- Add any missing items to the gui
     local toolbar_list = elements.toolbar_settings.data[player] --[[ @as LuaGuiElement ]]
+    local previous_last_index = #toolbar_list.children_names
     for define in pairs(ExpGui.top_elements) do
         if define ~= elements.close_toolbar and toolbar_list[define.name] == nil then
             local element = elements.toolbar_list_item(toolbar_list, define)
@@ -482,11 +473,61 @@ function Toolbar._ensure_elements(player)
         end
     end
 
-    -- Set the state of the move buttons for the first and last element
+    -- Reset the state of the previous last child
     local children = toolbar_list.children
+    if previous_last_index > 0 then
+        elements.toolbar_list_item.data[children[previous_last_index]].move_item_down.enabled = true
+    end
+
+    -- Set the state of the move buttons for the first and last element
     if #children > 0 then
         elements.toolbar_list_item.data[children[1]].move_item_up.enabled = false
         elements.toolbar_list_item.data[children[#children]].move_item_down.enabled = false
+    end
+end
+
+--- Ensure all the toolbar buttons are in a consistent state
+--- @param player LuaPlayer
+function Toolbar._ensure_consistency(player)
+    -- Update the toolbar buttons
+    local list = elements.toolbar_settings.data[player] --[[ @as LuaGuiElement ]]
+    for _, button in ipairs(toolbar_buttons) do
+        -- Update the visible state based on if the player is allowed the button
+        local element = ExpGui.get_top_element(button, player)
+        local allowed = ExpGui.top_elements[button]
+        if type(allowed) == "function" then
+            allowed = allowed(player, element)
+        end
+        element.visible = allowed and element.visible or false
+        list[button.name].visible = element.visible
+
+        -- Update the toggle state and hide the linked left element if the button is not allowed
+        local left_define = buttons_with_left_element[button.name]
+        if left_define then
+            local left_element = ExpGui.get_left_element(left_define, player)
+            Toolbar.set_button_toggled_state(button, player, left_element.visible)
+            if not allowed then
+                Toolbar.set_left_element_visible_state(left_define, player, false)
+            end
+        end
+    end
+
+    -- Update clear_left_flow
+    local has_visible = Toolbar.has_visible_left_elements(player)
+    for _, clear_left_flow in elements.clear_left_flow:tracked_elements(player) do
+        clear_left_flow.visible = has_visible
+    end
+
+    -- Update open_toolbar
+    local top_flow = assert(ExpGui.get_top_flow(player).parent)
+    for _, open_toolbar in elements.open_toolbar:tracked_elements(player) do
+        open_toolbar.visible = not top_flow.visible
+    end
+
+    -- Update toggle_toolbar
+    local has_buttons = Toolbar.has_visible_buttons(player)
+    for _, toggle_toolbar in elements.toggle_toolbar:tracked_elements(player) do
+        toggle_toolbar.enabled = has_buttons
     end
 end
 
@@ -542,7 +583,6 @@ elements.reset_toolbar = ExpGui.element("reset_toolbar")
     })
     :on_click(function(def, event, element)
         local player = ExpGui.get_player(event)
-        --ToolbarState:set(player, nil)
         Toolbar.set_order(player, Toolbar.get_default_order())
     end)
 
@@ -616,12 +656,6 @@ elements.set_favourite = ExpGui.element("set_favourite")
                 toggle_toolbar.enabled = false
             end
         end
-
-        --[[ Update the datastore state
-        ToolbarState:update(player, function(_, order)
-            local index = element.parent.get_index_in_parent()
-            order[index].favourite = element.state
-        end)]]
     end)
 
 elements.toolbar_list_item = ExpGui.element("toolbar_list_item")
@@ -703,7 +737,7 @@ elements.toolbar_settings = ExpGui.element("toolbar_settings")
         elements.reset_toolbar(header)
 
         def.data[player] = elements.toolbar_list(frame)
-        Toolbar._ensure_elements(player)
+        Toolbar._create_elements(player)
         return frame.parent
     end)
 

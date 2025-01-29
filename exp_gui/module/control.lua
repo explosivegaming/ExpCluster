@@ -130,18 +130,17 @@ end
 local function ensure_elements(player, element_defines, elements, parent)
     local done = {}
     for define, visible in pairs(element_defines) do
+        done[define.name] = true
         local element = elements[define.name]
         if not element or not element.valid then
-            element = define(parent)
+            element = assert(define(parent), "Element define did not return an element: " .. define.name)
             elements[define.name] = element
-            assert(element, "Element define did not return an element: " .. define.name)
+            
+            if type(visible) == "function" then
+                visible = visible(player, element)
+            end
+            element.visible = visible
         end
-
-        if type(visible) == "function" then
-            visible = visible(player, element)
-        end
-        element.visible = visible
-        done[define.name] = true
     end
 
     for name, element in pairs(elements) do
@@ -154,7 +153,7 @@ end
 
 --- Ensure all elements have been created
 --- @param event EventData.on_player_created | EventData.on_player_joined_game
-function ExpGui._ensure_elements(event)
+function ExpGui._ensure_consistency(event)
     local player = assert(game.get_player(event.player_index))
     local elements = player_elements[event.player_index]
     if not elements then
@@ -171,7 +170,7 @@ function ExpGui._ensure_elements(event)
     ensure_elements(player, ExpGui.relative_elements, elements.relative, player.gui.relative)
 
     --- @diagnostic disable-next-line invisible
-    ExpGui.toolbar._ensure_elements(player)
+    ExpGui.toolbar._create_elements(player)
     --- @diagnostic disable-next-line invisible
     ExpGui.toolbar._ensure_consistency(player)
 end
@@ -202,8 +201,8 @@ end
 
 local e = defines.events
 local events = {
-    [e.on_player_created] = ExpGui._ensure_elements,
-    [e.on_player_joined_game] = ExpGui._ensure_elements,
+    [e.on_player_created] = ExpGui._ensure_consistency,
+    [e.on_player_joined_game] = ExpGui._ensure_consistency,
     [e.on_gui_opened] = on_gui_opened,
 }
 
