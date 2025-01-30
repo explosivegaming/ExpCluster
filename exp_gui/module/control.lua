@@ -169,10 +169,13 @@ function ExpGui._ensure_consistency(event)
     ensure_elements(player, ExpGui.left_elements, elements.left, ExpGui.get_left_flow(player))
     ensure_elements(player, ExpGui.relative_elements, elements.relative, player.gui.relative)
 
-    --- @diagnostic disable-next-line invisible
-    ExpGui.toolbar._create_elements(player)
-    --- @diagnostic disable-next-line invisible
-    ExpGui.toolbar._ensure_consistency(player)
+    -- This check isn't needed, but allows the toolbar file to be deleted without modifying any lib code
+    if ExpGui.toolbar then
+        --- @diagnostic disable-next-line invisible
+        ExpGui.toolbar._create_elements(player)
+        --- @diagnostic disable-next-line invisible
+        ExpGui.toolbar._ensure_consistency(player)
+    end
 end
 
 --- Rerun the visible check for relative elements
