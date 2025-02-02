@@ -4,7 +4,7 @@
     @alias landfill_container
 ]]
 
-local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local Gui = require("modules/exp_gui")
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 
@@ -93,8 +93,10 @@ for i, map in ipairs(curves) do
     end
 end
 
+--- @param blueprint LuaItemStack
+--- @return table
 local function landfill_gui_add_landfill(blueprint)
-    local entities = blueprint.get_blueprint_entities()
+    local entities = assert(blueprint.get_blueprint_entities())
     local tile_index = 0
     local new_tiles = {}
 
@@ -164,22 +166,26 @@ local function landfill_gui_add_landfill(blueprint)
     return { tiles = new_tiles }
 end
 
--- @element toolbar_button
-Gui.toolbar_button("item/landfill", { "landfill.main-tooltip" }, function(player)
-    return Roles.player_allowed(player, "gui/landfill")
-end)
-    :on_click(function(player, _, _)
-        if player.cursor_stack and player.cursor_stack.valid_for_read then
-            if player.cursor_stack.type == "blueprint" and player.cursor_stack.is_blueprint_setup() then
-                local modified = landfill_gui_add_landfill(player.cursor_stack)
+--- Add the toolbar button
+Gui.toolbar.create_button{
+    name = "landfill",
+    sprite = "item/landfill",
+    tooltip = { "landfill.main-tooltip" },
+    visible = function(player, element)
+        return Roles.player_allowed(player, "gui/landfill")
+    end
+}:on_click(function(def, player, element)
+    if player.cursor_stack and player.cursor_stack.valid_for_read then
+        if player.cursor_stack.type == "blueprint" and player.cursor_stack.is_blueprint_setup() then
+            local modified = landfill_gui_add_landfill(player.cursor_stack)
 
-                if modified and next(modified.tiles) then
-                    player.cursor_stack.set_blueprint_tiles(modified.tiles)
-                end
+            if modified and next(modified.tiles) then
+                player.cursor_stack.set_blueprint_tiles(modified.tiles)
             end
-        else
-            player.print{ "landfill.cursor-none" }
         end
-    end)
+    else
+        player.print{ "landfill.cursor-none" }
+    end
+end)
 
 Event.add(defines.events.on_player_joined_game, landfill_init)

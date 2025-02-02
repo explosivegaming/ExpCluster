@@ -3,17 +3,20 @@
     @alias bonus_container
 ]]
 
-local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
-local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
+local Gui = require("modules/exp_gui")
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
+local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local config = require("modules.exp_legacy.config.bonus") --- @dep config.bonus
 local vlayer = require("modules.exp_legacy.modules.control.vlayer")
 local format_number = require("util").format_number --- @dep util
 local bonus_container
 
-local function bonus_gui_pts_needed(player)
-    local frame = Gui.get_left_element(player, bonus_container)
-    local disp = frame.container["bonus_st_2"].disp.table
+--- @param player LuaPlayer
+--- @param container LuaGuiElement?
+--- @return number
+local function bonus_gui_pts_needed(player, container)
+    container = container or Gui.get_left_element(bonus_container, player)
+    local disp = container.frame["bonus_st_2"].disp.table
     local total = 0
 
     for k, v in pairs(config.conversion) do
@@ -29,6 +32,7 @@ local function bonus_gui_pts_needed(player)
     return total
 end
 
+--- @param player LuaPlayer
 local function apply_bonus(player)
     if not Roles.player_allowed(player, "gui/bonus") then
         for k, v in pairs(config.player_bonus) do
@@ -48,8 +52,8 @@ local function apply_bonus(player)
         return
     end
 
-    local frame = Gui.get_left_element(player, bonus_container)
-    local disp = frame.container["bonus_st_2"].disp.table
+    local container = Gui.get_left_element(bonus_container, player)
+    local disp = container.frame["bonus_st_2"].disp.table
 
     for k, v in pairs(config.conversion) do
         player[v] = disp["bonus_display_" .. k .. "_slider"].slider_value
@@ -71,8 +75,8 @@ local function apply_periodic_bonus(player)
         return
     end
 
-    local frame = Gui.get_left_element(player, bonus_container)
-    local disp = frame.container["bonus_st_2"].disp.table
+    local container = Gui.get_left_element(bonus_container, player)
+    local disp = container.frame["bonus_st_2"].disp.table
 
     if vlayer.get_statistics()["energy_sustained"] > 0 then
         local armor = player.get_inventory(defines.inventory.character_armor)
@@ -99,20 +103,20 @@ end
 
 --- Control label for the bonus points available
 -- @element bonus_gui_control_pts_a
-local bonus_gui_control_pts_a =
-    Gui.element{
+local bonus_gui_control_pts_a = Gui.element("bonus_gui_control_pts_a")
+    :draw{
         type = "label",
-        name = "bonus_control_pts_a",
+        name = Gui.property_from_name,
         caption = { "bonus.control-pts-a" },
         style = "heading_2_label",
     }:style{
         width = config.gui_display_width["half"],
     }
 
-local bonus_gui_control_pts_a_count =
-    Gui.element{
+local bonus_gui_control_pts_a_count = Gui.element("bonus_gui_control_pts_a_count")
+    :draw{
         type = "label",
-        name = "bonus_control_pts_a_count",
+        name = Gui.property_from_name,
         caption = config.pts.base,
         style = "heading_2_label",
     }:style{
@@ -121,20 +125,20 @@ local bonus_gui_control_pts_a_count =
 
 --- Control label for the bonus points needed
 -- @element bonus_gui_control_pts_n
-local bonus_gui_control_pts_n =
-    Gui.element{
+local bonus_gui_control_pts_n = Gui.element("bonus_gui_control_pts_n")
+    :draw{
         type = "label",
-        name = "bonus_control_pts_n",
+        name = Gui.property_from_name,
         caption = { "bonus.control-pts-n" },
         style = "heading_2_label",
     }:style{
         width = config.gui_display_width["half"],
     }
 
-local bonus_gui_control_pts_n_count =
-    Gui.element{
+local bonus_gui_control_pts_n_count = Gui.element("bonus_gui_control_pts_n_count")
+    :draw{
         type = "label",
-        name = "bonus_control_pts_n_count",
+        name = Gui.property_from_name,
         caption = "0",
         style = "heading_2_label",
     }:style{
@@ -143,20 +147,20 @@ local bonus_gui_control_pts_n_count =
 
 --- Control label for the bonus points remaining
 -- @element bonus_gui_control_pts_r
-local bonus_gui_control_pts_r =
-    Gui.element{
+local bonus_gui_control_pts_r = Gui.element("bonus_gui_control_pts_r")
+    :draw{
         type = "label",
-        name = "bonus_control_pts_r",
+        name = Gui.property_from_name,
         caption = { "bonus.control-pts-r" },
         style = "heading_2_label",
     }:style{
         width = config.gui_display_width["half"],
     }
 
-local bonus_gui_control_pts_r_count =
-    Gui.element{
+local bonus_gui_control_pts_r_count = Gui.element("bonus_gui_control_pts_r_count")
+    :draw{
         type = "label",
-        name = "bonus_control_pts_r_count",
+        name = Gui.property_from_name,
         caption = "0",
         style = "heading_2_label",
     }:style{
@@ -165,16 +169,16 @@ local bonus_gui_control_pts_r_count =
 
 --- A button used for pts calculations
 -- @element bonus_gui_control_refresh
-local bonus_gui_control_reset =
-    Gui.element{
+local bonus_gui_control_reset = Gui.element("bonus_gui_control_reset")
+    :draw{
         type = "button",
-        name = Gui.unique_static_name,
+        name = Gui.property_from_name,
         caption = { "bonus.control-reset" },
     }:style{
         width = config.gui_display_width["half"],
-    }:on_click(function(player, element, _)
-        local frame = Gui.get_left_element(player, bonus_container)
-        local disp = frame.container["bonus_st_2"].disp.table
+    }:on_click(function(def, player, element)
+        local container = Gui.get_left_element(bonus_container, player)
+        local disp = container.frame["bonus_st_2"].disp.table
 
         for k, v in pairs(config.conversion) do
             local s = "bonus_display_" .. k .. "_slider"
@@ -198,14 +202,14 @@ local bonus_gui_control_reset =
 
 --- A button used for pts apply
 -- @element bonus_gui_control_apply
-local bonus_gui_control_apply =
-    Gui.element{
+local bonus_gui_control_apply = Gui.element("bonus_gui_control_apply")
+    :draw{
         type = "button",
-        name = Gui.unique_static_name,
+        name = Gui.property_from_name,
         caption = { "bonus.control-apply" },
     }:style{
         width = config.gui_display_width["half"],
-    }:on_click(function(player, element, _)
+    }:on_click(function(def, player, element)
         local n = bonus_gui_pts_needed(player)
         element.parent[bonus_gui_control_pts_n_count.name].caption = n
         local r = tonumber(element.parent[bonus_gui_control_pts_a_count.name].caption) - n
@@ -218,10 +222,10 @@ local bonus_gui_control_apply =
 
 --- A vertical flow containing all the bonus control
 -- @element bonus_control_set
-local bonus_control_set =
-    Gui.element(function(_, parent, name)
+local bonus_control_set = Gui.element("bonus_control_set")
+    :draw(function(_, parent, name)
         local bonus_set = parent.add{ type = "flow", direction = "vertical", name = name }
-        local disp = Gui.scroll_table(bonus_set, config.gui_display_width["half"] * 2, 2, "disp")
+        local disp = Gui.elements.scroll_table(bonus_set, config.gui_display_width["half"] * 2, 2, "disp")
 
         bonus_gui_control_pts_a(disp)
         bonus_gui_control_pts_a_count(disp)
@@ -240,8 +244,8 @@ local bonus_control_set =
 
 --- Display group
 -- @element bonus_gui_slider
-local bonus_gui_slider =
-    Gui.element(function(_definition, parent, name, caption, tooltip, bonus)
+local bonus_gui_slider = Gui.element("bonus_gui_slider")
+    :draw(function(def, parent, name, caption, tooltip, bonus)
         local label = parent.add{
             type = "label",
             caption = caption,
@@ -284,7 +288,7 @@ local bonus_gui_slider =
 
         return slider
     end)
-    :on_value_changed(function(player, element, _event)
+    :on_value_changed(function(def, player, element)
         if element.tags.is_percentage then
             element.parent[element.tags.counter].caption = format_number(element.slider_value * 100, false) .. " %"
         else
@@ -292,18 +296,18 @@ local bonus_gui_slider =
         end
 
         local r = bonus_gui_pts_needed(player)
-        local frame = Gui.get_left_element(player, bonus_container)
-        local disp = frame.container["bonus_st_1"].disp.table
+        local container = Gui.get_left_element(bonus_container, player)
+        local disp = container.frame["bonus_st_1"].disp.table
         disp[bonus_gui_control_pts_n_count.name].caption = r
         disp[bonus_gui_control_pts_r_count.name].caption = tonumber(disp[bonus_gui_control_pts_a_count.name].caption) - r
     end)
 
 --- A vertical flow containing all the bonus data
 -- @element bonus_data_set
-local bonus_data_set =
-    Gui.element(function(_, parent, name)
+local bonus_data_set = Gui.element("bonus_data_set")
+    :draw(function(_, parent, name)
         local bonus_set = parent.add{ type = "flow", direction = "vertical", name = name }
-        local disp = Gui.scroll_table(bonus_set, config.gui_display_width["half"] * 2, 3, "disp")
+        local disp = Gui.elements.scroll_table(bonus_set, config.gui_display_width["half"] * 2, 3, "disp")
 
         for k, v in pairs(config.conversion) do
             bonus_gui_slider(disp, "bonus_display_" .. k, { "bonus.display-" .. k }, { "bonus.display-" .. k .. "-tooltip" }, config.player_bonus[v])
@@ -317,32 +321,34 @@ local bonus_data_set =
 
 --- The main container for the bonus gui
 -- @element bonus_container
-bonus_container =
-    Gui.element(function(definition, parent)
-        local player = Gui.get_player_from_element(parent)
-        local container = Gui.container(parent, definition.name, config.gui_display_width["half"] * 2)
+bonus_container = Gui.element("bonus_container")
+    :draw(function(def, parent)
+        local player = Gui.get_player(parent)
+        local container = Gui.elements.container(parent, config.gui_display_width["half"] * 2)
 
         bonus_control_set(container, "bonus_st_1")
         bonus_data_set(container, "bonus_st_2")
 
-        local frame = Gui.get_left_element(player, bonus_container)
-        local disp = frame.container["bonus_st_1"].disp.table
-        local n = bonus_gui_pts_needed(player)
+        local disp = container["bonus_st_1"].disp.table
+        local n = bonus_gui_pts_needed(player, container.parent)
         disp[bonus_gui_control_pts_n_count.name].caption = n
         local r = tonumber(disp[bonus_gui_control_pts_a_count.name].caption) - n
         disp[bonus_gui_control_pts_r_count.name].caption = r
 
-        apply_bonus(player)
         return container.parent
     end)
-    :static_name(Gui.unique_static_name)
-    :add_to_left_flow()
 
---- Button on the top flow used to toggle the bonus container
--- @element toggle_left_element
-Gui.left_toolbar_button("item/exoskeleton-equipment", { "bonus.main-tooltip" }, bonus_container, function(player)
-    return Roles.player_allowed(player, "gui/bonus")
-end)
+--- Add the element to the left flow with a toolbar button
+Gui.add_left_element(bonus_container, false)
+Gui.toolbar.create_button{
+    name = "bonus_toggle",
+    left_element = bonus_container,
+    sprite = "item/exoskeleton-equipment",
+    tooltip = { "bonus.main-tooltip" },
+    visible = function(player, element)
+        return Roles.player_allowed(player, "gui/bonus")
+    end
+}
 
 Event.add(defines.events.on_player_created, function(event)
     if event.player_index ~= 1 then
@@ -369,8 +375,8 @@ end)
 --- When a player respawns re-apply bonus
 Event.add(defines.events.on_player_respawned, function(event)
     local player = game.players[event.player_index]
-    local frame = Gui.get_left_element(player, bonus_container)
-    local disp = frame.container["bonus_st_1"].disp.table
+    local container = Gui.get_left_element(bonus_container, player)
+    local disp = container.frame["bonus_st_1"].disp.table
     local n = bonus_gui_pts_needed(player)
     disp[bonus_gui_control_pts_n_count.name].caption = n
     local r = tonumber(disp[bonus_gui_control_pts_a_count.name].caption) - n

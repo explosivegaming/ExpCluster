@@ -1,6 +1,7 @@
-local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Storage = require("modules/exp_util/storage")
-local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local Gui = require("modules/exp_gui")
+
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 
 ----- Locals -----
 local follow_label -- Gui constructor
@@ -88,7 +89,7 @@ function Public.stop_follow(player)
         Public.stop_spectate(player)
     end
 
-    Gui.destroy_if_valid(player.gui.screen[follow_label.name])
+    Gui.destroy_if_valid(player.gui.screen.follow_label)
     following[player.index] = nil
 end
 
@@ -102,19 +103,18 @@ end
 ----- Gui -----
 
 --- Label used to show that the player is following, also used to allow esc to stop following
--- @element follow_label
-follow_label =
-    Gui.element(function(definition, parent, target)
-        Gui.destroy_if_valid(parent[definition.name])
+follow_label = Gui.element("follow-label")
+    :draw(function(def, parent, target)
+        Gui.destroy_if_valid(parent.follow_label)
 
         local label = parent.add{
             type = "label",
+            name = "follow_label",
             style = "frame_title",
             caption = "Following " .. target.name .. ".\nClick here or press esc to stop following.",
-            name = definition.name,
         }
 
-        local player = Gui.get_player_from_element(parent)
+        local player = Gui.get_player(parent)
         local res = player.display_resolution
         label.location = { 0, res.height - 150 }
         label.style.width = res.width
@@ -123,9 +123,10 @@ follow_label =
 
         return label
     end)
-    :static_name(Gui.unique_static_name)
-    :on_click(Public.stop_follow)
-    :on_close(function(player)
+    :on_click(function(def, player, element)
+        Public.stop_follow(player)
+    end)
+    :on_closed(function(def, player, element)
         -- Don't call set_controller during on_close as it invalidates the controller
         -- Setting an invalid position (as to not equal their current) will call stop_follow on the next tick
         following[player.index][3] = {}

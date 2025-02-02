@@ -1,0 +1,35 @@
+{
+	"name": "@expcluster/lib_gui",
+	"version": "0.1.0",
+	"description": "Clusterio plugin providing a Lua GUI definition library.",
+	"author": "Cooldude2606 <https://github.com/Cooldude2606>",
+	"license": "MIT",
+	"repository": "explosivegaming/ExpCluster",
+	"main": "dist/node/index.js",
+	"scripts": {
+		"prepare": "tsc --build"
+	},
+	"engines": {
+		"node": ">=18"
+	},
+	"peerDependencies": {
+		"@clusterio/lib": "^2.0.0-alpha.19"
+	},
+	"devDependencies": {
+		"@clusterio/lib": "2.0.0-alpha.19",
+		"@types/node": "^20.14.9",
+		"typescript": "^5.5.3"
+	},
+	"dependencies": {
+		"@expcluster/lib_util": "workspace:*",
+		"@sinclair/typebox": "^0.30.4"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"keywords": [
+		"clusterio",
+		"clusterio-plugin",
+		"factorio"
+	]
+}

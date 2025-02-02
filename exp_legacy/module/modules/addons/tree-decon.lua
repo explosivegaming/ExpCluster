@@ -1,10 +1,11 @@
 --- Makes trees which are marked for decon "decay" quickly to allow faster building
 -- @addon Tree-Decon
 
-local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Storage = require("modules/exp_util/storage")
+local Gui = require("modules/exp_gui")
+
+local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
-local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
 local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
 
 -- Storage queue used to store trees that need to be removed, also cache for player roles
@@ -34,13 +35,20 @@ end
 local HasEnabledDecon = PlayerData.Settings:combine("HasEnabledDecon")
 HasEnabledDecon:set_default(false)
 
-Gui.toolbar_toggle_button("entity/tree-01", { "tree-decon.main-tooltip" }, function(player)
-    return Roles.player_allowed(player, "fast-tree-decon")
+Gui.toolbar.create_button{
+    name = "toggle-tree-decon",
+    sprite = "entity/tree-01",
+    tooltip = { "tree-decon.main-tooltip" },
+    auto_toggle = true,
+    visible = function(player, _)
+        return Roles.player_allowed(player, "fast-tree-decon")
+    end
+}:on_click(function(def, event, element)
+    local player = Gui.get_player(event)
+    local state = Gui.toolbar.get_button_toggled_state(def, player)
+    HasEnabledDecon:set(player, state)
+    player.print{ "tree-decon.toggle-msg", state and { "tree-decon.enabled" } or { "tree-decon.disabled" } }
 end)
-    :on_event(Gui.events.on_toolbar_button_toggled, function(player, _, event)
-        HasEnabledDecon:set(player, event.state)
-        player.print{ "tree-decon.toggle-msg", event.state and { "tree-decon.enabled" } or { "tree-decon.disabled" } }
-    end)
 
 -- Add trees to queue when marked, only allows simple entities and for players with role permission
 Event.add(defines.events.on_marked_for_deconstruction, function(event)

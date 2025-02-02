@@ -6,7 +6,7 @@
 -- @config Player-List
 
 local ExpUtil = require("modules/exp_util")
-local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local Gui = require("modules/exp_gui")
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local Reports = require("modules.exp_legacy.modules.control.reports") --- @dep modules.control.reports
 local Warnings = require("modules.exp_legacy.modules.control.warnings") --- @dep modules.control.warnings
@@ -47,22 +47,24 @@ local function teleport(from_player, to_player)
 end
 
 local function new_button(sprite, tooltip)
-    return Gui.element{
-        type = "sprite-button",
-        style = "tool_button",
-        sprite = sprite,
-        tooltip = tooltip,
-    }:style{
-        padding = -1,
-        height = 28,
-        width = 28,
-    }
+    return Gui.element(tooltip[1])
+        :draw{
+            type = "sprite-button",
+            style = "tool_button",
+            sprite = sprite,
+            tooltip = tooltip,
+        }
+        :style{
+            padding = -1,
+            height = 28,
+            width = 28,
+        }
 end
 
 --- Teleports the user to the action player
 -- @element goto_player
 local goto_player = new_button("utility/export", { "player-list.goto-player" })
-    :on_click(function(player)
+    :on_click(function(def, player, element)
         local selected_player_name = get_action_player_name(player)
         local selected_player = game.players[selected_player_name]
         if not player.character or not selected_player.character then
@@ -75,7 +77,7 @@ local goto_player = new_button("utility/export", { "player-list.goto-player" })
 --- Teleports the action player to the user
 -- @element bring_player
 local bring_player = new_button("utility/import", { "player-list.bring-player" })
-    :on_click(function(player)
+    :on_click(function(def, player, element)
         local selected_player_name = get_action_player_name(player)
         local selected_player = game.players[selected_player_name]
         if not player.character or not selected_player.character then
@@ -88,7 +90,7 @@ local bring_player = new_button("utility/import", { "player-list.bring-player" }
 --- Reports the action player, requires a reason to be given
 -- @element report_player
 local report_player = new_button("utility/spawn_flag", { "player-list.report-player" })
-    :on_click(function(player)
+    :on_click(function(def, player, element)
         local selected_player_name = get_action_player_name(player)
         if Reports.is_reported(selected_player_name, player.name) then
             player.print({ "exp-commands_report.already-reported" }, Colors.orange_red)
@@ -108,7 +110,7 @@ end
 --- Gives the action player a warning, requires a reason
 -- @element warn_player
 local warn_player = new_button("utility/spawn_flag", { "player-list.warn-player" })
-    :on_click(function(player)
+    :on_click(function(def, player, element)
         SelectedAction:set(player, "command/give-warning")
     end)
 
@@ -122,7 +124,7 @@ end
 --- Jails the action player, requires a reason
 -- @element jail_player
 local jail_player = new_button("utility/multiplayer_waiting_icon", { "player-list.jail-player" })
-    :on_click(function(player)
+    :on_click(function(def, player, element)
         local selected_player_name, selected_player_color = get_action_player_name(player)
         if Jail.is_jailed(selected_player_name) then
             player.print({ "exp-commands_jail.already-jailed", selected_player_color }, Colors.orange_red)
@@ -141,7 +143,7 @@ end
 --- Kicks the action player, requires a reason
 -- @element kick_player
 local kick_player = new_button("utility/warning_icon", { "player-list.kick-player" })
-    :on_click(function(player)
+    :on_click(function(def, player, element)
         SelectedAction:set(player, "command/kick")
     end)
 
@@ -153,7 +155,7 @@ end
 --- Bans the action player, requires a reason
 -- @element ban_player
 local ban_player = new_button("utility/danger_icon", { "player-list.ban-player" })
-    :on_click(function(player)
+    :on_click(function(def, player, element)
         SelectedAction:set(player, "command/ban")
     end)
 

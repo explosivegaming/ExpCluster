@@ -4,7 +4,7 @@
     @alias vlayer_container
 ]]
 
-local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local Gui = require("modules/exp_gui")
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local format_number = require("util").format_number --- @dep util
@@ -81,8 +81,8 @@ Selection.on_selection(SelectionConvertArea, function(event)
         return nil
     end
 
-    local frame = Gui.get_left_element(player, vlayer_container)
-    local disp = frame.container["vlayer_st_2"].disp.table
+    local container = Gui.get_left_element(vlayer_container, player)
+    local disp = container.frame["vlayer_st_2"].disp.table
     local target = vlayer_control_type_list[disp[vlayer_gui_control_type.name].selected_index]
     local entities
 
@@ -138,20 +138,20 @@ end)
 
 --- Display label for the number of solar panels
 -- @element vlayer_gui_display_item_solar_name
-local vlayer_gui_display_item_solar_name =
-    Gui.element{
+local vlayer_gui_display_item_solar_name = Gui.element("vlayer_gui_display_item_solar_name")
+    :draw{
         type = "label",
-        name = "vlayer_display_item_solar_name",
+        name = Gui.property_from_name,
         caption = { "vlayer.display-item-solar" },
         style = "heading_2_label",
     }:style{
         width = 200,
     }
 
-local vlayer_gui_display_item_solar_count =
-    Gui.element{
+local vlayer_gui_display_item_solar_count = Gui.element("vlayer_gui_display_item_solar_count")
+    :draw{
         type = "progressbar",
-        name = "vlayer_display_item_solar_count",
+        name = Gui.property_from_name,
         caption = "",
         value = 0,
         style = "electric_satisfaction_statistics_progressbar",
@@ -162,20 +162,20 @@ local vlayer_gui_display_item_solar_count =
 
 --- Display label for the number of accumulators
 -- @element vlayer_gui_display_item_accumulator_name
-local vlayer_gui_display_item_accumulator_name =
-    Gui.element{
+local vlayer_gui_display_item_accumulator_name = Gui.element("vlayer_gui_display_item_accumulator_name")
+    :draw{
         type = "label",
-        name = "vlayer_display_item_accumulator_name",
+        name = Gui.property_from_name,
         caption = { "vlayer.display-item-accumulator" },
         style = "heading_2_label",
     }:style{
         width = 200,
     }
 
-local vlayer_gui_display_item_accumulator_count =
-    Gui.element{
+local vlayer_gui_display_item_accumulator_count = Gui.element("vlayer_gui_display_item_accumulator_count")
+    :draw{
         type = "progressbar",
-        name = "vlayer_display_item_accumulator_count",
+        name = Gui.property_from_name,
         caption = "",
         value = 0,
         style = "electric_satisfaction_statistics_progressbar",
@@ -186,10 +186,10 @@ local vlayer_gui_display_item_accumulator_count =
 
 --- Display label for the surface area
 -- @element vlayer_gui_display_signal_surface_area_name
-local vlayer_gui_display_signal_surface_area_name =
-    Gui.element{
+local vlayer_gui_display_signal_surface_area_name = Gui.element("vlayer_gui_display_signal_surface_area_name")
+    :draw{
         type = "label",
-        name = "vlayer_display_signal_remaining_surface_area_name",
+        name = Gui.property_from_name,
         caption = { "vlayer.display-remaining-surface-area" },
         tooltip = { "vlayer.display-remaining-surface-area-tooltip" },
         style = "heading_2_label",
@@ -197,10 +197,10 @@ local vlayer_gui_display_signal_surface_area_name =
         width = 200,
     }
 
-local vlayer_gui_display_signal_surface_area_count =
-    Gui.element{
+local vlayer_gui_display_signal_surface_area_count = Gui.element("vlayer_gui_display_signal_surface_area_count")
+    :draw{
         type = "progressbar",
-        name = "vlayer_display_signal_surface_area_count",
+        name = Gui.property_from_name,
         caption = "",
         value = 0,
         style = "electric_satisfaction_statistics_progressbar",
@@ -211,10 +211,10 @@ local vlayer_gui_display_signal_surface_area_count =
 
 --- Display label for the sustained energy production
 -- @element vlayer_gui_display_signal_sustained_name
-local vlayer_gui_display_signal_sustained_name =
-    Gui.element{
+local vlayer_gui_display_signal_sustained_name = Gui.element("vlayer_gui_display_signal_sustained_name")
+    :draw{
         type = "label",
-        name = "vlayer_display_signal_sustained_name",
+        name = Gui.property_from_name,
         caption = { "vlayer.display-sustained-production" },
         tooltip = { "vlayer.display-sustained-production-tooltip" },
         style = "heading_2_label",
@@ -222,10 +222,10 @@ local vlayer_gui_display_signal_sustained_name =
         width = 200,
     }
 
-local vlayer_gui_display_signal_sustained_count =
-    Gui.element{
+local vlayer_gui_display_signal_sustained_count = Gui.element("vlayer_gui_display_signal_sustained_count")
+    :draw{
         type = "progressbar",
-        name = "vlayer_display_signal_sustained_count",
+        name = Gui.property_from_name,
         caption = "",
         value = 0,
         style = "electric_satisfaction_statistics_progressbar",
@@ -236,10 +236,10 @@ local vlayer_gui_display_signal_sustained_count =
 
 --- Display label for the current energy production
 -- @element vlayer_gui_display_signal_production_name
-local vlayer_gui_display_signal_production_name =
-    Gui.element{
+local vlayer_gui_display_signal_production_name = Gui.element("vlayer_gui_display_signal_production_name")
+    :draw{
         type = "label",
-        name = "vlayer_display_signal_production_name",
+        name = Gui.property_from_name,
         caption = { "vlayer.display-current-production" },
         tooltip = { "vlayer.display-current-production-tooltip" },
         style = "heading_2_label",
@@ -247,10 +247,10 @@ local vlayer_gui_display_signal_production_name =
         width = 200,
     }
 
-local vlayer_gui_display_signal_production_count =
-    Gui.element{
+local vlayer_gui_display_signal_production_count = Gui.element("vlayer_gui_display_signal_production_count")
+    :draw{
         type = "progressbar",
-        name = "vlayer_display_signal_production_count",
+        name = Gui.property_from_name,
         caption = "",
         value = 0,
         style = "electric_satisfaction_statistics_progressbar",
@@ -261,10 +261,10 @@ local vlayer_gui_display_signal_production_count =
 
 --- Display label for the sustained energy capacity
 -- @element vlayer_gui_display_signal_capacity_name
-local vlayer_gui_display_signal_capacity_name =
-    Gui.element{
+local vlayer_gui_display_signal_capacity_name = Gui.element("vlayer_gui_display_signal_capacity_name")
+    :draw{
         type = "label",
-        name = "vlayer_display_signal_capacity_name",
+        name = Gui.property_from_name,
         caption = { "vlayer.display-current-capacity" },
         tooltip = { "vlayer.display-current-capacity-tooltip" },
         style = "heading_2_label",
@@ -272,10 +272,10 @@ local vlayer_gui_display_signal_capacity_name =
         width = 200,
     }
 
-local vlayer_gui_display_signal_capacity_count =
-    Gui.element{
+local vlayer_gui_display_signal_capacity_count = Gui.element("vlayer_gui_display_signal_capacity_count")
+    :draw{
         type = "progressbar",
-        name = "vlayer_display_signal_capacity_count",
+        name = Gui.property_from_name,
         caption = "",
         value = 0,
         style = "electric_satisfaction_statistics_progressbar",
@@ -286,10 +286,10 @@ local vlayer_gui_display_signal_capacity_count =
 
 --- A vertical flow containing all the displays labels and their counts
 -- @element vlayer_display_set
-local vlayer_display_set =
-    Gui.element(function(_, parent, name)
+local vlayer_display_set = Gui.element("vlayer_display_set")
+    :draw(function(_, parent, name)
         local vlayer_set = parent.add{ type = "flow", direction = "vertical", name = name }
-        local disp = Gui.scroll_table(vlayer_set, 400, 2, "disp")
+        local disp = Gui.elements.scroll_table(vlayer_set, 400, 2, "disp")
 
         vlayer_gui_display_item_solar_name(disp)
         vlayer_gui_display_item_solar_count(disp)
@@ -308,8 +308,8 @@ local vlayer_display_set =
     end)
 
 local function vlayer_gui_list_refresh(player)
-    local frame = Gui.get_left_element(player, vlayer_container)
-    local disp = frame.container["vlayer_st_2"].disp.table
+    local container = Gui.get_left_element(vlayer_container, player)
+    local disp = container.frame["vlayer_st_2"].disp.table
     local target = disp[vlayer_gui_control_type.name].selected_index
     local full_list = {}
 
@@ -326,58 +326,59 @@ end
 
 --- A drop down list filter by this type
 -- @element vlayer_gui_control_type
-vlayer_gui_control_type =
-    Gui.element{
+vlayer_gui_control_type = Gui.element("vlayer_gui_control_type")
+    :draw{
         type = "drop-down",
-        name = Gui.unique_static_name,
+        name = Gui.property_from_name,
         items = { { "vlayer.control-type-energy" }, { "vlayer.control-type-circuit" }, { "vlayer.control-type-storage-input" }, { "vlayer.control-type-storage-output" } },
         selected_index = 1,
     }:style{
         width = 200,
-    }:on_selection_changed(function(player, _, _)
+    }:on_selection_state_changed(function(def, player, element)
         vlayer_gui_list_refresh(player)
     end)
 
 --- A drop down list to see the exact item to remove
 -- @element vlayer_gui_control_list
-vlayer_gui_control_list =
-    Gui.element{
+vlayer_gui_control_list = Gui.element("vlayer_gui_control_list")
+    :draw{
         type = "drop-down",
-        name = Gui.unique_static_name,
+        name = Gui.property_from_name,
     }:style{
         width = 200,
     }
 
 --- A button to refresh the remove list
 -- @element vlayer_gui_control_refresh
-local vlayer_gui_control_refresh =
-    Gui.element{
+local vlayer_gui_control_refresh = Gui.element("vlayer_gui_control_refresh")
+    :draw{
         type = "button",
-        name = Gui.unique_static_name,
+        name = Gui.property_from_name,
         caption = { "vlayer.control-refresh" },
     }:style{
         width = 200,
-    }:on_click(function(player, _, _)
+    }:on_click(function(def, player, element)
         vlayer_gui_list_refresh(player)
     end)
 
 --- A button to check if the item is the one wanted to remove
 -- @element vlayer_gui_control_see
-local vlayer_gui_control_see =
-    Gui.element{
+local vlayer_gui_control_see = Gui.element("vlayer_gui_control_see")
+    :draw{
         type = "button",
-        name = Gui.unique_static_name,
+        name = Gui.property_from_name,
         caption = { "vlayer.control-see" },
     }:style{
         width = 200,
-    }:on_click(function(player, element, _)
+    }:on_click(function(def, player, element, event)
         local target = element.parent[vlayer_gui_control_type.name].selected_index
         local n = element.parent[vlayer_gui_control_list.name].selected_index
-
+        
         if target and vlayer_control_type_list[target] and n > 0 then
             local i = vlayer.get_interfaces()
             local entity = i[vlayer_control_type_list[target]][n]
             if entity and entity.valid then
+                local player = Gui.get_player(event)
                 player.set_controller{ type = defines.controllers.remote, position = entity.position, surface = entity.surface }
                 player.print{ "vlayer.result-interface-location", { "vlayer.control-type-" .. vlayer_control_type_list[target]:gsub("_", "-") }, pos_to_gps_string(entity.position, entity.surface.name) }
             end
@@ -386,14 +387,14 @@ local vlayer_gui_control_see =
 
 --- A button used to build the vlayer interface
 -- @element vlayer_gui_control_build
-local vlayer_gui_control_build =
-    Gui.element{
+local vlayer_gui_control_build = Gui.element("vlayer_gui_control_build")
+    :draw{
         type = "button",
-        name = Gui.unique_static_name,
+        name = Gui.property_from_name,
         caption = { "vlayer.control-build" },
     }:style{
         width = 200,
-    }:on_click(function(player, _, _)
+    }:on_click(function(def, player, element)
         if Selection.is_selecting(player, SelectionConvertArea) then
             Selection.stop(player)
             player.print{ "vlayer.exit" }
@@ -407,14 +408,14 @@ local vlayer_gui_control_build =
 
 --- A button used to remove the vlayer interface
 -- @element vlayer_gui_control_remove
-local vlayer_gui_control_remove =
-    Gui.element{
+local vlayer_gui_control_remove = Gui.element("vlayer_gui_control_remove")
+    :draw{
         type = "button",
-        name = Gui.unique_static_name,
+        name = Gui.property_from_name,
         caption = { "vlayer.control-remove" },
     }:style{
         width = 200,
-    }:on_click(function(player, element, _)
+    }:on_click(function(def, player, element)
         local target = element.parent[vlayer_gui_control_type.name].selected_index
         local n = element.parent[vlayer_gui_control_list.name].selected_index
 
@@ -435,10 +436,10 @@ local vlayer_gui_control_remove =
 
 --- A vertical flow containing all the control buttons
 -- @element vlayer_control_set
-local vlayer_control_set =
-    Gui.element(function(_, parent, name)
+local vlayer_control_set = Gui.element("vlayer_control_set")
+    :draw(function(_, parent, name)
         local vlayer_set = parent.add{ type = "flow", direction = "vertical", name = name }
-        local disp = Gui.scroll_table(vlayer_set, 400, 2, "disp")
+        local disp = Gui.elements.scroll_table(vlayer_set, 400, 2, "disp")
 
         vlayer_gui_control_type(disp)
         vlayer_gui_control_list(disp)
@@ -452,10 +453,10 @@ local vlayer_control_set =
 
 --- The main container for the vlayer gui
 -- @element vlayer_container
-vlayer_container =
-    Gui.element(function(definition, parent)
-        local player = Gui.get_player_from_element(parent)
-        local container = Gui.container(parent, definition.name, 400)
+vlayer_container = Gui.element("vlayer_container")
+    :draw(function(definition, parent)
+        local player = Gui.get_player(parent)
+        local container = Gui.elements.container(parent, 400)
 
         vlayer_display_set(container, "vlayer_st_1")
         local control_set = vlayer_control_set(container, "vlayer_st_2")
@@ -463,21 +464,25 @@ vlayer_container =
 
         return container.parent
     end)
-    :static_name(Gui.unique_static_name)
-    :add_to_left_flow()
 
---- Button on the top flow used to toggle the task list container
--- @element toggle_left_element
-Gui.left_toolbar_button("entity/solar-panel", { "vlayer.main-tooltip" }, vlayer_container, function(player)
-    return Roles.player_allowed(player, "gui/vlayer")
-end)
+--- Add the element to the left flow with a toolbar button
+Gui.add_left_element(vlayer_container, false)
+Gui.toolbar.create_button{
+    name = "vlayer_toggle",
+    left_element = vlayer_container,
+    sprite = "entity/solar-panel",
+    tooltip = { "vlayer.main-tooltip" },
+    visible = function(player, element)
+        return Roles.player_allowed(player, "gui/vlayer")
+    end
+}
 
 --- Update the visibly of the buttons based on a players roles
 local function role_update_event(event)
     local player = game.players[event.player_index]
     local visible = Roles.player_allowed(player, "gui/vlayer-edit")
-    local frame = Gui.get_left_element(player, vlayer_container)
-    frame.container["vlayer_st_2"].visible = visible
+    local container = Gui.get_left_element(vlayer_container, player)
+    container.frame["vlayer_st_2"].visible = visible
 end
 
 Event.add(Roles.events.on_role_assigned, role_update_event)
@@ -516,8 +521,8 @@ Event.on_nth_tick(config.update_tick_gui, function(_)
     }
 
     for _, player in pairs(game.connected_players) do
-        local frame = Gui.get_left_element(player, vlayer_container)
-        local disp = frame.container["vlayer_st_1"].disp.table
+        local container = Gui.get_left_element(vlayer_container, player)
+        local disp = container.frame["vlayer_st_1"].disp.table
 
         for k, v in pairs(vlayer_display) do
             disp[k].caption = v.cap
