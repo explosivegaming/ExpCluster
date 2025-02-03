@@ -43,8 +43,7 @@ Gui.toolbar.create_button{
     visible = function(player, _)
         return Roles.player_allowed(player, "fast-tree-decon")
     end
-}:on_click(function(def, event, element)
-    local player = Gui.get_player(event)
+}:on_click(function(def, player, element)
     local state = Gui.toolbar.get_button_toggled_state(def, player)
     HasEnabledDecon:set(player, state)
     player.print{ "tree-decon.toggle-msg", state and { "tree-decon.enabled" } or { "tree-decon.disabled" } }
