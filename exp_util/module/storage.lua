@@ -49,15 +49,16 @@ local ExpUtil = require("modules/exp_util")
 
 --- @class ExpUtil_Storage
 local Storage = {
-    _registered = {}, --- @type table<string, { init: table, callback: fun(tbl: table) }> Map of all registered values and their initial values
+    _registered = {}, --- @type table<string, { init: table, callback: fun(tbl: table), on_init: fun(tbl: table)? }>
 }
 
 --- Register a new table to be stored in storage, can only be called once per file, can not be called during runtime
 --- @generic T:table
 --- @param tbl T The initial value for the table you are registering, this should be a local variable
 --- @param callback fun(tbl: T) The callback used to replace local references and metatables
+--- @param on_init fun(tbl: T)? The callback used to setup/validate storage if a static value is not enough
 -- This function does not return the table because the callback can't access the local it would be assigned to
-function Storage.register(tbl, callback)
+function Storage.register(tbl, callback, on_init)
     ExpUtil.assert_not_runtime()
     ExpUtil.assert_argument_type(tbl, "table", 1, "tbl")
     ExpUtil.assert_argument_type(callback, "function", 2, "callback")
@@ -70,6 +71,7 @@ function Storage.register(tbl, callback)
     Storage._registered[name] = {
         init = tbl,
         callback = callback,
+        on_init = on_init,
     }
 end
 
@@ -109,6 +111,9 @@ function Storage.on_init()
     for name, info in pairs(Storage._registered) do
         if exp_storage[name] == nil then
             exp_storage[name] = info.init
+        end
+        if info.on_init then
+            info.on_init(exp_storage[name])
         end
         info.callback(exp_storage[name])
     end

@@ -2,7 +2,7 @@
 -- @gui Research
 
 local ExpUtil = require("modules/exp_util")
-local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local Gui = require("modules/exp_gui")
 local Storage = require("modules/exp_util/storage")
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
@@ -174,20 +174,20 @@ end
 
 --- Display label for the clock display
 -- @element research_gui_clock_display
-local research_gui_clock =
-    Gui.element{
+local research_gui_clock = Gui.element("research_gui_clock")
+    :draw{
         type = "label",
-        name = Gui.unique_static_name,
+        name = Gui.property_from_name,
         caption = empty_time,
         style = "heading_2_label",
     }
 
 --- A vertical flow containing the clock
 -- @element research_clock_set
-local research_clock_set =
-    Gui.element(function(_, parent, name)
+local research_clock_set = Gui.element("research_clock_set")
+    :draw(function(_, parent, name)
         local research_set = parent.add{ type = "flow", direction = "vertical", name = name }
-        local disp = Gui.scroll_table(research_set, 390, 1, "disp")
+        local disp = Gui.elements.scroll_table(research_set, 390, 1, "disp")
 
         research_gui_clock(disp)
 
@@ -196,8 +196,8 @@ local research_clock_set =
 
 --- Display group
 -- @element research_data_group
-local research_data_group =
-    Gui.element(function(_definition, parent, i)
+local research_data_group = Gui.element("research_data_group")
+    :draw(function(_def, parent, i)
         local name = parent.add{
             type = "label",
             name = "research_" .. i .. "_name",
@@ -238,10 +238,10 @@ local research_data_group =
 
 --- A vertical flow containing the data
 -- @element research_data_set
-local research_data_set =
-    Gui.element(function(_, parent, name)
+local research_data_set = Gui.element("research_data_set")
+    :draw(function(_, parent, name)
         local research_set = parent.add{ type = "flow", direction = "vertical", name = name }
-        local disp = Gui.scroll_table(research_set, 390, 4, "disp")
+        local disp = Gui.elements.scroll_table(research_set, 390, 4, "disp")
         local res_disp = research_gui_update()
 
         research_data_group(disp, 0)
@@ -265,21 +265,27 @@ local research_data_set =
         return research_set
     end)
 
-local research_container =
-    Gui.element(function(definition, parent)
-        local container = Gui.container(parent, definition.name, 390)
+local research_container = Gui.element("research_container")
+    :draw(function(def, parent)
+        local container = Gui.elements.container(parent, 390)
 
         research_clock_set(container, "research_st_1")
         research_data_set(container, "research_st_2")
 
         return container.parent
     end)
-    :static_name(Gui.unique_static_name)
-    :add_to_left_flow()
 
-Gui.left_toolbar_button("item/space-science-pack", { "research.main-tooltip" }, research_container, function(player)
-    return Roles.player_allowed(player, "gui/research")
-end)
+--- Add the element to the left flow with a toolbar button
+Gui.add_left_element(research_container, false)
+Gui.toolbar.create_button{
+    name = "research_toggle",
+    left_element = research_container,
+    sprite = "item/space-science-pack",
+    tooltip = { "research.main-tooltip" },
+    visible = function(player, element)
+        return Roles.player_allowed(player, "gui/research")
+    end
+}
 
 Event.add(defines.events.on_research_finished, function(event)
     research_notification(event)
@@ -294,8 +300,8 @@ Event.add(defines.events.on_research_finished, function(event)
     local res_disp = research_gui_update()
 
     for _, player in pairs(game.connected_players) do
-        local frame = Gui.get_left_element(player, research_container)
-        local disp = frame.container["research_st_2"].disp.table
+        local container = Gui.get_left_element(research_container, player)
+        local disp = container.frame["research_st_2"].disp.table
 
         for i = 1, 8, 1 do
             local research_name_i = "research_" .. i
@@ -313,8 +319,8 @@ Event.on_nth_tick(60, function()
     local current_time = research_time_format(game.tick)
 
     for _, player in pairs(game.connected_players) do
-        local frame = Gui.get_left_element(player, research_container)
-        local disp = frame.container["research_st_1"].disp.table
+        local container = Gui.get_left_element(research_container, player)
+        local disp = container.frame["research_st_1"].disp.table
         disp[research_gui_clock.name].caption = current_time
     end
 end)

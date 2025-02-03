@@ -1,8 +1,8 @@
 ---- module inserter
 -- @gui Module
 
+local Gui = require("modules/exp_gui")
 local AABB = require("modules/exp_util/aabb")
-local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local config = require("modules.exp_legacy.config.module") --- @dep config.module
@@ -93,8 +93,8 @@ end
 Selection.on_selection(SelectionModuleArea, function(event)
     local area = AABB.expand(event.area)
     local player = game.players[event.player_index]
-    local frame = Gui.get_left_element(player, module_container) --- @type LuaGuiElement
-    local scroll_table = frame.container.scroll.table
+    local container = Gui.get_left_element(module_container, player)
+    local scroll_table = container.frame.scroll.table
 
     -- Create an inventory with three upgrade planners
     local inventory = game.create_inventory(3)
@@ -205,8 +205,8 @@ end)
 --- @param player LuaPlayer
 --- @param element_name string
 local function row_set(player, element_name)
-    local frame = Gui.get_left_element(player, module_container) --[[ @as LuaGuiElement ]]
-    local scroll_table = frame.container.scroll.table
+    local container = Gui.get_left_element(module_container, player)
+    local scroll_table = container.frame.scroll.table
     local machine_name = scroll_table[element_name .. "0"].elem_value --[[ @as string ]]
 
     if machine_name then
@@ -247,12 +247,12 @@ local function row_set(player, element_name)
     end
 end
 
-local button_apply =
-    Gui.element{
+local button_apply = Gui.element("button_apply")
+    :draw{
         type = "button",
         caption = { "module.apply" },
         style = "button",
-    }:on_click(function(player)
+    }:on_click(function(def, player, element)
         if Selection.is_selecting(player, SelectionModuleArea) then
             Selection.stop(player)
         else
@@ -260,13 +260,15 @@ local button_apply =
         end
     end)
 
-module_container =
-    Gui.element(function(definition, parent)
-        local container = Gui.container(parent, definition.name, (config.module_slots_per_row + 2) * 36)
-        Gui.header(container, "Module Inserter", "", true)
+module_container = Gui.element("module_container")
+    :draw(function(definition, parent)
+        local container = Gui.elements.container(parent, (config.module_slots_per_row + 2) * 36)
+        Gui.elements.header(container, {
+            caption = "Module Inserter",
+        })
 
         local slots_per_row = config.module_slots_per_row + 1
-        local scroll_table = Gui.scroll_table(container, (config.module_slots_per_row + 2) * 36, slots_per_row)
+        local scroll_table = Gui.elements.scroll_table(container, (config.module_slots_per_row + 2) * 36, slots_per_row, "scroll")
 
         for i = 1, config.default_module_row_count do
             scroll_table.add{
@@ -301,12 +303,18 @@ module_container =
 
         return container.parent
     end)
-    :static_name(Gui.unique_static_name)
-    :add_to_left_flow()
 
-Gui.left_toolbar_button("item/productivity-module-3", { "module.main-tooltip" }, module_container, function(player)
-    return Roles.player_allowed(player, "gui/module")
-end)
+--- Add the element to the left flow with a toolbar button
+Gui.add_left_element(module_container, false)
+Gui.toolbar.create_button{
+    name = "module_toggle",
+    left_element = module_container,
+    sprite = "item/productivity-module-3",
+    tooltip = { "module.main-tooltip" },
+    visible = function(player, element)
+        return Roles.player_allowed(player, "gui/module")
+    end
+}
 
 --- @param event EventData.on_gui_elem_changed
 Event.add(defines.events.on_gui_elem_changed, function(event)

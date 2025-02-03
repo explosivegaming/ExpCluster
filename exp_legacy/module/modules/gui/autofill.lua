@@ -4,10 +4,10 @@
     @alias autofill
 ]]
 
+local Storage = require("modules/exp_util/storage")
 local FlyingText = require("modules/exp_util/flying_text")
-local Gui = require("modules.exp_legacy.expcore.gui") -- @dep expcore.gui
-local Roles = require("modules.exp_legacy.expcore.roles") -- @dep expcore.gui
-local Storage = require("modules/exp_util/storage") -- @dep utils.global
+local Gui = require("modules/exp_gui")
+local Roles = require("modules.exp_legacy.expcore.roles")
 local config = require("modules.exp_legacy.config.gui.autofill") -- @dep config.gui.autofill
 local Event = require("modules/exp_legacy/utils/event") -- @dep utils.event
 
@@ -25,17 +25,19 @@ end
 
 --- Toggle entity section visibility
 -- @element toggle_item_button
-local toggle_section =
-    Gui.element{
+local toggle_section = Gui.element("autofill_toggle_section")
+    :draw{
         type = "sprite-button",
         sprite = "utility/expand",
         tooltip = { "autofill.toggle-section-tooltip" },
         style = "frame_action_button",
-        name = Gui.unique_static_name,
+        name = Gui.property_from_name,
     }
-    :style(Gui.sprite_style(20))
-    :on_click(function(_, element, _)
-        local header_flow = element.parent
+    :style(Gui.styles.sprite{
+        size = 20
+    })
+    :on_click(function(def, player, element)
+        local header_flow = assert(element.parent)
         local flow_name = header_flow.caption
         local flow = header_flow.parent.parent[flow_name]
         if Gui.toggle_visible_state(flow) then
@@ -50,8 +52,8 @@ local toggle_section =
 --- Toggle enitity button, used for toggling autofill for the specific entity
 -- All entity autofill settings will be ignored if its disabled
 -- @element entity_toggle
-local entity_toggle =
-    Gui.element(function(_, parent, entity_name)
+local entity_toggle = Gui.element("entity_toggle")
+    :draw(function(_, parent, entity_name)
         return parent.add{
             type = "sprite-button",
             sprite = "utility/confirm_slot",
@@ -59,8 +61,10 @@ local entity_toggle =
             style = "shortcut_bar_button_green",
         }
     end)
-    :style(Gui.sprite_style(22))
-    :on_click(function(player, element, _)
+    :style(Gui.styles.sprite{
+        size = 22
+    })
+    :on_click(function(def, player, element)
         local entity_name = string.match(element.parent.parent.name, "(.*)%-header")
         if not autofill_player_settings[player.name] then return end
         local setting = autofill_player_settings[player.name][entity_name]
@@ -75,7 +79,7 @@ local entity_toggle =
             element.style = "shortcut_bar_button_green"
         end
         -- Correct the button size
-        local style = element.style --[[@as LuaStyle]]
+        local style = element.style
         style.padding = -2
         style.height = 22
         style.width = 22
@@ -83,18 +87,17 @@ local entity_toggle =
 
 --- Draw a section header and main scroll
 -- @element autofill_section_container
-local section =
-    Gui.element(function(definition, parent, section_name, table_size)
+local section = Gui.element("autofill_section")
+    :draw(function(def, parent, section_name, table_size)
         -- Draw the header for the section
-        local header = Gui.header(
-            parent,
-            { "autofill.toggle-section-caption", rich_img("item", section_name), { "entity-name." .. section_name } },
-            { "autofill.toggle-section-tooltip" },
-            true,
-            section_name .. "-header"
-        )
+        local header = Gui.elements.header(parent, {
+            name = section_name .. "-header",
+            caption = { "autofill.toggle-section-caption", rich_img("item", section_name), { "entity-name." .. section_name } },
+            tooltip = { "autofill.toggle-section-tooltip" },
+            label_name = "label",
+        })
 
-        definition:triggers_events(header.parent.header_label)
+        def:link_element(header.parent.label)
 
         -- Right aligned button to toggle the section
         header.caption = section_name
@@ -109,17 +112,17 @@ local section =
 
         section_table.visible = false
 
-        return definition:no_events(section_table)
+        return def:unlink_element(section_table)
     end)
-    :on_click(function(_, element, event)
+    :on_click(function(def, player, element, event)
         event.element = element.parent.alignment[toggle_section.name]
         toggle_section:raise_event(event)
     end)
 
 --- Toggle item button, used for toggling autofill for the specific item
 -- @element toggle_item_button
-local toggle_item_button =
-    Gui.element(function(_, parent, item)
+local toggle_item_button = Gui.element("toggle_item_button")
+    :draw(function(_, parent, item)
         return parent.add{
             type = "sprite-button",
             sprite = "item/" .. item.name,
@@ -127,8 +130,11 @@ local toggle_item_button =
             style = "shortcut_bar_button_red",
         }
     end)
-    :style(Gui.sprite_style(32, nil, { right_margin = -3 }))
-    :on_click(function(player, element)
+    :style(Gui.styles.sprite{
+        size = 32,
+        right_margin = -3,
+    })
+    :on_click(function(def, player, element)
         local item_name = element.parent.tooltip
         local entity_name = element.parent.parent.parent.name
         if not autofill_player_settings[player.name] then return end
@@ -144,7 +150,7 @@ local toggle_item_button =
             element.style = "shortcut_bar_button_green"
         end
         -- Correct the button size
-        local style = element.style --[[@as LuaStyle]]
+        local style = element.style
         style.right_margin = -3
         style.padding = -2
         style.height = 32
@@ -153,8 +159,8 @@ local toggle_item_button =
 
 --- Amount text field for a autofill item
 -- @element amount_textfield
-local amount_textfield =
-    Gui.element(function(_, parent, item)
+local amount_textfield = Gui.element("amount_textfield")
+    :draw(function(_, parent, item)
         return parent.add{
             type = "textfield",
             text = item.amount,
@@ -170,7 +176,7 @@ local amount_textfield =
         height = 31,
         padding = -2,
     }
-    :on_text_changed(function(player, element, _)
+    :on_text_changed(function(def, player, element)
         local value = tonumber(element.text)
         if not value then value = 0 end
         local clamped = math.clamp(value, 0, 1000)
@@ -183,7 +189,7 @@ local amount_textfield =
         if not item then return end
         item.amount = clamped
         if clamped ~= value then
-            element.text = clamped
+            element.text = tostring(clamped)
             player.print{ "autofill.invalid", item.amount, rich_img("item", item.name), rich_img("entity", entity_name) }
             return
         end
@@ -191,8 +197,8 @@ local amount_textfield =
 
 --- Autofill setting, contains a button and a textbox
 -- @element add_autofill_setting
-local add_autofill_setting =
-    Gui.element(function(_, parent, item)
+local add_autofill_setting = Gui.element("add_autofill_setting")
+    :draw(function(_, parent, item)
         local toggle_flow = parent.add{ type = "flow", name = "toggle-setting-" .. item.name, tooltip = item.name }
         local amount_flow = parent.add{ type = "flow", name = "amount-setting-" .. item.name, tooltip = item.name }
         toggle_flow.style.padding = 0
@@ -203,8 +209,8 @@ local add_autofill_setting =
 
 --- Autofill setting empty, contains filler button and textfield gui elements
 -- @element add_empty_autofill_setting
-local add_empty_autofill_setting =
-    Gui.element(function(_, parent)
+local add_empty_autofill_setting = Gui.element("add_empty_autofill_setting")
+    :draw(function(_, parent)
         local toggle_element = parent.add{
             type = "sprite-button",
         }
@@ -223,19 +229,19 @@ local add_empty_autofill_setting =
 
 --- Main gui container for the left flow
 -- @element autofill_container
-autofill_container =
-    Gui.element(function(definition, parent)
+autofill_container = Gui.element("autofill_container")
+    :draw(function(def, parent)
         -- Draw the internal container
-        local container = Gui.container(parent, definition.name)
+        local container = Gui.elements.container(parent)
         -- Draw the scroll container
-        local scroll_table = Gui.scroll_table(container, 400, 1, "autofill-scroll-table")
+        local scroll_table = Gui.elements.scroll_table(container, 400, 1, "autofill-scroll-table")
         -- Set the scroll panel to always show the scrollbar (not doing this will result in a changing gui size)
         scroll_table.parent.vertical_scroll_policy = "always"
         -- Scroll panel has by default padding
         scroll_table.parent.style.padding = 0
         -- Remove the default gap that is added in a table between elements
         scroll_table.style.vertical_spacing = 0
-        -- Center the first collumn in the table
+        -- Center the first column in the table
         scroll_table.style.column_alignments[1] = "center"
         -- Loop over each default entity config
         for _, setting in pairs(config.default_entities) do
@@ -245,7 +251,7 @@ autofill_container =
             local entity_table = section(scroll_table, setting.entity, 3)
             -- Add some padding around the table
             entity_table.style.padding = 3
-            -- Make sure each collumn is alignment top center
+            -- Make sure each column is alignment top center
             entity_table.style.column_alignments[1] = "top-center"
             entity_table.style.column_alignments[2] = "top-center"
             entity_table.style.column_alignments[3] = "top-center"
@@ -284,14 +290,18 @@ autofill_container =
         -- Return the external container
         return container.parent
     end)
-    :static_name(Gui.unique_static_name)
-    :add_to_left_flow()
 
---- Button on the top flow used to toggle autofill container
--- @element autofill_toggle
-Gui.left_toolbar_button(config.icon, { "autofill.main-tooltip" }, autofill_container, function(player)
-    return Roles.player_allowed(player, "gui/autofill")
-end)
+--- Add the element to the left flow with a toolbar button
+Gui.add_left_element(autofill_container, false)
+Gui.toolbar.create_button{
+    name = "autofill_toggle",
+    left_element = autofill_container,
+    sprite = config.icon,
+    tooltip = { "autofill.main-tooltip" },
+    visible = function(player, element)
+        return Roles.player_allowed(player, "gui/autofill")
+    end
+}
 
 --- When a player is created make sure they have the default autofill settings
 Event.add(defines.events.on_player_created, function(event)
@@ -321,6 +331,7 @@ local function entity_build(event)
     -- Get the inventory of the player
     local player_inventory = player.get_main_inventory() --- @cast player_inventory -nil
 
+    local offset = { x = 0, y = 0 }
     -- Loop over all possible items to insert into the entity
     for _, item in pairs(entity_settings.items) do
         -- Check if the item is enabled or goto next item
@@ -330,28 +341,30 @@ local function entity_build(event)
         local entity_inventory = entity.get_inventory(item.inv)
         if not entity_inventory then goto end_item end
 
-        local preferd_amount = item.amount
+        local preferred_amount = item.amount
         local item_amount = player_inventory.get_item_count(item.name)
         if item_amount ~= 0 then
             local inserted
-            local color = { r = 0, g = 255, b = 0, a = 1 }
-            if item_amount >= preferd_amount then
+            local color = { r = 0, g = 255, b = 0, a = 255 }
+            if item_amount >= preferred_amount then
                 -- Can item be inserted? no, goto next item!
-                if not entity_inventory.can_insert{ name = item.name, count = preferd_amount } then
+                if not entity_inventory.can_insert{ name = item.name, count = preferred_amount } then
                     goto end_item
                 end
-                inserted = entity_inventory.insert{ name = item.name, count = preferd_amount }
+                inserted = entity_inventory.insert{ name = item.name, count = preferred_amount }
             else
                 inserted = entity_inventory.insert{ name = item.name, count = item_amount }
-                color = { r = 255, g = 165, b = 0, a = 1 }
+                color = { r = 255, g = 165, b = 0, a = 255 }
             end
             player_inventory.remove{ name = item.name, count = inserted }
             FlyingText.create_above_entity{
                 target_entity = entity,
                 text = { "autofill.inserted", inserted, rich_img("item", item.name), rich_img("entity", entity.name) },
+                offset = offset,
                 player = player,
                 color = color,
             }
+            offset.y = offset.y - 0.33
         end
         ::end_item::
     end

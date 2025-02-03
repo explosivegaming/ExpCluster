@@ -1,6 +1,6 @@
 local Storage = require("modules/exp_util/storage")
-local Event = require("modules/exp_legacy/utils/event") --- @dep expcore.gui
-local mod_gui = require "mod-gui" --- @dep mod-gui
+local Event = require("modules/exp_legacy/utils/event")
+local mod_gui = require "mod-gui"
 
 local Gui = {}
 local data = {}

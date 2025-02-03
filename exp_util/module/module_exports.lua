@@ -167,6 +167,18 @@ function ExpUtil.get_function_name(func, raw)
     return "<" .. file_name .. ":" .. func_name .. ">"
 end
 
+--- Returns a desync sale filepath and current line for a given stack frame, default is the current file
+--- @param level number? The level of the stack to get the file of, a value of 1 is the caller of this function
+--- @param raw boolean? When true there will not be any < > around the name
+--- @return string # The relative filepath of the given stack frame
+function ExpUtil.get_current_line(level, raw)
+    local debug_info = getinfo((level or 1) + 1, "Snl")
+    local safe_source = debug_info.source:find("@__level__")
+    local file_path = safe_source == 1 and debug_info.short_src:sub(10, -5) or debug_info.source
+    if raw then return file_path .. ":" .. debug_info.currentline end
+    return "<" .. file_path .. ":" .. debug_info.currentline .. ">"
+end
+
 --- Attempt a simple autocomplete search from a set of options
 --- @param options table The table representing the possible options which can be selected
 --- @param input string The user input string which should be matched to an option

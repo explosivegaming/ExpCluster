@@ -2,7 +2,7 @@
 -- @gui PlayerData
 
 local ExpUtil = require("modules/exp_util")
-local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local Gui = require("modules/exp_gui")
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
@@ -74,8 +74,8 @@ local computed_stats = {
     },
 }
 
-local label =
-    Gui.element(function(_, parent, width, caption, tooltip, name)
+local label = Gui.element("label")
+    :draw(function(_, parent, width, caption, tooltip, name)
         local new_label = parent.add{
             type = "label",
             caption = caption,
@@ -88,10 +88,10 @@ local label =
         return new_label
     end)
 
-local pd_data_set =
-    Gui.element(function(_, parent, name)
+local pd_data_set = Gui.element("pd_data_set")
+    :draw(function(_, parent, name)
         local pd_data_set = parent.add{ type = "flow", direction = "vertical", name = name }
-        local disp = Gui.scroll_table(pd_data_set, label_width["total"], 4, "disp")
+        local disp = Gui.elements.scroll_table(pd_data_set, label_width["total"], 4, "disp")
 
         for _, stat_name in pairs(PlayerData.Statistics.metadata.display_order) do
             local child = PlayerData.Statistics[stat_name]
@@ -129,32 +129,31 @@ local function pd_update(table, player_name)
     end
 end
 
-local pd_username_player =
-    Gui.element(function(definition, parent, player_list)
+local pd_username_player = Gui.element("pd_username_player")
+    :draw(function(def, parent, player_list)
         return parent.add{
-            name = definition.name,
+            name = def.name,
             type = "drop-down",
             items = player_list,
-            selected_index = #player_list > 0 and 1,
+            selected_index = #player_list > 0 and 1 or nil,
         }
     end)
     :style{
         horizontally_stretchable = true,
-    }:on_selection_changed(function(_, element, _)
+    }:on_selection_state_changed(function(def, player, element)
         local player_name = game.connected_players[element.selected_index]
         local table = element.parent.parent.parent.parent["pd_st_2"].disp.table
         pd_update(table, player_name)
     end)
-    :static_name(Gui.unique_static_name)
 
-local pd_username_update =
-    Gui.element{
+local pd_username_update = Gui.element("pd_username_update")
+    :draw{
         type = "button",
-        name = Gui.unique_static_name,
+        name = Gui.property_from_name,
         caption = "update",
     }:style{
         width = 128,
-    }:on_click(function(_, element, _)
+    }:on_click(function(def, player, element)
         local player_index = element.parent[pd_username_player.name].selected_index
 
         if player_index > 0 then
@@ -164,10 +163,10 @@ local pd_username_update =
         end
     end)
 
-local pd_username_set =
-    Gui.element(function(_, parent, name, player_list)
+local pd_username_set = Gui.element("pd_username_set")
+    :draw(function(_, parent, name, player_list)
         local pd_username_set = parent.add{ type = "flow", direction = "vertical", name = name }
-        local disp = Gui.scroll_table(pd_username_set, label_width["total"], 2, "disp")
+        local disp = Gui.elements.scroll_table(pd_username_set, label_width["total"], 2, "disp")
 
         pd_username_player(disp, player_list)
         pd_username_update(disp)
@@ -175,9 +174,9 @@ local pd_username_set =
         return pd_username_set
     end)
 
-pd_container =
-    Gui.element(function(definition, parent)
-        local container = Gui.container(parent, definition.name, label_width["total"])
+pd_container = Gui.element("pd_container")
+    :draw(function(def, parent)
+        local container = Gui.elements.container(parent, label_width["total"])
         local player_list = {}
 
         for _, player in pairs(game.connected_players) do
@@ -189,12 +188,18 @@ pd_container =
 
         return container.parent
     end)
-    :static_name(Gui.unique_static_name)
-    :add_to_left_flow()
 
-Gui.left_toolbar_button("item/power-armor-mk2", "Player Data GUI", pd_container, function(player)
-    return Roles.player_allowed(player, "gui/playerdata")
-end)
+--- Add the element to the left flow with a toolbar button
+Gui.add_left_element(pd_container, false)
+Gui.toolbar.create_button{
+    name = "player_data_toggle",
+    left_element = pd_container,
+    sprite = "item/power-armor-mk2",
+    tooltip = "Player Data GUI",
+    visible = function(player, element)
+        return Roles.player_allowed(player, "gui/playerdata")
+    end
+}
 
 local function gui_player_list_update()
     local player_list = {}
@@ -204,8 +209,8 @@ local function gui_player_list_update()
     end
 
     for _, player in pairs(game.connected_players) do
-        local frame = Gui.get_left_element(player, pd_container)
-        frame.container["pd_st_1"].disp.table[pd_username_player.name].items = player_list
+        local container = Gui.get_left_element(pd_container, player)
+        container.frame["pd_st_1"].disp.table[pd_username_player.name].items = player_list
     end
 end
 
