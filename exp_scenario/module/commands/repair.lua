@@ -5,8 +5,6 @@ Adds a command that allows an admin to repair and revive a large area
 local Commands = require("modules/exp_commands")
 local config = require("modules.exp_legacy.config.repair") --- @dep config.repair
 
-local huge = math.huge
-
 --- Repairs entities on your force around you
 Commands.new("repair", { "exp-commands_repair.description" })
     :argument("range", { "exp-commands_repair.arg-range" }, Commands.types.integer_range(1, config.max_range))
@@ -46,9 +44,9 @@ Commands.new("repair", { "exp-commands_repair.description" })
             }
 
             for _, entity in ipairs(entities) do
-                if entity.health and entity.get_health_ratio() ~= 1 then
+                if entity.health and entity.max_health and entity.health ~= entity.max_health then
                     healed_count = healed_count + 1
-                    entity.health = huge
+                    entity.health = entity.max_health
                 end
             end
 
@@ -57,4 +55,3 @@ Commands.new("repair", { "exp-commands_repair.description" })
 
         return Commands.status.success(response)
     end)
-
