@@ -25,6 +25,7 @@ Storage.register({
     scope_data = scope_data,
     registration_numbers = registration_numbers,
 }, function(tbl)
+    scope_data = tbl.scope_data
     registration_numbers = tbl.registration_numbers
     for scope, data in pairs(tbl.scope_data) do
         local proxy = registered_scopes[scope]
