@@ -5,7 +5,7 @@
 ]]
 
 local ExpUtil = require("modules/exp_util")
-local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local Gui = require("modules/exp_gui")
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local config = require("modules.exp_legacy.config.gui.rockets") --- @dep config.gui.rockets
@@ -39,15 +39,17 @@ end
 
 --- Button to toggle the auto launch on a rocket silo
 -- @element toggle_launch
-local toggle_launch =
-    Gui.element{
+local toggle_launch = Gui.element("toggle_launch")
+    :draw{
         type = "sprite-button",
         sprite = "utility/play",
         tooltip = { "rocket-info.toggle-rocket-tooltip" },
-        name = Gui.unique_static_name,
+        name = Gui.property_from_name,
     }
-    :style(Gui.sprite_style(16))
-    :on_click(function(_, element, _)
+    :style(Gui.styles.sprite{
+        size = 16,
+    })
+    :on_click(function(def, player, element)
         local rocket_silo_name = element.parent.name:sub(8)
         local rocket_silo = Rockets.get_silo_entity(rocket_silo_name)
         if rocket_silo.auto_launch then
@@ -61,30 +63,10 @@ local toggle_launch =
         end
     end)
 
---- Button to remotely launch a rocket from a silo
--- @element launch_rocket
-local launch_rocket =
-    Gui.element{
-        type = "sprite-button",
-        sprite = "utility/center",
-        tooltip = { "rocket-info.launch-tooltip" },
-        name = Gui.unique_static_name,
-    }
-    :style(Gui.sprite_style(16, -1))
-    :on_click(function(player, element, _)
-        local rocket_silo_name = element.parent.name:sub(8)
-        local silo_data = Rockets.get_silo_data_by_name(rocket_silo_name)
-        if silo_data.entity.launch_rocket() then
-            element.enabled = false
-        else
-            player.print({ "rocket-info.launch-failed" }, Colors.orange_red)
-        end
-    end)
-
 --- XY cords that allow zoom to map when pressed
 -- @element silo_cords
-local silo_cords =
-    Gui.element(function(definition, parent, silo_data)
+local silo_cords = Gui.element("silo_cords")
+    :draw(function(definition, parent, silo_data)
         local silo_name = silo_data.silo_name
         local pos = silo_data.position
         local tooltip = config.progress.allow_zoom_to_map and { "rocket-info.progress-label-tooltip" } or nil
@@ -120,11 +102,11 @@ local silo_cords =
         }
 
         if config.progress.allow_zoom_to_map then
-            definition:triggers_events(label_x)
-            definition:triggers_events(label_y)
+            definition:link_element(label_x)
+            definition:link_element(label_y)
         end
     end)
-    :on_click(function(player, element, _)
+    :on_click(function(def, player, element)
         local rocket_silo_name = element.parent.caption
         local rocket_silo = Rockets.get_silo_entity(rocket_silo_name)
         player.set_controller{ type = defines.controllers.remote, position = rocket_silo.position, surface = rocket_silo.surface }
@@ -132,10 +114,10 @@ local silo_cords =
 
 --- Base element for each rocket in the progress list
 -- @element rocket_entry
-local rocket_entry =
-    Gui.element(function(_, parent, silo_data)
+local rocket_entry = Gui.element("rocket_entry")
+    :draw(function(_, parent, silo_data)
         local silo_name = silo_data.silo_name
-        local player = Gui.get_player_from_element(parent)
+        local player = Gui.get_player(parent)
 
         -- Add the toggle auto launch if the player is allowed it
         -- Auto launch was removed from the api and no 2.0 equivalent was added
@@ -148,18 +130,11 @@ local rocket_entry =
             button.sprite = silo_data.toggle_sprite]]
         end
 
-        -- Add the remote launch if the player is allowed it
-        if check_player_permissions(player, "remote_launch") then
-            local flow = parent.add{ type = "flow", name = "launch-" .. silo_name }
-            local button = launch_rocket(flow)
-            button.enabled = silo_data.allow_launch
-        end
-
         -- Draw the silo cords element
         silo_cords(parent, silo_data)
 
         -- Add a progress label
-        local alignment = Gui.alignment(parent, silo_name)
+        local alignment = Gui.elements.aligned_flow(parent, { name = silo_name })
         local element =
             alignment.add{
                 type = "label",
@@ -174,8 +149,8 @@ local rocket_entry =
 
 --- Data label which contains a name and a value label pair
 -- @element data_label
-local data_label =
-    Gui.element(function(_, parent, label_data)
+local data_label = Gui.element("data_label")
+    :draw(function(_, parent, label_data)
         local data_name = label_data.name
         local data_subname = label_data.subname
         local data_fullname = data_subname and data_name .. data_subname or data_name
@@ -190,7 +165,7 @@ local data_label =
         name_label.style.padding = { 0, 2 }
 
         --- Right aligned label to store the data
-        local alignment = Gui.alignment(parent, data_fullname)
+        local alignment = Gui.elements.aligned_flow(parent, { name = data_fullname })
         local element =
             alignment.add{
                 type = "label",
@@ -305,13 +280,6 @@ local function update_build_progress(parent, progress_data)
                 toggle_button.tooltip = silo_data.toggle_tooltip
                 toggle_button.sprite = silo_data.toggle_sprite
             end
-
-            -- Update the launch button
-            local launch_button = parent["launch-" .. silo_name]
-            if launch_button then
-                launch_button = launch_button[launch_rocket.name]
-                launch_button.enabled = silo_data.allow_launch
-            end
         end
     end
 
@@ -424,18 +392,20 @@ end
 
 -- Button to toggle a section dropdown
 -- @element toggle_section
-local toggle_section =
-    Gui.element{
+local toggle_section = Gui.element("rocket_info_toggle_section")
+    :draw{
         type = "sprite-button",
         sprite = "utility/expand",
         hovered_sprite = "utility/expand",
         tooltip = { "rocket-info.toggle-section-tooltip" },
         style = "frame_action_button",
-        name = Gui.unique_static_name,
+        name = Gui.property_from_name,
     }
-    :style(Gui.sprite_style(20))
-    :on_click(function(_, element, _)
-        local header_flow = element.parent
+    :style(Gui.styles.sprite{
+        size = 20,
+    })
+    :on_click(function(def, player, element)
+        local header_flow = assert(element.parent)
         local flow_name = header_flow.caption
         local flow = header_flow.parent.parent[flow_name]
         if Gui.toggle_visible_state(flow) then
@@ -449,46 +419,46 @@ local toggle_section =
 
 -- Draw a section header and main scroll
 -- @element rocket_list_container
-local section =
-    Gui.element(function(definition, parent, section_name, table_size)
+local section = Gui.element("rocket_info_section")
+    :draw(function(definition, parent, section_name, table_size)
         -- Draw the header for the section
-        local header = Gui.header(
-            parent,
-            { "rocket-info.section-caption-" .. section_name },
-            { "rocket-info.section-tooltip-" .. section_name },
-            true,
-            section_name .. "-header"
-        )
-        definition:triggers_events(header.parent.header_label)
+        local header = Gui.elements.header(parent, {
+            name = section_name .. "-header",
+            caption = { "rocket-info.section-caption-" .. section_name },
+            tooltip = { "rocket-info.section-tooltip-" .. section_name },
+            label_name = "label",
+        })
+
+        definition:link_element(header.parent.label)
 
         -- Right aligned button to toggle the section
         header.caption = section_name
         toggle_section(header)
 
         -- Table used to store the data
-        local scroll_table = Gui.scroll_table(parent, 215, table_size, section_name)
+        local scroll_table = Gui.elements.scroll_table(parent, 215, table_size, section_name)
         scroll_table.parent.visible = false
 
         -- Return the flow table
-        return definition:no_events(scroll_table)
+        return definition:unlink_element(scroll_table)
     end)
-    :on_click(function(_, element, event)
+    :on_click(function(def, player, element, event)
         event.element = element.parent.alignment[toggle_section.name]
         toggle_section:raise_event(event)
     end)
 
 --- Main gui container for the left flow
 -- @element rocket_list_container
-local rocket_list_container =
-    Gui.element(function(definition, parent)
+local rocket_list_container = Gui.element("rocket_list_container")
+    :draw(function(definition, parent)
         -- Draw the internal container
-        local container = Gui.container(parent, definition.name, 200)
+        local container = Gui.elements.container(parent, 200)
 
         -- Set the container style
         local style = container.style
         style.padding = 0
 
-        local player = Gui.get_player_from_element(parent)
+        local player = Gui.get_player(parent)
         local force_name = player.force.name
         -- Draw stats section
         if config.stats.show_stats then
@@ -503,7 +473,6 @@ local rocket_list_container =
         -- Draw build progress list
         if config.progress.show_progress then
             local col_count = 3
-            if check_player_permissions(player, "remote_launch") then col_count = col_count + 1 end
             if check_player_permissions(player, "toggle_active") then col_count = col_count + 1 end
             local progress = section(container, "progress", col_count)
             -- Label used when there are no active silos
@@ -516,19 +485,23 @@ local rocket_list_container =
             update_build_progress(progress, get_progress_data(force_name))
         end
 
-        -- Return the exteral container
+        -- Return the external container
         return container.parent
     end)
-    :static_name(Gui.unique_static_name)
-    :add_to_left_flow(function(player)
-        return player.force.rockets_launched > 0 and Roles.player_allowed(player, "gui/rocket-info")
-    end)
 
---- Button on the top flow used to toggle the container
--- @element toggle_rocket_info
-Gui.left_toolbar_button("item/rocket-silo", { "rocket-info.main-tooltip" }, rocket_list_container, function(player)
-    return Roles.player_allowed(player, "gui/rocket-info")
+--- Add the element to the left flow with a toolbar button
+Gui.add_left_element(rocket_list_container, function(player, element)
+    return player.force.rockets_launched > 0 and Roles.player_allowed(player, "gui/rocket-info")
 end)
+Gui.toolbar.create_button{
+    name = "rocket_list_toggle",
+    left_element = rocket_list_container,
+    sprite = "item/rocket-silo",
+    tooltip = { "rocket-info.main-tooltip" },
+    visible = function(player, element)
+        return Roles.player_allowed(player, "gui/rocket-info")
+    end
+}
 
 --- Update the gui for all players on a force
 local function update_rocket_gui_all(force_name)
@@ -536,11 +509,11 @@ local function update_rocket_gui_all(force_name)
     local milestones = get_milestone_data(force_name)
     local progress = get_progress_data(force_name)
     for _, player in pairs(game.forces[force_name].players) do
-        local frame = Gui.get_left_element(player, rocket_list_container)
-        local container = frame.container
-        update_data_labels(container.stats.table, stats)
-        update_data_labels(container.milestones.table, milestones)
-        update_build_progress(container.progress.table, progress)
+        local container = Gui.get_left_element(rocket_list_container, player)
+        local frame = container.frame
+        update_data_labels(frame.stats.table, stats)
+        update_data_labels(frame.milestones.table, milestones)
+        update_build_progress(frame.progress.table, progress)
     end
 end
 
@@ -553,10 +526,10 @@ end)
 --- Update only the progress gui for a force
 local function update_rocket_gui_progress(force_name)
     local progress = get_progress_data(force_name)
-    for _, player in pairs(game.forces[force_name].players) do
-        local frame = Gui.get_left_element(player, rocket_list_container)
-        local container = frame.container
-        update_build_progress(container.progress.table, progress)
+    for _, player in pairs(game.forces[force_name].connected_players) do
+        local container = Gui.get_left_element(rocket_list_container, player)
+        local frame = container.frame
+        update_build_progress(frame.progress.table, progress)
     end
 end
 
@@ -590,12 +563,11 @@ Event.add(defines.events.on_robot_built_entity, on_built)
 local function role_update_event(event)
     if not config.progress.show_progress then return end
     local player = game.players[event.player_index]
-    local container = Gui.get_left_element(player, rocket_list_container).container
-    local progress_scroll = container.progress
+    local container = Gui.get_left_element(rocket_list_container, player)
+    local progress_scroll = container.frame.progress
     Gui.destroy_if_valid(progress_scroll.table)
 
     local col_count = 3
-    if check_player_permissions(player, "remote_launch") then col_count = col_count + 1 end
     if check_player_permissions(player, "toggle_active") then col_count = col_count + 1 end
     local progress = progress_scroll.add{
         type = "table",

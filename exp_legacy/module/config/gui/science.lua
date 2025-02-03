@@ -13,4 +13,9 @@ return {
     "production-science-pack",
     "utility-science-pack",
     "space-science-pack",
+    "metallurgic-science-pack",
+    "agricultural-science-pack",
+    "electromagnetic-science-pack",
+    "cryogenic-science-pack",
+    "promethium-science-pack",
 }

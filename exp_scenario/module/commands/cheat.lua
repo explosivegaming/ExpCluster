@@ -42,7 +42,7 @@ Commands.new("set-always-day", { "exp-commands_cheat.description-always-day" })
         else
             surface.always_day = state
         end
-        game.print{ "exp-commands_cheat.always-day", format_player_name(player), surface.localised_name, surface.always_day }
+        game.print{ "exp-commands_cheat.always-day", format_player_name(player), surface.name, surface.always_day }
     end)
 
 --- Toggles friendly fire for your force or another
@@ -89,7 +89,7 @@ Commands.new("clear-pollution", { "exp-commands_cheat.description-clear-pollutio
     :register(function(player, surface)
         --- @cast surface LuaSurface
         surface.clear_pollution()
-        game.print{ "exp-commands_cheat.clear-pollution", format_player_name(player), surface.localised_name }
+        game.print{ "exp-commands_cheat.clear-pollution", format_player_name(player), surface.name }
     end)
 
 --- Toggles pollution being enabled in the game

@@ -5,8 +5,8 @@
 ]]
 
 local ExpUtil = require("modules/exp_util")
-local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
-local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.gui
+local Gui = require("modules/exp_gui")
+local Roles = require("modules.exp_legacy.expcore.roles")
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local config = require("modules.exp_legacy.config.gui.science") --- @dep config.gui.science
 local Production = require("modules.exp_legacy.modules.control.production") --- @dep modules.control.production
@@ -17,16 +17,23 @@ local long_time_format = ExpUtil.format_time_factory_locale{ format = "long", ho
 local null_time_clock = { "science-info.eta-time", clock_time_format(nil) }
 local null_time_long = long_time_format(nil)
 
---- Data label that contains the value and the surfix
+--- Remove invalid science packs, this can result from a certain mod not being loaded
+for i = #config, 1, -1 do
+    if not prototypes.item[config[i]] then
+        table.remove(config, i)
+    end
+end
+
+--- Data label that contains the value and the suffix
 -- @element production_label
-local production_label =
-    Gui.element(function(_, parent, production_label_data)
+local production_label = Gui.element("science_info_production_label")
+    :draw(function(_, parent, production_label_data)
         local name = production_label_data.name
         local tooltip = production_label_data.tooltip
         local color = production_label_data.color
 
         -- Add an alignment for the number
-        local alignment = Gui.alignment(parent, name)
+        local alignment = Gui.elements.aligned_flow(parent, { name = name })
 
         -- Add the main value label
         local element =
@@ -40,19 +47,19 @@ local production_label =
         -- Change the style
         element.style.font_color = color
 
-        -- Add the surfix label
-        local surfix_element =
+        -- Add the suffix label
+        local suffix_element =
             parent.add{
-                name = "surfix-" .. name,
+                name = "suffix-" .. name,
                 type = "label",
-                caption = { "science-info.unit", production_label_data.surfix },
+                caption = { "science-info.unit", production_label_data.suffix },
                 tooltip = tooltip,
             }
 
         -- Change the style
-        local surfix_element_style = surfix_element.style
-        surfix_element_style.font_color = color
-        surfix_element_style.right_margin = 1
+        local suffix_element_style = suffix_element.style
+        suffix_element_style.font_color = color
+        suffix_element_style.right_margin = 1
 
         -- Return the value label
         return element
@@ -61,12 +68,12 @@ local production_label =
 -- Get the data that is used with the production label
 local function get_production_label_data(name, tooltip, value, cutout, secondary)
     local data_colour = Production.get_color(config.color_cutoff * cutout, value, secondary)
-    local surfix, caption = Production.format_number(value)
+    local suffix, caption = Production.format_number(value)
 
     return {
         name = name,
         caption = caption,
-        surfix = surfix,
+        suffix = suffix,
         tooltip = tooltip,
         color = data_colour,
     }
@@ -84,17 +91,17 @@ local function update_production_label(parent, production_label_data)
     production_label_element.tooltip = production_label_data.tooltip
     production_label_element.style.font_color = color
 
-    -- Update the surfix label
-    local surfix_element = parent["surfix-" .. name]
-    surfix_element.caption = { "science-info.unit", production_label_data.surfix }
-    surfix_element.tooltip = tooltip
-    surfix_element.style.font_color = color
+    -- Update the suffix label
+    local suffix_element = parent["suffix-" .. name]
+    suffix_element.caption = { "science-info.unit", production_label_data.suffix }
+    suffix_element.tooltip = tooltip
+    suffix_element.style.font_color = color
 end
 
 --- Adds 4 elements that show the data for a science pack
 -- @element science_pack_base
-local science_pack_base =
-    Gui.element(function(_, parent, science_pack_data)
+local science_pack_base = Gui.element("science_info_science_pack_base")
+    :draw(function(_, parent, science_pack_data)
         local science_pack = science_pack_data.science_pack
 
         -- Draw the icon for the science pack
@@ -262,18 +269,21 @@ end
 
 --- Main task list container for the left flow
 -- @element task_list_container
-local science_info_container =
-    Gui.element(function(definition, parent)
-        local player = Gui.get_player_from_element(parent)
+local science_info = Gui.element("science_info")
+    :draw(function(def, parent)
+        local player = Gui.get_player(parent)
 
         -- Draw the internal container
-        local container = Gui.container(parent, definition.name, 200)
+        local container = Gui.elements.container(parent, 200)
 
         -- Draw the header
-        Gui.header(container, { "science-info.main-caption" }, { "science-info.main-tooltip" })
+        Gui.elements.header(container, {
+            caption = { "science-info.main-caption" },
+            tooltip = { "science-info.main-tooltip" },
+        })
 
         -- Draw the scroll table for the tasks
-        local scroll_table = Gui.scroll_table(container, 178, 4)
+        local scroll_table = Gui.elements.scroll_table(container, 178, 4, "scroll")
 
         -- Draw the no packs label
         local no_packs_label =
@@ -292,7 +302,11 @@ local science_info_container =
         -- Add the footer and eta
         if config.show_eta then
             -- Draw the footer
-            local footer = Gui.footer(container, { "science-info.eta-caption" }, { "science-info.eta-tooltip" }, true)
+            local footer = Gui.elements.footer(container, {
+                name = "footer",
+                caption = { "science-info.eta-caption" },
+                tooltip = { "science-info.eta-tooltip" },
+            })
 
             -- Draw the eta label
             local eta_label =
@@ -313,17 +327,21 @@ local science_info_container =
             update_science_pack(scroll_table, get_science_pack_data(player, science_pack))
         end
 
-        -- Return the exteral container
+        -- Return the external container
         return container.parent
     end)
-    :static_name(Gui.unique_static_name)
-    :add_to_left_flow()
 
---- Button on the top flow used to toggle the task list container
--- @element toggle_science_info
-Gui.left_toolbar_button("entity/lab", { "science-info.main-tooltip" }, science_info_container, function(player)
-    return Roles.player_allowed(player, "gui/science-info")
-end)
+--- Add the element to the left flow with a toolbar button
+Gui.add_left_element(science_info, false)
+Gui.toolbar.create_button{
+    name = "science_info_toggle",
+    left_element = science_info,
+    sprite = "entity/lab",
+    tooltip = { "science-info.main-tooltip" },
+    visible = function(player, element)
+        return Roles.player_allowed(player, "gui/science-info")
+    end
+}
 
 --- Updates the gui every 1 second
 Event.on_nth_tick(60, function()
@@ -331,11 +349,11 @@ Event.on_nth_tick(60, function()
     local force_eta_data = {}
     for _, player in pairs(game.connected_players) do
         local force_name = player.force.name
-        local frame = Gui.get_left_element(player, science_info_container)
-        local container = frame.container
+        local container = Gui.get_left_element(science_info, player)
+        local frame = container.frame
 
         -- Update the science packs
-        local scroll_table = container.scroll.table
+        local scroll_table = frame.scroll.table
         local pack_data = force_pack_data[force_name]
         if not pack_data then
             -- No data in cache so it needs to be generated
@@ -355,7 +373,7 @@ Event.on_nth_tick(60, function()
 
         -- Update the eta times
         if not config.show_eta then return end
-        local eta_label = container.footer.alignment.label
+        local eta_label = frame.footer.flow.label
         local eta_data = force_eta_data[force_name]
         if not eta_data then
             -- No data in chache so it needs to be generated

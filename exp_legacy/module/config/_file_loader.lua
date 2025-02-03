@@ -41,14 +41,15 @@ return {
     -- 'modules.data.bonus',
     "modules.data.personal-logistic",
     "modules.data.language",
+    --"modules.data.toolbar",
 
     --- GUI
     "modules.gui.readme",
     "modules.gui.rocket-info",
     "modules.gui.science-info",
     "modules.gui.autofill",
-    "modules.gui.warp-list",
     "modules.gui.task-list",
+    "modules.gui.warp-list",
     "modules.gui.player-list",
     "modules.gui.server-ups",
     "modules.gui.bonus",
@@ -60,9 +61,9 @@ return {
     "modules.gui.production",
     "modules.gui.playerdata",
     "modules.gui.surveillance",
-    "modules.graftorio.require", -- graftorio
-    "modules.gui.toolbar", -- must be loaded last to register toolbar handlers
+    "modules.gui._role_updates",
 
+    "modules.graftorio.require", -- graftorio
     --- Config Files
     "config.expcore.permission_groups", -- loads some predefined permission groups
     "config.expcore.roles", -- loads some predefined roles

@@ -1,7 +1,7 @@
 ---- Production Data
 -- @gui Production
 
-local Gui = require("modules.exp_legacy.expcore.gui") --- @dep expcore.gui
+local Gui = require("modules/exp_gui")
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 
@@ -35,8 +35,8 @@ end
 
 --- Display group
 -- @element production_data_group
-local production_data_group =
-    Gui.element(function(_definition, parent, i)
+local production_data_group = Gui.element("production_data_group")
+    :draw(function(_def, parent, i)
         local item
 
         if i == 0 then
@@ -93,10 +93,10 @@ local production_data_group =
 
 --- A vertical flow containing all the production data
 -- @element production_data_set
-local production_data_set =
-    Gui.element(function(_, parent, name)
+local production_data_set = Gui.element("production_data_set")
+    :draw(function(_, parent, name)
         local production_set = parent.add{ type = "flow", direction = "vertical", name = name }
-        local disp = Gui.scroll_table(production_set, 350, 4, "disp")
+        local disp = Gui.elements.scroll_table(production_set, 350, 4, "disp")
 
         production_data_group(disp, 0)
 
@@ -111,31 +111,37 @@ local production_data_set =
         return production_set
     end)
 
-production_container =
-    Gui.element(function(definition, parent)
-        local container = Gui.container(parent, definition.name, 350)
+production_container = Gui.element("production_container")
+    :draw(function(def, parent)
+        local container = Gui.elements.container(parent, 350)
 
         production_data_set(container, "production_st")
 
         return container.parent
     end)
-    :static_name(Gui.unique_static_name)
-    :add_to_left_flow()
 
-Gui.left_toolbar_button("entity/assembling-machine-3", { "production.main-tooltip" }, production_container, function(player)
-    return Roles.player_allowed(player, "gui/production")
-end)
+--- Add the element to the left flow with a toolbar button
+Gui.add_left_element(production_container, false)
+Gui.toolbar.create_button{
+    name = "production_toggle",
+    left_element = production_container,
+    sprite = "entity/assembling-machine-3",
+    tooltip = { "production.main-tooltip" },
+    visible = function(player, element)
+        return Roles.player_allowed(player, "gui/production")
+    end
+}
 
 Event.on_nth_tick(60, function()
     for _, player in pairs(game.connected_players) do
-        local frame = Gui.get_left_element(player, production_container)
+        local container = Gui.get_left_element(production_container, player)
         local stat = player.force.get_item_production_statistics(player.surface) -- Allow remote view
-        local precision_value = precision[frame.container["production_st"].disp.table["production_0_e"].selected_index]
-        local table = frame.container["production_st"].disp.table
+        local precision_value = precision[container.frame["production_st"].disp.table["production_0_e"].selected_index]
+        local table = container.frame["production_st"].disp.table
 
         for i = 1, 8 do
             local production_prefix = "production_" .. i
-            local item = table[production_prefix .. "_e"].elem_value
+            local item = table[production_prefix .. "_e"].elem_value --[[ @as string ]]
 
             if item then
                 local add = math.floor(stat.get_flow_count{ name = item, category = "input", precision_index = precision_value, count = false } / 6) / 10
