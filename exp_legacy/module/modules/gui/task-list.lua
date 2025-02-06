@@ -244,8 +244,7 @@ local task_view_edit_button = Gui.element("task_view_edit_button")
         tooltip = { "task-list.edit-tooltip" },
         style = "shortcut_bar_button",
     }:style(Styles.footer_button):on_click(
-        function(def, event, element)
-            local player = Gui.get_player(event)
+        function(def, player, element)
             local selected = PlayerSelected:get(player)
             PlayerIsEditing:set(player, true)
 
