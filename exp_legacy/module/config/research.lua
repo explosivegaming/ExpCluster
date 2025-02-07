@@ -159,4 +159,13 @@ return {
             ["follower-robot-count-5"] = 5,
         }
     },
+    -- prevent research up to a certain level
+    limit_res = {
+        -- Artillery Range
+        ["artillery-shell-range-1"] = 7,
+        -- Artillery Speed
+        ["artillery-shell-speed-1"] = 7,
+        -- Atomic Bomb
+        -- ["atomic-bomb"] = 1
+    },
 }
