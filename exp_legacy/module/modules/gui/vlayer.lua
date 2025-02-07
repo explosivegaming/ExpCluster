@@ -489,9 +489,9 @@ local function role_update_event(event)
     local player = game.players[event.player_index]
     local visible = Roles.player_allowed(player, "gui/vlayer-edit")
     local container = Gui.get_left_element(vlayer_container, player)
-    local frame = container.frame["vlayer_st_2"]
-    frame[vlayer_gui_control_build.name].visible = visible
-    frame[vlayer_gui_control_remove.name].visible = visible
+    local disp = container.frame["vlayer_st_2"].disp.table
+    disp[vlayer_gui_control_build.name].visible = visible
+    disp[vlayer_gui_control_remove.name].visible = visible
 end    
 
 Event.add(Roles.events.on_role_assigned, role_update_event)
