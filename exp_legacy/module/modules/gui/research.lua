@@ -64,7 +64,7 @@ local function research_add_log()
     local result_data = {}
 
     for i = 1, #research.time do
-        result_data[res.disp[i].raw_name] = research.time[i]
+        result_data[res["disp"][i]["raw_name"]] = research.time[i]
     end
 
     write_file(config.file_name, table_to_json(result_data) .. "\n", true, 0)
