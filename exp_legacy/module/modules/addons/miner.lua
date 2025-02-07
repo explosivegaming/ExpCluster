@@ -85,7 +85,7 @@ local function chest_check(entity)
         end
     end
 
-    if not check_entity(target) then
+    if check_entity(target) then
         table.insert(miner_data.queue, { t = game.tick + 10, e = target })
     end
 end
