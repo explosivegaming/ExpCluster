@@ -443,6 +443,7 @@ local vlayer_gui_control_remove = Gui.element("vlayer_gui_control_remove")
 -- @element vlayer_control_set
 local vlayer_control_set = Gui.element("vlayer_control_set")
     :draw(function(_, parent, name)
+        local player = Gui.get_player(parent)
         local vlayer_set = parent.add{ type = "flow", direction = "vertical", name = name }
         local disp = Gui.elements.scroll_table(vlayer_set, 400, 2, "disp")
 
@@ -450,8 +451,11 @@ local vlayer_control_set = Gui.element("vlayer_control_set")
         vlayer_gui_control_list(disp)
         vlayer_gui_control_refresh(disp)
         vlayer_gui_control_see(disp)
-        vlayer_gui_control_build(disp)
-        vlayer_gui_control_remove(disp)
+        local b = vlayer_gui_control_build(disp)
+        local r = vlayer_gui_control_remove(disp)
+        local v = Roles.player_allowed(player, "gui/vlayer-edit")
+        b.visible = v
+        r.visible = v
 
         return vlayer_set
     end)
@@ -460,12 +464,10 @@ local vlayer_control_set = Gui.element("vlayer_control_set")
 -- @element vlayer_container
 vlayer_container = Gui.element("vlayer_container")
     :draw(function(definition, parent)
-        local player = Gui.get_player(parent)
         local container = Gui.elements.container(parent, 400)
 
         vlayer_display_set(container, "vlayer_st_1")
-        local control_set = vlayer_control_set(container, "vlayer_st_2")
-        control_set.visible = Roles.player_allowed(player, "gui/vlayer-edit")
+        vlayer_control_set(container, "vlayer_st_2")
 
         return container.parent
     end)
@@ -487,8 +489,10 @@ local function role_update_event(event)
     local player = game.players[event.player_index]
     local visible = Roles.player_allowed(player, "gui/vlayer-edit")
     local container = Gui.get_left_element(vlayer_container, player)
-    container.frame["vlayer_st_2"].visible = visible
-end
+    local frame = container.frame["vlayer_st_2"]
+    frame[vlayer_gui_control_build.name].visible = visible
+    frame[vlayer_gui_control_remove.name].visible = visible
+end    
 
 Event.add(Roles.events.on_role_assigned, role_update_event)
 Event.add(Roles.events.on_role_unassigned, role_update_event)
