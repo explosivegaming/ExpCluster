@@ -114,6 +114,21 @@ local function research_notification(event)
             event.research.force[config.bonus_inventory.name] = event.research.level * config.bonus_inventory.rate
         end
     end
+
+    if config.limit_res[event.research.name] and event.research.level > config.limit_res[event.research.name] then
+        event.research.enabled = false
+        event.research.visible_when_disabled = true
+        local rq = event.research.force.research_queue
+
+        for i = #rq, 1, -1 do
+            if rq[i] == event.research.name then
+                table.remove(rq, i)
+            end
+        end
+
+        event.research.force.cancel_current_research()
+        event.research.force.research_queue = rq
+    end
 end
 
 local function research_gui_update()
