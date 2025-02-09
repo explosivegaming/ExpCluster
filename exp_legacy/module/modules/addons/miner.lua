@@ -160,7 +160,7 @@ Event.add(defines.events.on_resource_depleted, function(event)
     end
 
     local resource = event.entity
-    local drills = resource.surface.find_entities_filtered{ type = "mining-drill" }
+    local drills = resource.surface.find_entities_filtered{ area = { { event.entity.position.x - 1, event.entity.position.y - 1 }, { event.entity.position.x + 1, event.entity.position.y + 1 } }, type = "mining-drill" }
 
     for _, entity in pairs(drills) do
         local radius = entity.prototype.mining_drill_radius
