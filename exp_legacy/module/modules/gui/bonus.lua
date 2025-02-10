@@ -4,6 +4,7 @@
 ]]
 
 local Gui = require("modules/exp_gui")
+local Storage = require("modules/exp_util/storage")
 local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local config = require("modules.exp_legacy.config.bonus") --- @dep config.bonus
@@ -11,7 +12,14 @@ local vlayer = require("modules.exp_legacy.modules.control.vlayer")
 local format_number = require("util").format_number --- @dep util
 
 local bonus_container
-local bonus_score_limit = config.pts.base
+
+local bonus_data = {
+    score_limit = {}
+}
+
+Storage.register(bonus_data, function(tbl)
+    bonus_data = tbl
+end)
 
 --- @param player LuaPlayer
 --- @param container LuaGuiElement?
@@ -123,7 +131,7 @@ local bonus_gui_control_pts_count = Gui.element("bonus_gui_control_pts_count")
     :draw{
         type = "progressbar",
         name = Gui.property_from_name,
-        caption = "0 / " .. bonus_score_limit,
+        caption = "0 / 0",
         value = 0,
         style = "electric_satisfaction_statistics_progressbar",
     }:style{
@@ -155,8 +163,8 @@ local bonus_gui_control_reset = Gui.element("bonus_gui_control_reset")
         disp[slider.tags.counter].caption = format_number(slider.slider_value, false)
 
         local n = bonus_gui_pts_needed(player)
-        element.parent[bonus_gui_control_pts_count.name].caption = n .. " / " .. bonus_score_limit
-        element.parent[bonus_gui_control_pts_count.name].value = n / bonus_score_limit
+        element.parent[bonus_gui_control_pts_count.name].caption = n .. " / " .. bonus_data.score_limit[player]
+        element.parent[bonus_gui_control_pts_count.name].value = n / bonus_data.score_limit[player]
     end)
 
 --- A button used for pts apply
@@ -170,10 +178,10 @@ local bonus_gui_control_apply = Gui.element("bonus_gui_control_apply")
         width = config.gui_display_width["half"],
     }:on_click(function(def, player, element)
         local n = bonus_gui_pts_needed(player)
-        element.parent[bonus_gui_control_pts_count.name].caption = n .. " / " .. bonus_score_limit
-        element.parent[bonus_gui_control_pts_count.name].value = n / bonus_score_limit
+        element.parent[bonus_gui_control_pts_count.name].caption = n .. " / " .. bonus_data.score_limit[player]
+        element.parent[bonus_gui_control_pts_count.name].value = n / bonus_data.score_limit[player]
 
-        if n <= bonus_score_limit then
+        if n <= bonus_data.score_limit[player] then
             apply_bonus(player)
         end
     end)
@@ -236,8 +244,8 @@ local bonus_gui_slider = Gui.element("bonus_gui_slider")
         local container = Gui.get_left_element(bonus_container, player)
         local disp = container.frame["bonus_st_1"].disp.table
         local n = bonus_gui_pts_needed(player)
-        disp[bonus_gui_control_pts_count.name].caption = n .. " / " .. bonus_score_limit
-        disp[bonus_gui_control_pts_count.name].value = n / bonus_score_limit
+        disp[bonus_gui_control_pts_count.name].caption = n .. " / " .. bonus_data.score_limit[player]
+        disp[bonus_gui_control_pts_count.name].value = n / bonus_data.score_limit[player]
     end)
 
 --- A vertical flow containing all the bonus data
@@ -268,9 +276,9 @@ bonus_container = Gui.element("bonus_container")
 
         local disp = container["bonus_st_1"].disp.table
         local n = bonus_gui_pts_needed(player, container.parent)
-        bonus_score_limit = bonus_score_limit_calc(player)
-        disp[bonus_gui_control_pts_count.name].caption = n .. " / " .. bonus_score_limit
-        disp[bonus_gui_control_pts_count.name].value = n / bonus_score_limit
+        bonus_data.score_limit[player] = bonus_score_limit_calc(player)
+        disp[bonus_gui_control_pts_count.name].caption = n .. " / " .. bonus_data.score_limit[player]
+        disp[bonus_gui_control_pts_count.name].value = n / bonus_data.score_limit[player]
 
         return container.parent
     end)
@@ -303,13 +311,14 @@ end)
 
 Event.add(Roles.events.on_role_assigned, function(event)
     local player = game.players[event.player_index]
-    bonus_score_limit = bonus_score_limit_calc(player)
+    bonus_data[player] = config.pts.base
+    bonus_data.score_limit[player] = bonus_score_limit_calc(player)
     apply_bonus(player)
 end)
 
 Event.add(Roles.events.on_role_unassigned, function(event)
     local player = game.players[event.player_index]
-    bonus_score_limit = bonus_score_limit_calc(player)
+    bonus_data.score_limit[player] = bonus_score_limit_calc(player)
     apply_bonus(player)
 end)
 
@@ -319,10 +328,10 @@ Event.add(defines.events.on_player_respawned, function(event)
     local container = Gui.get_left_element(bonus_container, player)
     local disp = container.frame["bonus_st_1"].disp.table
     local n = bonus_gui_pts_needed(player)
-    disp[bonus_gui_control_pts_count.name].caption = n .. " / " .. bonus_score_limit
-    disp[bonus_gui_control_pts_count.name].value = n / bonus_score_limit
+    disp[bonus_gui_control_pts_count.name].caption = n .. " / " .. bonus_data.score_limit[player]
+    disp[bonus_gui_control_pts_count.name].value = n / bonus_data.score_limit[player]
 
-    if n <= bonus_score_limit then
+    if n <= bonus_data.score_limit[player] then
         apply_bonus(player)
     end
 end)
