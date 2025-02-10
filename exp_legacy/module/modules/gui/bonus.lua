@@ -163,6 +163,7 @@ local bonus_gui_control_reset = Gui.element("bonus_gui_control_reset")
         disp[slider.tags.counter].caption = format_number(slider.slider_value, false)
 
         local n = bonus_gui_pts_needed(player)
+        bonus_data.score_limit[player] = bonus_score_limit_calc(player)
         element.parent[bonus_gui_control_pts_count.name].caption = n .. " / " .. bonus_data.score_limit[player]
         element.parent[bonus_gui_control_pts_count.name].value = n / bonus_data.score_limit[player]
     end)
@@ -178,6 +179,7 @@ local bonus_gui_control_apply = Gui.element("bonus_gui_control_apply")
         width = config.gui_display_width["half"],
     }:on_click(function(def, player, element)
         local n = bonus_gui_pts_needed(player)
+        bonus_data.score_limit[player] = bonus_score_limit_calc(player)
         element.parent[bonus_gui_control_pts_count.name].caption = n .. " / " .. bonus_data.score_limit[player]
         element.parent[bonus_gui_control_pts_count.name].value = n / bonus_data.score_limit[player]
 
@@ -244,6 +246,7 @@ local bonus_gui_slider = Gui.element("bonus_gui_slider")
         local container = Gui.get_left_element(bonus_container, player)
         local disp = container.frame["bonus_st_1"].disp.table
         local n = bonus_gui_pts_needed(player)
+        bonus_data.score_limit[player] = bonus_score_limit_calc(player)
         disp[bonus_gui_control_pts_count.name].caption = n .. " / " .. bonus_data.score_limit[player]
         disp[bonus_gui_control_pts_count.name].value = n / bonus_data.score_limit[player]
     end)
@@ -311,7 +314,6 @@ end)
 
 Event.add(Roles.events.on_role_assigned, function(event)
     local player = game.players[event.player_index]
-    bonus_data[player] = config.pts.base
     bonus_data.score_limit[player] = bonus_score_limit_calc(player)
     apply_bonus(player)
 end)
@@ -328,6 +330,7 @@ Event.add(defines.events.on_player_respawned, function(event)
     local container = Gui.get_left_element(bonus_container, player)
     local disp = container.frame["bonus_st_1"].disp.table
     local n = bonus_gui_pts_needed(player)
+    bonus_data.score_limit[player] = bonus_score_limit_calc(player)
     disp[bonus_gui_control_pts_count.name].caption = n .. " / " .. bonus_data.score_limit[player]
     disp[bonus_gui_control_pts_count.name].value = n / bonus_data.score_limit[player]
 
