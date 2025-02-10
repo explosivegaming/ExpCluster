@@ -80,9 +80,7 @@ local function research_res_n()
         end
     end
 
-    local max_start = math.max(1, #res.disp - 7)
-    local start = math.clamp(current - 3, 1, max_start)
-    return math.min(start, max_start)
+    return math.clamp(current - 3, 1, math.max(1, #res.disp - 7))
 end
 
 local function research_notification(event)
@@ -113,21 +111,6 @@ local function research_notification(event)
         if config.bonus_inventory.enabled and (event.research.name == "mining-productivity-1" or event.research.name == "mining-productivity-2" or event.research.name == "mining-productivity-3") then
             event.research.force[config.bonus_inventory.name] = event.research.level * config.bonus_inventory.rate
         end
-    end
-
-    if config.limit_res[event.research.name] and event.research.level > config.limit_res[event.research.name] then
-        event.research.enabled = false
-        event.research.visible_when_disabled = true
-        local rq = event.research.force.research_queue
-
-        for i = #rq, 1, -1 do
-            if rq[i] == event.research.name then
-                table.remove(rq, i)
-            end
-        end
-
-        event.research.force.cancel_current_research()
-        event.research.force.research_queue = rq
     end
 end
 
@@ -286,6 +269,23 @@ Event.add(defines.events.on_research_finished, function(event)
                 disp[research_name_i .. "_difference"].style.font_color = res_disp[i]["color"]
             end
         end
+    end
+end)
+
+Event.add(defines.events.on_research_started, function(event)
+    if config.limit_res[event.research.name] and event.research.level > config.limit_res[event.research.name] then
+        event.research.enabled = false
+        event.research.visible_when_disabled = true
+        local rq = event.research.force.research_queue
+
+        for i = #rq, 1, -1 do
+            if rq[i] == event.research.name then
+                table.remove(rq, i)
+            end
+        end
+
+        event.research.force.cancel_current_research()
+        event.research.force.research_queue = rq
     end
 end)
 
