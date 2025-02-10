@@ -147,7 +147,9 @@ local function research_gui_update()
         local res_i = res_n + i - 3
 
         if res["disp"][res_i] then
-            res_disp[i]["name"] = { "research.res-name", res["disp"][res_i]["raw_name"], prototypes.technology[res["disp"][res_i]["raw_name"]].localised_name }
+            local raw_name = res["disp"][res_i]["raw_name"]
+            local proto = assert(prototypes.technology[raw_name], "Invalid Research: " .. tostring(raw_name))
+            res_disp[i]["name"] = { "research.res-name", raw_name, proto.localised_name }
 
             if research.time[res_i] == 0 then
                 res_disp[i]["target"] = res["disp"][res_i].target_disp
