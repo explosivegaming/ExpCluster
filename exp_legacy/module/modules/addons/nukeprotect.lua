@@ -43,12 +43,3 @@ for _, inventory in ipairs(config.inventories) do
         end)
     end
 end
-
-if config.disable_nuke_research then
-    Event.add(defines.events.on_research_started, function(event)
-        local name = event.research.name
-        if config.disable_nuke_research_names[name] then
-            event.research.force.cancel_current_research()
-        end
-    end)
-end
