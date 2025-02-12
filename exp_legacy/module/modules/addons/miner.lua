@@ -102,10 +102,6 @@ local function miner_check(entity)
         end
     end
 
-    --[[
-        entity.status ~= defines.entity_status.no_minable_resources
-    ]]
-
     if check_entity(entity) then
         return
     end
@@ -113,30 +109,28 @@ local function miner_check(entity)
     local pipe_build = {}
 
     if config.fluid and entity.fluidbox and #entity.fluidbox > 0 then
-        -- if require fluid to mine
         table.insert(pipe_build, { x = 0, y = 0 })
+        local rh = math.ceil(er / 2) - 1
         local r = er + 1
-
         local entities = es.find_entities_filtered{ area = { { ep.x - r, ep.y - r }, { ep.x + r, ep.y + r } }, type = { "mining-drill", "pipe", "pipe-to-ground" } }
         local entities_t = es.find_entities_filtered{ area = { { ep.x - r, ep.y - r }, { ep.x + r, ep.y + r } }, ghost_type = { "pipe", "pipe-to-ground" } }
-
         table.insert_array(entities, entities_t)
 
         for _, e in pairs(entities) do
             if (e.position.x > ep.x) and (e.position.y == ep.y) then
-                for h = 1, er do
+                for h = 1, rh do
                     table.insert(pipe_build, { x = h, y = 0 })
                 end
             elseif (e.position.x < ep.x) and (e.position.y == ep.y) then
-                for h = 1, er do
+                for h = 1, rh do
                     table.insert(pipe_build, { x = -h, y = 0 })
                 end
             elseif (e.position.x == ep.x) and (e.position.y > ep.y) then
-                for h = 1, er do
+                for h = 1, rh do
                     table.insert(pipe_build, { x = 0, y = h })
                 end
             elseif (e.position.x == ep.x) and (e.position.y < ep.y) then
-                for h = 1, er do
+                for h = 1, rh do
                     table.insert(pipe_build, { x = 0, y = -h })
                 end
             end
@@ -150,7 +144,7 @@ local function miner_check(entity)
     table.insert(miner_data.queue, { t = game.tick + 5, e = entity })
 
     for _, pos in ipairs(pipe_build) do
-        es.create_entity{ name = "entity-ghost", position = { x = ep.x + pos.x, y = ep.y + pos.y }, force = ef, inner_name = "pipe", raise_built = true }
+        es.create_entity{ name = "entity-ghost", position = { x = ep.x + pos.x, y = ep.y + pos.y }, force = ef, inner_name = "pipe" }
     end
 end
 
