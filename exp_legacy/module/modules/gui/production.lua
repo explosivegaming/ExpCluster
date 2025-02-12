@@ -16,21 +16,43 @@ local precision = {
 }
 
 local font_color = {
-    -- positive
-    [1] = { r = 0.3, g = 1, b = 0.3 },
-    -- negative
-    [2] = { r = 1, g = 0.3, b = 0.3 },
+    ["positive"] = { r = 0.3, g = 1, b = 0.3 },
+    ["negative"] = { r = 1, g = 0.3, b = 0.3 },
 }
 
 local function format_n(n)
-    local _i, _j, m, i, f = tostring(n):find("([-]?)(%d+)([.]?%d*)")
-    i = i:reverse():gsub("(%d%d%d)", "%1,")
-
-    if f ~= "" then
-        return m .. i:reverse():gsub("^,", "") .. string.format("%.1f", f)
-    else
-        return m .. i:reverse():gsub("^,", "") .. ".0"
+    if n < 0.1 then
+        return "0.0"
     end
+
+    local suffix = ""
+    local suffix_list = {
+        ["T"] = 1000000000000,
+        ["G"] = 1000000000,
+        ["M"] = 1000000,
+        ["k"] = 1000,
+    }
+
+    for letter, limit in pairs(suffix_list) do
+        if math.abs(n) >= limit then
+            n = string.format("%.2f", n / limit)
+            suffix = letter
+            break
+        end
+    end
+
+    local k
+    local formatted = n
+
+    while true do
+        formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", "%1,%2")
+
+        if (k == 0) then
+            break
+        end
+    end
+
+    return formatted .. " " .. suffix
 end
 
 --- Display group
@@ -58,35 +80,17 @@ local production_data_group = Gui.element("production_data_group")
             item.style.width = 32
         end
 
-        local data_1 = parent.add{
-            type = "label",
-            name = "production_" .. i .. "_1",
-            caption = "0.0",
-            style = "heading_2_label",
-        }
-        data_1.style.width = 90
-        data_1.style.horizontal_align = "right"
-        data_1.style.font_color = font_color[1]
-
-        local data_2 = parent.add{
-            type = "label",
-            name = "production_" .. i .. "_2",
-            caption = "0.0",
-            style = "heading_2_label",
-        }
-        data_2.style.width = 90
-        data_2.style.horizontal_align = "right"
-        data_2.style.font_color = font_color[2]
-
-        local data_3 = parent.add{
-            type = "label",
-            name = "production_" .. i .. "_3",
-            caption = "0.0",
-            style = "heading_2_label",
-        }
-        data_3.style.width = 90
-        data_3.style.horizontal_align = "right"
-        data_3.style.font_color = font_color[1]
+        for j = 1, 3 do
+            local data = parent.add{
+                type = "label",
+                name = "production_" .. i .. "_" .. j,
+                caption = "0.0",
+                style = "heading_2_label",
+            }
+            data.style.width = 90
+            data.style.horizontal_align = "right"
+            data.style.font_color = font_color["positive"]
+        end
 
         return item
     end)
@@ -97,26 +101,20 @@ local production_data_set = Gui.element("production_data_set")
     :draw(function(_, parent, name)
         local production_set = parent.add{ type = "flow", direction = "vertical", name = name }
         local disp = Gui.elements.scroll_table(production_set, 350, 4, "disp")
-
         production_data_group(disp, 0)
-
         disp["production_0_1"].caption = { "production.label-prod" }
         disp["production_0_2"].caption = { "production.label-con" }
         disp["production_0_3"].caption = { "production.label-bal" }
-
         for i = 1, 8 do
             production_data_group(disp, i)
         end
-
         return production_set
     end)
 
 production_container = Gui.element("production_container")
     :draw(function(def, parent)
         local container = Gui.elements.container(parent, 350)
-
         production_data_set(container, "production_st")
-
         return container.parent
     end)
 
@@ -138,30 +136,22 @@ Event.on_nth_tick(60, function()
         local stat = player.force.get_item_production_statistics(player.surface) -- Allow remote view
         local precision_value = precision[container.frame["production_st"].disp.table["production_0_e"].selected_index]
         local table = container.frame["production_st"].disp.table
-
         for i = 1, 8 do
             local production_prefix = "production_" .. i
             local item = table[production_prefix .. "_e"].elem_value --[[ @as string ]]
-
             if item then
                 local add = math.floor(stat.get_flow_count{ name = item, category = "input", precision_index = precision_value, count = false } / 6) / 10
                 local minus = math.floor(stat.get_flow_count{ name = item, category = "output", precision_index = precision_value, count = false } / 6) / 10
                 local sum = add - minus
-
                 table[production_prefix .. "_1"].caption = format_n(add)
                 table[production_prefix .. "_2"].caption = format_n(minus)
                 table[production_prefix .. "_3"].caption = format_n(sum)
-
-                if sum < 0 then
-                    table[production_prefix .. "_3"].style.font_color = font_color[2]
-                else
-                    table[production_prefix .. "_3"].style.font_color = font_color[1]
-                end
+                table[production_prefix .. "_3"].style.font_color = (sum < 0 and font_color["negative"]) or font_color["positive"]
             else
                 table[production_prefix .. "_1"].caption = "0.0"
                 table[production_prefix .. "_2"].caption = "0.0"
                 table[production_prefix .. "_3"].caption = "0.0"
-                table[production_prefix .. "_3"].style.font_color = font_color[1]
+                table[production_prefix .. "_3"].style.font_color = font_color["positive"]
             end
         end
     end
