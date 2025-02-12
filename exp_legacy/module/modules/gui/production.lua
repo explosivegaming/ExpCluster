@@ -83,7 +83,7 @@ local production_data_group = Gui.element("production_data_group")
                 caption = "0.0",
                 style = "heading_2_label",
             }
-            data.style.width = 90
+            data.style.width = 80
             data.style.horizontal_align = "right"
             data.style.font_color = font_color["positive"]
         end
@@ -96,7 +96,7 @@ local production_data_group = Gui.element("production_data_group")
 local production_data_set = Gui.element("production_data_set")
     :draw(function(_, parent, name)
         local production_set = parent.add{ type = "flow", direction = "vertical", name = name }
-        local disp = Gui.elements.scroll_table(production_set, 350, 4, "disp")
+        local disp = Gui.elements.scroll_table(production_set, 320, 4, "disp")
         production_data_group(disp, 0)
         disp["production_0_1"].caption = { "production.label-prod" }
         disp["production_0_2"].caption = { "production.label-con" }
@@ -109,7 +109,7 @@ local production_data_set = Gui.element("production_data_set")
 
 production_container = Gui.element("production_container")
     :draw(function(def, parent)
-        local container = Gui.elements.container(parent, 350)
+        local container = Gui.elements.container(parent, 320)
         production_data_set(container, "production_st")
         return container.parent
     end)
