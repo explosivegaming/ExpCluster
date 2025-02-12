@@ -27,7 +27,7 @@ local function format_n(n)
     i = i:reverse():gsub("(%d%d%d)", "%1,")
 
     if f ~= "" then
-        return m .. i:reverse():gsub("^,", "") .. f
+        return m .. i:reverse():gsub("^,", "") .. string.format("%.1f", f)
     else
         return m .. i:reverse():gsub("^,", "") .. ".0"
     end
