@@ -21,38 +21,34 @@ local font_color = {
 }
 
 local function format_n(amount)
-    if amount < 0.1 then
-        return "0.0"
+    if math.abs(amount) < 0.009 then
+        return "0.00"
     end
-
     local suffix = ""
     local suffix_list = {
-        ["T"] = 1000000000000,
-        ["G"] = 1000000000,
-        ["M"] = 1000000,
-        ["k"] = 1000,
+        ["G"] = 1e9,
+        ["M"] = 1e6,
+        ["k"] = 1e3
     }
-
+    local scale = 1
     for letter, limit in pairs(suffix_list) do
         if math.abs(amount) >= limit then
-            amount = string.format("%.2f", amount / limit)
+            scale = limit
             suffix = letter
             break
         end
     end
-
-    local k
-    local formatted = amount
-
-    while true do
-        formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", "%1,%2")
-
-        if (k == 0) then
-            break
-        end
-    end
-
-    return formatted .. " " .. suffix
+    local formatted = string.format("%.2f", amount / scale)
+    -- Split into integer and fractional parts
+    local integer_part, fractional_part = formatted:match("^(%-?%d+)%.(%d+)$")
+    integer_part = integer_part or formatted
+    fractional_part = fractional_part or "00"
+    -- Add commas to integer part
+    integer_part = integer_part:reverse():gsub("(%d%d%d)", "%1,"):reverse()
+    integer_part = integer_part:gsub("^,", ""):gsub("-,", "-")
+    -- Handle numbers below 1000 without suffix
+    -- Combine parts and add suffix
+    return string.format("%s.%s%s", integer_part, fractional_part, (suffix == "" and "") or (" " .. suffix)):gsub("%.?0+ %k$", " " .. suffix)
 end
 
 --- Display group
