@@ -20,8 +20,8 @@ local font_color = {
     ["negative"] = { r = 1, g = 0.3, b = 0.3 },
 }
 
-local function format_n(n)
-    if n < 0.1 then
+local function format_n(amount)
+    if amount < 0.1 then
         return "0.0"
     end
 
@@ -34,15 +34,15 @@ local function format_n(n)
     }
 
     for letter, limit in pairs(suffix_list) do
-        if math.abs(n) >= limit then
-            n = string.format("%.2f", n / limit)
+        if math.abs(amount) >= limit then
+            amount = string.format("%.2f", amount / limit)
             suffix = letter
             break
         end
     end
 
     local k
-    local formatted = n
+    local formatted = amount
 
     while true do
         formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", "%1,%2")
