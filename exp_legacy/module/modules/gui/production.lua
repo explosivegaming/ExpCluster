@@ -42,13 +42,12 @@ local function format_n(amount)
     -- Split into integer and fractional parts
     local integer_part, fractional_part = formatted:match("^(%-?%d+)%.(%d+)$")
     integer_part = integer_part or formatted
-    fractional_part = fractional_part or "00"
     -- Add commas to integer part
     integer_part = integer_part:reverse():gsub("(%d%d%d)", "%1,"):reverse()
     integer_part = integer_part:gsub("^,", ""):gsub("-,", "-")
     -- Handle numbers below 1000 without suffix
     -- Combine parts and add suffix
-    return string.format("%s.%s%s", integer_part, fractional_part, (suffix == "" and "") or (" " .. suffix)):gsub("%.?0+ %k$", " " .. suffix)
+    return string.format("%s.%s%s", integer_part, fractional_part or "00", (suffix == "" and "") or (" " .. suffix)):gsub("%.?0+ %k$", " " .. suffix)
 end
 
 --- Display group
