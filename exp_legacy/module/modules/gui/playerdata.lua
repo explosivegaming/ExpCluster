@@ -75,7 +75,7 @@ local computed_stats = {
     Locale = {
         default = "en",
         calculate = function(player_name)
-            return game.players[player_name].locale
+            return player_name.locale
         end,
     },
 }
