@@ -20,9 +20,9 @@ Storage.register(research, function(tbl)
     research = tbl
 end)
 
-for i = 1, #config.mod_set_lookup do
-    if script.active_mods[config.mod_set_lookup[i]] then
-        config.mod_set = config.mod_set_lookup[i]
+for _, mod_name in ipairs(config.mod_set_lookup) do
+    if script.active_mods[mod_name] then
+        config.mod_set = mod_name
         break
     end
 end
@@ -31,10 +31,9 @@ local research_time_format = ExpUtil.format_time_factory{ format = "clock", hour
 local empty_time = research_time_format(nil)
 
 local font_color = {
-    -- positive
-    [1] = { r = 0.3, g = 1, b = 0.3 },
-    -- negative
-    [2] = { r = 1, g = 0.3, b = 0.3 },
+    ["neutral"] = { r = 1, g = 1, b = 1 },
+    ["positive"] = { r = 0.3, g = 1, b = 0.3 },
+    ["negative"] = { r = 1, g = 0.3, b = 0.3 },
 }
 
 local res = {
@@ -64,36 +63,24 @@ end
 local function research_add_log()
     local result_data = {}
 
-    for i = 1, #research.time, 1 do
+    for i = 1, #research.time do
         result_data[res["disp"][i]["raw_name"]] = research.time[i]
     end
 
     write_file(config.file_name, table_to_json(result_data) .. "\n", true, 0)
 end
 
-local function research_res_n(res_)
-    local res_n = 1
+local function research_res_n()
+    local current = #res.disp + 1
 
-    for k, _ in pairs(res_) do
-        if research.time[k] == 0 then
-            res_n = k - 1
+    for i = 1, #res.disp do
+        if research.time[i] == 0 then
+            current = i
             break
         end
     end
 
-    if research.time[#res_] and research.time[#res_] > 0 then
-        if res_n == 1 then
-            res_n = #res_
-        end
-    end
-
-    if res_n < 3 then
-        res_n = 3
-    elseif res_n > (#research.time - 5) then
-        res_n = #research.time - 5
-    end
-
-    return res_n
+    return math.clamp(current - 3, 1, math.max(1, #res.disp - 7))
 end
 
 local function research_notification(event)
@@ -105,70 +92,61 @@ local function research_notification(event)
             end
 
             if config.bonus_inventory.enabled then
-                if (event.research.level - 1) <= math.ceil(config.bonus_inventory.limit / config.bonus_inventory.rate) then
-                    event.research.force[config.bonus_inventory.name] = math.max((event.research.level - 1) * config.bonus_inventory.rate, config.bonus_inventory.limit)
-                end
+                event.research.force[config.bonus_inventory.name] = math.max((event.research.level - 1) * config.bonus_inventory.rate, config.bonus_inventory.limit)
             end
 
             if config.pollution_ageing_by_research then
                 game.map_settings.pollution.ageing = math.min(10, event.research.level / 5)
             end
-        else
-            if not (event.by_script) then
-                game.print{ "research.inf", research_time_format(game.tick), event.research.name, event.research.level - 1 }
-            end
+        end
+
+        if not (event.by_script) then
+            game.print{ "research.inf", research_time_format(game.tick), event.research.name, event.research.level - 1 }
         end
     else
         if not (event.by_script) then
             game.print{ "research.msg", research_time_format(game.tick), event.research.name }
         end
 
-        if config.bonus_inventory.enabled then
-            if event.research.name == "mining-productivity-1" or event.research.name == "mining-productivity-2" or event.research.name == "mining-productivity-3" then
-                event.research.force[config.bonus_inventory.name] = event.research.level * config.bonus_inventory.rate
-            end
+        if config.bonus_inventory.enabled and (event.research.name == "mining-productivity-1" or event.research.name == "mining-productivity-2" or event.research.name == "mining-productivity-3") then
+            event.research.force[config.bonus_inventory.name] = event.research.level * config.bonus_inventory.rate
         end
     end
 end
 
 local function research_gui_update()
     local res_disp = {}
-    local res_n = research_res_n(res["disp"])
+    local res_n = research_res_n()
 
-    for i = 1, 8, 1 do
-        res_disp[i] = {
-            ["name"] = "",
-            ["target"] = "",
-            ["attempt"] = "",
-            ["difference"] = "",
-            ["difference_color"] = font_color[1],
+    for i = 1, 8 do
+        local res_i = res_n + i - 1
+        local entry = res.disp[res_i] or {}
+        local data = {
+            name = "",
+            target = "",
+            attempt = "",
+            difference = "",
+            color = font_color["positive"]
         }
 
-        local res_i = res_n + i - 3
-
-        if res["disp"][res_i] then
-            local raw_name = res["disp"][res_i]["raw_name"]
-            local proto = assert(prototypes.technology[raw_name], "Invalid Research: " .. tostring(raw_name))
-            res_disp[i]["name"] = { "research.res-name", raw_name, proto.localised_name }
+        if entry.raw_name then
+            assert(prototypes.technology[entry.raw_name], "Invalid Research: " .. tostring(entry.raw_name))
+            data.name = { "research.res-name", entry.raw_name, prototypes.technology[entry.raw_name].localised_name }
+            data.target = entry.target_disp
 
             if research.time[res_i] == 0 then
-                res_disp[i]["target"] = res["disp"][res_i].target_disp
-                res_disp[i]["attempt"] = empty_time
-                res_disp[i]["difference"] = empty_time
-                res_disp[i]["difference_color"] = font_color[1]
-            else
-                res_disp[i]["target"] = res["disp"][res_i].target_disp
-                res_disp[i]["attempt"] = research_time_format(research.time[res_i])
+                data.attempt = empty_time
+                data.difference = empty_time
 
-                if research.time[res_i] < res["disp"][res_i].target then
-                    res_disp[i]["difference"] = "-" .. research_time_format(res["disp"][res_i].target - research.time[res_i])
-                    res_disp[i]["difference_color"] = font_color[1]
-                else
-                    res_disp[i]["difference"] = research_time_format(research.time[res_i] - res["disp"][res_i].target)
-                    res_disp[i]["difference_color"] = font_color[2]
-                end
+            else
+                data.attempt = research_time_format(research.time[res_i])
+                local diff = research.time[res_i] - entry.target
+                data.difference = (diff < 0 and "-" or "") .. research_time_format(math.abs(diff))
+                data.color = (diff < 0 and font_color["positive"]) or font_color["negative"]
             end
         end
+
+        res_disp[i] = data
     end
 
     return res_disp
@@ -200,42 +178,19 @@ local research_clock_set = Gui.element("research_clock_set")
 -- @element research_data_group
 local research_data_group = Gui.element("research_data_group")
     :draw(function(_def, parent, i)
-        local name = parent.add{
-            type = "label",
-            name = "research_" .. i .. "_name",
-            caption = "",
-            style = "heading_2_label",
-        }
-        name.style.width = 180
-        name.style.horizontal_align = "left"
+        local labels = { "name", "target", "attempt", "difference" }
 
-        local target = parent.add{
-            type = "label",
-            name = "research_" .. i .. "_target",
-            caption = "",
-            style = "heading_2_label",
-        }
-        target.style.width = 70
-        target.style.horizontal_align = "right"
-
-        local attempt = parent.add{
-            type = "label",
-            name = "research_" .. i .. "_attempt",
-            caption = "",
-            style = "heading_2_label",
-        }
-        attempt.style.width = 70
-        attempt.style.horizontal_align = "right"
-
-        local difference = parent.add{
-            type = "label",
-            name = "research_" .. i .. "_difference",
-            caption = "",
-            style = "heading_2_label",
-        }
-        difference.style.width = 70
-        difference.style.horizontal_align = "right"
-        difference.style.font_color = font_color[1]
+        for _, label in ipairs(labels) do
+            local elem = parent.add{
+                type = "label",
+                name = "research_" .. i .. "_" .. label,
+                caption = "",
+                style = "heading_2_label"
+            }
+            elem.style.minimal_width = (label == "name" and 180) or 70
+            elem.style.horizontal_align = (label == "name" and "left") or "right"
+            elem.style.font_color = (label == "difference" and font_color["positive"]) or font_color["neutral"]
+        end
     end)
 
 --- A vertical flow containing the data
@@ -251,17 +206,16 @@ local research_data_set = Gui.element("research_data_set")
         disp["research_0_target"].caption = { "research.target" }
         disp["research_0_attempt"].caption = { "research.attempt" }
         disp["research_0_difference"].caption = { "research.difference" }
+        disp["research_0_difference"].style.font_color = font_color["neutral"]
 
-        for i = 1, 8, 1 do
+        for i = 1, 8 do
             research_data_group(disp, i)
-
             local research_name_i = "research_" .. i
-
             disp[research_name_i .. "_name"].caption = res_disp[i]["name"]
             disp[research_name_i .. "_target"].caption = res_disp[i]["target"]
             disp[research_name_i .. "_attempt"].caption = res_disp[i]["attempt"]
             disp[research_name_i .. "_difference"].caption = res_disp[i]["difference"]
-            disp[research_name_i .. "_difference"].style.font_color = res_disp[i]["difference_color"]
+            disp[research_name_i .. "_difference"].style.font_color = res_disp[i]["color"]
         end
 
         return research_set
@@ -291,29 +245,47 @@ Gui.toolbar.create_button{
 
 Event.add(defines.events.on_research_finished, function(event)
     research_notification(event)
+    local research_name = event.research.name
 
-    if res["lookup_name"][event.research.name] == nil then
+    if not res["lookup_name"][research_name] then
         return
     end
 
-    local n_i = res["lookup_name"][event.research.name]
-    research.time[n_i] = game.tick
+    research.time[res.lookup_name[research_name]] = game.tick
 
     local res_disp = research_gui_update()
 
     for _, player in pairs(game.connected_players) do
-        local container = Gui.get_left_element(research_container, player)
-        local disp = container.frame["research_st_2"].disp.table
+        if Roles.player_allowed(player, "gui/research") then
+            local container = Gui.get_left_element(research_container, player)
+            local disp = container.frame["research_st_2"].disp.table
 
-        for i = 1, 8, 1 do
-            local research_name_i = "research_" .. i
-
-            disp[research_name_i .. "_name"].caption = res_disp[i]["name"]
-            disp[research_name_i .. "_target"].caption = res_disp[i]["target"]
-            disp[research_name_i .. "_attempt"].caption = res_disp[i]["attempt"]
-            disp[research_name_i .. "_difference"].caption = res_disp[i]["difference"]
-            disp[research_name_i .. "_difference"].style.font_color = res_disp[i]["difference_color"]
+            for i = 1, 8 do
+                local research_name_i = "research_" .. i
+                disp[research_name_i .. "_name"].caption = res_disp[i]["name"]
+                disp[research_name_i .. "_target"].caption = res_disp[i]["target"]
+                disp[research_name_i .. "_attempt"].caption = res_disp[i]["attempt"]
+                disp[research_name_i .. "_difference"].caption = res_disp[i]["difference"]
+                disp[research_name_i .. "_difference"].style.font_color = res_disp[i]["color"]
+            end
         end
+    end
+end)
+
+Event.add(defines.events.on_research_started, function(event)
+    if config.limit_res[event.research.name] and event.research.level > config.limit_res[event.research.name] then
+        event.research.enabled = false
+        event.research.visible_when_disabled = true
+        local rq = event.research.force.research_queue
+
+        for i = #rq, 1, -1 do
+            if rq[i] == event.research.name then
+                table.remove(rq, i)
+            end
+        end
+
+        event.research.force.cancel_current_research()
+        event.research.force.research_queue = rq
     end
 end)
 
