@@ -26,9 +26,9 @@ local function format_n(amount)
     end
     local suffix = ""
     local suffix_list = {
-        ["G"] = 1e9,
-        ["M"] = 1e6,
-        ["k"] = 1e3
+        [" G"] = 1e9,
+        [" M"] = 1e6,
+        [" k"] = 1e3
     }
     local scale = 1
     for letter, limit in pairs(suffix_list) do
@@ -38,16 +38,11 @@ local function format_n(amount)
             break
         end
     end
-    local formatted = string.format("%.2f", amount / scale)
+    local formatted = string.format("%.2f%s", amount / scale, suffix)
     -- Split into integer and fractional parts
-    local integer_part, fractional_part = formatted:match("^(%-?%d+)%.(%d+)$")
-    integer_part = integer_part or formatted
+    local integer_part, fractional_part = formatted:match("^(%-?%d+)%.(%d+)(.*)$")
     -- Add commas to integer part
-    integer_part = integer_part:reverse():gsub("(%d%d%d)", "%1,"):reverse()
-    integer_part = integer_part:gsub("^,", ""):gsub("-,", "-")
-    -- Handle numbers below 1000 without suffix
-    -- Combine parts and add suffix
-    return string.format("%s.%s%s", integer_part, fractional_part or "00", (suffix == "" and "") or (" " .. suffix)):gsub("%.?0+ %k$", " " .. suffix)
+    return string.format("%s.%s%s", (integer_part or formatted):reverse():gsub("(%d%d%d)", "%1,"):reverse():gsub("^,", ""):gsub("-,", "-"), fractional_part or "00", suffix)
 end
 
 --- Display group
