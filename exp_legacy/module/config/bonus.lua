@@ -18,6 +18,8 @@ return {
     ]]
     pts = {
         base = 260,
+        increase_percentage_per_role_level = 0.03,
+        role_name = "Member",
     },
     gui_display_width = {
         half = 150,
