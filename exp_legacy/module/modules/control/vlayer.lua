@@ -541,6 +541,12 @@ function vlayer.get_circuits()
     }
 end
 
+local vlayer_circuits_string = ""
+
+for key, value in pairs(vlayer.get_circuits()) do
+    vlayer_circuits_string = vlayer_circuits_string .. value .. " = " .. key .. "\n"
+end
+
 --- Create a new circuit interface
 -- @tparam LuaSurface surface The surface to place the interface onto
 -- @tparam MapPosition position The position on the surface to place the interface at
@@ -610,6 +616,8 @@ local function handle_circuit_interfaces()
 
                 circuit_oc.clear_slot(clear_index)
             end
+            
+            interface.combinator_description = vlayer_circuits_string
         end
     end
 end
