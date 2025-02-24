@@ -74,7 +74,7 @@ local production_data_group = Gui.element("production_data_group")
             local data = parent.add{
                 type = "label",
                 name = "production_" .. i .. "_" .. j,
-                caption = "0.0",
+                caption = "0.00",
                 style = "heading_2_label",
             }
             data.style.width = 80
@@ -138,9 +138,9 @@ Event.on_nth_tick(60, function()
                 table[production_prefix .. "_3"].caption = format_n(sum)
                 table[production_prefix .. "_3"].style.font_color = (sum < 0 and font_color["negative"]) or font_color["positive"]
             else
-                table[production_prefix .. "_1"].caption = "0.0"
-                table[production_prefix .. "_2"].caption = "0.0"
-                table[production_prefix .. "_3"].caption = "0.0"
+                table[production_prefix .. "_1"].caption = "0.00"
+                table[production_prefix .. "_2"].caption = "0.00"
+                table[production_prefix .. "_3"].caption = "0.00"
                 table[production_prefix .. "_3"].style.font_color = font_color["positive"]
             end
         end
