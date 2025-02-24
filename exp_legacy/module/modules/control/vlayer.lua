@@ -333,6 +333,7 @@ end
 -- @treturn LuaEntity The entity that was created for the interface
 function vlayer.create_input_interface(surface, position, circuit, last_user)
     local interface = surface.create_entity{ name = "storage-chest", position = position, force = "neutral" }
+    interface.storage_filter = { name = "deconstruction-planner", quality = "normal" }
     table.insert(vlayer_data.entity_interfaces.storage_input, interface)
 
     if last_user then
