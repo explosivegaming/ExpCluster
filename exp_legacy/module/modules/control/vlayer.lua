@@ -584,7 +584,11 @@ local function handle_circuit_interfaces()
         if not interface.valid then
             vlayer_data.entity_interfaces.circuit[index] = nil
         else
-            local circuit_oc = interface.get_or_create_control_behavior().sections[1]
+            local circuit_oc = interface.get_or_create_control_behavior()
+            if circuit_oc.sections_count == 0 then
+                circuit_oc.add_section()
+            end
+            circuit_oc = circuit_oc.sections[1]
             local signal_index = 1
             local circuit = vlayer.get_circuits()
 
