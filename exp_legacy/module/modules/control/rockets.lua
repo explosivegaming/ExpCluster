@@ -62,24 +62,14 @@ end)
 --- @param silo LuaEntity Rocket silo entity
 --- @return table # Data table for this silo, contains rockets launch, silo status, and its force
 function Rockets.get_silo_data(silo)
-    local position = silo.position
-    local silo_name = math.floor(position.x) .. ":" .. math.floor(position.y)
-    return rocket_silos[silo_name]
-end
-
---- Gets the silo data for a given silo entity
---- @param silo_name string Silo name that is stored in its data
---- @return table # Data table for this silo, contains rockets launch, silo status, and its force
-function Rockets.get_silo_data_by_name(silo_name)
-    return rocket_silos[silo_name]
+    return rocket_silos[silo.unit_number]
 end
 
 --- Gets the silo entity from its silo name, reverse to get_silo_data
 --- @param silo_name string Silo name that is stored in its data
 --- @return LuaEntity # Rocket silo entity
 function Rockets.get_silo_entity(silo_name)
-    local data = rocket_silos[silo_name]
-    return data.entity
+    return rocket_silos[tonumber(silo_name)].entity
 end
 
 --- Gets the rocket stats for a force
@@ -151,6 +141,7 @@ end
 --- @param event EventData.on_rocket_launch_ordered
 Event.add(defines.events.on_rocket_launch_ordered, function(event)
     local silo_data = Rockets.get_silo_data(event.rocket_silo)
+    assert(silo_data, "Rocket silo missing data: " .. tostring(event.rocket_silo))
     silo_data.launched = silo_data.launched + 1
     silo_data.awaiting_reset = true
 end)
@@ -196,14 +187,9 @@ end)
 local function on_built(event)
     local entity = event.entity
     if entity.valid and entity.name == "rocket-silo" then
-        local force = entity.force
-        local force_name = force.name
-        local position = entity.position
-        local silo_name = math.floor(position.x) .. ":" .. math.floor(position.y)
-
-        rocket_silos[silo_name] = {
-            name = silo_name,
-            force = force_name,
+        rocket_silos[entity.unit_number] = {
+            name = tostring(entity.unit_number),
+            force = entity.force.name,
             entity = entity,
             launched = 0,
             awaiting_reset = false,
