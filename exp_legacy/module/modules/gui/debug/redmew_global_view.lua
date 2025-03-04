@@ -86,7 +86,7 @@ Gui.on_click(
         element.style.font_color = Color.orange
         data.selected_header = element
 
-        input_text_box.text = concat{ "storage.exp_storage[", token_id, "]" }
+        input_text_box.text = concat{ "storage.exp_storage['", token_id, "']" }
         input_text_box.style.font_color = Color.black
 
         local content = dump(storage.exp_storage[token_id]) or "nil"
