@@ -494,7 +494,7 @@ function Toolbar._ensure_consistency(player)
         if type(allowed) == "function" then
             allowed = allowed(player, element)
         end
-        element.visible = allowed and element.visible or false
+        element.visible = allowed or false
         list[button.name].visible = element.visible
 
         -- Update the toggle state and hide the linked left element if the button is not allowed
