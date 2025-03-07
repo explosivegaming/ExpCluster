@@ -545,7 +545,7 @@ end
 local vlayer_circuits_string = ""
 
 for key, value in pairs(vlayer.get_circuits()) do
-    vlayer_circuits_string = vlayer_circuits_string .. value .. " = " .. key .. "\n"
+    vlayer_circuits_string = vlayer_circuits_string .. string.format("[virtual-signal=%s] = %s\n", value, key:gsub("_", " "))
 end
 
 --- Create a new circuit interface
