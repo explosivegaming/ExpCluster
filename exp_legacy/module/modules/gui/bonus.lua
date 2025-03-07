@@ -309,11 +309,13 @@ end)
 Event.add(Roles.events.on_role_assigned, function(event)
     local player = game.players[event.player_index]
     bonus_data_score_limit[player] = nil
+    apply_bonus(player)
 end)
 
 Event.add(Roles.events.on_role_unassigned, function(event)
     local player = game.players[event.player_index]
     bonus_data_score_limit[player] = nil
+    apply_bonus(player)
 end)
 
 --- When a player respawns re-apply bonus
