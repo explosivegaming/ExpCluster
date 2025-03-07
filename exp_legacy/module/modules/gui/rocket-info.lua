@@ -443,7 +443,7 @@ local section = Gui.element("rocket_info_section")
         return definition:unlink_element(scroll_table)
     end)
     :on_click(function(def, player, element, event)
-        event.element = element.parent.alignment[toggle_section.name]
+        event.element = element.parent.flow[toggle_section.name]
         toggle_section:raise_event(event)
     end)
 
