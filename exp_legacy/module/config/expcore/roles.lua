@@ -274,7 +274,7 @@ local default = Roles.new_role("Guest", "")
         "command/tag",
         "command/tag-clear",
         "command/commands",
-        "command/get-role",
+        "command/get-roles",
         "command/locate",
         "command/create-report",
         "command/ratio",
