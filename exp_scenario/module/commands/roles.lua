@@ -35,10 +35,9 @@ Commands.new("unassign-role", { "exp-commands_roles.description-unassign" })
     end)
 
 --- Lists all roles in they correct order
-Commands.new("get-role", { "exp-commands_roles.description-get" })
+Commands.new("get-roles", { "exp-commands_roles.description-get" })
     :optional("player", { "exp-commands_roles.arg-player-get" }, Commands.types.player)
     :add_aliases{ "roles" }
-    :add_flags{ "admin_only" }
     :register(function(player, other_player)
         --- @cast other_player LuaPlayer?
         local roles = get_roles_ordered()
