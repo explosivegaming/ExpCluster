@@ -131,6 +131,7 @@ local bonus_gui_control_pts_count = Gui.element("bonus_gui_control_pts_count")
     }:style{
         width = config.gui_display_width["half"],
         font = "heading-2",
+        color = { 1, 0, 0 },
     }
 
 --- A button used for pts calculations
