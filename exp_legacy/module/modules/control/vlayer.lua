@@ -333,6 +333,7 @@ end
 -- @treturn LuaEntity The entity that was created for the interface
 function vlayer.create_input_interface(surface, position, circuit, last_user)
     local interface = surface.create_entity{ name = "storage-chest", position = position, force = "neutral" }
+    interface.storage_filter = { name = "deconstruction-planner", quality = "normal" }
     table.insert(vlayer_data.entity_interfaces.storage_input, interface)
 
     if last_user then
@@ -541,6 +542,12 @@ function vlayer.get_circuits()
     }
 end
 
+local vlayer_circuits_string = ""
+
+for key, value in pairs(vlayer.get_circuits()) do
+    vlayer_circuits_string = vlayer_circuits_string .. string.format("[virtual-signal=%s] = %s\n", value, key:gsub("_", " "))
+end
+
 --- Create a new circuit interface
 -- @tparam LuaSurface surface The surface to place the interface onto
 -- @tparam MapPosition position The position on the surface to place the interface at
@@ -577,7 +584,11 @@ local function handle_circuit_interfaces()
         if not interface.valid then
             vlayer_data.entity_interfaces.circuit[index] = nil
         else
-            local circuit_oc = interface.get_or_create_control_behavior().sections[1]
+            local circuit_oc = interface.get_or_create_control_behavior()
+            if circuit_oc.sections_count == 0 then
+                circuit_oc.add_section()
+            end
+            circuit_oc = circuit_oc.sections[1]
             local signal_index = 1
             local circuit = vlayer.get_circuits()
 
@@ -610,6 +621,8 @@ local function handle_circuit_interfaces()
 
                 circuit_oc.clear_slot(clear_index)
             end
+            
+            interface.combinator_description = vlayer_circuits_string
         end
     end
 end
