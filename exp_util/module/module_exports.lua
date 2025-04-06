@@ -42,7 +42,7 @@ local function check_type(value, type_name)
         if type_name == "userdata" then
             return false, value_type
         end
-        value_type = value.object_name
+        value_type = value.object_name --- @diagnostic disable-line assign-type-mismatch
     elseif value_type == "table" then
         if type_name == "table" then
             return false, value_type

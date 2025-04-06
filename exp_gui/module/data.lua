@@ -87,7 +87,7 @@ function GuiData._metatable.__index(self, key)
 
     -- Check a given child table based on the object type
     assert(type(key) == "userdata", "Index type '" .. ExpUtil.get_class_name(key) .. "' given to GuiData. Must be of type userdata.")
-    local object_name = key.object_name
+    local object_name = key.object_name --- @diagnostic disable-line assign-type-mismatch
     if object_name == "LuaGuiElement" then
         local data = self._raw.element_data
         local player_elements = data and data[key.player_index]
@@ -110,7 +110,7 @@ end
 --- @param value unknown
 function GuiData._metatable.__newindex(self, key, value)
     assert(type(key) == "userdata", "Index type '" .. ExpUtil.get_class_name(key) .. "' given to GuiData. Must be of type userdata.")
-    local object_name = key.object_name
+    local object_name = key.object_name --- @diagnostic disable-line assign-type-mismatch
     if object_name == "LuaGuiElement" then
         local data = self.element_data
         local player_elements = data[key.player_index]

@@ -142,7 +142,7 @@ group:set_action('toggle_map_editor', false)
 
 ]]
 function PermissionsGroups._prototype:set_action(action, state)
-    local input_action = defines.input_action[action]
+    local input_action = defines.input_action[action] --[[ @as defines.input_action? ]]
     if input_action == nil then input_action = action end
     assert(type(input_action) == "number", tostring(action) .. " is not a valid input action")
     self.actions[input_action] = state

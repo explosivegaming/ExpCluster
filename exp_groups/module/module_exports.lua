@@ -216,9 +216,10 @@ end
 --- @param actions_names string[] An array of action names
 --- @return defines.input_action[]
 local function names_to_actions(actions_names)
+    --- @type defines.input_action[], number[], number
     local actions, invalid, invalid_i = {}, {}, 1
     for i, action_name in ipairs(actions_names) do
-        local action = defines.input_action[action_name]
+        local action = defines.input_action[action_name] --[[ @as defines.input_action? ]]
         if action then
             actions[i] = action
         else
