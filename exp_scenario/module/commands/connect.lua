@@ -34,7 +34,7 @@ local function get_server_id(server)
     if server_count > 1 then
         return false, { "exp-commands_connect.too-many-matching", concat(server_names, ", ") }
     elseif server_count == 1 then
-        local server_id, server_details = next(servers)
+        local server_id, server_details = next(servers) --- @cast server_details -nil
         local status = External.get_server_status(server_id)
         if server_id == current_server.id then
             return false, { "exp-commands_connect.same-server", server_details.name }

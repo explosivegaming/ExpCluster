@@ -37,6 +37,7 @@ local function nop() return nil, nil end
 local function next_valid_element(elements, prev_index)
     local element_index, element = next(elements, prev_index)
     while element and not element.valid do
+        --- @cast element_index -nil
         elements[element_index] = nil
         element_index, element = next(elements, element_index)
     end
@@ -61,6 +62,7 @@ local function next_valid_player(scope_elements, players, prev_index, online)
         if index == nil then
             return nil, nil, nil
         end
+        --- @cast player -nil
 
         if online == nil or player.connected == online then
             local player_elements = scope_elements[player.index]

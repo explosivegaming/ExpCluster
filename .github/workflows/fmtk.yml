@@ -20,12 +20,12 @@ jobs:
           jq -s '.[0] * .[1].settings' temp.luarc.json ${{ github.workspace }}/factorio/config.json > check.luarc.json
       - name: Install LuaLS
         run: |
-          wget https://github.com/LuaLS/lua-language-server/releases/download/3.13.2/lua-language-server-3.13.2-linux-x64.tar.gz -q -O lusls.tar.gz
+          wget https://github.com/LuaLS/lua-language-server/releases/download/3.13.9/lua-language-server-3.13.9-linux-x64.tar.gz -q -O lusls.tar.gz
           mkdir luals && tar -xf lusls.tar.gz -C luals && rm lusls.tar.gz
       - name: Run Lint Report
         shell: bash
         run: |
-          ./luals/bin/lua-language-server --check=. --logpath=. --configpath=check.luarc.json --checklevel=Information
+          ./luals/bin/lua-language-server --check=. --logpath=. --configpath=check.luarc.json --checklevel=Information --check_out_path=check.json
 
           # Credit to https://github.com/Krealle/luals-check-action/blob/main/action.yml
           # Although some minor fixes were needed
