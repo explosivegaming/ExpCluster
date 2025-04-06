@@ -283,7 +283,7 @@ local default = Roles.new_role("Guest", "")
         "command/data-preference",
         "command/connect",
         "gui/player-list",
-        "gui/rocket-info",
+        --"gui/rocket-info",
         "gui/science-info",
         "gui/task-list",
         "gui/warp-list",
