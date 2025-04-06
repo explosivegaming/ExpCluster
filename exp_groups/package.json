@@ -14,8 +14,8 @@
 		"@clusterio/lib": "^2.0.0-alpha.19"
 	},
 	"devDependencies": {
-		"@clusterio/lib": "^2.0.0-alpha.19",
-		"@clusterio/web_ui": "^2.0.0-alpha.19",
+		"@clusterio/lib": "2.0.0-alpha.20",
+		"@clusterio/web_ui": "2.0.0-alpha.20.b",
 		"@types/fs-extra": "^11.0.4",
 		"@types/node": "^20.4.5",
 		"@types/react": "^18.2.21",
@@ -23,7 +23,7 @@
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"typescript": "^5.5.3",
-		"webpack": "^5.88.2",
+		"webpack": "^5.98.0",
 		"webpack-cli": "^5.1.4",
 		"webpack-merge": "^5.9.0"
 	},

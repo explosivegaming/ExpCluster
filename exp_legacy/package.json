@@ -16,9 +16,9 @@
 		"@clusterio/lib": "^2.0.0-alpha.19"
 	},
 	"devDependencies": {
-		"typescript": "^5.5.3",
+		"@clusterio/lib": "2.0.0-alpha.20",
 		"@types/node": "^20.4.5",
-		"@clusterio/lib": "^2.0.0-alpha.19"
+		"typescript": "^5.5.3"
 	},
 	"dependencies": {
 		"@expcluster/lib_commands": "workspace:*",
