@@ -140,7 +140,7 @@ local function research_gui_update()
 
             else
                 data.attempt = research_time_format(research.time[res_i])
-                local diff = research.time[res_i] - (entry.target or 0)
+                local diff = research.time[res_i] - entry.target
                 data.difference = (diff < 0 and "-" or "") .. research_time_format(math.abs(diff))
                 data.color = (diff < 0 and font_color["positive"]) or font_color["negative"]
             end
