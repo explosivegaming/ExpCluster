@@ -71,7 +71,9 @@ local function on_research_finished(event)
     if not research.res_queue_enable then return end
 
     local force = event.research.force
-    if config.bonus_inventory.res[config.mod_set] and force.technologies[config.bonus_inventory.res[config.mod_set].name] and force.technologies[config.bonus_inventory.res[config.mod_set].name].level > config.bonus_inventory.res[config.mod_set].level then
+    local research = assert(config.bonus_inventory.res[config.mod_set], "Unknown mod set: " .. tostring(config.mod_set))
+    local technology = assert(force.technologies[research.name], "Unknown technology: " .. tostring(research.name))
+    if technology.level > research.level then
         module.res_queue(force, event.by_script)
     end
 end
