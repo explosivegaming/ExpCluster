@@ -85,7 +85,7 @@ end
 
 local function research_notification(event)
     if config.inf_res[config.mod_set][event.research.name] then
-        if event.research.name == config.bonus_inventory.res[config.mod_set].name then
+        if event.research.name == config.bonus_inventory.log[config.mod_set].name then
             if event.research.level == config.bonus_inventory.log[config.mod_set].level + 1 then
                 -- Add run result to log
                 research_add_log()
