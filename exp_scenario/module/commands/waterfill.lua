@@ -65,19 +65,19 @@ Selection.on_selection(SelectionName, function(event)
     end
 
     local tile_count = 0
+    local remaining_tiles = 0
     local tiles_to_make = {}
     local chest = surface.find_entities_filtered{ area = area, name = "steel-chest", force = player.force }
     local tile_to_apply = (surface.planet and planet[surface.planet]) or "water-mud"
 
     if #chest > 0 then
         for _, v in pairs(chest) do
-            if v.get_inventory(defines.inventory.chest).is_empty() then
+            if v.get_inventory(defines.inventory.chest).is_empty() and tile_count < item_count_total then
                 tile_count = tile_count + 1
-                tiles_to_make[tile_count] = {
-                    name = tile_to_apply,
-                    position = { math.floor(v.position.x), math.floor(v.position.y) },
-                }
+                tiles_to_make[tile_count] = { name = tile_to_apply, position = { v.position.x, v.position.y } }
                 v.destroy()
+            elseif v.get_inventory(defines.inventory.chest).is_empty() then
+                remaining_tiles = remaining_tiles + 1
             end
         end
 
@@ -85,19 +85,17 @@ Selection.on_selection(SelectionName, function(event)
         for x = area.left_top.x, area.right_bottom.x do
             for y = area.left_top.y, area.right_bottom.y do
                 tile_count = tile_count + 1
-                tiles_to_make[tile_count] = {
-                    name = tile_to_apply,
-                    position = { x, y },
-                }
+                tiles_to_make[tile_count] = { name = tile_to_apply, position = { x, y } }
             end
         end
+
+        remaining_tiles = surface.count_tiles_filtered{ area = area, name = tile_to_apply }
     end
 
     surface.set_tiles(tiles_to_make, true, "abort_on_collision", true, false, player, 0)
-    local remaining_tiles = surface.count_tiles_filtered{ area = area, name = tile_to_apply }
     local t_diff = tile_count - remaining_tiles
 
-    if item_count_cliff >= t_diff then
+    if item_count_cliff >= t_diff and t_diff > 0 then
         player.remove_item{ name = "cliff-explosives", count = t_diff }
     else
         if item_count_cliff > 0 then
