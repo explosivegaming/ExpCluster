@@ -12,16 +12,22 @@ return {
     -- this enable 20 more inventory for each mining productivity level up to 4
     bonus_inventory = {
         enabled = true,
-        res = {
-            -- Mining Productivity
+        log = {
             ["base"] = {
                 ["name"] = "mining-productivity-4",
-                ["level"] = 4,
+                ["level"] = 4
             },
             ["space-age"] = {
                 ["name"] = "mining-productivity-3",
-                ["level"] = 3,
-            }
+                ["level"] = 3
+            },
+        },
+        res = {
+            -- Mining Productivity
+            ["mining-productivity"] = true,
+            ["mining-productivity-2"] = true,
+            ["mining-productivity-3"] = true,
+            ["mining-productivity-4"] = true
         },
         name = "character_inventory_slots_bonus",
         rate = 5,
