@@ -86,13 +86,9 @@ end
 local function research_notification(event)
     if config.inf_res[config.mod_set][event.research.name] then
         if event.research.name == config.bonus_inventory.res[config.mod_set].name then
-            if event.research.level == config.bonus_inventory.res[config.mod_set].level + 1 then
+            if event.research.level == config.bonus_inventory.log[config.mod_set].level + 1 then
                 -- Add run result to log
                 research_add_log()
-            end
-
-            if config.bonus_inventory.enabled then
-                event.research.force[config.bonus_inventory.name] = math.max((event.research.level - 1) * config.bonus_inventory.rate, config.bonus_inventory.limit)
             end
 
             if config.pollution_ageing_by_research then
@@ -103,14 +99,12 @@ local function research_notification(event)
         if not (event.by_script) then
             game.print{ "research.inf", research_time_format(game.tick), event.research.name, event.research.level - 1 }
         end
-    else
-        if not (event.by_script) then
-            game.print{ "research.msg", research_time_format(game.tick), event.research.name }
-        end
+    elseif not (event.by_script) then
+        game.print{ "research.msg", research_time_format(game.tick), event.research.name }
+    end
 
-        if config.bonus_inventory.enabled and (event.research.name == "mining-productivity-1" or event.research.name == "mining-productivity-2" or event.research.name == "mining-productivity-3") then
-            event.research.force[config.bonus_inventory.name] = event.research.level * config.bonus_inventory.rate
-        end
+    if config.bonus_inventory.enabled and config.bonus_inventory.res[event.research.name] then
+        event.research.force[config.bonus_inventory.name] = math.min((event.research.level - 1) * config.bonus_inventory.rate, config.bonus_inventory.limit)
     end
 end
 
