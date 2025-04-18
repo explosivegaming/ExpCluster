@@ -66,18 +66,35 @@ Selection.on_selection(SelectionName, function(event)
 
     local tile_count = 0
     local tiles_to_make = {}
-    for x = area.left_top.x, area.right_bottom.x do
-        for y = area.left_top.y, area.right_bottom.y do
-            tile_count = tile_count + 1
-            tiles_to_make[tile_count] = {
-                name = (surface.planet and planet[surface.planet]) or "water-mud",
-                position = { x, y },
-            }
+    local chest = surface.find_entities_filtered{ area = area, name = "steel-chest", force = player.force }
+    local tile_to_apply = (surface.planet and planet[surface.planet]) or "water-mud"
+
+    if #chest > 0 then
+        for _, v in pairs(chest) do
+            if v.get_inventory(defines.inventory.chest).is_empty() then
+                tile_count = tile_count + 1
+                tiles_to_make[tile_count] = {
+                    name = tile_to_apply,
+                    position = { math.floor(v.position.x), math.floor(v.position.y) },
+                }
+                v.destroy()
+            end
+        end
+
+    else
+        for x = area.left_top.x, area.right_bottom.x do
+            for y = area.left_top.y, area.right_bottom.y do
+                tile_count = tile_count + 1
+                tiles_to_make[tile_count] = {
+                    name = tile_to_apply,
+                    position = { x, y },
+                }
+            end
         end
     end
 
     surface.set_tiles(tiles_to_make, true, "abort_on_collision", true, false, player, 0)
-    local remaining_tiles = surface.count_tiles_filtered{ area = area, name = (surface.planet and planet[surface.planet]) or "water-mud" }
+    local remaining_tiles = surface.count_tiles_filtered{ area = area, name = tile_to_apply }
     local t_diff = tile_count - remaining_tiles
 
     if item_count_cliff >= t_diff then
