@@ -9,7 +9,7 @@ local SelectionName = "ExpCommand_Waterfill"
 
 local planet = {
     ["nauvis"] = "water-mud",
-    ["gleba"] = "water-mud",
+    ["gleba"] = "wetland-blue-slime",
     ["vulcanus"] = "lava",
     ["fulgora"] = "oil-ocean-shallow",
     ["aquilo"] = "ammoniacal-ocean"
