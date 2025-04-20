@@ -23,7 +23,7 @@ end)
 --- @param silent boolean True when no message should be printed
 function module.res_queue(force, silent)
     local res_q = force.research_queue
-    local res = force.technologies[config.bonus_inventory.res[config.mod_set].name]
+    local res = force.technologies[config.bonus_inventory.log[config.mod_set].name]
 
     if #res_q < config.queue_amount then
         for i = #res_q, config.queue_amount - 1 do
