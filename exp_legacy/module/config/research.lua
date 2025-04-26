@@ -7,21 +7,27 @@ return {
     queue_amount = 3,
     mod_set = "base",
     mod_set_lookup = {
-        "space-age"
+        "space-age",
     },
     -- this enable 20 more inventory for each mining productivity level up to 4
     bonus_inventory = {
         enabled = true,
-        res = {
-            -- Mining Productivity
+        log = {
             ["base"] = {
                 ["name"] = "mining-productivity-4",
-                ["level"] = 4,
+                ["level"] = 4
             },
             ["space-age"] = {
                 ["name"] = "mining-productivity-3",
-                ["level"] = 3,
-            }
+                ["level"] = 3
+            },
+        },
+        res = {
+            -- Mining Productivity
+            ["mining-productivity"] = true,
+            ["mining-productivity-2"] = true,
+            ["mining-productivity-3"] = true,
+            ["mining-productivity-4"] = true,
         },
         name = "character_inventory_slots_bonus",
         rate = 5,
@@ -73,20 +79,20 @@ return {
             ["productivity-module-3"] = 300,
             ["speed-module-3"] = 300,
             ["rocket-silo"] = 300,
-            ["space-science-pack"] = 300
+            ["space-science-pack"] = 300,
         },
         ["space-age"] = {
             ["logistic-science-pack"] = 3600,
             ["military-science-pack"] = 3600,
-            ["chemical-science-pack"] = 4500,
-            ["utility-science-pack"] = 5400,
-            ["production-science-pack"] = 5400,
-            ["space-science-pack"] = 5400,
-            ["metallurgic-science-pack"] = 6300,
-            ["electromagnetic-science-pack"] = 6300,
-            ["agricultural-science-pack"] = 6300,
-            ["cryogenic-science-pack"] = 6300,
-            ["promethium-science-pack"] = 7200
+            ["chemical-science-pack"] = 5400,
+            ["utility-science-pack"] = 7200,
+            ["production-science-pack"] = 7200,
+            ["space-science-pack"] = 7200,
+            ["metallurgic-science-pack"] = 10800,
+            ["electromagnetic-science-pack"] = 10800,
+            ["agricultural-science-pack"] = 10800,
+            ["cryogenic-science-pack"] = 10800,
+            ["promethium-science-pack"] = 14400,
         }
     },
     inf_res = {
@@ -157,7 +163,7 @@ return {
             ["rocket-part-productivity"] = 1,
             -- Follower Robot Count
             ["follower-robot-count-5"] = 5,
-        }
+        },
     },
     -- prevent research up to a certain level
     limit_res = {
