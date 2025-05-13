@@ -50,11 +50,11 @@ local tool_gui_arty_b = Gui.element("tool_gui_arty_b")
     ):on_click(function(def, player, element)
         if Selection.is_selecting(player, SelectionArtyArea) then
             Selection.stop(player)
-            player.print{ "exp-commands_waterfill.exit" }
+            player.print{ "exp-commands_artillery.exit" }
 
         else
             Selection.start(player, SelectionArtyArea)
-            player.print{ "exp-commands_waterfill.enter" }
+            player.print{ "exp-commands_artillery.enter" }
         end
     end)
 
