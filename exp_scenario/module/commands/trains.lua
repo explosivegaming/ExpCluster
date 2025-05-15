@@ -11,8 +11,10 @@ local module = {}
 
 function module.manual(player, surface, force)
     local trains = game.train_manager.get_trains{
+        stock = "locomotive",
         has_passenger = false,
         is_manual = true,
+        is_moving = false,
         surface = surface,
         force = force,
     }
