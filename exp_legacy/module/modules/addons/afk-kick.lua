@@ -32,7 +32,7 @@ Event.on_nth_tick(config.update_time, function()
         if player.afk_time < config.afk_time
         or config.admin_as_active and player.admin
         or config.trust_as_active and player.online_time > config.trust_time
-        or config.active_role and (Roles.get_player_highest_role(player).index >= Roles.get_role_from_any(config.active_role).index) then
+        or config.active_role and (Roles.get_player_highest_role(player).index <= Roles.get_role_from_any(config.active_role).index) then
             -- Active player was found
             primitives.last_active = game.tick
             return
