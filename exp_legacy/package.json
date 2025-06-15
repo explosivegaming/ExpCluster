@@ -16,7 +16,7 @@
 		"@clusterio/lib": "^2.0.0-alpha.19"
 	},
 	"devDependencies": {
-		"@clusterio/lib": "2.0.0-alpha.20",
+		"@clusterio/lib": "^2.0.0-alpha.20",
 		"@types/node": "^20.4.5",
 		"typescript": "^5.5.3"
 	},
