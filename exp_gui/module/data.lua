@@ -110,8 +110,9 @@ end
 --- @param value unknown
 function GuiData._metatable.__newindex(self, key, value)
     assert(type(key) == "userdata", "Index type '" .. ExpUtil.get_class_name(key) .. "' given to GuiData. Must be of type userdata.")
-    local object_name = key.object_name --- @diagnostic disable-line assign-type-mismatch
+    local object_name = key.object_name
     if object_name == "LuaGuiElement" then
+        --- @cast key LuaGuiElement
         local data = self.element_data
         local player_elements = data[key.player_index]
         if not player_elements then
@@ -121,8 +122,10 @@ function GuiData._metatable.__newindex(self, key, value)
         player_elements[key.index] = value
         registration_numbers[reg_obj(key)] = key.player_index
     elseif object_name == "LuaPlayer" then
+        --- @cast key LuaPlayer
         self.player_data[key.index] = value
     elseif object_name == "LuaForce" then
+        --- @cast key LuaForce
         self.force_data[key.index] = value
     else
         error("Unsupported object class '" .. object_name .. "' given as index to GuiData.")
