@@ -5,14 +5,6 @@ Adds a server ups counter in the top right corner and a command to toggle it
 local Gui = require("modules/exp_gui")
 local ExpUtil = require("modules/exp_util")
 local Commands = require("modules/exp_commands")
-local Storage = require("modules/exp_util/storage")
-
---- Stores the current ups, injected by external commands
---- @type { valid: boolean, ups: number }
-local external = { valid = false, ups = 60 }
-Storage.register(external, function(tbl)
-    external = tbl
-end)
 
 --- Label to show the server ups, drawn to screen on join
 local server_ups = Gui.element("server_ups")
@@ -32,6 +24,15 @@ local server_ups = Gui.element("server_ups")
         end
     end)
 
+--- Update the caption for all online players
+--- @param ups number The UPS to be displayed
+local function update_server_ups(ups)
+    local caption = ("%.1f (%.1f%%)"):format(ups, ups * 5 / 3)
+    for _, element in server_ups:online_elements() do
+        element.caption = caption
+    end
+end
+
 --- Stores the visible state of server ups element for a player
 local PlayerData = require("modules/exp_legacy/expcore/player_data")
 local UsesServerUps = PlayerData.Settings:combine("UsesServerUps")
@@ -43,9 +44,6 @@ UsesServerUps:set_metadata{
 
 --- Change the visible state when your data loads
 UsesServerUps:on_load(function(player_name, visible)
-    if visible == nil or not external.valid then
-        visible = false
-    end
     local player = assert(game.get_player(player_name))
     server_ups.data[player].visible = visible or false
 end)
@@ -54,23 +52,16 @@ end)
 Commands.new("server-ups", { "server-ups.description" })
     :add_aliases{ "sups", "ups" }
     :register(function(player)
-        local element = server_ups.data[player]
-        if not external.valid then
-            element.visible = false
-            return Commands.status.error{ "server-ups.no-ext" }
-        end
-
         local visible = not UsesServerUps:get(player)
+        server_ups.data[player].visible = visible
         UsesServerUps:set(player, visible)
-        element.visible = visible
     end)
 
 --- Add an interface which can be called from rcon
 Commands.add_rcon_static("exp_server_ups", {
     update = function(ups)
         ExpUtil.assert_argument_type(ups, "number", 1, "ups")
-        external.valid = true
-        external.ups = ups
+        update_server_ups(ups)
         return game.tick
     end
 })
@@ -84,21 +75,9 @@ local function set_location(event)
         element.visible = UsesServerUps:get(player)
     end
 
-    local res = player.display_resolution
     local uis = player.display_scale
+    local res = player.display_resolution
     element.location = { x = res.width - 363 * uis, y = 31 * uis } -- below ups and clock
-end
-
---- Update the caption for all online players
-local function update_caption()
-    if not external.valid then
-        return
-    end
-
-    local caption = ("%.1f (%.1f%%)"):format(external.ups, external.ups * 5 / 3)
-    for _, element in server_ups:online_elements() do
-        element.caption = caption
-    end
 end
 
 local e = defines.events
@@ -113,7 +92,4 @@ return {
         [e.on_player_display_resolution_changed] = set_location,
         [e.on_player_display_scale_changed] = set_location,
     },
-    on_nth_tick = {
-        [60] = update_caption,
-    }
 }
