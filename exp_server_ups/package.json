@@ -1,0 +1,37 @@
+{
+	"name": "@expcluster/server_ups",
+	"version": "0.1.0",
+	"description": "Clusterio plugin providing in game server ups counter",
+	"author": "Cooldude2606 <https://github.com/Cooldude2606>",
+	"license": "MIT",
+	"repository": "explosivegaming/ExpCluster",
+	"main": "dist/node/index.js",
+	"scripts": {
+		"prepare": "tsc --build"
+	},
+	"engines": {
+		"node": ">=18"
+	},
+	"peerDependencies": {
+		"@clusterio/lib": "catalog:"
+	},
+	"devDependencies": {
+		"typescript": "catalog:",
+		"@types/node": "catalog:",
+		"@clusterio/lib": "catalog:"
+	},
+	"dependencies": {
+		"@sinclair/typebox": "catalog:",
+		"@expcluster/lib_util": "workspace:^",
+		"@expcluster/lib_gui": "workspace:^",
+		"@expcluster/lib_commands": "workspace:^"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"keywords": [
+		"clusterio",
+		"clusterio-plugin",
+		"factorio"
+	]
+}

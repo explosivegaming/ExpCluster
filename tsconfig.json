@@ -6,6 +6,7 @@
 		{ "path": "./exp_gui/" },
 		{ "path": "./exp_legacy/" },
 		{ "path": "./exp_scenario/" },
+		{ "path": "./exp_server_ups/" },
 		{ "path": "./exp_util/" },
 	],
 }

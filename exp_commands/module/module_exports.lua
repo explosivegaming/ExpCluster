@@ -595,6 +595,7 @@ end
 --- @param parameter string The raw command parameter that was used 
 --- @param detail any
 local function log_command(comment, command, player, parameter, detail)
+    if player.index == 0 and comment == "Command Ran" then return end
     ExpUtil.write_json("log/commands.log", {
         comment = comment,
         command_name = command.name,

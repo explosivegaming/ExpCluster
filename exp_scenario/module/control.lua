@@ -41,6 +41,3 @@ require("modules/exp_scenario/commands/trains")
 require("modules/exp_scenario/commands/vlayer")
 require("modules/exp_scenario/commands/warnings")
 require("modules/exp_scenario/commands/waterfill")
-
---- Guis
-add(require("modules/exp_scenario/gui/server_ups"))
