@@ -5,7 +5,7 @@
 	"description": "Example Description. Package. Change me in package.json",
 	"main": "dist/node/index.js",
 	"scripts": {
-		"prepare": "tsc --build && webpack-cli --env production"
+		"$prepare": "tsc --build && webpack-cli --env production"
 	},
 	"engines": {
 		"node": ">=18"
