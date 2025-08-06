@@ -2,19 +2,25 @@ import * as lib from "@clusterio/lib";
 import { BaseInstancePlugin } from "@clusterio/host";
 
 export class InstancePlugin extends BaseInstancePlugin {
-	static updateIntervalMs = 1000; // 1 second
-	static maxStoredGameTimes = 10; 
-
-	private _updateInterval?: ReturnType<typeof setInterval>;
+	private updateInterval?: ReturnType<typeof setInterval>;
 	private gameTimes: number[] = [];
 
 	async onStart() {
-		this._updateInterval = setInterval(this.updateUps.bind(this), InstancePlugin.updateIntervalMs);
+		this.updateInterval = setInterval(this.updateUps.bind(this), this.instance.config.get("exp_server_ups.update_interval"));
 	}
 
 	async onStop() {
-		if (this._updateInterval) {
-			clearInterval(this._updateInterval);
+		if (this.updateInterval) {
+			clearInterval(this.updateInterval);
+		}
+	}
+
+	async onInstanceConfigFieldChanged(field: string, curr: unknown): Promise<void> {
+		if (field === "exp_server_ups.update_interval") {
+			await this.onStop();
+			await this.onStart();
+		} else if (field === "exp_server_ups.average_interval") {
+			this.gameTimes.splice(curr as number);
 		}
 	}
 
@@ -24,18 +30,18 @@ export class InstancePlugin extends BaseInstancePlugin {
 		if (collected > 0) {
 			const minTick = this.gameTimes[0];
 			const maxTick = this.gameTimes[collected];
-			const duration = collected * InstancePlugin.updateIntervalMs / 1000;
-			ups = (maxTick - minTick) / (duration);
+			const interval = this.instance.config.get("exp_server_ups.update_interval") / 1000;
+			ups = (maxTick - minTick) / (collected * interval);
 		}
 
 		try {
-			const newGameTick = await this.sendRcon(`/_rcon return exp_server_ups.update(${ups})`);
-			this.gameTimes.push(Number(newGameTick));
+			const newGameTime = await this.sendRcon(`/_rcon return exp_server_ups.update(${ups})`);
+			this.gameTimes.push(Number(newGameTime));
 		} catch (error: any) {
-			this.logger.error(`Failed to receive new game tick: ${error}`);
+			this.logger.error(`Failed to receive new game time: ${error}`);
 		}
 
-		if (collected > InstancePlugin.maxStoredGameTimes) {
+		if (collected > this.instance.config.get("exp_server_ups.average_interval")) {
 			this.gameTimes.shift();
 		}
 	}
