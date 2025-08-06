@@ -49,7 +49,7 @@ UsesServerUps:on_load(function(player_name, visible)
 end)
 
 --- Toggles if the server ups is visbile
-Commands.new("server-ups", { "server-ups.description" })
+Commands.new("server-ups", { "exp_server-ups.description" })
     :add_aliases{ "sups", "ups" }
     :register(function(player)
         local visible = not UsesServerUps:get(player)
