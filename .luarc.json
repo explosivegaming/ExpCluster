@@ -17,6 +17,7 @@
         "inferParamType": true
     },
     "$comment-name-style-check": "Disabled below until config issue fixed: https://github.com/LuaLS/lua-language-server/issues/2643",
+    "$comment-type-mismatch": "Disabled unless opened due to performance concerns, time reduced to 10s from 400s",
     "diagnostics": {
         "unusedLocalExclude": [ "_*", "i", "j", "k", "v" ],
         "groupFileStatus": {
@@ -37,7 +38,10 @@
         "neededFileStatus": {
             "no-unknown": "None!",
             "spell-check": "None!",
-            "name-style-check": "None!"
+            "name-style-check": "None!",
+            "assign-type-mismatch": "Opened!",
+            "return-type-mismatch": "Opened!",
+            "param-type-mismatch": "Opened!"
         }
     },
     "nameStyle.config": {
