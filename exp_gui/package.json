@@ -21,7 +21,7 @@
 		"typescript": "catalog:"
 	},
 	"dependencies": {
-		"@expcluster/lib_util": "workspace:*",
+		"@expcluster/lib_util": "workspace:^",
 		"@sinclair/typebox": "catalog:"
 	},
 	"publishConfig": {
