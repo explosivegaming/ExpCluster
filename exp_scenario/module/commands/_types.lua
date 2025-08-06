@@ -18,7 +18,7 @@ local valid, invalid = Commands.status.success, Commands.status.invalid_input
 local Roles = require("modules.exp_legacy.expcore.roles")
 local highest_role = Roles.get_player_highest_role
 
-local types = {} --- @class Commands._types
+local types = {} --- @class Commands.types
 
 --- A role defined by exp roles
 types.role = add("role", Commands.types.key_of(Roles.config.roles))

@@ -25,7 +25,7 @@ local Commands = require("modules/exp_commands")
 local add, parse = Commands.add_data_type, Commands.parse_input
 local valid, invalid = Commands.status.success, Commands.status.invalid_input
 
-local types = {} --- @class Commands._types
+local types = {} --- @class Commands.types
 
 --- A boolean value where true is one of: yes, y, true, 1
 types.boolean =

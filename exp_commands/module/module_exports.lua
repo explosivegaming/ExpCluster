@@ -76,11 +76,11 @@ local Commands = {
     },
 }
 
---- @class Commands._status: table<string, Commands.Status>
+--- @class Commands.status: table<string, Commands.Status>
 --- Contains the different status values a command can return
 Commands.status = {}
 
---- @class Commands._types: table<string, Commands.InputParser | Commands.InputParserFactory>
+--- @class Commands.types: table<string, Commands.InputParser | Commands.InputParserFactory>
 --- Stores all input parsers and validators for different data types
 Commands.types = {}
 
