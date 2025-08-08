@@ -28,7 +28,7 @@ local GuiIter = {
     _scopes = registered_scopes,
 }
 
-local function nop() return nil, nil end
+local function no_loop() return nil, nil end
 
 --- Get the next valid element
 --- @param elements table<uint, LuaGuiElement>
@@ -51,9 +51,9 @@ end
 --- @param online boolean?
 --- @return uint?, LuaPlayer?, table<uint, LuaGuiElement>?
 local function next_valid_player(scope_elements, players, prev_index, online)
-    local index, player = nil, nil
+    local index, player = prev_index, nil
     while true do
-        index, player = next(players, prev_index)
+        index, player = next(players, index)
         while player and not player.valid do
             scope_elements[player.index] = nil
             index, player = next(players, index)
@@ -66,7 +66,7 @@ local function next_valid_player(scope_elements, players, prev_index, online)
 
         if online == nil or player.connected == online then
             local player_elements = scope_elements[player.index]
-            if player_elements and #player_elements > 0 then
+            if player_elements and next(player_elements) then
                 return index, player, player_elements
             end
         end
@@ -78,13 +78,13 @@ end
 --- @param player LuaPlayer
 --- @return ExpGui_GuiIter.ReturnType
 function GuiIter.player_elements(scope, player)
-    if not player.valid then return nop end
+    if not player.valid then return no_loop end
 
     local scope_elements = registered_scopes[scope]
-    if not scope_elements then return nop end
+    if not scope_elements then return no_loop end
 
     local player_elements = scope_elements[player.index]
-    if not player_elements then return nop end
+    if not player_elements then return no_loop end
 
     local element_index, element = nil, nil
     return function()
@@ -101,7 +101,7 @@ end
 --- @return ExpGui_GuiIter.ReturnType
 function GuiIter.filtered_elements(scope, players, online)
     local scope_elements = registered_scopes[scope]
-    if not scope_elements then return nop end
+    if not scope_elements then return no_loop end
 
     local index, player, player_elements = nil, nil, nil
     local element_index, element = nil, nil
@@ -128,7 +128,7 @@ end
 --- @return ExpGui_GuiIter.ReturnType
 function GuiIter.all_elements(scope)
     local scope_elements = registered_scopes[scope]
-    if not scope_elements then return nop end
+    if not scope_elements then return no_loop end
 
     local player_index, player_elements, player = nil, nil, nil
     local element_index, element = nil, nil
@@ -193,7 +193,7 @@ function GuiIter.get_online_elements(scope, filter)
         return GuiIter.filtered_elements(scope, game.connected_players)
     elseif class_name == "LuaPlayer" then
         --- @cast filter LuaPlayer
-        if not filter.connected then return nop end
+        if not filter.connected then return no_loop end
         return GuiIter.player_elements(scope, filter)
     elseif class_name == "LuaForce" then
         --- @cast filter LuaForce

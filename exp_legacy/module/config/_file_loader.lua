@@ -51,7 +51,6 @@ return {
     "modules.gui.task-list",
     "modules.gui.warp-list",
     "modules.gui.player-list",
-    "modules.gui.server-ups",
     "modules.gui.bonus",
     "modules.gui.vlayer",
     "modules.gui.research",

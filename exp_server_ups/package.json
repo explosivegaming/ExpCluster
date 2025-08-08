@@ -1,13 +1,13 @@
 {
-	"name": "@expcluster/lib_commands",
+	"name": "@expcluster/server_ups",
 	"version": "0.1.0",
-	"description": "Clusterio plugin providing a Lua command processing library.",
+	"description": "Clusterio plugin providing in game server ups counter",
 	"author": "Cooldude2606 <https://github.com/Cooldude2606>",
 	"license": "MIT",
 	"repository": "explosivegaming/ExpCluster",
 	"main": "dist/node/index.js",
 	"scripts": {
-		"prepare": "tsc --build"
+		"prepare": "tsc --build && webpack-cli --env production"
 	},
 	"engines": {
 		"node": ">=18"
@@ -16,13 +16,18 @@
 		"@clusterio/lib": "catalog:"
 	},
 	"devDependencies": {
-		"@clusterio/lib": "catalog:",
+		"typescript": "catalog:",
 		"@types/node": "catalog:",
-		"typescript": "catalog:"
+		"@clusterio/lib": "catalog:",
+		"webpack": "catalog:",
+		"webpack-cli": "catalog:",
+		"webpack-merge": "catalog:"
 	},
 	"dependencies": {
+		"@sinclair/typebox": "catalog:",
 		"@expcluster/lib_util": "workspace:^",
-		"@sinclair/typebox": "catalog:"
+		"@expcluster/lib_gui": "workspace:^",
+		"@expcluster/lib_commands": "workspace:^"
 	},
 	"publishConfig": {
 		"access": "public"

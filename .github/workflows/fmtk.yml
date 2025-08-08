@@ -9,13 +9,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
+          cache: "pnpm"
       - name: Install FMTK
         run: |
-          npm install factoriomod-debug
-          npx fmtk luals-addon
+          pnpm install factoriomod-debug
+          pnpm exec fmtk luals-addon
           jq '.["workspace.library"] += ["${{ github.workspace }}/factorio/library"] | .["runtime.plugin"] = "${{ github.workspace }}/factorio/plugin.lua"' .luarc.json > temp.luarc.json
           jq -s '.[0] * .[1].settings' temp.luarc.json ${{ github.workspace }}/factorio/config.json > check.luarc.json
       - name: Install LuaLS

@@ -13,16 +13,16 @@
 		"node": ">=18"
 	},
 	"peerDependencies": {
-		"@clusterio/lib": "^2.0.0-alpha.19"
+		"@clusterio/lib": "catalog:"
 	},
 	"devDependencies": {
-		"@clusterio/lib": "^2.0.0-alpha.19",
-		"@types/node": "^20.14.9",
-		"typescript": "^5.5.3"
+		"@clusterio/lib": "catalog:",
+		"@types/node": "catalog:",
+		"typescript": "catalog:"
 	},
 	"dependencies": {
-		"@expcluster/lib_util": "workspace:*",
-		"@sinclair/typebox": "^0.30.4"
+		"@expcluster/lib_util": "workspace:^",
+		"@sinclair/typebox": "catalog:"
 	},
 	"publishConfig": {
 		"access": "public"

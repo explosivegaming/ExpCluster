@@ -1,0 +1,14 @@
+{
+	"name": "exp_server_ups",
+	"load": [
+		"control.lua"
+	],
+	"require": [
+	],
+	"dependencies": {
+		"clusterio": "*",
+		"exp_commands": "*",
+		"exp_util": "*",
+		"exp_gui": "*"
+	}
+}

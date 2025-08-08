@@ -116,16 +116,6 @@ function External.get_server_status(server_id, raw)
     return not raw and server_id == current and "Current" or assert(servers[server_id], "No status found for server with id: " .. tostring(server_id))
 end
 
---[[-- Gets the ups of the current server
-@usage-- Get the ups of the current server
-local server_ups = External.get_server_ups()
-
-]]
-function External.get_server_ups()
-    assert(var, "No external data was found, use External.valid() to ensure external data exists.")
-    return assert(var.server_ups, "No server ups was found, please ensure that the external service is running")
-end
-
 --[[-- Connect a player to the given server
 @tparam LuaPlayer player The player that you want to request to join a different server
 @tparam string server_id The internal id of the server to connect to, can also be any address but this will show Unknown Server

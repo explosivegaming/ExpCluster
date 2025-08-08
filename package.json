@@ -7,6 +7,6 @@
 		"watch": "tsc --build --watch"
 	},
 	"devDependencies": {
-		"typescript": "^5.5.3"
+		"typescript": "catalog:"
 	}
 }
