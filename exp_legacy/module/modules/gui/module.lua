@@ -318,9 +318,11 @@ Gui.toolbar.create_button{
 
 --- @param event EventData.on_gui_elem_changed
 Event.add(defines.events.on_gui_elem_changed, function(event)
-    if event.element.name:sub(1, 10) == "module_mm_" then
-        if event.element.name:sub(-1) == "0" then
-            row_set(game.players[event.player_index], "module_mm_" .. event.element.name:sub(-3):sub(1, 1) .. "_")
+    local element = event.element
+    if element.valid then
+        local name = element.name
+        if name:sub(1, 10) == "module_mm_" and name:sub(-1) == "0" then
+            row_set(game.players[event.player_index], "module_mm_" .. name:sub(-3):sub(1, 1) .. "_")
         end
     end
 end)

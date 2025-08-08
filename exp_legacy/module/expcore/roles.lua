@@ -604,7 +604,6 @@ local has_flag = Roles.player_has_flag(game.player, 'is_donator')
 ]]
 function Roles.player_allowed(player, action)
     local roles = Roles.get_player_roles(player)
-    if not roles then return end
     for _, role in ipairs(roles) do
         if role:is_allowed(action) then
             return true

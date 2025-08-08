@@ -106,8 +106,8 @@ elements.scroll_table = ExpGui.element("scroll_table")
         }
     end)
     :style{
-        padding = 0,
-        cell_padding = 0,
+        padding = { 3, 2 },
+        cell_padding = 1,
         vertical_align = "center",
         horizontally_stretchable = true,
     }
@@ -123,7 +123,7 @@ elements.container = ExpGui.element("container")
 
         local style = container.style
         style.horizontally_stretchable = false
-        style.minimal_width = width
+        style.minimal_width = width or 0
         style.padding = 2
 
         return container.add{

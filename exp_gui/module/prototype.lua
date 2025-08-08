@@ -20,7 +20,7 @@ ExpElement.events = {}
 --- @class ExpElement._debug
 --- @field defined_at string
 --- @field draw_definition table?
---- @field draw_from_args table?
+--- @field draw_signals table?
 --- @field style_definition table?
 --- @field style_from_args table?
 --- @field element_data_definition table?
@@ -63,26 +63,47 @@ end
 
 --- Used to signal that a property should be taken from the arguments, a string means key of last arg
 --- @param arg number|string|nil
+--- @param default any|nil
 --- @return [function, number|string|nil]
-function ExpElement.property_from_arg(arg)
-    return { ExpElement.property_from_arg, arg }
+function ExpElement.property_from_arg(arg, default)
+    return { ExpElement.property_from_arg, arg, default }
 end
 
 --- Extract the from args properties from a definition
 --- @param definition table
---- @return table<string|number, string>
+--- @return table<string|number, [string, any]>
 function ExpElement._prototype:_extract_signals(definition)
-    local from_args = {}
-    for k, v in pairs(definition) do
-        if v == ExpElement.property_from_arg then
-            from_args[#from_args + 1] = k
-        elseif v == ExpElement.property_from_name then
-            definition[k] = self.name
-        elseif type(v) == "table" and rawget(v, 1) == ExpElement.property_from_arg then
-            from_args[v[2] or (#from_args + 1)] = k
+    local signals = {}
+    for prop, value in pairs(definition) do
+        if value == ExpElement.property_from_arg then
+            signals[#signals + 1] = { prop, nil }
+        elseif value == ExpElement.property_from_name then
+            definition[prop] = self.name
+        elseif type(value) == "table" and rawget(value, 1) == ExpElement.property_from_arg then
+            local key = value[2] or (#signals + 1)
+            signals[key] = { prop, value[3] }
         end
     end
-    return from_args
+    return signals
+end
+
+--- Apply the previously extracted signals to a definition using the create args
+--- @param definition table
+--- @param signals table<string|number, [string, any]>
+--- @param args table
+function ExpElement._prototype:_apply_signals(definition, signals, args)
+    local last = args[#args] or args -- 'or args' used instead of empty table
+    for i, pair in pairs(signals) do
+        local key = pair[1]
+        if type(i) == "string" then
+            definition[key] = last[i]
+        else
+            definition[key] = args[i]
+        end
+        if definition[key] == nil then
+            definition[key] = pair[2]
+        end
+    end
 end
 
 --- Register a new instance of a prototype
@@ -209,40 +230,32 @@ function ExpElement._prototype:draw(definition)
     end
 
     assert(type(definition) == "table", "Definition is not a table or function")
-    local from_args = self:_extract_signals(definition)
+    local signals = self:_extract_signals(definition)
     self._debug.draw_definition = definition
 
-    if not next(from_args) then
+    if not next(signals) then
+        -- If no signals then skip var arg
         self._draw = function(_, parent)
             return parent.add(definition)
         end
         return self
     end
 
-    self._debug.draw_from_args = from_args
+    self._debug.draw_signals = signals
     self._draw = function(_, parent, ...)
-        local args = { ... }
-        local last = args[#args] or args
-        -- 'or args' used instead of empty table
-        for i, k in pairs(from_args) do
-            if type(i) == "string" then
-                definition[k] = last[i]
-            else
-                definition[k] = args[i]
-            end
-        end
+        self:_apply_signals(definition, signals, { ... })
         return parent.add(definition)
     end
 
     return self
 end
 
---- Create a definition adder for anything other than draaw
+--- Create a definition adder for anything other than draw
 --- @param prop_name string
 --- @param debug_def string
---- @param debug_args string
+--- @param debug_signals string
 --- @return ExpElement.PostDrawCallbackAdder
-local function definition_factory(prop_name, debug_def, debug_args)
+local function definition_factory(prop_name, debug_def, debug_signals)
     return function(self, definition)
         ExpUtil.assert_not_runtime()
         if type(definition) == "function" then
@@ -251,22 +264,20 @@ local function definition_factory(prop_name, debug_def, debug_args)
         end
 
         assert(type(definition) == "table", "Definition is not a table or function")
-        local from_args = self:_extract_signals(definition)
+        local signals = self:_extract_signals(definition)
         self._debug[debug_def] = definition
 
-        if #from_args == 0 then
+        if not next(signals) then
+            -- If no signals then skip var arg
             self[prop_name] = function(_, _, _)
                 return definition
             end
             return self
         end
 
-        self._debug[debug_args] = from_args
+        self._debug[debug_signals] = signals
         self[prop_name] = function(_, _, _, ...)
-            local args = { ... }
-            for i, k in pairs(from_args) do
-                definition[k] = args[i]
-            end
+            self:_apply_signals(definition, signals, { ... })
             return definition
         end
 
@@ -276,23 +287,23 @@ end
 
 --- Set the style definition
 --- @type ExpElement.PostDrawCallbackAdder
-ExpElement._prototype.style = definition_factory("_style", "style_definition", "style_from_args")
+ExpElement._prototype.style = definition_factory("_style", "style_definition", "style_signals")
 
 --- Set the default element data
 --- @type ExpElement.PostDrawCallbackAdder
-ExpElement._prototype.element_data = definition_factory("_element_data", "element_data_definition", "element_data_from_args")
+ExpElement._prototype.element_data = definition_factory("_element_data", "element_data_definition", "element_data_signals")
 
 --- Set the default player data
 --- @type ExpElement.PostDrawCallbackAdder
-ExpElement._prototype.player_data = definition_factory("_player_data", "player_data_definition", "player_data_from_args")
+ExpElement._prototype.player_data = definition_factory("_player_data", "player_data_definition", "player_data_signals")
 
 --- Set the default force data
 --- @type ExpElement.PostDrawCallbackAdder
-ExpElement._prototype.force_data = definition_factory("_force_data", "force_data_definition", "force_data_from_args")
+ExpElement._prototype.force_data = definition_factory("_force_data", "force_data_definition", "force_data_signals")
 
 --- Set the default global data
 --- @type ExpElement.PostDrawCallbackAdder
-ExpElement._prototype.global_data = definition_factory("_global_data", "global_data_definition", "global_data_from_args")
+ExpElement._prototype.global_data = definition_factory("_global_data", "global_data_definition", "global_data_signals")
 
 --- Iterate the tracked elements of all players
 --- @param filter ExpGui_GuiIter.FilterType
