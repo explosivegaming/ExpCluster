@@ -1,15 +1,14 @@
---[[-- Gui Module - Landfill
-    - Landfill blueprint
-    @gui Landfill
-    @alias landfill_container
+--[[-- Gui - Landfill Blueprint
+Adds a button to the toolbar which adds landfill to the held blueprint
 ]]
 
 local Gui = require("modules/exp_gui")
-local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
-local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
+local Roles = require("modules/exp_legacy/expcore/roles")
+
+--- @class ExpGuiLandfill.elements
+local Elements = {}
 
 local rolling_stocks = {}
-
 local function landfill_init()
     for name, _ in pairs(prototypes.get_entity_filtered{ { filter = "rolling-stock" } }) do
         rolling_stocks[name] = true
@@ -167,25 +166,28 @@ local function landfill_gui_add_landfill(blueprint)
 end
 
 --- Add the toolbar button
-Gui.toolbar.create_button{
-    name = "landfill",
+Elements.landfill_blueprint = Gui.toolbar.create_button{
+    name = "landfill_blueprint",
     sprite = "item/landfill",
-    tooltip = { "landfill.main-tooltip" },
+    tooltip = { "exp-gui_landfill_blueprint.tooltip-main" },
     visible = function(player, element)
         return Roles.player_allowed(player, "gui/landfill")
     end
 }:on_click(function(def, player, element)
-    if player.cursor_stack and player.cursor_stack.valid_for_read then
-        if player.cursor_stack.type == "blueprint" and player.cursor_stack.is_blueprint_setup() then
-            local modified = landfill_gui_add_landfill(player.cursor_stack)
-
-            if modified and next(modified.tiles) then
-                player.cursor_stack.set_blueprint_tiles(modified.tiles)
-            end
+    local stack = player.cursor_stack
+    if stack and stack.valid_for_read and stack.type == "blueprint" and stack.is_blueprint_setup() then
+        local modified = landfill_gui_add_landfill(stack)
+        if modified and next(modified.tiles) then
+            stack.set_blueprint_tiles(modified.tiles)
         end
     else
-        player.print{ "landfill.cursor-none" }
+        player.print{ "exp-gui_landfill_blueprint.error-no-blueprint" }
     end
 end)
 
-Event.add(defines.events.on_player_joined_game, landfill_init)
+return {
+    elements = Elements,
+    events = {
+        [defines.events.on_player_joined_game] = landfill_init
+    }
+}
