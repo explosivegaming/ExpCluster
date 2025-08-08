@@ -9,7 +9,7 @@ export class InstancePlugin extends BaseInstancePlugin {
 		this.updateInterval = setInterval(this.updateUps.bind(this), this.instance.config.get("exp_server_ups.update_interval"));
 	}
 
-	async onStop() {
+	onExit() {
 		if (this.updateInterval) {
 			clearInterval(this.updateInterval);
 		}
@@ -17,7 +17,7 @@ export class InstancePlugin extends BaseInstancePlugin {
 
 	async onInstanceConfigFieldChanged(field: string, curr: unknown): Promise<void> {
 		if (field === "exp_server_ups.update_interval") {
-			await this.onStop();
+			this.onExit();
 			await this.onStart();
 		} else if (field === "exp_server_ups.average_interval") {
 			this.gameTimes.splice(curr as number);
