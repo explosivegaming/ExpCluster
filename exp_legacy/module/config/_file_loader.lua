@@ -57,7 +57,6 @@ return {
     "modules.gui.module",
     "modules.gui.landfill",
     "modules.gui.tool",
-    "modules.gui.production",
     "modules.gui.playerdata",
     "modules.gui.surveillance",
     "modules.gui._role_updates",
