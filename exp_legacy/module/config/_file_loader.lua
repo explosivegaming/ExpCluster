@@ -54,7 +54,6 @@ return {
     "modules.gui.bonus",
     "modules.gui.vlayer",
     "modules.gui.research",
-    "modules.gui.module",
     "modules.gui.tool",
     "modules.gui.playerdata",
     "modules.gui.surveillance",
