@@ -91,6 +91,7 @@ end
 --- @param definition table
 --- @param signals table<string|number, [string, any]>
 --- @param args table
+--- @return table
 function ExpElement._prototype:_apply_signals(definition, signals, args)
     local last = args[#args] or args -- 'or args' used instead of empty table
     for i, pair in pairs(signals) do
@@ -104,6 +105,7 @@ function ExpElement._prototype:_apply_signals(definition, signals, args)
             definition[key] = pair[2]
         end
     end
+    return definition
 end
 
 --- Register a new instance of a prototype
@@ -243,8 +245,7 @@ function ExpElement._prototype:draw(definition)
 
     self._debug.draw_signals = signals
     self._draw = function(_, parent, ...)
-        self:_apply_signals(definition, signals, { ... })
-        return parent.add(definition)
+        return parent.add(self:_apply_signals(definition, signals, { ... }))
     end
 
     return self
@@ -270,15 +271,14 @@ local function definition_factory(prop_name, debug_def, debug_signals)
         if not next(signals) then
             -- If no signals then skip var arg
             self[prop_name] = function(_, _, _)
-                return definition
+                return table.deep_copy(definition)
             end
             return self
         end
 
         self._debug[debug_signals] = signals
         self[prop_name] = function(_, _, _, ...)
-            self:_apply_signals(definition, signals, { ... })
-            return definition
+            return self:_apply_signals(table.deep_copy(definition), signals, { ... })
         end
 
         return self
