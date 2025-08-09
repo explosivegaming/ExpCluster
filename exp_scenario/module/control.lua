@@ -41,3 +41,8 @@ require("modules/exp_scenario/commands/trains")
 require("modules/exp_scenario/commands/vlayer")
 require("modules/exp_scenario/commands/warnings")
 require("modules/exp_scenario/commands/waterfill")
+
+--- Guis
+add(require("modules/exp_scenario/gui/landfill_blueprint"))
+add(require("modules/exp_scenario/gui/module_inserter"))
+add(require("modules/exp_scenario/gui/production_stats"))
