@@ -44,4 +44,4 @@ require("modules/exp_scenario/commands/waterfill")
 
 --- Guis
 add(require("modules/exp_scenario/gui/landfill_blueprint"))
-add(require("modules/exp_scenario/gui/production"))
+add(require("modules/exp_scenario/gui/production_stats"))

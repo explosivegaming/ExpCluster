@@ -5,7 +5,7 @@ Adds a button to the toolbar which adds landfill to the held blueprint
 local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_legacy/expcore/roles")
 
---- @class ExpGuiLandfill.elements
+--- @class ExpGui_LandfillBlueprint.elements
 local Elements = {}
 
 local rolling_stocks = {}
@@ -169,7 +169,7 @@ end
 Elements.landfill_blueprint = Gui.toolbar.create_button{
     name = "landfill_blueprint",
     sprite = "item/landfill",
-    tooltip = { "exp-gui_landfill_blueprint.tooltip-main" },
+    tooltip = { "exp-gui_landfill-blueprint.tooltip-main" },
     visible = function(player, element)
         return Roles.player_allowed(player, "gui/landfill")
     end
@@ -181,7 +181,7 @@ Elements.landfill_blueprint = Gui.toolbar.create_button{
             stack.set_blueprint_tiles(modified.tiles)
         end
     else
-        player.print{ "exp-gui_landfill_blueprint.error-no-blueprint" }
+        player.print{ "exp-gui_landfill-blueprint.error-no-blueprint" }
     end
 end)
 

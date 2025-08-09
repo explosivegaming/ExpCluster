@@ -5,7 +5,7 @@ Adds a Gui for displaying item production stats
 local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_legacy/expcore/roles")
 
---- @class ExpGui_Production.elements
+--- @class ExpGui_ProductionStats.elements
 local Elements = {}
 
 --- The flow precision values in the same order as production_precision_dropdown.items
@@ -75,6 +75,10 @@ Elements.item_selector = Gui.element("production_item_selector")
     :style{
         size = 32,
     }
+    :element_data{
+        labels = Gui.property_from_arg(1),
+        last_row = true,
+    }
     :on_elem_changed(function(def, player, element, event)
         local element_data = def.data[element]
         if not element.elem_value then
@@ -95,7 +99,7 @@ Elements.item_selector = Gui.element("production_item_selector")
         elseif element.elem_value and element_data.last_row then
             -- New item selected on the last row, so make a new row
             element_data.last_row = false
-            Elements.table_row(element_data.table)
+            Elements.table_row(element.parent)
         end
     end)
     
@@ -115,31 +119,26 @@ Elements.table_label = Gui.element("production_table_label")
 --- A single row of a production table, the parent must be a production table
 Elements.table_row = Gui.element("production_table_row")
     :draw(function(def, parent)
-        local item_selector = Elements.item_selector(parent)
-        Elements.item_selector.data[item_selector] = {
-            last_row = true,
-            table = parent,
-            labels = {
-                production = Elements.table_label(parent, "0.00"),
-                consumption = Elements.table_label(parent, "0.00"),
-                net = Elements.table_label(parent, "0.00"),
-            },
-        }
+        local labels = {}
+        Elements.item_selector(parent, labels)
+        labels.production = Elements.table_label(parent, "0.00")
+        labels.consumption = Elements.table_label(parent, "0.00")
+        labels.net = Elements.table_label(parent, "0.00")
     end)
 
 --- A table that allows selecting items 
 Elements.production_table = Gui.element("production_table")
     :draw(function(def, parent)
-        local scroll_table = Gui.elements.scroll_table(parent, 320, 4)
+        local scroll_table = Gui.elements.scroll_table(parent, 304, 4)
         local display_alignments = scroll_table.style.column_alignments
         for i = 2, 4 do
             display_alignments[i] = "right"
         end
 
         def.data[scroll_table] = Elements.precision_dropdown(scroll_table)
-        Elements.table_label(scroll_table, { "gui-production.production" }, { "exp-gui_production.tooltip-per-second" }, "heading_2_label")
-        Elements.table_label(scroll_table, { "gui-production.consumption" }, { "exp-gui_production.tooltip-per-second" }, "heading_2_label")
-        Elements.table_label(scroll_table, { "exp-gui_production.label-net" }, { "exp-gui_production.tooltip-per-second" }, "heading_2_label")
+        Elements.table_label(scroll_table, { "gui-production.production" }, { "exp-gui_production-stats.tooltip-per-second" }, "heading_2_label")
+        Elements.table_label(scroll_table, { "gui-production.consumption" }, { "exp-gui_production-stats.tooltip-per-second" }, "heading_2_label")
+        Elements.table_label(scroll_table, { "exp-gui_production-stats.label-net" }, { "exp-gui_production-stats.tooltip-per-second" }, "heading_2_label")
         Elements.table_row(scroll_table)
 
         return scroll_table
@@ -156,10 +155,10 @@ Elements.container = Gui.element("production_container")
 --- Add the element to the left flow with a toolbar button
 Gui.add_left_element(Elements.container, false)
 Gui.toolbar.create_button{
-    name = "production_toggle",
+    name = "toggle_production_stats",
     left_element = Elements.container,
     sprite = "entity/assembling-machine-3",
-    tooltip = { "exp-gui_production.tooltip-main" },
+    tooltip = { "exp-gui_production-stats.tooltip-main" },
     visible = function(player, element)
         return Roles.player_allowed(player, "gui/production")
     end
@@ -168,11 +167,11 @@ Gui.toolbar.create_button{
 --- Update all table rows with the latest production values
 local function update_table_rows()
     for player, item_selector in Elements.item_selector:online_elements() do
-        local element_data = Elements.item_selector.data[item_selector]
         local item_name = item_selector.elem_value --[[ @as string? ]]
         if item_name then
             -- An item is selected, so get the flow rate and update label captions
-            local precision_dropdown = Elements.production_table.data[element_data.table]
+            local element_data = Elements.item_selector.data[item_selector]
+            local precision_dropdown = Elements.production_table.data[item_selector.parent]
             local precision_value = precision_values[precision_dropdown.selected_index]
 
             local get_flow_count = player.force.get_item_production_statistics(player.surface).get_flow_count -- Allow remote view
