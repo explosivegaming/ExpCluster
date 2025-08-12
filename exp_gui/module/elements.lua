@@ -61,7 +61,7 @@ elements.title_label = ExpGui.element("title_label")
             parent.add{
                 type = "flow"
             }
-            
+
         flow.style.vertical_align = "center"
         elements.bar(flow, width)
 
@@ -114,7 +114,7 @@ elements.scroll_table = ExpGui.element("scroll_table")
 
 --- A container frame
 elements.container = ExpGui.element("container")
-    :draw(function(def, parent, width, container_name)
+    :draw(function(def, parent, minimal_width, container_name)
         local container =
             parent.add{
                 type = "frame",
@@ -122,8 +122,7 @@ elements.container = ExpGui.element("container")
             }
 
         local style = container.style
-        style.horizontally_stretchable = false
-        style.minimal_width = width or 0
+        style.minimal_width = minimal_width or 0
         style.padding = 2
 
         return container.add{
@@ -188,6 +187,70 @@ elements.footer = ExpGui.element("container_footer")
         end
 
         return opts.no_flow and subframe or elements.aligned_flow(subframe, { name = "flow" })
+    end)
+
+--- A button used to destroy its target when clicked, intended for screen frames
+elements.screen_frame_close = ExpGui.element("screen_frame_close")
+    :draw{
+        type = "sprite-button",
+        style = "frame_action_button",
+        sprite = "utility/close",
+    }
+    :element_data(function(def, element, parent, target)
+        return assert(target, "Target not specified")
+    end)
+    :on_click(function(def, player, element, event)
+        def.data[element].destroy()
+    end)
+
+--- A draggable frame with close button and button flow
+elements.screen_frame = ExpGui.element("screen_frame")
+    :draw(function(def, parent, caption, button_flow)
+        local container = parent.add{
+            type = "frame",
+            direction = "vertical",
+        }
+        container.style.padding = 2
+
+        local header = container.add{
+            type = "flow",
+        }
+
+        if caption then
+            local label = header.add{
+                type = "label",
+                caption = caption,
+                style = "frame_title"
+            }
+            label.style.top_margin = -3
+            label.style.bottom_padding = 3
+        end
+
+        local filler = header.add{
+            type = "empty-widget",
+            style = "draggable_space_header",
+        }
+
+        filler.drag_target = container
+        local filler_style = filler.style
+        filler_style.horizontally_stretchable = true
+        filler_style.vertically_stretchable = true
+        filler_style.left_margin = caption and 4 or 0
+        filler_style.natural_height = 24
+        filler_style.height = 24
+
+        if button_flow then
+            def.data[container] = header.add{ type = "flow" }
+            def.data[container].style.padding = 0
+        end
+
+        elements.screen_frame_close(header, container)
+
+        return container.add{
+            type = "frame",
+            direction = "vertical",
+            style = "inside_shallow_frame_packed",
+        }
     end)
 
 return elements

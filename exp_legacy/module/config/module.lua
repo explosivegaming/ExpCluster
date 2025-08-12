@@ -2,7 +2,7 @@ return {
     module_slots_per_row = 4,
     module_slot_max = 8,
     copy_paste_module = true,
-    copy_paste_rotation = true,
+    copy_paste_rotation = false,
     machines = {
     },
     machine_sets = {

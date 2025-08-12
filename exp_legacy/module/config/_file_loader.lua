@@ -56,7 +56,6 @@ return {
     "modules.gui.research",
     "modules.gui.tool",
     "modules.gui.playerdata",
-    "modules.gui.surveillance",
     "modules.gui._role_updates",
 
     "modules.graftorio.require", -- graftorio
