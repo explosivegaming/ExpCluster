@@ -57,7 +57,7 @@ local elem_filter = {
 }
 
 --- Button used to create a selection planner from a module table
-Elements.create_selection_planner = Gui.element("module_inserter_create_selection_planner")
+Elements.create_selection_planner = Gui.element("module_inserter/create_selection_planner")
     :draw{
         type = "sprite-button",
         sprite = "item/upgrade-planner",
@@ -74,7 +74,7 @@ Elements.create_selection_planner = Gui.element("module_inserter_create_selectio
     end)
 
 --- Used to select the machine to apply modules to
-Elements.machine_selector = Gui.element("module_inserter_machine_selector")
+Elements.machine_selector = Gui.element("module_inserter/machine_selector")
     :draw{
         type = "choose-elem-button",
         elem_type = "entity",
@@ -146,7 +146,7 @@ Elements.machine_selector = Gui.element("module_inserter_machine_selector")
     end)
 
 --- Used to select the modules to be applied
-Elements.module_selector = Gui.element("module_inserter_module_selector")
+Elements.module_selector = Gui.element("module_inserter/module_selector")
     :draw{
         type = "choose-elem-button",
         elem_type = "item-with-quality",
@@ -157,7 +157,7 @@ Elements.module_selector = Gui.element("module_inserter_module_selector")
     }
 
 --- A single row of a module table, the parent must be a module table
-Elements.table_row = Gui.element("module_inserter_table_row")
+Elements.table_row = Gui.element("module_inserter/table_row")
     :draw(function(def, parent)
         local row_separators, module_selectors = {}, {}
         local machine_selector = Elements.machine_selector(parent, row_separators, module_selectors)
@@ -177,7 +177,7 @@ Elements.table_row = Gui.element("module_inserter_table_row")
     end)
 
 --- A table that allows selecting modules 
-Elements.module_table = Gui.element("module_inserter_table")
+Elements.module_table = Gui.element("module_inserter/module_table")
     :draw(function(def, parent)
         local slots_per_row = config.module_slots_per_row + 1
         local scroll_table = Gui.elements.scroll_table(parent, 280, slots_per_row)
@@ -187,7 +187,7 @@ Elements.module_table = Gui.element("module_inserter_table")
     end)
 
 --- Container added to the left gui flow
-Elements.container = Gui.element("module_inserter_container")
+Elements.container = Gui.element("module_inserter/container")
     :draw(function(def, parent)
         local container = Gui.elements.container(parent)
         local header = Gui.elements.header(container, { caption = { "exp-gui_module-inserter.label-main" } })

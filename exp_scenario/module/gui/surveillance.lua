@@ -12,7 +12,7 @@ local Elements = {}
 local _player_names = {}
 
 --- Dropdown which sets the target of a camera to a player
-Elements.player_dropdown = Gui.element("surveillance_player_dropdown")
+Elements.player_dropdown = Gui.element("surveillance/player_dropdown")
     :track_all_elements()
     :draw(function(def, parent)
         return parent.add{
@@ -33,7 +33,7 @@ Elements.player_dropdown = Gui.element("surveillance_player_dropdown")
     end)
 
 --- Button which sets the target of a camera to the current location
-Elements.set_location_button = Gui.element("surveillance_set_location")
+Elements.set_location_button = Gui.element("surveillance/set_location_button")
     :draw{
         type = "button",
         name = Gui.property_from_name,
@@ -53,7 +53,7 @@ Elements.set_location_button = Gui.element("surveillance_set_location")
     end)
 
 --- Selects the type of camera to display, actually just controls the visible buttons
-Elements.type_dropdown = Gui.element("surveillance_type_dropdown")
+Elements.type_dropdown = Gui.element("surveillance/type_dropdown")
     :track_all_elements()
     :draw{
         type = "drop-down",
@@ -89,7 +89,7 @@ Elements.type_dropdown = Gui.element("surveillance_type_dropdown")
 
 
 --- Buttons which decreases zoom by 5%
-Elements.zoom_out_button = Gui.element("surveillance_zoom_out")
+Elements.zoom_out_button = Gui.element("surveillance/zoom_out_button")
     :draw{
         type = "sprite-button",
         sprite = "utility/controller_joycon_back", -- -
@@ -108,7 +108,7 @@ Elements.zoom_out_button = Gui.element("surveillance_zoom_out")
     end)
 
 --- Buttons which increases zoom by 5%
-Elements.zoom_in_button = Gui.element("surveillance_zoom_in")
+Elements.zoom_in_button = Gui.element("surveillance/zoom_in_button")
     :draw{
         type = "sprite-button",
         sprite = "utility/controller_joycon_start", -- +
@@ -127,7 +127,7 @@ Elements.zoom_in_button = Gui.element("surveillance_zoom_in")
     end)
 
 --- Camera which tracks a target with a physical_position and surface_index
-Elements.camera = Gui.element("surveillance_camera")
+Elements.camera = Gui.element("surveillance/camera")
     :track_all_elements()
     :draw{
         type = "camera",
@@ -144,7 +144,7 @@ Elements.camera = Gui.element("surveillance_camera")
     end)
 
 --- Container added to the screen
-Elements.container = Gui.element("surveillance_container")
+Elements.container = Gui.element("surveillance/container")
     :draw(function(def, parent)
         local container = Gui.elements.screen_frame(parent, nil, true)
         local button_flow = Gui.elements.screen_frame.data[container.parent]

@@ -54,7 +54,7 @@ local function format_number(amount)
 end
 
 --- Used to select the precision of the production table
-Elements.precision_dropdown = Gui.element("production_precision_dropdown")
+Elements.precision_dropdown = Gui.element("production_stats/precision_dropdown")
     :draw{
         type = "drop-down",
         items = { "5s", "1m", "10m", "1h", "10h" },
@@ -65,7 +65,7 @@ Elements.precision_dropdown = Gui.element("production_precision_dropdown")
     }
 
 --- Used to select the item to be displayed on a row
-Elements.item_selector = Gui.element("production_item_selector")
+Elements.item_selector = Gui.element("production_stats/item_selector")
     :track_all_elements()
     :draw{
         type = "choose-elem-button",
@@ -104,7 +104,7 @@ Elements.item_selector = Gui.element("production_item_selector")
     end)
     
 --- Label used for every element in the production table
-Elements.table_label = Gui.element("production_table_label")
+Elements.table_label = Gui.element("production_stats/table_label")
     :draw{
         type = "label",
         caption = Gui.property_from_arg(1, "0.00"),
@@ -117,7 +117,7 @@ Elements.table_label = Gui.element("production_table_label")
     }
 
 --- A single row of a production table, the parent must be a production table
-Elements.table_row = Gui.element("production_table_row")
+Elements.table_row = Gui.element("production_stats/table_row")
     :draw(function(def, parent)
         local labels = {}
         Elements.item_selector(parent, labels)
@@ -127,7 +127,7 @@ Elements.table_row = Gui.element("production_table_row")
     end)
 
 --- A table that allows selecting items 
-Elements.production_table = Gui.element("production_table")
+Elements.production_table = Gui.element("production_stats/production_table")
     :draw(function(def, parent)
         local scroll_table = Gui.elements.scroll_table(parent, 304, 4)
         local display_alignments = scroll_table.style.column_alignments
@@ -145,7 +145,7 @@ Elements.production_table = Gui.element("production_table")
     end)
 
 --- Container added to the left gui flow
-Elements.container = Gui.element("production_container")
+Elements.container = Gui.element("production_stats/container")
     :draw(function(def, parent)
         local container = Gui.elements.container(parent)
         Elements.production_table(container)

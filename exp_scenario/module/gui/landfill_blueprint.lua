@@ -167,7 +167,7 @@ end
 
 --- Add the toolbar button
 Elements.landfill_blueprint = Gui.toolbar.create_button{
-    name = "landfill_blueprint",
+    name = "trigger_landfill_blueprint",
     sprite = "item/landfill",
     tooltip = { "exp-gui_landfill-blueprint.tooltip-main" },
     visible = function(player, element)
