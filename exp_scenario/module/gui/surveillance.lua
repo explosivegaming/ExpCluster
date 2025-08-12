@@ -25,9 +25,7 @@ Elements.player_dropdown = Gui.element("surveillance_player_dropdown")
         horizontally_stretchable = true,
         height = 24,
     }
-    :element_data(function(def, element, parent, camera)
-        return camera
-    end)
+    :element_data(Gui.property_from_arg(1))
     :on_selection_state_changed(function(def, player, element, event)
         local camera = def.data[element]
         local target_player_name = _player_names[element.selected_index]
@@ -46,9 +44,7 @@ Elements.set_location_button = Gui.element("surveillance_set_location")
         width = 48,
         height = 24,
     }
-    :element_data(function(def, element, parent, camera)
-        return camera
-    end)
+    :element_data(Gui.property_from_arg(1))
     :on_click(function(def, player, element)
         local camera = def.data[element]
         Elements.camera.data[camera] = nil
@@ -68,9 +64,7 @@ Elements.type_dropdown = Gui.element("surveillance_type_dropdown")
         width = 96,
         height = 24,
     }
-    :element_data(function(def, element, parent, data)
-        return data
-    end)
+    :element_data(Gui.property_from_arg(1))
     :on_selection_state_changed(function(def, player, element, event)
         local data = def.data[element]
         local selected_index = element.selected_index
@@ -105,9 +99,7 @@ Elements.zoom_out_button = Gui.element("surveillance_zoom_out")
         height = 24,
         width = 24,
     }
-    :element_data(function(def, element, parent, camera)
-        return camera
-    end)
+    :element_data(Gui.property_from_arg(1))
     :on_click(function(def, player, element)
         local camera = def.data[element]
         if camera.zoom > 0.2 then
@@ -126,9 +118,7 @@ Elements.zoom_in_button = Gui.element("surveillance_zoom_in")
         height = 24,
         width = 24,
     }
-    :element_data(function(def, element, parent, camera)
-        return camera
-    end)
+    :element_data(Gui.property_from_arg(1))
     :on_click(function(def, player, element)
         local camera = def.data[element]
         if camera.zoom < 2.0 then

@@ -62,17 +62,26 @@ function ExpElement.property_from_name()
 end
 
 --- Used to signal that a property should be taken from the arguments, a string means key of last arg
---- @param arg number|string|nil
---- @param default any|nil
---- @return [function, number|string|nil]
+--- @generic A: number|string, D: number|string|boolean
+--- @param arg A?
+--- @param default D?
+--- @return [function, A, D]
 function ExpElement.property_from_arg(arg, default)
     return { ExpElement.property_from_arg, arg, default }
 end
 
+--- @alias ExpElement._signals table<string|number, [string, any]> | [function, string|number, number|string|boolean|nil]
+
 --- Extract the from args properties from a definition
 --- @param definition table
---- @return table<string|number, [string, any]>
+--- @return ExpElement._signals
 function ExpElement._prototype:_extract_signals(definition)
+    -- Check if the definition is property_from_arg
+    if definition[1] == ExpElement.property_from_arg then
+        return definition
+    end
+
+    -- Otherwise check if any of the values are property_from_arg or property_from_name
     local signals = {}
     for prop, value in pairs(definition) do
         if value == ExpElement.property_from_arg then
@@ -84,16 +93,32 @@ function ExpElement._prototype:_extract_signals(definition)
             signals[key] = { prop, value[3] }
         end
     end
+
     return signals
 end
 
 --- Apply the previously extracted signals to a definition using the create args
 --- @param definition table
---- @param signals table<string|number, [string, any]>
+--- @param signals ExpElement._signals
 --- @param args table
---- @return table
+--- @return any
 function ExpElement._prototype:_apply_signals(definition, signals, args)
     local last = args[#args] or args -- 'or args' used instead of empty table
+    -- Check if the root is property_from_arg
+    if signals[1] == ExpElement.property_from_arg then
+        local key, rtn = signals[2], nil
+        if type(key) == "string" then
+            rtn = last[key]
+        else
+            rtn = args[key]
+        end
+        if rtn == nil then
+            return signals[3]
+        end
+        return rtn
+    end
+
+    -- Otherwise set the properties of the definition
     for i, pair in pairs(signals) do
         local key = pair[1]
         if type(i) == "string" then
@@ -105,6 +130,7 @@ function ExpElement._prototype:_apply_signals(definition, signals, args)
             definition[key] = pair[2]
         end
     end
+
     return definition
 end
 
@@ -226,7 +252,7 @@ end
 --- @return ExpElement
 function ExpElement._prototype:draw(definition)
     ExpUtil.assert_not_runtime()
-    if type(definition) == "function" then
+    if type(definition) == "function" and definition ~= ExpElement.property_from_arg then
         self._draw = definition
         return self
     end
@@ -259,7 +285,7 @@ end
 local function definition_factory(prop_name, debug_def, debug_signals)
     return function(self, definition)
         ExpUtil.assert_not_runtime()
-        if type(definition) == "function" then
+        if type(definition) == "function" and definition ~= ExpElement.property_from_arg then
             self[prop_name] = definition
             return self
         end

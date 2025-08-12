@@ -68,9 +68,7 @@ Elements.create_selection_planner = Gui.element("module_inserter_create_selectio
         size = 28,
         padding = 0,
     }
-    :element_data(function(def, element, parent, module_table)
-        return module_table
-    end)
+    :element_data(Gui.property_from_arg(1))
     :on_click(function(def, player, element)
         Selection.start(player, SelectionModuleArea, false, def.data[element])
     end)
