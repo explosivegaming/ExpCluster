@@ -9,9 +9,13 @@ local Roles = require("modules/exp_legacy/expcore/roles")
 local Elements = {}
 
 -- To help with caching and avoid context changes the player list from the previous join is remembered
+--- @type string[]
 local _player_names = {}
 
 --- Dropdown which sets the target of a camera to a player
+--- @class ExpGui_Surveillance.elements.player_dropdown: ExpElement
+--- @field data table<LuaGuiElement, LuaGuiElement>
+--- @overload fun(parent: LuaGuiElement, camera: LuaGuiElement): LuaGuiElement
 Elements.player_dropdown = Gui.element("surveillance/player_dropdown")
     :track_all_elements()
     :draw(function(def, parent)
@@ -27,12 +31,16 @@ Elements.player_dropdown = Gui.element("surveillance/player_dropdown")
     }
     :element_data(Gui.property_from_arg(1))
     :on_selection_state_changed(function(def, player, element, event)
+        --- @cast def ExpGui_Surveillance.elements.player_dropdown
         local camera = def.data[element]
         local target_player_name = _player_names[element.selected_index]
         Elements.camera.data[camera] = game.get_player(target_player_name)
-    end)
+    end) --[[ @as any ]]
 
 --- Button which sets the target of a camera to the current location
+--- @class ExpGui_Surveillance.elements.set_location_button: ExpElement
+--- @field data table<LuaGuiElement, LuaGuiElement>
+--- @overload fun(parent: LuaGuiElement, camera: LuaGuiElement): LuaGuiElement
 Elements.set_location_button = Gui.element("surveillance/set_location_button")
     :draw{
         type = "button",
@@ -46,13 +54,22 @@ Elements.set_location_button = Gui.element("surveillance/set_location_button")
     }
     :element_data(Gui.property_from_arg(1))
     :on_click(function(def, player, element)
+        --- @cast def ExpGui_Surveillance.elements.set_location_button
         local camera = def.data[element]
         Elements.camera.data[camera] = nil
         camera.position = player.physical_position
         camera.surface_index = player.physical_surface_index
-    end)
+    end) --[[ @as any ]]
+
+--- @class ExpGui_Surveillance.elements.type_dropdown.data
+--- @field player_dropdown LuaGuiElement
+--- @field location_button LuaGuiElement
+--- @field camera LuaGuiElement
 
 --- Selects the type of camera to display, actually just controls the visible buttons
+--- @class ExpGui_Surveillance.elements.type_dropdown: ExpElement
+--- @field data table<LuaGuiElement, ExpGui_Surveillance.elements.type_dropdown.data>
+--- @overload fun(parent: LuaGuiElement, data: ExpGui_Surveillance.elements.type_dropdown.data): LuaGuiElement
 Elements.type_dropdown = Gui.element("surveillance/type_dropdown")
     :track_all_elements()
     :draw{
@@ -66,6 +83,7 @@ Elements.type_dropdown = Gui.element("surveillance/type_dropdown")
     }
     :element_data(Gui.property_from_arg(1))
     :on_selection_state_changed(function(def, player, element, event)
+        --- @cast def ExpGui_Surveillance.elements.type_dropdown
         local data = def.data[element]
         local selected_index = element.selected_index
         data.player_dropdown.visible = selected_index == 1
@@ -85,10 +103,13 @@ Elements.type_dropdown = Gui.element("surveillance/type_dropdown")
             end
             Elements.camera.data[data.camera] = game.get_player(target_player_name)
         end
-    end)
+    end) --[[ @as any ]]
 
 
 --- Buttons which decreases zoom by 5%
+--- @class ExpGui_Surveillance.elements.zoom_out_button: ExpElement
+--- @field data table<LuaGuiElement, LuaGuiElement>
+--- @overload fun(parent: LuaGuiElement, camera: LuaGuiElement): LuaGuiElement
 Elements.zoom_out_button = Gui.element("surveillance/zoom_out_button")
     :draw{
         type = "sprite-button",
@@ -101,13 +122,17 @@ Elements.zoom_out_button = Gui.element("surveillance/zoom_out_button")
     }
     :element_data(Gui.property_from_arg(1))
     :on_click(function(def, player, element)
+        --- @cast def ExpGui_Surveillance.elements.zoom_out_button
         local camera = def.data[element]
         if camera.zoom > 0.2 then
             camera.zoom = camera.zoom - 0.05
         end
-    end)
+    end) --[[ @as any ]]
 
 --- Buttons which increases zoom by 5%
+--- @class ExpGui_Surveillance.elements.zoom_in_button: ExpElement
+--- @field data table<LuaGuiElement, LuaGuiElement>
+--- @overload fun(parent: LuaGuiElement, camera: LuaGuiElement): LuaGuiElement
 Elements.zoom_in_button = Gui.element("surveillance/zoom_in_button")
     :draw{
         type = "sprite-button",
@@ -120,13 +145,17 @@ Elements.zoom_in_button = Gui.element("surveillance/zoom_in_button")
     }
     :element_data(Gui.property_from_arg(1))
     :on_click(function(def, player, element)
+        --- @cast def ExpGui_Surveillance.elements.zoom_in_button
         local camera = def.data[element]
         if camera.zoom < 2.0 then
             camera.zoom = camera.zoom + 0.05
         end
-    end)
+    end) --[[ @as any ]]
 
 --- Camera which tracks a target with a physical_position and surface_index
+--- @class ExpGui_Surveillance.elements.camera: ExpElement
+--- @field data table<LuaGuiElement, LuaPlayer?>
+--- @overload fun(parent: LuaGuiElement, target: LuaPlayer?): LuaGuiElement
 Elements.camera = Gui.element("surveillance/camera")
     :track_all_elements()
     :draw{
@@ -139,9 +168,7 @@ Elements.camera = Gui.element("surveillance/camera")
         width = 480,
         height = 290,
     }
-    :element_data(function(def, element, parent, target)
-        return target
-    end)
+    :element_data(Gui.property_from_arg(1)) --[[ @as any ]]
 
 --- Container added to the screen
 Elements.container = Gui.element("surveillance/container")
@@ -150,7 +177,7 @@ Elements.container = Gui.element("surveillance/container")
         local button_flow = Gui.elements.screen_frame.data[container.parent]
 
         local target_player_name = _player_names[1]
-        local camera = Elements.camera(container, game.get_player(target_player_name))
+        local camera = Elements.camera(container, assert(game.get_player(target_player_name)))
         camera.style.width = 480
         camera.style.height = 290
 

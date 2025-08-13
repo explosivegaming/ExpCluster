@@ -57,6 +57,9 @@ local elem_filter = {
 }
 
 --- Button used to create a selection planner from a module table
+--- @class ExpGui_ModuleInserter.elements.create_selection_planner: ExpElement
+--- @field data table<LuaGuiElement, LuaGuiElement>
+--- @overload fun(parent: LuaGuiElement, module_table: LuaGuiElement): LuaGuiElement
 Elements.create_selection_planner = Gui.element("module_inserter/create_selection_planner")
     :draw{
         type = "sprite-button",
@@ -70,10 +73,14 @@ Elements.create_selection_planner = Gui.element("module_inserter/create_selectio
     }
     :element_data(Gui.property_from_arg(1))
     :on_click(function(def, player, element)
+        --- @cast def ExpGui_ModuleInserter.elements.create_selection_planner
         Selection.start(player, SelectionModuleArea, false, def.data[element])
-    end)
+    end) --[[ @as any ]]
 
 --- Used to select the machine to apply modules to
+--- @class ExpGui_ModuleInserter.elements.machine_selector: ExpElement
+--- @field data table<LuaGuiElement, { last_row: boolean, row_separators: LuaGuiElement[], module_selectors: LuaGuiElement[] }>
+--- @overload fun(parent: LuaGuiElement, row_separators: LuaGuiElement[], module_selectors: LuaGuiElement[]): LuaGuiElement
 Elements.machine_selector = Gui.element("module_inserter/machine_selector")
     :draw{
         type = "choose-elem-button",
@@ -87,6 +94,7 @@ Elements.machine_selector = Gui.element("module_inserter/machine_selector")
         module_selectors = Gui.property_from_arg(2),
     }
     :on_elem_changed(function(def, player, element, event)
+        --- @cast def ExpGui_ModuleInserter.elements.machine_selector
         local element_data = def.data[element]
         local machine_name = element.elem_value --[[ @as string? ]]
         if not machine_name then
@@ -143,7 +151,7 @@ Elements.machine_selector = Gui.element("module_inserter/machine_selector")
         -- Add a new row to the table
         element_data.last_row = false
         Elements.table_row(element.parent)
-    end)
+    end) --[[ @as any ]]
 
 --- Used to select the modules to be applied
 Elements.module_selector = Gui.element("module_inserter/module_selector")
@@ -177,14 +185,17 @@ Elements.table_row = Gui.element("module_inserter/table_row")
     end)
 
 --- A table that allows selecting modules 
+--- @class ExpGui_ModuleInserter.elements.module_table: ExpElement
+--- @field data table<LuaGuiElement, LuaGuiElement[]>
 Elements.module_table = Gui.element("module_inserter/module_table")
     :draw(function(def, parent)
+        --- @cast def ExpGui_ModuleInserter.elements.module_table
         local slots_per_row = config.module_slots_per_row + 1
         local scroll_table = Gui.elements.scroll_table(parent, 280, slots_per_row)
         def.data[scroll_table] = {} -- Has to be created before drawing rows so cant use :element_data
         Elements.table_row(scroll_table)
         return scroll_table
-    end)
+    end) --[[ @as any ]]
 
 --- Container added to the left gui flow
 Elements.container = Gui.element("module_inserter/container")
@@ -256,7 +267,7 @@ end
 
 --- When an area is selected to have module changes applied to it
 --- @param event EventData.on_player_selected_area
---- @param module_table ExpElement
+--- @param module_table LuaGuiElement
 Selection.on_selection(SelectionModuleArea, function(event, module_table)
     local player = assert(game.get_player(event.player_index))
     local area = AABB.expand(event.area)

@@ -64,7 +64,15 @@ Elements.precision_dropdown = Gui.element("production_stats/precision_dropdown")
         width = 80,
     }
 
+--- @class ExpGui_ProductionStats.elements.item_selector.labels
+--- @field production LuaGuiElement
+--- @field consumption LuaGuiElement
+--- @field net LuaGuiElement
+
 --- Used to select the item to be displayed on a row
+--- @class ExpGui_ProductionStats.elements.item_selector: ExpElement
+--- @field data table<LuaGuiElement, { labels: ExpGui_ProductionStats.elements.item_selector.labels, last_row: boolean }>
+--- @overload fun(parent: LuaGuiElement, labels: ExpGui_ProductionStats.elements.item_selector.labels): LuaGuiElement
 Elements.item_selector = Gui.element("production_stats/item_selector")
     :track_all_elements()
     :draw{
@@ -80,6 +88,7 @@ Elements.item_selector = Gui.element("production_stats/item_selector")
         last_row = true,
     }
     :on_elem_changed(function(def, player, element, event)
+        --- @cast def ExpGui_ProductionStats.elements.item_selector
         local element_data = def.data[element]
         if not element.elem_value then
             if element_data.last_row then
@@ -101,7 +110,7 @@ Elements.item_selector = Gui.element("production_stats/item_selector")
             element_data.last_row = false
             Elements.table_row(element.parent)
         end
-    end)
+    end) --[[ @as any ]]
     
 --- Label used for every element in the production table
 Elements.table_label = Gui.element("production_stats/table_label")
@@ -119,7 +128,7 @@ Elements.table_label = Gui.element("production_stats/table_label")
 --- A single row of a production table, the parent must be a production table
 Elements.table_row = Gui.element("production_stats/table_row")
     :draw(function(def, parent)
-        local labels = {}
+        local labels = {} --- @cast labels ExpGui_ProductionStats.elements.item_selector.labels
         Elements.item_selector(parent, labels)
         labels.production = Elements.table_label(parent, "0.00")
         labels.consumption = Elements.table_label(parent, "0.00")
