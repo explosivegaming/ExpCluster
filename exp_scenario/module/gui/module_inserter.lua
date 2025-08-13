@@ -79,7 +79,7 @@ Elements.create_selection_planner = Gui.element("module_inserter/create_selectio
 
 --- Used to select the machine to apply modules to
 --- @class ExpGui_ModuleInserter.elements.machine_selector: ExpElement
---- @field data table<LuaGuiElement, { last_row: boolean, row_separators: LuaGuiElement[], module_selectors: LuaGuiElement[] }>
+--- @field data table<LuaGuiElement, { on_last_row: boolean, row_separators: LuaGuiElement[], module_selectors: LuaGuiElement[] }>
 --- @overload fun(parent: LuaGuiElement, row_separators: LuaGuiElement[], module_selectors: LuaGuiElement[]): LuaGuiElement
 Elements.machine_selector = Gui.element("module_inserter/machine_selector")
     :draw{
@@ -89,7 +89,7 @@ Elements.machine_selector = Gui.element("module_inserter/machine_selector")
         style = "slot_button",
     }
     :element_data{
-        last_row = true,
+        on_last_row = true,
         row_separators = Gui.property_from_arg(1),
         module_selectors = Gui.property_from_arg(2),
     }
@@ -99,9 +99,9 @@ Elements.machine_selector = Gui.element("module_inserter/machine_selector")
         local machine_name = element.elem_value --[[ @as string? ]]
         if not machine_name then
             -- No machine selected
-            if not element_data.last_row then
+            if not element_data.on_last_row then
                 -- Not the last row so delete it
-                table.remove_element(Elements.module_table.data[element.parent], element) -- Remove from parent data
+                Elements.module_table._on_remove_row(element)
                 Gui.destroy_if_valid(element)
                 for _, separator in pairs(element_data.row_separators) do
                     Gui.destroy_if_valid(separator)
@@ -149,8 +149,8 @@ Elements.machine_selector = Gui.element("module_inserter/machine_selector")
         end
 
         -- Add a new row to the table
-        element_data.last_row = false
-        Elements.table_row(element.parent)
+        element_data.on_last_row = false
+        Elements.module_table.add_row(element.parent)
     end) --[[ @as any ]]
 
 --- Used to select the modules to be applied
@@ -164,26 +164,6 @@ Elements.module_selector = Gui.element("module_inserter/module_selector")
         style = "slot_button",
     }
 
---- A single row of a module table, the parent must be a module table
-Elements.table_row = Gui.element("module_inserter/table_row")
-    :draw(function(def, parent)
-        local row_separators, module_selectors = {}, {}
-        local machine_selector = Elements.machine_selector(parent, row_separators, module_selectors)
-
-        -- Add the module selectors and row separators
-        local slots_per_row = config.module_slots_per_row + 1
-        for i = 1, config.module_slot_max do
-            if i % slots_per_row == 0 then
-                row_separators[#row_separators + 1] = parent.add{ type = "flow", visible = false }
-            end
-            module_selectors[i] = Elements.module_selector(parent, i <= config.module_slots_per_row)
-        end
-
-        -- Append this selector to the parents table data
-        local table_data = Elements.module_table.data[parent]
-        table_data[#table_data + 1] = machine_selector
-    end)
-
 --- A table that allows selecting modules 
 --- @class ExpGui_ModuleInserter.elements.module_table: ExpElement
 --- @field data table<LuaGuiElement, LuaGuiElement[]>
@@ -191,11 +171,32 @@ Elements.module_table = Gui.element("module_inserter/module_table")
     :draw(function(def, parent)
         --- @cast def ExpGui_ModuleInserter.elements.module_table
         local slots_per_row = config.module_slots_per_row + 1
-        local scroll_table = Gui.elements.scroll_table(parent, 280, slots_per_row)
-        def.data[scroll_table] = {} -- Has to be created before drawing rows so cant use :element_data
-        Elements.table_row(scroll_table)
-        return scroll_table
-    end) --[[ @as any ]]
+        return Gui.elements.scroll_table(parent, 280, slots_per_row)
+    end)
+    :element_data{} --[[ @as any ]]
+
+--- Add a row to a module table
+--- @param module_table LuaGuiElement
+function Elements.module_table.add_row(module_table)
+    local row_separators, module_selectors = {}, {}
+    local rows = Elements.module_table.data[module_table]
+    rows[#rows + 1] = Elements.machine_selector(module_table, row_separators, module_selectors)
+
+    -- Add the module selectors and row separators
+    local slots_per_row = config.module_slots_per_row + 1
+    for i = 1, config.module_slot_max do
+        if i % slots_per_row == 0 then
+            row_separators[#row_separators + 1] = module_table.add{ type = "flow", visible = false }
+        end
+        module_selectors[i] = Elements.module_selector(module_table, i <= config.module_slots_per_row)
+    end
+end
+
+--- Clean-up the data associated with a row
+--- @param machine_selector LuaGuiElement
+function Elements.module_table._on_remove_row(machine_selector)
+    table.remove_element(Elements.module_table.data[machine_selector.parent], machine_selector)
+end
 
 --- Container added to the left gui flow
 Elements.container = Gui.element("module_inserter/container")
@@ -203,6 +204,7 @@ Elements.container = Gui.element("module_inserter/container")
         local container = Gui.elements.container(parent)
         local header = Gui.elements.header(container, { caption = { "exp-gui_module-inserter.label-main" } })
         local module_table = Elements.module_table(container)
+        Elements.module_table.add_row(module_table)
         Elements.create_selection_planner(header, module_table)
         return container.parent
     end)

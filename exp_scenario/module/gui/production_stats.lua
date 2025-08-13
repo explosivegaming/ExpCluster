@@ -71,7 +71,7 @@ Elements.precision_dropdown = Gui.element("production_stats/precision_dropdown")
 
 --- Used to select the item to be displayed on a row
 --- @class ExpGui_ProductionStats.elements.item_selector: ExpElement
---- @field data table<LuaGuiElement, { labels: ExpGui_ProductionStats.elements.item_selector.labels, last_row: boolean }>
+--- @field data table<LuaGuiElement, { labels: ExpGui_ProductionStats.elements.item_selector.labels, on_last_row: boolean }>
 --- @overload fun(parent: LuaGuiElement, labels: ExpGui_ProductionStats.elements.item_selector.labels): LuaGuiElement
 Elements.item_selector = Gui.element("production_stats/item_selector")
     :track_all_elements()
@@ -85,13 +85,13 @@ Elements.item_selector = Gui.element("production_stats/item_selector")
     }
     :element_data{
         labels = Gui.property_from_arg(1),
-        last_row = true,
+        on_last_row = true,
     }
     :on_elem_changed(function(def, player, element, event)
         --- @cast def ExpGui_ProductionStats.elements.item_selector
         local element_data = def.data[element]
         if not element.elem_value then
-            if element_data.last_row then
+            if element_data.on_last_row then
                 -- This is the last, so reset the labels to 0
                 local labels = element_data.labels
                 labels.production.caption = "0.00"
@@ -105,10 +105,10 @@ Elements.item_selector = Gui.element("production_stats/item_selector")
                     Gui.destroy_if_valid(label)
                 end
             end
-        elseif element.elem_value and element_data.last_row then
+        elseif element.elem_value and element_data.on_last_row then
             -- New item selected on the last row, so make a new row
-            element_data.last_row = false
-            Elements.table_row(element.parent)
+            element_data.on_last_row = false
+            Elements.production_table.add_row(element.parent)
         end
     end) --[[ @as any ]]
     
@@ -125,17 +125,8 @@ Elements.table_label = Gui.element("production_stats/table_label")
         minimal_width = 60,
     }
 
---- A single row of a production table, the parent must be a production table
-Elements.table_row = Gui.element("production_stats/table_row")
-    :draw(function(def, parent)
-        local labels = {} --- @cast labels ExpGui_ProductionStats.elements.item_selector.labels
-        Elements.item_selector(parent, labels)
-        labels.production = Elements.table_label(parent, "0.00")
-        labels.consumption = Elements.table_label(parent, "0.00")
-        labels.net = Elements.table_label(parent, "0.00")
-    end)
-
 --- A table that allows selecting items 
+--- @class ExpGui_ProductionStats.elements.production_table: ExpElement
 Elements.production_table = Gui.element("production_stats/production_table")
     :draw(function(def, parent)
         local scroll_table = Gui.elements.scroll_table(parent, 304, 4)
@@ -148,16 +139,26 @@ Elements.production_table = Gui.element("production_stats/production_table")
         Elements.table_label(scroll_table, { "gui-production.production" }, { "exp-gui_production-stats.tooltip-per-second" }, "heading_2_label")
         Elements.table_label(scroll_table, { "gui-production.consumption" }, { "exp-gui_production-stats.tooltip-per-second" }, "heading_2_label")
         Elements.table_label(scroll_table, { "exp-gui_production-stats.label-net" }, { "exp-gui_production-stats.tooltip-per-second" }, "heading_2_label")
-        Elements.table_row(scroll_table)
 
         return scroll_table
     end)
+
+--- A single row of a production table, the parent must be a production table
+--- @param production_table LuaGuiElement
+function Elements.production_table.add_row(production_table)
+    local labels = {} --- @cast labels ExpGui_ProductionStats.elements.item_selector.labels
+    Elements.item_selector(production_table, labels)
+    labels.production = Elements.table_label(production_table, "0.00")
+    labels.consumption = Elements.table_label(production_table, "0.00")
+    labels.net = Elements.table_label(production_table, "0.00")
+end
 
 --- Container added to the left gui flow
 Elements.container = Gui.element("production_stats/container")
     :draw(function(def, parent)
         local container = Gui.elements.container(parent)
-        Elements.production_table(container)
+        local production_table = Elements.production_table(container)
+        Elements.production_table.add_row(production_table)
         return container.parent
     end)
 
