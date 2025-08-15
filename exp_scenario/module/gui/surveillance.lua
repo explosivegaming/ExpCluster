@@ -3,37 +3,27 @@ Adds cameras which can be used to view players and locations
 ]]
 
 local Gui = require("modules/exp_gui")
+local GuiElements = require("modules/exp_scenario/gui/elements")
 local Roles = require("modules/exp_legacy/expcore/roles")
+
+local online_player_names = GuiElements.online_player_dropdown.player_names
 
 --- @class ExpGui_Surveillance.elements
 local Elements = {}
-
--- To help with caching and avoid context changes the player list from the previous join is remembered
---- @type string[]
-local _player_names = {}
 
 --- Dropdown which sets the target of a camera to a player
 --- @class ExpGui_Surveillance.elements.player_dropdown: ExpElement
 --- @field data table<LuaGuiElement, LuaGuiElement>
 --- @overload fun(parent: LuaGuiElement, camera: LuaGuiElement): LuaGuiElement
 Elements.player_dropdown = Gui.element("surveillance/player_dropdown")
-    :track_all_elements()
     :draw(function(def, parent)
-        return parent.add{
-            type = "drop-down",
-            items = _player_names,
-            selected_index = #_player_names > 0 and 1 or nil,
-        }
+        return GuiElements.online_player_dropdown(parent)
     end)
-    :style{
-        horizontally_stretchable = true,
-        height = 24,
-    }
     :element_data(Gui.property_from_arg(1))
     :on_selection_state_changed(function(def, player, element, event)
         --- @cast def ExpGui_Surveillance.elements.player_dropdown
         local camera = def.data[element]
-        local target_player_name = _player_names[element.selected_index]
+        local target_player_name = online_player_names[element.selected_index]
         Elements.camera.data[camera] = game.get_player(target_player_name)
     end) --[[ @as any ]]
 
@@ -96,10 +86,10 @@ Elements.type_dropdown = Gui.element("surveillance/type_dropdown")
         else
             -- Player or loop is selected
             local player_dropdown = data.player_dropdown
-            local target_player_name = _player_names[player_dropdown.selected_index]
+            local target_player_name = online_player_names[player_dropdown.selected_index]
             if not target_player_name then
                 player_dropdown.selected_index = 1
-                target_player_name = _player_names[1]
+                target_player_name = online_player_names[1]
             end
             Elements.camera.data[data.camera] = game.get_player(target_player_name)
         end
@@ -176,7 +166,7 @@ Elements.container = Gui.element("surveillance/container")
         local container = Gui.elements.screen_frame(parent, nil, true)
         local button_flow = Gui.elements.screen_frame.data[container.parent]
 
-        local target_player_name = _player_names[1]
+        local target_player_name = online_player_names[1]
         local camera = Elements.camera(container, assert(game.get_player(target_player_name)))
         camera.style.width = 480
         camera.style.height = 290
@@ -206,20 +196,6 @@ Gui.toolbar.create_button{
     Elements.container(player.gui.screen)
 end)
 
---- Update all player dropdowns to match the currently online players
---- We don't split join and leave because order would be inconsistent between players and desync
-local function update_player_dropdown()
-    _player_names[#_player_names] = nil -- Nil last element to account for player leave
-
-    for i, player in pairs(game.connected_players) do
-        _player_names[i] = player.name
-    end
-
-    for _, element in Elements.player_dropdown:online_elements() do
-        element.items = _player_names
-    end
-end
-
 --- Update the position and surface of all cameras with a player target
 local function update_camera_positions()
     for _, element in Elements.camera:online_elements() do
@@ -234,7 +210,7 @@ end
 
 --- Cycle to the next player for all cameras set to loop mode
 local function cycle_selected_player()
-    local player_count = #_player_names
+    local player_count = #online_player_names
     for _, element in Elements.type_dropdown:online_elements() do
         if element.selected_index == 3 then
             -- Loop is selected
@@ -245,7 +221,7 @@ local function cycle_selected_player()
             else
                 player_dropdown.selected_index = 1
             end
-            local target_player_name = _player_names[player_dropdown.selected_index]
+            local target_player_name = online_player_names[player_dropdown.selected_index]
             Elements.camera.data[data.camera] = game.get_player(target_player_name)
         end
     end
@@ -256,8 +232,6 @@ local e = defines.events
 return {
     elements = Elements,
     events = {
-        [e.on_player_joined_game] = update_player_dropdown,
-        [e.on_player_left_game] = update_player_dropdown,
         [e.on_tick] = update_camera_positions,
     },
     on_nth_tick = {

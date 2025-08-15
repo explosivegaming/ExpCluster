@@ -213,7 +213,7 @@ end
 local player_list_container = Gui.element("player_list_container")
     :draw(function(definition, parent)
         -- Draw the internal container
-        local container = Gui.elements.container(parent, 200)
+        local container = Gui.elements.container(parent)
 
         -- Draw the scroll table for the players
         local scroll_table = Gui.elements.scroll_table(container, 184, 3, "scroll")

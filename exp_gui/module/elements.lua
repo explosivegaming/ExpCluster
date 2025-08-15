@@ -57,10 +57,9 @@ elements.centered_label = ExpGui.element("centered_label")
 --- A label which has two white bars on either side of it
 elements.title_label = ExpGui.element("title_label")
     :draw(function(def, parent, width, caption, tooltip)
-        local flow =
-            parent.add{
-                type = "flow"
-            }
+        local flow = parent.add{
+            type = "flow"
+        }
 
         flow.style.vertical_align = "center"
         elements.bar(flow, width)
@@ -115,15 +114,12 @@ elements.scroll_table = ExpGui.element("scroll_table")
 --- A container frame
 elements.container = ExpGui.element("container")
     :draw(function(def, parent, minimal_width, container_name)
-        local container =
-            parent.add{
-                type = "frame",
-                name = container_name,
-            }
+        local container = parent.add{
+            type = "frame",
+            name = container_name,
+        }
 
-        local style = container.style
-        style.minimal_width = minimal_width or 0
-        style.padding = 2
+        container.style.padding = 2
 
         return container.add{
             type = "frame",
@@ -134,6 +130,8 @@ elements.container = ExpGui.element("container")
     end)
     :style{
         vertically_stretchable = false,
+        horizontally_stretchable = false,
+        minimal_width = ExpGui.property_from_arg(1),
     }
 
 --- A frame within a container

@@ -55,7 +55,6 @@ return {
     "modules.gui.vlayer",
     "modules.gui.research",
     "modules.gui.tool",
-    "modules.gui.playerdata",
     "modules.gui._role_updates",
 
     "modules.graftorio.require", -- graftorio
