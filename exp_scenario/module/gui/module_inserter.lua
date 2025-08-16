@@ -202,7 +202,7 @@ end
 Elements.container = Gui.element("module_inserter/container")
     :draw(function(def, parent)
         local container = Gui.elements.container(parent)
-        local header = Gui.elements.header(container, { caption = { "exp-gui_module-inserter.label-main" } })
+        local header = Gui.elements.header(container, { caption = { "exp-gui_module-inserter.caption-main" } })
         local module_table = Elements.module_table(container)
         Elements.module_table.add_row(module_table)
         Elements.create_selection_planner(header, module_table)

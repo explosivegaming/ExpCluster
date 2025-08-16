@@ -41,7 +41,7 @@ local function format_as_pages(commands, page_size)
 
         local description
         if command.defined_at then
-            --- @cast command Commands.ExpCommand
+            --- @cast command ExpCommand
             description = { "", command.help_text[2], "- ", command.description }
         else
             description = command.description

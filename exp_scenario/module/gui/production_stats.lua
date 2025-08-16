@@ -138,7 +138,7 @@ Elements.production_table = Gui.element("production_stats/production_table")
         def.data[scroll_table] = Elements.precision_dropdown(scroll_table)
         Elements.table_label(scroll_table, { "gui-production.production" }, { "exp-gui_production-stats.tooltip-per-second" }, "heading_2_label")
         Elements.table_label(scroll_table, { "gui-production.consumption" }, { "exp-gui_production-stats.tooltip-per-second" }, "heading_2_label")
-        Elements.table_label(scroll_table, { "exp-gui_production-stats.label-net" }, { "exp-gui_production-stats.tooltip-per-second" }, "heading_2_label")
+        Elements.table_label(scroll_table, { "exp-gui_production-stats.caption-net" }, { "exp-gui_production-stats.tooltip-per-second" }, "heading_2_label")
 
         return scroll_table
     end)

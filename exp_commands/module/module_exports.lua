@@ -57,6 +57,10 @@ end)
 local ExpUtil = require("modules/exp_util")
 local Search = require("modules/exp_commands/search")
 
+--- Used as "game.player" in Commands.print when "game.player" is nil
+--- @type LuaPlayer?
+local _print_player
+
 --- @class Commands
 local Commands = {
     color = ExpUtil.color,
@@ -65,9 +69,9 @@ local Commands = {
     format_player_name = ExpUtil.format_player_name,
     format_player_name_locale = ExpUtil.format_player_name_locale,
 
-    registered_commands = {}, --- @type table<string, Commands.ExpCommand> Stores a reference to all registered commands
+    registered_commands = {}, --- @type table<string, ExpCommand> Stores a reference to all registered commands
     permission_authorities = {}, --- @type Commands.PermissionAuthority[] Stores a reference to all active permission authorities
-    
+
     --- @package Stores the event handlers
     events = {
         [defines.events.on_player_locale_changed] = Search.on_player_locale_changed,
@@ -111,7 +115,7 @@ end
 --- @field aliases string[] Aliases that the command will also be registered under
 --- @field defined_at? string If present then this is an ExpCommand
 
---- @class Commands.ExpCommand: Commands.Command
+--- @class ExpCommand: Commands.Command
 --- @field callback Commands.Callback The callback which is ran for the command
 --- @field defined_at string The file location that the command is defined at
 --- @field auto_concat boolean True if the command auto concatenates tailing parameters into a single string 
@@ -119,6 +123,7 @@ end
 --- @field max_arg_count number The maximum number of expected arguments
 --- @field flags table Stores flags which can be used by permission authorities
 --- @field arguments Commands.Argument[] The arguments for this command
+--- @overload fun(player: LuaPlayer, ...: any)
 Commands._prototype = {}
 
 Commands._metatable = {
@@ -209,7 +214,7 @@ end
 --- Permission Authority.
 -- Functions that control who can use commands
 
---- @alias Commands.PermissionAuthority fun(player: LuaPlayer, command: Commands.ExpCommand): boolean|Commands.Status, LocalisedString?
+--- @alias Commands.PermissionAuthority fun(player: LuaPlayer, command: ExpCommand): boolean|Commands.Status, LocalisedString?
 
 --- Add a permission authority, a permission authority is a function which provides access control for commands, multiple can be active at once
 --- When multiple are active, all authorities must give permission for the command to execute, if any deny access then the command is not ran
@@ -243,7 +248,7 @@ end
 
 --- Check if a player has permission to use a command, calling all permission authorities
 --- @param player LuaPlayer? The player to test the permission of, nil represents the server and always returns true
---- @param command Commands.ExpCommand The command the player is attempting to use
+--- @param command ExpCommand The command the player is attempting to use
 --- @return boolean # True if the player has permission to use the command
 --- @return LocalisedString? # When permission is denied, this is the reason permission was denied
 function Commands.player_has_permission(player, command)
@@ -321,14 +326,14 @@ end
 -- Functions used to list and search for commands
 
 --- Returns a list of all registered custom commands
---- @return table<string,Commands.ExpCommand> # A dictionary of commands
+--- @return table<string,ExpCommand> # A dictionary of commands
 function Commands.list_all()
     return Commands.registered_commands
 end
 
 --- Returns a list of all registered custom commands which the given player has permission to use
 --- @param player LuaPlayer? The player to get the command of, nil represents the server but list_all should be used
---- @return table<string,Commands.ExpCommand>  # A dictionary of commands
+--- @return table<string,ExpCommand>  # A dictionary of commands
 function Commands.list_for_player(player)
     local rtn = {}
 
@@ -372,7 +377,7 @@ Commands.print_settings = {
 --- @param message any The message / value to be printed
 --- @param settings PrintSettings? The settings to print with
 function Commands.print(message, settings)
-    local player = game.player
+    local player = game.player or _print_player
     if not player then
         rcon.print(ExpUtil.format_any(message))
     else
@@ -403,7 +408,7 @@ end
 --- Returns a new command object, this will not register the command but act as a way to start construction
 --- @param name string The name of the command as it will be registered later
 --- @param description LocalisedString? The description of the command displayed in the help message
---- @return Commands.ExpCommand
+--- @return ExpCommand
 function Commands.new(name, description)
     ExpUtil.assert_argument_type(name, "string", 1, "name")
     if Commands.registered_commands[name] then
@@ -429,7 +434,7 @@ end
 --- @param name string The name of the argument being added
 --- @param description LocalisedString? The description of the argument being added
 --- @param input_parser Commands.InputParser The input parser to be used for the argument
---- @return Commands.ExpCommand
+--- @return ExpCommand
 function Commands._prototype:argument(name, description, input_parser)
     assert_command_mutable(self)
     if self.min_arg_count ~= self.max_arg_count then
@@ -450,7 +455,7 @@ end
 --- @param name string The name of the argument being added
 --- @param description LocalisedString? The description of the argument being added
 --- @param input_parser Commands.InputParser The input parser to be used for the argument
---- @return Commands.ExpCommand
+--- @return ExpCommand
 function Commands._prototype:optional(name, description, input_parser)
     assert_command_mutable(self)
     self.max_arg_count = self.max_arg_count + 1
@@ -465,7 +470,7 @@ end
 
 --- Set the defaults for optional arguments, any not provided will have their value as nil
 --- @param defaults table<string, (fun(player: LuaPlayer): any) | any> The default values for the optional arguments, the key is the name of the argument
---- @return Commands.ExpCommand
+--- @return ExpCommand
 function Commands._prototype:defaults(defaults)
     assert_command_mutable(self)
     local matched = {}
@@ -491,7 +496,7 @@ end
 
 --- Set the flags for the command, these can be accessed by permission authorities to check who can use a command
 --- @param flags table An array of strings or a dictionary of flag names and values, when an array is used the flags values are set to true
---- @return Commands.ExpCommand
+--- @return ExpCommand
 function Commands._prototype:add_flags(flags)
     assert_command_mutable(self)
     for name, value in pairs(flags) do
@@ -507,7 +512,7 @@ end
 
 --- Set the aliases for the command, these are alternative names that the command can be ran under
 --- @param aliases string[] An array of string names to use as aliases to this command
---- @return Commands.ExpCommand
+--- @return ExpCommand
 function Commands._prototype:add_aliases(aliases)
     assert_command_mutable(self)
     local start_index = #self.aliases
@@ -519,7 +524,7 @@ function Commands._prototype:add_aliases(aliases)
 end
 
 --- Enable concatenation of all arguments after the last, this should be used for user provided reason text
---- @return Commands.ExpCommand
+--- @return ExpCommand
 function Commands._prototype:enable_auto_concatenation()
     assert_command_mutable(self)
     self.auto_concat = true
@@ -528,7 +533,7 @@ end
 
 --- Register the command to the game with the given callback, this must be the final step as the object becomes immutable afterwards
 --- @param callback Commands.Callback The function which is called to perform the command action
---- @return Commands.ExpCommand
+--- @return ExpCommand
 function Commands._prototype:register(callback)
     assert_command_mutable(self)
     Commands.registered_commands[self.name] = self
@@ -585,12 +590,32 @@ function Commands._prototype:register(callback)
     return self
 end
 
+--- Run a callback for a command in the same way the command processor would, note no type validation is performed
+--- @param self ExpCommand
+--- @param player LuaPlayer
+--- @param ... any
+function Commands._metatable.__call(self, player, ...)
+    _print_player = player
+    local status, status_msg = self.callback(player, ...)
+    if status == nil then
+        local _, msg = Commands.status.success()
+        Commands.print(msg)
+    elseif not valid_command_status[status] then
+        error("Command \"" .. self.name .. "\" did not return a valid status got: " .. ExpUtil.get_class_name(status))
+    elseif status ~= Commands.status.success then
+        Commands.error(status_msg)
+    else
+        Commands.print(status_msg)
+    end
+    _print_player = nil
+end
+
 --- Command Runner
 -- Used internally to run commands
 
 --- Log that a command was attempted and its outcome (error / success)
 --- @param comment string The main comment to include in the log
---- @param command Commands.ExpCommand The command that is being executed
+--- @param command ExpCommand The command that is being executed
 --- @param player LuaPlayer The player who is running the command
 --- @param parameter string The raw command parameter that was used 
 --- @param detail any

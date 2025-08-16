@@ -54,7 +54,6 @@ return {
     "modules.gui.bonus",
     "modules.gui.vlayer",
     "modules.gui.research",
-    "modules.gui.tool",
     "modules.gui._role_updates",
 
     "modules.graftorio.require", -- graftorio

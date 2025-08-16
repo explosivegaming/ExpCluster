@@ -15,8 +15,13 @@ local planet = {
     ["aquilo"] = "ammoniacal-ocean"
 }
 
+--- @class ExpCommand_Waterfill.commands
+local commands = {}
+
 --- Toggle player selection mode for artillery
-Commands.new("waterfill", { "exp-commands_waterfill.description" })
+--- @class ExpCommands_Waterfill.commands.waterfill: ExpCommand
+--- @overload fun(player: LuaPlayer)
+commands.waterfill = Commands.new("waterfill", { "exp-commands_waterfill.description" })
     :register(function(player)
         if Selection.is_selecting(player, SelectionName) then
             Selection.stop(player)
@@ -26,13 +31,13 @@ Commands.new("waterfill", { "exp-commands_waterfill.description" })
             local item_count_craft = math.min(math.floor(player.get_item_count("explosives") / 10), player.get_item_count("barrel"), player.get_item_count("grenade"))
             local item_count_total = item_count_cliff + item_count_craft
             if item_count_total == 0 then
-                return player.print{ "exp-commands_waterfill.requires-explosives" }
+                return Commands.status.error{ "exp-commands_waterfill.requires-explosives" }
             else
                 Selection.start(player, SelectionName)
-                return player.print{ "exp-commands_waterfill.enter" }
+                return Commands.status.success{ "exp-commands_waterfill.enter" }
             end
         end
-    end)
+    end) --[[ @as any ]]
 
 --- When an area is selected to be converted to water
 Selection.on_selection(SelectionName, function(event)
@@ -116,3 +121,7 @@ Selection.on_selection(SelectionName, function(event)
         player.print({ "exp-commands_waterfill.complete", tile_count }, Commands.print_settings.default)
     end
 end)
+
+return {
+    commands = commands,
+}

@@ -8,8 +8,8 @@ local format_player_name = Commands.format_player_name_locale
 
 local config = require("modules.exp_legacy.config.research") --- @dep config.research
 
---- @class Command.Research
-local module = {}
+--- @class ExpCommands_Research.commands
+local commands = {}
 
 local research = {
     res_queue_enable = false
@@ -21,7 +21,7 @@ end)
 
 --- @param force LuaForce
 --- @param silent boolean True when no message should be printed
-function module.res_queue(force, silent)
+local function queue_research(force, silent)
     local res_q = force.research_queue
     local res = force.technologies[config.bonus_inventory.log[config.mod_set].name]
 
@@ -38,7 +38,7 @@ end
 
 --- @param state boolean? use nil to toggle current state
 --- @return boolean # New auto research state
-function module.set_auto_research(state)
+local function set_auto_research(state)
     local new_state
     if state == nil then
         new_state = not research.res_queue_enable
@@ -51,37 +51,40 @@ function module.set_auto_research(state)
 end
 
 --- Sets the auto research state
-Commands.new("set-auto-research", { "exp-commands_research.description" })
+--- @class ExpCommand_Artillery.commands.artillery: ExpCommand
+--- @overload fun(player: LuaPlayer, state: boolean?)
+commands.set_auto_research = Commands.new("set-auto-research", { "exp-commands_research.description" })
     :optional("state", { "exp-commands_research.arg-state" }, Commands.types.boolean)
     :add_aliases{ "auto-research" }
     :register(function(player, state)
         --- @cast state boolean?
-        local enabled = module.set_auto_research(state)
+        local enabled = set_auto_research(state)
 
         if enabled then
-            module.res_queue(player.force --[[@as LuaForce]], true)
+            queue_research(player.force --[[@as LuaForce]], true)
         end
 
         local player_name = format_player_name(player)
         game.print{ "exp-commands_research.auto-research", player_name, enabled }
-    end)
+    end) --[[ @as any ]]
 
 --- @param event EventData.on_research_finished
 local function on_research_finished(event)
     if not research.res_queue_enable then return end
 
     local force = event.research.force
-    local research = assert(config.bonus_inventory.log[config.mod_set], "Unknown mod set: " .. tostring(config.mod_set))
-    local technology = assert(force.technologies[research.name], "Unknown technology: " .. tostring(research.name))
-    if technology.level > research.level then
-        module.res_queue(force, event.by_script)
+    local log_research = assert(config.bonus_inventory.log[config.mod_set], "Unknown mod set: " .. tostring(config.mod_set))
+    local technology = assert(force.technologies[log_research.name], "Unknown technology: " .. tostring(log_research.name))
+    if technology.level > log_research.level then
+        queue_research(force, event.by_script)
     end
 end
 
 local e = defines.events
---- @package
-module.events = {
-    [e.on_research_finished] = on_research_finished,
-}
 
-return module
+return {
+    commands = commands,
+    events = {
+        [e.on_research_finished] = on_research_finished,
+    },
+}

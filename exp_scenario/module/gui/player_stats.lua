@@ -188,7 +188,7 @@ Elements.player_dropdown = Gui.element("player_stats/player_dropdown")
 Elements.container = Gui.element("player_stats/container")
     :draw(function(def, parent)
         local container = Gui.elements.container(parent)
-        local header = Gui.elements.header(container, { caption = { "exp-gui_player-stats.label-main" } })
+        local header = Gui.elements.header(container, { caption = { "exp-gui_player-stats.caption-main" } })
         local data_table = Elements.player_stats_table(container)
         Elements.player_dropdown(header, data_table)
         return container.parent
