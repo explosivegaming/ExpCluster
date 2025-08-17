@@ -62,7 +62,7 @@ function ExpElement.property_from_name()
 end
 
 --- Used to signal that a property should be taken from the arguments, a string means key of last arg
---- @generic A: number|string, D: number|string|boolean
+--- @generic A: number|string, D: any
 --- @param arg A?
 --- @param default D?
 --- @return [function, A, D]
@@ -70,7 +70,7 @@ function ExpElement.property_from_arg(arg, default)
     return { ExpElement.property_from_arg, arg, default }
 end
 
---- @alias ExpElement._signals table<string|number, [string, any]> | [function, string|number, number|string|boolean|nil]
+--- @alias ExpElement._signals table<string|number, [string, any]> | [function, string|number, any|nil]
 
 --- Extract the from args properties from a definition
 --- @param definition table

@@ -53,7 +53,6 @@ return {
     "modules.gui.player-list",
     "modules.gui.bonus",
     "modules.gui.vlayer",
-    "modules.gui.research",
     "modules.gui._role_updates",
 
     "modules.graftorio.require", -- graftorio
