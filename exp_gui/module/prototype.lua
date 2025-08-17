@@ -13,7 +13,7 @@ ExpElement.events = {}
 
 --- @alias ExpElement.DrawCallback fun(def: ExpElement, parent: LuaGuiElement, ...): LuaGuiElement?, function?
 --- @alias ExpElement.PostDrawCallback fun(def: ExpElement, element: LuaGuiElement?, parent: LuaGuiElement, ...): table?
---- @alias ExpElement.PostDrawCallbackAdder fun(self: ExpElement, definition: table | ExpElement.PostDrawCallback): ExpElement
+--- @alias ExpElement.PostDrawCallbackAdder fun(self: ExpElement, definition: table | number | string | boolean | ExpElement.PostDrawCallback): ExpElement
 --- @alias ExpElement.EventHandler<E> fun(def: ExpElement, player: LuaPlayer, element: LuaGuiElement, event: E)
 --- @alias ExpElement.OnEventAdder<E> fun(self: ExpElement, handler: fun(def: ExpElement, player: LuaPlayer, element: LuaGuiElement, event: E)): ExpElement
 
@@ -287,6 +287,14 @@ local function definition_factory(prop_name, debug_def, debug_signals)
         ExpUtil.assert_not_runtime()
         if type(definition) == "function" and definition ~= ExpElement.property_from_arg then
             self[prop_name] = definition
+            return self
+        end
+
+        if type(definition) ~= "table" and definition ~= ExpElement.property_from_arg then
+            -- Primitive value so we can just return it
+            self[prop_name] = function(_, _, _)
+                return definition
+            end
             return self
         end
 

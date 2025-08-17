@@ -1,4 +1,4 @@
---[[ Gui - Production Data
+--[[-- Gui - Production Data
 Adds a Gui for displaying item production stats
 ]]
 

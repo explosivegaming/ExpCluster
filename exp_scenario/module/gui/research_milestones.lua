@@ -1,4 +1,4 @@
---[[ Gui - Research Milestones
+--[[-- Gui - Research Milestones
 Adds a gui for tracking research milestones
 ]]
 

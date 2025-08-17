@@ -1,4 +1,4 @@
---[[ Gui - Player Data
+--[[-- Gui - Player Data
 Displays the player data for a player
 ]]
 

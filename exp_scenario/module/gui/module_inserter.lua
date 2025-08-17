@@ -1,4 +1,4 @@
---[[ Gui - Module Inserter
+--[[-- Gui - Module Inserter
 Adds a Gui which creates an selection planner to insert modules into buildings
 ]]
 

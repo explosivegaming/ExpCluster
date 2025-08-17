@@ -1,4 +1,4 @@
---[[ Gui - Surveillance
+--[[-- Gui - Surveillance
 Adds cameras which can be used to view players and locations
 ]]
 

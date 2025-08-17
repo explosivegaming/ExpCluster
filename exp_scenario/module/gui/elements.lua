@@ -1,4 +1,4 @@
---[[ Gui - Elements
+--[[-- Gui - Elements
 A collection of standalone elements that are reused between GUIs
 ]]
 
