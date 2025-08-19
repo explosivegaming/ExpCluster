@@ -10,7 +10,7 @@ local ExpElement = require("modules/exp_gui/prototype")
 --- @field left table<string, LuaGuiElement?>
 --- @field relative table<string, LuaGuiElement?>
 
---- @type table<uint, ExpGui.player_elements>
+--- @type table<uint, ExpGui.player_elements> | table<"_debug", boolean>
 local player_elements = {}
 Storage.register(player_elements, function(tbl)
     player_elements = tbl
@@ -29,6 +29,16 @@ local ExpGui = {
 local mod_gui = require("mod-gui")
 ExpGui.get_top_flow = mod_gui.get_button_flow
 ExpGui.get_left_flow = mod_gui.get_frame_flow
+
+--- Set the gui to redraw all elements on join, helps with style debugging
+--- @param state boolean
+function ExpGui._debug(state)
+    if state == nil then
+        player_elements._debug = true
+    else
+        player_elements._debug = state
+    end
+end
 
 --- Get a player from an element or gui event
 --- @param input LuaGuiElement | { player_index: uint } | { element: LuaGuiElement }
@@ -135,7 +145,7 @@ local function ensure_elements(player, element_defines, elements, parent)
         if not element or not element.valid then
             element = assert(define(parent), "Element define did not return an element: " .. define.name)
             elements[define.name] = element
-            
+
             if type(visible) == "function" then
                 visible = visible(player, element)
             end
@@ -155,14 +165,19 @@ end
 --- @param event EventData.on_player_created | EventData.on_player_joined_game
 function ExpGui._ensure_consistency(event)
     local player = assert(game.get_player(event.player_index))
-    local elements = player_elements[event.player_index]
-    if not elements then
-        elements = {
-            top = {},
-            left = {},
-            relative = {},
-        }
-        player_elements[event.player_index] = elements
+    local elements = player_elements[event.player_index] or {
+        top = {},
+        left = {},
+        relative = {},
+    }
+    player_elements[event.player_index] = elements
+
+    if player_elements._debug and event.name == defines.events.on_player_joined_game then
+        log("ExpGui debug active, clearing gui for: " .. player.name)
+        player.gui.relative.clear()
+        player.gui.center.clear()
+        player.gui.left.clear()
+        player.gui.top.clear()
     end
 
     ensure_elements(player, ExpGui.top_elements, elements.top, ExpGui.get_top_flow(player))
