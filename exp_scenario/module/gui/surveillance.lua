@@ -34,7 +34,6 @@ Elements.player_dropdown = Gui.element("surveillance/player_dropdown")
 Elements.set_location_button = Gui.element("surveillance/set_location_button")
     :draw{
         type = "button",
-        name = Gui.property_from_name,
         caption = { "exp-gui_surveillance.caption-set-location" },
         visible = false,
     }

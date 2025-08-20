@@ -47,6 +47,7 @@ add(require("modules/exp_scenario/control/bonus"))
 add(require("modules/exp_scenario/control/research"))
 
 --- Guis
+add(require("modules/exp_scenario/gui/autofill"))
 add(require("modules/exp_scenario/gui/elements"))
 add(require("modules/exp_scenario/gui/landfill_blueprint"))
 add(require("modules/exp_scenario/gui/module_inserter"))

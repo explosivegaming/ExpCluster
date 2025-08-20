@@ -175,6 +175,7 @@ function ExpGui._ensure_consistency(event)
     if player_elements._debug and event.name == defines.events.on_player_joined_game then
         log("ExpGui debug active, clearing gui for: " .. player.name)
         player.gui.relative.clear()
+        player.gui.screen.clear()
         player.gui.center.clear()
         player.gui.left.clear()
         player.gui.top.clear()
