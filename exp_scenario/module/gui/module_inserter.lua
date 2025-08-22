@@ -60,7 +60,7 @@ local elem_filter = {
 --- @class ExpGui_ModuleInserter.elements.create_selection_planner: ExpElement
 --- @field data table<LuaGuiElement, LuaGuiElement>
 --- @overload fun(parent: LuaGuiElement, module_table: LuaGuiElement): LuaGuiElement
-Elements.create_selection_planner = Gui.element("module_inserter/create_selection_planner")
+Elements.create_selection_planner = Gui.define("module_inserter/create_selection_planner")
     :draw{
         type = "sprite-button",
         sprite = "item/upgrade-planner",
@@ -81,7 +81,7 @@ Elements.create_selection_planner = Gui.element("module_inserter/create_selectio
 --- @class ExpGui_ModuleInserter.elements.machine_selector: ExpElement
 --- @field data table<LuaGuiElement, { on_last_row: boolean, row_separators: LuaGuiElement[], module_selectors: LuaGuiElement[] }>
 --- @overload fun(parent: LuaGuiElement, row_separators: LuaGuiElement[], module_selectors: LuaGuiElement[]): LuaGuiElement
-Elements.machine_selector = Gui.element("module_inserter/machine_selector")
+Elements.machine_selector = Gui.define("module_inserter/machine_selector")
     :draw{
         type = "choose-elem-button",
         elem_type = "entity",
@@ -154,7 +154,7 @@ Elements.machine_selector = Gui.element("module_inserter/machine_selector")
     end) --[[ @as any ]]
 
 --- Used to select the modules to be applied
-Elements.module_selector = Gui.element("module_inserter/module_selector")
+Elements.module_selector = Gui.define("module_inserter/module_selector")
     :draw{
         type = "choose-elem-button",
         elem_type = "item-with-quality",
@@ -167,7 +167,7 @@ Elements.module_selector = Gui.element("module_inserter/module_selector")
 --- A table that allows selecting modules 
 --- @class ExpGui_ModuleInserter.elements.module_table: ExpElement
 --- @field data table<LuaGuiElement, LuaGuiElement[]>
-Elements.module_table = Gui.element("module_inserter/module_table")
+Elements.module_table = Gui.define("module_inserter/module_table")
     :draw(function(def, parent)
         --- @cast def ExpGui_ModuleInserter.elements.module_table
         local slots_per_row = config.module_slots_per_row + 1
@@ -199,7 +199,7 @@ function Elements.module_table._on_remove_row(machine_selector)
 end
 
 --- Container added to the left gui flow
-Elements.container = Gui.element("module_inserter/container")
+Elements.container = Gui.define("module_inserter/container")
     :draw(function(def, parent)
         local container = Gui.elements.container(parent)
         local header = Gui.elements.header(container, { caption = { "exp-gui_module-inserter.caption-main" } })

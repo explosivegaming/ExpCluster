@@ -62,7 +62,7 @@ do --- Calculate the research targets
 end
 
 --- Display label for the clock display
-Elements.clock_label = Gui.element("research_milestones/clock_label")
+Elements.clock_label = Gui.define("research_milestones/clock_label")
     :track_all_elements()
     :draw{
         type = "label",
@@ -73,7 +73,7 @@ Elements.clock_label = Gui.element("research_milestones/clock_label")
 --- Label used for all parts of the table
 --- @class ExpGui_ResearchMilestones.elements.milestone_table_label: ExpElement
 --- @overload fun(parent: LuaGuiElement, caption: LocalisedString?, minimal_width: number?, horizontal_align: string?): LuaGuiElement
-Elements.milestone_table_label = Gui.element("research_milestones/table_label")
+Elements.milestone_table_label = Gui.define("research_milestones/table_label")
     :draw{
         type = "label",
         caption = Gui.property_from_arg(1),
@@ -94,7 +94,7 @@ Elements.milestone_table_label = Gui.element("research_milestones/table_label")
 --- A table containing all of the current researches and their times / targets
 --- @class ExpGui_ResearchMilestones.elements.milestone_table: ExpElement
 --- @field data table<LuaGuiElement, ExpGui_ResearchMilestones.elements.milestone_table.row_elements[]>
-Elements.milestone_table = Gui.element("research_milestones/milestone_table")
+Elements.milestone_table = Gui.define("research_milestones/milestone_table")
     :track_all_elements()
     :draw(function(_, parent)
         local milestone_table = Gui.elements.scroll_table(parent, 390, 4)
@@ -146,7 +146,7 @@ end
 --- Container added to the left gui flow
 --- @class ExpGui_ResearchMilestones.elements.container: ExpElement
 --- @field data table<LuaForce, number[]>
-Elements.container = Gui.element("research_milestones/container")
+Elements.container = Gui.define("research_milestones/container")
     :draw(function(def, parent)
         local container = Gui.elements.container(parent)
         local header = Gui.elements.header(container, { caption = { "exp-gui_research-milestones.caption-main" } })

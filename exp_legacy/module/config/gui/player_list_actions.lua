@@ -47,7 +47,7 @@ local function teleport(from_player, to_player)
 end
 
 local function new_button(sprite, tooltip)
-    return Gui.element(tooltip[1])
+    return Gui.define(tooltip[1])
         :draw{
             type = "sprite-button",
             style = "tool_button",

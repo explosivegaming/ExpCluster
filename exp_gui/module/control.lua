@@ -18,7 +18,7 @@ end)
 
 --- @class ExpGui
 local ExpGui = {
-    element = ExpElement.create,
+    define = ExpElement.new,
     property_from_arg = ExpElement.property_from_arg,
     property_from_name = ExpElement.property_from_name,
     top_elements = {}, --- @type table<ExpElement, ExpGui.VisibleCallback | boolean>

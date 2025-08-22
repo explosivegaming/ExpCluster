@@ -78,7 +78,7 @@ end
 
 --- Will add a new warp to the list, checks if the player is too close to an existing one
 -- @element add_new_warp
-local add_new_warp = Gui.element("add_new_warp")
+local add_new_warp = Gui.define("add_new_warp")
     :draw{
         type = "sprite-button",
         sprite = "utility/add",
@@ -158,7 +158,7 @@ local add_new_warp = Gui.element("add_new_warp")
 
 --- Warp icon button, this will trigger a warp when the player is able to
 -- @element warp_icon_button
-local warp_icon_button = Gui.element("warp_icon_button")
+local warp_icon_button = Gui.define("warp_icon_button")
     :draw(function(def, parent, warp)
         local warp_position = warp.position
 
@@ -193,7 +193,7 @@ local warp_icon_button = Gui.element("warp_icon_button")
 
 --- The button that is visible when the warp is in edit state
 -- @element warp_icon_editing
-local warp_icon_editing = Gui.element("warp_icon_editing")
+local warp_icon_editing = Gui.define("warp_icon_editing")
     :draw(function(def, parent, warp)
         return parent.add{
             name = def.name,
@@ -207,7 +207,7 @@ local warp_icon_editing = Gui.element("warp_icon_editing")
 
 --- Warp label, visible if the player is not in edit state
 -- @element warp_label
-local warp_label = Gui.element("warp_label")
+local warp_label = Gui.define("warp_label")
     :draw(function(def, parent, warp)
         local last_edit_name = warp.last_edit_name
         local last_edit_time = warp.last_edit_time
@@ -234,7 +234,7 @@ local warp_label = Gui.element("warp_label")
 --- Warp status, visible if the player is not in edit state
 --- This will show if the warp is connected or not
 -- @element warp_status
-local warp_status = Gui.element("warp_status")
+local warp_status = Gui.define("warp_status")
     :draw{
         type = "label",
         caption = "[img=utility/electricity_icon_unplugged]", -- Temporary icon
@@ -248,7 +248,7 @@ local warp_status = Gui.element("warp_status")
 
 --- Warp textfield, visible if the player is in edit state
 -- @element warp_textfield
-local warp_textfield = Gui.element("warp_textfield")
+local warp_textfield = Gui.define("warp_textfield")
     :draw(function(def, parent, warp)
         -- Draw the element
         return parent.add{
@@ -281,7 +281,7 @@ local warp_textfield = Gui.element("warp_textfield")
 
 --- Confirms the edit to name or icon of the warp
 -- @element confirm_edit_button
-local confirm_edit_button = Gui.element("confirm_edit_button")
+local confirm_edit_button = Gui.define("confirm_edit_button")
     :draw{
         type = "sprite-button",
         sprite = "utility/confirm_slot",
@@ -301,7 +301,7 @@ local confirm_edit_button = Gui.element("confirm_edit_button")
 
 --- Cancels the editing changes of the selected warp name or icon
 -- @element cancel_edit_button
-local cancel_edit_button = Gui.element("cancel_edit_button")
+local cancel_edit_button = Gui.define("cancel_edit_button")
     :draw{
         type = "sprite-button",
         sprite = "utility/close_black",
@@ -323,7 +323,7 @@ local cancel_edit_button = Gui.element("cancel_edit_button")
 
 --- Removes a warp from the list, including the physical area and map tag
 -- @element remove_warp_button
-local remove_warp_button = Gui.element("remove_warp_button")
+local remove_warp_button = Gui.define("remove_warp_button")
     :draw{
         type = "sprite-button",
         sprite = "utility/trash",
@@ -339,7 +339,7 @@ local remove_warp_button = Gui.element("remove_warp_button")
 
 --- Opens edit mode for the warp
 -- @element edit_warp_button
-local edit_warp_button = Gui.element("edit_warp_button")
+local edit_warp_button = Gui.define("edit_warp_button")
     :draw{
         type = "sprite-button",
         sprite = "utility/rename_icon",
@@ -356,7 +356,7 @@ local edit_warp_button = Gui.element("edit_warp_button")
 local update_all_warp_elements
 --- Set of three elements which make up each row of the warp table
 -- @element add_warp_elements
-local add_warp_elements = Gui.element("add_warp_elements")
+local add_warp_elements = Gui.define("add_warp_elements")
     :draw(function(_, parent, warp)
         -- Add icon flow, this will contain the warp button and warp icon edit button
         local icon_flow = parent.add{
@@ -407,7 +407,7 @@ end
 
 --- This timer controls when a player is able to warp, eg every 60 seconds
 -- @element warp_timer
-local warp_timer = Gui.element("warp_timer")
+local warp_timer = Gui.define("warp_timer")
     :draw{
         type = "progressbar",
         name = Gui.property_from_name,
@@ -634,7 +634,7 @@ end
 
 --- Main warp list container for the left flow
 -- @element warp_list_container
-warp_list_container = Gui.element("warp_list_container")
+warp_list_container = Gui.define("warp_list_container")
     :draw(function(def, parent)
         local player = Gui.get_player(parent)
         -- Check if user has permission to add warps

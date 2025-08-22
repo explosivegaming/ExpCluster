@@ -30,7 +30,7 @@ end
 
 --- Progress bar which displays how much of a bonus has been used
 --- @class ExpGui_PlayerBonus.elements.bonus_used: ExpElement
-Elements.bonus_used = Gui.element("player_bonus/bonus_used")
+Elements.bonus_used = Gui.define("player_bonus/bonus_used")
     :track_all_elements()
     :draw{
         type = "progressbar",
@@ -93,7 +93,7 @@ end
 --- @class ExpGui_PlayerBonus.elements.reset_button: ExpElement
 --- @field data table<LuaGuiElement, { bonus_table: LuaGuiElement, bonus_used: LuaGuiElement, apply_button: LuaGuiElement? }>
 --- @overload fun(parent: LuaGuiElement, bonus_table: LuaGuiElement, bonus_used: LuaGuiElement): LuaGuiElement
-Elements.reset_button = Gui.element("player_bonus/reset_button")
+Elements.reset_button = Gui.define("player_bonus/reset_button")
     :draw{
         type = "sprite-button",
         sprite = "utility/reset",
@@ -137,7 +137,7 @@ end
 --- @class ExpGui_PlayerBonus.elements.apply_button: ExpElement
 --- @field data table<LuaGuiElement, { bonus_table: LuaGuiElement, bonus_used: LuaGuiElement }>
 --- @overload fun(parent: LuaGuiElement, bonus_table: LuaGuiElement, bonus_used: LuaGuiElement): LuaGuiElement
-Elements.apply_button = Gui.element("player_bonus/apply_button")
+Elements.apply_button = Gui.define("player_bonus/apply_button")
     :draw{
         type = "sprite-button",
         sprite = "utility/confirm_slot",
@@ -170,7 +170,7 @@ Elements.apply_button = Gui.element("player_bonus/apply_button")
 --- Label used within the bonus table
 --- @class ExpGui_PlayerBonus.elements.bonus_table_label: ExpElement
 --- @overload fun(parent: LuaGuiElement, caption: LocalisedString?, tooltip: LocalisedString?, width: number?)
-Elements.bonus_table_label = Gui.element("player_bonus/table_label")
+Elements.bonus_table_label = Gui.define("player_bonus/table_label")
     :draw{
         type = "label",
         caption = Gui.property_from_arg(1),
@@ -195,7 +195,7 @@ Elements.bonus_table_label = Gui.element("player_bonus/table_label")
 --- @class ExpGui_PlayerBonus.elements.bonus_slider: ExpElement
 --- @field data table<LuaGuiElement, ExpGui_PlayerBonus.elements.bonus_slider.data>
 --- @overload fun(parent: LuaGuiElement, bonus_data: ExpGui_PlayerBonus.bonus_data, elements: ExpGui_PlayerBonus.elements.bonus_slider.elements)
-Elements.bonus_slider = Gui.element("player_bonus/bonus_slider")
+Elements.bonus_slider = Gui.define("player_bonus/bonus_slider")
     :draw(function(def, parent, bonus_data, elements)
         local player = Gui.get_player(parent)
         local player_data = Elements.container.data[player] or {}
@@ -256,7 +256,7 @@ end
 --- A table containing all of the bonus sliders and their label
 --- @class ExpGui_PlayerBonus.elements.bonus_table: ExpElement
 --- @field data table<LuaGuiElement, LuaGuiElement[]>
-Elements.bonus_table = Gui.element("player_bonus/bonus_table")
+Elements.bonus_table = Gui.define("player_bonus/bonus_table")
     :draw(function(_, parent)
         return Gui.elements.scroll_table(parent, 300, 3)
     end)
@@ -289,7 +289,7 @@ end
 --- Container added to the left gui flow
 --- @class ExpGui_PlayerBonus.elements.container: ExpElement
 --- @field data table<LuaPlayer, { [string]: number }>
-Elements.container = Gui.element("player_bonus/container")
+Elements.container = Gui.define("player_bonus/container")
     :draw(function(def, parent)
         local container = Gui.elements.container(parent)
         local header = Gui.elements.header(container, { caption = { "exp-gui_player-bonus.caption-main" } })

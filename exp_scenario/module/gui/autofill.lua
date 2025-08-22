@@ -25,7 +25,7 @@ end
 --- @class ExpGui_Autofill.elements.toggle_section_button: ExpElement
 --- @field data table<LuaGuiElement, LuaGuiElement>
 --- @overload fun(parent: LuaGuiElement, section: LuaGuiElement): LuaGuiElement
-Elements.toggle_section_button = Gui.element("autofill/toggle_section_button")
+Elements.toggle_section_button = Gui.define("autofill/toggle_section_button")
     :draw{
         type = "sprite-button",
         sprite = "utility/expand",
@@ -52,7 +52,7 @@ Elements.toggle_section_button = Gui.element("autofill/toggle_section_button")
 --- @class ExpGui_Autofill.elements.toggle_entity_button: ExpElement
 --- @field data table<LuaGuiElement, ExpGui_Autofill.entity_settings>
 --- @overload fun(parent: LuaGuiElement, entity_settings: ExpGui_Autofill.entity_settings): LuaGuiElement
-Elements.toggle_entity_button = Gui.element("autofill/toggle_entity_button")
+Elements.toggle_entity_button = Gui.define("autofill/toggle_entity_button")
     :draw(function(_, parent, entity_settings)
         --- @cast entity_settings ExpGui_Autofill.entity_settings
         return parent.add{
@@ -88,7 +88,7 @@ Elements.toggle_entity_button = Gui.element("autofill/toggle_entity_button")
 --- @class ExpGui_Autofill.elements.toggle_item_button: ExpElement
 --- @field data table<LuaGuiElement, ExpGui_Autofill.item_settings>
 --- @overload fun(parent: LuaGuiElement, item_settings: ExpGui_Autofill.item_settings): LuaGuiElement
-Elements.toggle_item_button = Gui.element("autofill/toggle_item_button")
+Elements.toggle_item_button = Gui.define("autofill/toggle_item_button")
     :draw(function(_, parent, item_settings)
         --- @cast item_settings ExpGui_Autofill.item_settings
         return parent.add{
@@ -125,7 +125,7 @@ Elements.toggle_item_button = Gui.element("autofill/toggle_item_button")
 --- @class ExpGui_Autofill.elements.amount_textfield: ExpElement
 --- @field data table<LuaGuiElement, ExpGui_Autofill.item_settings>
 --- @overload fun(parent: LuaGuiElement, item_settings: ExpGui_Autofill.item_settings): LuaGuiElement
-Elements.amount_textfield = Gui.element("autofill/amount_textfield")
+Elements.amount_textfield = Gui.define("autofill/amount_textfield")
     :draw(function(_, parent, item_settings)
         --- @cast item_settings ExpGui_Autofill.item_settings
         return parent.add{
@@ -158,7 +158,7 @@ Elements.amount_textfield = Gui.element("autofill/amount_textfield")
     end) --[[ @as any ]]
 
 --- A disabled version of the autofill settings used as a filler
-Elements.disabled_autofill_setting = Gui.element("autofill/empty_autofill_setting")
+Elements.disabled_autofill_setting = Gui.define("autofill/empty_autofill_setting")
     :draw(function(_, parent)
         local toggle_element_style = parent.add{
             type = "sprite-button",
@@ -182,7 +182,7 @@ Elements.disabled_autofill_setting = Gui.element("autofill/empty_autofill_settin
 --- @class ExpGui_Autofill.elements.section: ExpElement
 --- @field data table<LuaGuiElement, LuaGuiElement|ExpGui_Autofill.entity_settings>
 --- @overload fun(parent: LuaGuiElement, entity_settings: ExpGui_Autofill.entity_settings): LuaGuiElement
-Elements.section = Gui.element("autofill/section")
+Elements.section = Gui.define("autofill/section")
     :draw(function(def, parent, entity_settings)
         --- @cast def ExpGui_Autofill.elements.section
         --- @cast entity_settings ExpGui_Autofill.entity_settings
@@ -256,7 +256,7 @@ end
 --- Container added to the left gui flow
 --- @class ExpGui_Autofill.elements.container: ExpElement
 --- @field data ExpGui_Autofill.player_settings
-Elements.container = Gui.element("autofill/container")
+Elements.container = Gui.define("autofill/container")
     :draw(function(def, parent)
         --- @cast def ExpGui_Autofill.elements.container
         local container = Gui.elements.container(parent)

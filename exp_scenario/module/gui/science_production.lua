@@ -51,7 +51,7 @@ local Elements = {}
 --- @class ExpGui_ScienceProduction.elements.production_label: ExpElement
 --- @field data table<LuaGuiElement, LuaGuiElement>
 --- @overload fun(parent: LuaGuiElement, production_label_strings: Elements.production_label.strings): LuaGuiElement
-Elements.production_label = Gui.element("science_production/production_label")
+Elements.production_label = Gui.define("science_production/production_label")
     :draw(function(def, parent, production_label_strings)
         --- @cast def ExpGui_ScienceProduction.elements.production_label
         --- @cast production_label_strings Elements.production_label.strings
@@ -135,7 +135,7 @@ end
 --- Label used to signal that no packs have been produced by the force
 --- @class ExpGui_ScienceProduction.elements.no_production_label: ExpElement
 --- @overload fun(parent: LuaGuiElement): LuaGuiElement
-Elements.no_production_label = Gui.element("science_production/no_production_label")
+Elements.no_production_label = Gui.define("science_production/no_production_label")
     :track_all_elements()
     :draw{
         type = "label",
@@ -187,7 +187,7 @@ end
 --- A table containing all of the current science packs
 --- @class ExpGui_ScienceProduction.elements.science_table: ExpElement
 --- @field data table<LuaGuiElement, { [string]: ExpGui_ScienceProduction.elements.science_table.row_elements }>
-Elements.science_table = Gui.element("science_production/science_table")
+Elements.science_table = Gui.define("science_production/science_table")
     :track_all_elements()
     :draw(function(_, parent)
         local science_table = Gui.elements.scroll_table(parent, 190, 4)
@@ -351,7 +351,7 @@ end
 --- Displays the eta until research completion
 --- @class ExpGui_ScienceProduction.elements.eta_label: ExpElement
 --- @overload fun(parent: LuaGuiElement): LuaGuiElement
-Elements.eta_label = Gui.element("science_production/eta_label")
+Elements.eta_label = Gui.define("science_production/eta_label")
     :track_all_elements()
     :draw{
         type = "label",
@@ -422,7 +422,7 @@ end
 
 --- Container added to the left gui flow
 --- @class ExpGui_ScienceProduction.elements.container: ExpElement
-Elements.container = Gui.element("science_production/container")
+Elements.container = Gui.define("science_production/container")
     :draw(function(def, parent)
         local container = Gui.elements.container(parent)
         Gui.elements.header(container, { caption = { "exp-gui_science-production.caption-main" } })

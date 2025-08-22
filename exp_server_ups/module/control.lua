@@ -7,7 +7,7 @@ local ExpUtil = require("modules/exp_util")
 local Commands = require("modules/exp_commands")
 
 --- Label to show the server ups, drawn to screen on join
-local server_ups = Gui.element("server_ups")
+local server_ups = Gui.define("server_ups")
     :track_all_elements()
     :draw{
         type = "label",

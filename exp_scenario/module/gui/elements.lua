@@ -9,7 +9,7 @@ local Elements = {}
 
 --- Dropdown which allows selecting an online player
 --- @class ExpGui_Elements.online_player_dropdown: ExpElement
-Elements.online_player_dropdown = Gui.element("player_dropdown")
+Elements.online_player_dropdown = Gui.define("player_dropdown")
     :track_all_elements()
     :draw(function(def, parent)
         local names = Elements.online_player_dropdown.player_names

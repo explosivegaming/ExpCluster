@@ -23,7 +23,7 @@ config.set_datastores(SelectedPlayer, SelectedAction)
 
 --- Button used to open the action bar
 -- @element open_action_bar
-local open_action_bar = Gui.element("open_action_bar")
+local open_action_bar = Gui.define("open_action_bar")
     :draw{
         type = "sprite-button",
         sprite = "utility/expand_dots",
@@ -48,7 +48,7 @@ local open_action_bar = Gui.element("open_action_bar")
 
 --- Button used to close the action bar
 -- @element close_action_bar
-local close_action_bar = Gui.element("close_action_bar")
+local close_action_bar = Gui.define("close_action_bar")
     :draw{
         type = "sprite-button",
         sprite = "utility/close_black",
@@ -68,7 +68,7 @@ local close_action_bar = Gui.element("close_action_bar")
 
 --- Button used to confirm a reason
 -- @element reason_confirm
-local reason_confirm = Gui.element("reason_confirm")
+local reason_confirm = Gui.define("reason_confirm")
     :draw{
         type = "sprite-button",
         sprite = "utility/confirm_slot",
@@ -94,7 +94,7 @@ local reason_confirm = Gui.element("reason_confirm")
 
 --- Set of elements that are used to make up a row of the player table
 -- @element add_player_base
-local add_player_base = Gui.element("add_player_base")
+local add_player_base = Gui.define("add_player_base")
     :draw(function(_, parent, player_data)
         -- Add the button to open the action bar
         local toggle_action_bar_flow = parent.add{ type = "flow", name = player_data.name }
@@ -162,7 +162,7 @@ end
 
 --- Adds all the buttons and flows that make up the action bar
 -- @element add_action_bar
-local add_action_bar_buttons = Gui.element("add_action_bar_buttons")
+local add_action_bar_buttons = Gui.define("add_action_bar_buttons")
     :draw(function(_, parent)
         close_action_bar(parent)
         -- Loop over all the buttons in the config
@@ -210,7 +210,7 @@ end
 
 --- Main player list container for the left flow
 -- @element player_list_container
-local player_list_container = Gui.element("player_list_container")
+local player_list_container = Gui.define("player_list_container")
     :draw(function(definition, parent)
         -- Draw the internal container
         local container = Gui.elements.container(parent)

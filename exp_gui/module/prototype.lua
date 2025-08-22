@@ -137,7 +137,7 @@ end
 --- Register a new instance of a prototype
 --- @param name string
 --- @return ExpElement
-function ExpElement.create(name)
+function ExpElement.new(name)
     ExpUtil.assert_not_runtime()
     local module_name = ExpUtil.get_module_name(2)
     local element_name = module_name .. "/" .. name

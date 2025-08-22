@@ -39,7 +39,7 @@ end
 
 --- Button to toggle the auto launch on a rocket silo
 -- @element toggle_launch
-local toggle_launch = Gui.element("toggle_launch")
+local toggle_launch = Gui.define("toggle_launch")
     :draw{
         type = "sprite-button",
         sprite = "utility/play",
@@ -65,7 +65,7 @@ local toggle_launch = Gui.element("toggle_launch")
 
 --- XY cords that allow zoom to map when pressed
 -- @element silo_cords
-local silo_cords = Gui.element("silo_cords")
+local silo_cords = Gui.define("silo_cords")
     :draw(function(definition, parent, silo_data)
         local silo_name = silo_data.silo_name
         local pos = silo_data.position
@@ -114,7 +114,7 @@ local silo_cords = Gui.element("silo_cords")
 
 --- Base element for each rocket in the progress list
 -- @element rocket_entry
-local rocket_entry = Gui.element("rocket_entry")
+local rocket_entry = Gui.define("rocket_entry")
     :draw(function(_, parent, silo_data)
         local silo_name = silo_data.silo_name
         local player = Gui.get_player(parent)
@@ -149,7 +149,7 @@ local rocket_entry = Gui.element("rocket_entry")
 
 --- Data label which contains a name and a value label pair
 -- @element data_label
-local data_label = Gui.element("data_label")
+local data_label = Gui.define("data_label")
     :draw(function(_, parent, label_data)
         local data_name = label_data.name
         local data_subname = label_data.subname
@@ -392,7 +392,7 @@ end
 
 -- Button to toggle a section dropdown
 -- @element toggle_section
-local toggle_section = Gui.element("rocket_info_toggle_section")
+local toggle_section = Gui.define("rocket_info_toggle_section")
     :draw{
         type = "sprite-button",
         sprite = "utility/expand",
@@ -419,7 +419,7 @@ local toggle_section = Gui.element("rocket_info_toggle_section")
 
 -- Draw a section header and main scroll
 -- @element rocket_list_container
-local section = Gui.element("rocket_info_section")
+local section = Gui.define("rocket_info_section")
     :draw(function(definition, parent, section_name, table_size)
         -- Draw the header for the section
         local header = Gui.elements.header(parent, {
@@ -448,7 +448,7 @@ local section = Gui.element("rocket_info_section")
 
 --- Main gui container for the left flow
 -- @element rocket_list_container
-local rocket_list_container = Gui.element("rocket_list_container")
+local rocket_list_container = Gui.define("rocket_list_container")
     :draw(function(definition, parent)
         -- Draw the internal container
         local container = Gui.elements.container(parent, 200)

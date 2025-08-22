@@ -15,7 +15,7 @@ local Elements = {}
 --- @class ExpGui_Surveillance.elements.player_dropdown: ExpElement
 --- @field data table<LuaGuiElement, LuaGuiElement>
 --- @overload fun(parent: LuaGuiElement, camera: LuaGuiElement): LuaGuiElement
-Elements.player_dropdown = Gui.element("surveillance/player_dropdown")
+Elements.player_dropdown = Gui.define("surveillance/player_dropdown")
     :draw(function(def, parent)
         return GuiElements.online_player_dropdown(parent)
     end)
@@ -31,7 +31,7 @@ Elements.player_dropdown = Gui.element("surveillance/player_dropdown")
 --- @class ExpGui_Surveillance.elements.set_location_button: ExpElement
 --- @field data table<LuaGuiElement, LuaGuiElement>
 --- @overload fun(parent: LuaGuiElement, camera: LuaGuiElement): LuaGuiElement
-Elements.set_location_button = Gui.element("surveillance/set_location_button")
+Elements.set_location_button = Gui.define("surveillance/set_location_button")
     :draw{
         type = "button",
         caption = { "exp-gui_surveillance.caption-set-location" },
@@ -59,7 +59,7 @@ Elements.set_location_button = Gui.element("surveillance/set_location_button")
 --- @class ExpGui_Surveillance.elements.type_dropdown: ExpElement
 --- @field data table<LuaGuiElement, ExpGui_Surveillance.elements.type_dropdown.data>
 --- @overload fun(parent: LuaGuiElement, data: ExpGui_Surveillance.elements.type_dropdown.data): LuaGuiElement
-Elements.type_dropdown = Gui.element("surveillance/type_dropdown")
+Elements.type_dropdown = Gui.define("surveillance/type_dropdown")
     :track_all_elements()
     :draw{
         type = "drop-down",
@@ -99,7 +99,7 @@ Elements.type_dropdown = Gui.element("surveillance/type_dropdown")
 --- @class ExpGui_Surveillance.elements.zoom_out_button: ExpElement
 --- @field data table<LuaGuiElement, LuaGuiElement>
 --- @overload fun(parent: LuaGuiElement, camera: LuaGuiElement): LuaGuiElement
-Elements.zoom_out_button = Gui.element("surveillance/zoom_out_button")
+Elements.zoom_out_button = Gui.define("surveillance/zoom_out_button")
     :draw{
         type = "sprite-button",
         sprite = "utility/controller_joycon_back", -- -
@@ -122,7 +122,7 @@ Elements.zoom_out_button = Gui.element("surveillance/zoom_out_button")
 --- @class ExpGui_Surveillance.elements.zoom_in_button: ExpElement
 --- @field data table<LuaGuiElement, LuaGuiElement>
 --- @overload fun(parent: LuaGuiElement, camera: LuaGuiElement): LuaGuiElement
-Elements.zoom_in_button = Gui.element("surveillance/zoom_in_button")
+Elements.zoom_in_button = Gui.define("surveillance/zoom_in_button")
     :draw{
         type = "sprite-button",
         sprite = "utility/controller_joycon_start", -- +
@@ -145,7 +145,7 @@ Elements.zoom_in_button = Gui.element("surveillance/zoom_in_button")
 --- @class ExpGui_Surveillance.elements.camera: ExpElement
 --- @field data table<LuaGuiElement, LuaPlayer?>
 --- @overload fun(parent: LuaGuiElement, target: LuaPlayer?): LuaGuiElement
-Elements.camera = Gui.element("surveillance/camera")
+Elements.camera = Gui.define("surveillance/camera")
     :track_all_elements()
     :draw{
         type = "camera",
@@ -160,7 +160,7 @@ Elements.camera = Gui.element("surveillance/camera")
     :element_data(Gui.property_from_arg(1)) --[[ @as any ]]
 
 --- Container added to the screen
-Elements.container = Gui.element("surveillance/container")
+Elements.container = Gui.define("surveillance/container")
     :draw(function(def, parent)
         local container = Gui.elements.screen_frame(parent, nil, true)
         local button_flow = Gui.elements.screen_frame.data[container.parent]

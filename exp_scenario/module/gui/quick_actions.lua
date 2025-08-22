@@ -22,7 +22,7 @@ local Actions = {}
 --- @param command ExpCommand | function (this is needed because of the overload on commands)
 --- @param on_click? ExpElement.EventHandler<EventData.on_gui_click>
 local function new_quick_action(name, command, on_click)
-    local element = Gui.element("quick_actions/" .. name)
+    local element = Gui.define("quick_actions/" .. name)
         :draw{
             type = "button",
             caption = { "exp-gui_quick-actions.caption-" .. name },
@@ -65,7 +65,7 @@ end
 --- Container added to the left gui flow
 --- @class ExpGui_QuickActions.elements.container: ExpElement
 --- @field data table<LuaGuiElement, { [string]: LuaGuiElement }>
-Elements.container = Gui.element("quick_actions/container")
+Elements.container = Gui.define("quick_actions/container")
     :draw(function(def, parent)
         local player = Gui.get_player(parent)
         local container = Gui.elements.container(parent)

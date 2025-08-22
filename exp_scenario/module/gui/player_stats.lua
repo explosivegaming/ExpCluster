@@ -84,7 +84,7 @@ local computed_stats = {
 --- Label used for all data in the data table
 --- @class ExpGui_PlayerStats.elements.table_label: ExpElement
 --- @overload fun(parent: LuaGuiElement, opts: { caption: LocalisedString, tooltip: LocalisedString, width: number })
-Elements.table_label = Gui.element("player_stats/table_label")
+Elements.table_label = Gui.define("player_stats/table_label")
     :draw{
         type = "label",
         caption = Gui.property_from_arg("caption"),
@@ -98,7 +98,7 @@ Elements.table_label = Gui.element("player_stats/table_label")
 --- Data table that shows all data for a player
 --- @class ExpGui_PlayerStats.elements.player_stats_table: ExpElement
 --- @field data table<LuaGuiElement, { [string]: LuaGuiElement }>
-Elements.player_stats_table = Gui.element("player_stats/data_table")
+Elements.player_stats_table = Gui.define("player_stats/data_table")
     :draw(function(def, parent, ...)
         --- @cast def ExpGui_PlayerStats.elements.player_stats_table
         local data_table = Gui.elements.scroll_table(parent, 240, 4)
@@ -171,7 +171,7 @@ end
 --- @class ExpGui_PlayerStats.elements.player_dropdown: ExpElement
 --- @field data table<LuaGuiElement, LuaGuiElement>
 --- @overload fun(parent: LuaGuiElement, camera: LuaGuiElement): LuaGuiElement
-Elements.player_dropdown = Gui.element("player_stats/player_dropdown")
+Elements.player_dropdown = Gui.define("player_stats/player_dropdown")
     :track_all_elements()
     :draw(function(def, parent)
         return GuiElements.online_player_dropdown(parent)
@@ -185,7 +185,7 @@ Elements.player_dropdown = Gui.element("player_stats/player_dropdown")
     end) --[[ @as any ]]
 
 --- Container added to the left gui flow
-Elements.container = Gui.element("player_stats/container")
+Elements.container = Gui.define("player_stats/container")
     :draw(function(def, parent)
         local container = Gui.elements.container(parent)
         local header = Gui.elements.header(container, { caption = { "exp-gui_player-stats.caption-main" } })

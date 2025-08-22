@@ -103,7 +103,7 @@ end
 ----- Gui -----
 
 --- Label used to show that the player is following, also used to allow esc to stop following
-follow_label = Gui.element("follow-label")
+follow_label = Gui.define("follow-label")
     :draw(function(def, parent, target)
         Gui.destroy_if_valid(parent.follow_label)
 
