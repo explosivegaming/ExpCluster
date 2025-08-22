@@ -49,23 +49,24 @@ local Elements = {}
 
 --- A pair of labels representing production of an idea
 --- @class ExpGui_ScienceProduction.elements.production_label: ExpElement
---- @field data table<LuaGuiElement, { label: LuaGuiElement, suffix: LuaGuiElement }>
+--- @field data table<LuaGuiElement, LuaGuiElement>
 --- @overload fun(parent: LuaGuiElement, production_label_strings: Elements.production_label.strings): LuaGuiElement
 Elements.production_label = Gui.element("science_production/production_label")
     :draw(function(def, parent, production_label_strings)
         --- @cast def ExpGui_ScienceProduction.elements.production_label
         --- @cast production_label_strings Elements.production_label.strings
-        local alignment = Gui.elements.aligned_flow(parent)
-        alignment.style.minimal_width = 40
 
         -- Add the main value label
-        local label = alignment.add{
+        local label = parent.add{
             type = "label",
             caption = production_label_strings.caption,
             tooltip = production_label_strings.tooltip,
         }
 
-        label.style.font_color = production_label_strings.color
+        local style = label.style
+        style.font_color = production_label_strings.color
+        style.horizontal_align = "right"
+        style.minimal_width = 40
 
         -- Add the suffix label, this is intentionally being added to the parent
         local suffix = parent.add{
@@ -78,12 +79,8 @@ Elements.production_label = Gui.element("science_production/production_label")
         suffix_style.font_color = production_label_strings.color
         suffix_style.right_margin = 1
 
-        def.data[alignment] = {
-            label = label,
-            suffix = suffix,
-        }
-
-        return alignment
+        def.data[label] = suffix
+        return label
     end) --[[ @as any ]]
 
 --- @class Elements.production_label.strings
@@ -125,15 +122,11 @@ end
 --- @param production_label LuaGuiElement
 --- @param production_label_strings Elements.production_label.strings
 function Elements.production_label.refresh(production_label, production_label_strings)
-    local elements = Elements.production_label.data[production_label]
-    production_label.visible = true
+    production_label.caption = production_label_strings.caption
+    production_label.tooltip = production_label_strings.tooltip
+    production_label.style.font_color = production_label_strings.color
 
-    local label = elements.label
-    label.caption = production_label_strings.caption
-    label.tooltip = production_label_strings.tooltip
-    label.style.font_color = production_label_strings.color
-
-    local suffix = elements.suffix
+    local suffix = Elements.production_label.data[production_label]
     suffix.caption = { "exp-gui_science-production.caption-spm", production_label_strings.suffix }
     suffix.tooltip = production_label_strings.tooltip
     suffix.style.font_color = production_label_strings.color
@@ -200,6 +193,7 @@ Elements.science_table = Gui.element("science_production/science_table")
         local science_table = Gui.elements.scroll_table(parent, 190, 4)
         local no_production_label = Elements.no_production_label(science_table)
         Elements.no_production_label.refresh(no_production_label)
+        science_table.style.column_alignments[3] = "right"
         return science_table
     end) 
     :element_data{} --[[ @as any ]]
@@ -283,10 +277,11 @@ function Elements.science_table.add_row(science_table, row_data)
         column_count = 2,
     }
     delta_table.style.padding = 0
+    delta_table.style.column_alignments[1] = "right"
 
     -- Draw the net production label
     local net = Elements.production_label(science_table, row_data.net)
-    local net_suffix = Elements.production_label.data[net].suffix
+    local net_suffix = Elements.production_label.data[net]
     net_suffix.visible = visible
     net.visible = visible
 

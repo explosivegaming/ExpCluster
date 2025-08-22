@@ -189,7 +189,6 @@ Elements.section = Gui.element("autofill/section")
         local header = Gui.elements.header(parent, {
             caption = { "exp-gui_autofill.caption-section-header", rich_img("item", entity_settings.entity), { "entity-name." .. entity_settings.entity } },
             tooltip = { "exp-gui_autofill.tooltip-toggle-section" },
-            label_name = "label",
         })
 
         local section_table = parent.add{
@@ -200,7 +199,7 @@ Elements.section = Gui.element("autofill/section")
 
         section_table.style.padding = 3
 
-        local header_label = header.parent.label
+        local header_label = header.label
         Elements.toggle_entity_button(header, entity_settings)
         def.data[header_label] = Elements.toggle_section_button(header, section_table)
         def.data[section_table] = entity_settings

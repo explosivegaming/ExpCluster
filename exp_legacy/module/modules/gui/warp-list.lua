@@ -816,7 +816,7 @@ Event.on_nth_tick(math.floor(60 / config.update_smoothing), function()
 
             -- Change the enabled state of the add warp button
             local container = Gui.get_left_element(warp_list_container, player)
-            local add_warp_element = container.frame.header.flow[add_new_warp.name]
+            local add_warp_element = container.frame.header[add_new_warp.name]
             local old_closest_warp_name = add_warp_element.tooltip[2] or closest_warp and closest_warp.name
             local was_able_to_make_warp = add_warp_element.enabled
             local can_make_warp = closest_distance == nil or closest_distance > mr2
@@ -875,7 +875,7 @@ local function role_update_event(event)
     update_all_warps(player, scroll_table)
 
     -- Update the new warp button in case the user can now add them
-    local add_new_warp_element = frame.header.flow[add_new_warp.name]
+    local add_new_warp_element = frame.header[add_new_warp.name]
     add_new_warp_element.visible = allow_add_warp
 end
 

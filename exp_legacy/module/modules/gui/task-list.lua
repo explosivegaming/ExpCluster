@@ -762,7 +762,7 @@ local function role_update_event(event)
 
     -- Update the new task button and create footer in case the user can now add them
     local has_permission = check_player_permissions(player)
-    local add_new_task_element = frame.header.flow[add_new_task.name]
+    local add_new_task_element = frame.header[add_new_task.name]
     add_new_task_element.visible = has_permission
     local is_creating = PlayerIsCreating:get(player)
     if is_creating and not has_permission then

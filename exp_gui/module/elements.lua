@@ -144,7 +144,7 @@ elements.subframe_base = ExpGui.element("container_subframe")
     :style{
         height = 0,
         minimal_height = 36,
-        padding = { 3, 3, 0, 6 },
+        padding = { 3, 6, 0, 6 },
         use_header_filler = false,
         horizontally_stretchable = true,
     }
@@ -158,14 +158,16 @@ elements.header = ExpGui.element("container_header")
         if opts.caption then
             subframe.add{
                 type = "label",
-                name = opts.label_name,
+                name = "label",
                 caption = opts.caption,
                 tooltip = opts.tooltip,
                 style = "frame_title",
             }
         end
 
-        return opts.no_flow and subframe or elements.aligned_flow(subframe, { name = "flow" })
+        subframe.add{ type = "empty-widget" }.style.horizontally_stretchable = true
+
+        return subframe
     end)
 
 --- A footer frame within a container
@@ -177,14 +179,16 @@ elements.footer = ExpGui.element("container_footer")
         if opts.caption then
             subframe.add{
                 type = "label",
-                name = opts.label_name,
+                name = "label",
                 caption = opts.caption,
                 tooltip = opts.tooltip,
                 style = "frame_title",
             }
         end
 
-        return opts.no_flow and subframe or elements.aligned_flow(subframe, { name = "flow" })
+        subframe.add{ type = "empty-widget" }.style.horizontally_stretchable = true
+
+        return subframe
     end)
 
 --- A button used to destroy its target when clicked, intended for screen frames

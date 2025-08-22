@@ -426,10 +426,9 @@ local section = Gui.element("rocket_info_section")
             name = section_name .. "-header",
             caption = { "rocket-info.section-caption-" .. section_name },
             tooltip = { "rocket-info.section-tooltip-" .. section_name },
-            label_name = "label",
         })
 
-        definition:link_element(header.parent.label)
+        definition:link_element(header.label)
 
         -- Right aligned button to toggle the section
         header.caption = section_name
