@@ -57,8 +57,8 @@ ExpElement._metatable = {
 
 --- Used to signal that the property should be the same as the define name
 --- @return function
-function ExpElement.property_from_name()
-    return ExpElement.property_from_name
+function ExpElement.from_name()
+    return ExpElement.from_name
 end
 
 --- Used to signal that a property should be taken from the arguments, a string means key of last arg
@@ -66,8 +66,8 @@ end
 --- @param arg A?
 --- @param default D?
 --- @return [function, A, D]
-function ExpElement.property_from_arg(arg, default)
-    return { ExpElement.property_from_arg, arg, default }
+function ExpElement.from_argument(arg, default)
+    return { ExpElement.from_argument, arg, default }
 end
 
 --- @alias ExpElement._signals table<string|number, [string, any]> | [function, string|number, any|nil]
@@ -76,19 +76,19 @@ end
 --- @param definition table
 --- @return ExpElement._signals
 function ExpElement._prototype:_extract_signals(definition)
-    -- Check if the definition is property_from_arg
-    if definition[1] == ExpElement.property_from_arg then
+    -- Check if the definition is from_argument
+    if definition[1] == ExpElement.from_argument then
         return definition
     end
 
-    -- Otherwise check if any of the values are property_from_arg or property_from_name
+    -- Otherwise check if any of the values are from_argument or from_name
     local signals = {}
     for prop, value in pairs(definition) do
-        if value == ExpElement.property_from_arg then
+        if value == ExpElement.from_argument then
             signals[#signals + 1] = { prop, nil }
-        elseif value == ExpElement.property_from_name then
+        elseif value == ExpElement.from_name then
             definition[prop] = self.name
-        elseif type(value) == "table" and rawget(value, 1) == ExpElement.property_from_arg then
+        elseif type(value) == "table" and rawget(value, 1) == ExpElement.from_argument then
             local key = value[2] or (#signals + 1)
             signals[key] = { prop, value[3] }
         end
@@ -104,8 +104,8 @@ end
 --- @return any
 function ExpElement._prototype:_apply_signals(definition, signals, args)
     local last = args[#args] or args -- 'or args' used instead of empty table
-    -- Check if the root is property_from_arg
-    if signals[1] == ExpElement.property_from_arg then
+    -- Check if the root is from_argument
+    if signals[1] == ExpElement.from_argument then
         local key, rtn = signals[2], nil
         if type(key) == "string" then
             rtn = last[key]
@@ -252,7 +252,7 @@ end
 --- @return ExpElement
 function ExpElement._prototype:draw(definition)
     ExpUtil.assert_not_runtime()
-    if type(definition) == "function" and definition ~= ExpElement.property_from_arg then
+    if type(definition) == "function" and definition ~= ExpElement.from_argument then
         self._draw = definition
         return self
     end
@@ -285,12 +285,12 @@ end
 local function definition_factory(prop_name, debug_def, debug_signals)
     return function(self, definition)
         ExpUtil.assert_not_runtime()
-        if type(definition) == "function" and definition ~= ExpElement.property_from_arg then
+        if type(definition) == "function" and definition ~= ExpElement.from_argument then
             self[prop_name] = definition
             return self
         end
 
-        if type(definition) ~= "table" and definition ~= ExpElement.property_from_arg then
+        if type(definition) ~= "table" and definition ~= ExpElement.from_argument then
             -- Primitive value so we can just return it
             self[prop_name] = function(_, _, _)
                 return definition

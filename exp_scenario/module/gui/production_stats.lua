@@ -84,7 +84,7 @@ Elements.item_selector = Gui.define("production_stats/item_selector")
         size = 32,
     }
     :element_data{
-        labels = Gui.property_from_arg(1),
+        labels = Gui.from_argument(1),
         on_last_row = true,
     }
     :on_elem_changed(function(def, player, element, event)
@@ -116,9 +116,9 @@ Elements.item_selector = Gui.define("production_stats/item_selector")
 Elements.table_label = Gui.define("production_stats/table_label")
     :draw{
         type = "label",
-        caption = Gui.property_from_arg(1, "0.00"),
-        tooltip = Gui.property_from_arg(2),
-        style = Gui.property_from_arg(3),
+        caption = Gui.from_argument(1, "0.00"),
+        tooltip = Gui.from_argument(2),
+        style = Gui.from_argument(3),
     }
     :style{
         horizontal_align = "right",

@@ -36,7 +36,7 @@ Elements.toggle_section_button = Gui.define("autofill/toggle_section_button")
         size = 20,
         padding = -2,
     }
-    :element_data(Gui.property_from_arg(1))
+    :element_data(Gui.from_argument(1))
     :on_click(function(def, player, element)
         --- @cast def ExpGui_Autofill.elements.toggle_section_button
         if Gui.toggle_visible_state(def.data[element]) then
@@ -66,7 +66,7 @@ Elements.toggle_entity_button = Gui.define("autofill/toggle_entity_button")
         size = 22,
         padding = -2,
     }
-    :element_data(Gui.property_from_arg(1))
+    :element_data(Gui.from_argument(1))
     :on_click(function(def, player, element)
         --- @cast def ExpGui_Autofill.elements.toggle_entity_button
         local entity_settings = def.data[element]
@@ -103,7 +103,7 @@ Elements.toggle_item_button = Gui.define("autofill/toggle_item_button")
         right_margin = -3,
         padding = -1,
     }
-    :element_data(Gui.property_from_arg(1))
+    :element_data(Gui.from_argument(1))
     :on_click(function(def, player, element)
         --- @cast def ExpGui_Autofill.elements.toggle_item_button
         local item_settings = def.data[element]
@@ -144,7 +144,7 @@ Elements.amount_textfield = Gui.define("autofill/amount_textfield")
         height = 31,
         padding = -2,
     }
-    :element_data(Gui.property_from_arg(1))
+    :element_data(Gui.from_argument(1))
     :on_text_changed(function(def, player, element, event)
         --- @cast def ExpGui_Autofill.elements.amount_textfield
         local value = tonumber(element.text) or 0

@@ -89,7 +89,7 @@ local add_new_task = Gui.define("add_new_task")
         sprite = "utility/add",
         tooltip = { "task-list.add-tooltip" },
         style = "tool_button",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
     }
     :style(Styles.sprite22)
     :on_click(
@@ -140,7 +140,7 @@ local no_tasks_found = Gui.define("no_tasks_found")
 local subfooter_frame = Gui.define("task_list_subfooter_frame")
     :draw{
         type = "frame",
-        name = Gui.property_from_arg(1),
+        name = Gui.from_argument(1),
         direction = "vertical",
         style = "subfooter_frame",
     }
@@ -158,7 +158,7 @@ local subfooter_label = Gui.define("task_list_subfooter_label")
         name = "footer_label",
         type = "label",
         style = "frame_title",
-        caption = Gui.property_from_arg(1),
+        caption = Gui.from_argument(1),
     }
 
 --- Action flow that contains action buttons
@@ -239,7 +239,7 @@ local task_list = Gui.define("task_list")
 local task_view_edit_button = Gui.define("task_view_edit_button")
     :draw{
         type = "button",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = { "", "[img=utility/rename_icon] ", { "task-list.edit" } },
         tooltip = { "task-list.edit-tooltip" },
         style = "shortcut_bar_button",
@@ -273,7 +273,7 @@ local task_view_close_button = Gui.define("task_view_close_button")
 local task_view_delete_button = Gui.define("task_view_delete_button")
     :draw{
         type = "button",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = { "", "[img=utility/trash] ", { "task-list.delete" } },
         tooltip = { "task-list.delete-tooltip" },
         style = "shortcut_bar_button_red",
@@ -347,7 +347,7 @@ local task_create_confirm_button
 -- @element task_message_textfield
 local task_message_textfield = Gui.define("task_message_textfield")
     :draw{
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         type = "text-box",
         text = "",
     }:style{
@@ -375,7 +375,7 @@ local task_message_textfield = Gui.define("task_message_textfield")
 task_edit_confirm_button = Gui.define("task_edit_confirm_button")
     :draw{
         type = "button",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = { "", "[img=utility/check_mark] ", { "task-list.confirm" } },
         tooltip = { "task-list.confirm-tooltip" },
         style = "shortcut_bar_button_green",
@@ -434,7 +434,7 @@ local task_edit_footer = Gui.define("task_edit_footer")
 task_create_confirm_button = Gui.define("task_create_confirm_button")
     :draw{
         type = "button",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = { "", "[img=utility/check_mark] ", { "task-list.confirm" } },
         tooltip = { "task-list.confirm-tooltip" },
         style = "shortcut_bar_button_green",

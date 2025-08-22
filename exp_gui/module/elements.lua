@@ -9,7 +9,7 @@ Gui.elements = elements
 elements.aligned_flow = Gui.define("aligned_flow")
     :draw{
         type = "flow",
-        name = Gui.property_from_arg("name"),
+        name = Gui.from_argument("name"),
     }
     :style(function(def, element, parent, opts)
         opts = opts or {}
@@ -45,13 +45,13 @@ elements.bar = Gui.define("bar")
 elements.centered_label = Gui.define("centered_label")
     :draw{
         type = "label",
-        caption = Gui.property_from_arg(2),
-        tooltip = Gui.property_from_arg(3),
+        caption = Gui.from_argument(2),
+        tooltip = Gui.from_argument(3),
     }
     :style{
         horizontal_align = "center",
         single_line = false,
-        width = Gui.property_from_arg(1),
+        width = Gui.from_argument(1),
     }
 
 --- A label which has two white bars on either side of it
@@ -81,7 +81,7 @@ elements.title_label = Gui.define("title_label")
 elements.scroll_pane = Gui.define("scroll_pane")
     :draw{
         type = "scroll-pane",
-        name = Gui.property_from_arg(2),
+        name = Gui.from_argument(2),
         direction = "vertical",
         horizontal_scroll_policy = "never",
         vertical_scroll_policy = "auto",
@@ -89,7 +89,7 @@ elements.scroll_pane = Gui.define("scroll_pane")
     }
     :style{
         padding = { 1, 3 },
-        maximal_height = Gui.property_from_arg(1),
+        maximal_height = Gui.from_argument(1),
         horizontally_stretchable = true,
     }
 
@@ -131,15 +131,15 @@ elements.container = Gui.define("container")
     :style{
         vertically_stretchable = false,
         horizontally_stretchable = false,
-        minimal_width = Gui.property_from_arg(1),
+        minimal_width = Gui.from_argument(1),
     }
 
 --- A frame within a container
 elements.subframe_base = Gui.define("container_subframe")
     :draw{
         type = "frame",
-        name = Gui.property_from_arg(2),
-        style = Gui.property_from_arg(1),
+        name = Gui.from_argument(2),
+        style = Gui.from_argument(1),
     }
     :style{
         height = 0,

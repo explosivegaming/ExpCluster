@@ -71,7 +71,7 @@ Elements.create_selection_planner = Gui.define("module_inserter/create_selection
         size = 28,
         padding = 0,
     }
-    :element_data(Gui.property_from_arg(1))
+    :element_data(Gui.from_argument(1))
     :on_click(function(def, player, element)
         --- @cast def ExpGui_ModuleInserter.elements.create_selection_planner
         Selection.start(player, SelectionModuleArea, false, def.data[element])
@@ -90,8 +90,8 @@ Elements.machine_selector = Gui.define("module_inserter/machine_selector")
     }
     :element_data{
         on_last_row = true,
-        row_separators = Gui.property_from_arg(1),
-        module_selectors = Gui.property_from_arg(2),
+        row_separators = Gui.from_argument(1),
+        module_selectors = Gui.from_argument(2),
     }
     :on_elem_changed(function(def, player, element, event)
         --- @cast def ExpGui_ModuleInserter.elements.machine_selector
@@ -159,7 +159,7 @@ Elements.module_selector = Gui.define("module_inserter/module_selector")
         type = "choose-elem-button",
         elem_type = "item-with-quality",
         elem_filters = elem_filter.no_prod,
-        visible = Gui.property_from_arg(1),
+        visible = Gui.from_argument(1),
         enabled = false,
         style = "slot_button",
     }

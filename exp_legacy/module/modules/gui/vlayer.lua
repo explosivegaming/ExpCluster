@@ -146,7 +146,7 @@ end)
 local vlayer_gui_display_item_solar_name = Gui.define("vlayer_gui_display_item_solar_name")
     :draw{
         type = "label",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = { "vlayer.display-item-solar" },
         style = "heading_2_label",
     }:style{
@@ -156,7 +156,7 @@ local vlayer_gui_display_item_solar_name = Gui.define("vlayer_gui_display_item_s
 local vlayer_gui_display_item_solar_count = Gui.define("vlayer_gui_display_item_solar_count")
     :draw{
         type = "progressbar",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = "",
         value = 0,
         style = "electric_satisfaction_statistics_progressbar",
@@ -170,7 +170,7 @@ local vlayer_gui_display_item_solar_count = Gui.define("vlayer_gui_display_item_
 local vlayer_gui_display_item_accumulator_name = Gui.define("vlayer_gui_display_item_accumulator_name")
     :draw{
         type = "label",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = { "vlayer.display-item-accumulator" },
         style = "heading_2_label",
     }:style{
@@ -180,7 +180,7 @@ local vlayer_gui_display_item_accumulator_name = Gui.define("vlayer_gui_display_
 local vlayer_gui_display_item_accumulator_count = Gui.define("vlayer_gui_display_item_accumulator_count")
     :draw{
         type = "progressbar",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = "",
         value = 0,
         style = "electric_satisfaction_statistics_progressbar",
@@ -194,7 +194,7 @@ local vlayer_gui_display_item_accumulator_count = Gui.define("vlayer_gui_display
 local vlayer_gui_display_signal_surface_area_name = Gui.define("vlayer_gui_display_signal_surface_area_name")
     :draw{
         type = "label",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = { "vlayer.display-remaining-surface-area" },
         tooltip = { "vlayer.display-remaining-surface-area-tooltip" },
         style = "heading_2_label",
@@ -205,7 +205,7 @@ local vlayer_gui_display_signal_surface_area_name = Gui.define("vlayer_gui_displ
 local vlayer_gui_display_signal_surface_area_count = Gui.define("vlayer_gui_display_signal_surface_area_count")
     :draw{
         type = "progressbar",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = "",
         value = 0,
         style = "electric_satisfaction_statistics_progressbar",
@@ -219,7 +219,7 @@ local vlayer_gui_display_signal_surface_area_count = Gui.define("vlayer_gui_disp
 local vlayer_gui_display_signal_sustained_name = Gui.define("vlayer_gui_display_signal_sustained_name")
     :draw{
         type = "label",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = { "vlayer.display-sustained-production" },
         tooltip = { "vlayer.display-sustained-production-tooltip" },
         style = "heading_2_label",
@@ -230,7 +230,7 @@ local vlayer_gui_display_signal_sustained_name = Gui.define("vlayer_gui_display_
 local vlayer_gui_display_signal_sustained_count = Gui.define("vlayer_gui_display_signal_sustained_count")
     :draw{
         type = "progressbar",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = "",
         value = 0,
         style = "electric_satisfaction_statistics_progressbar",
@@ -244,7 +244,7 @@ local vlayer_gui_display_signal_sustained_count = Gui.define("vlayer_gui_display
 local vlayer_gui_display_signal_production_name = Gui.define("vlayer_gui_display_signal_production_name")
     :draw{
         type = "label",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = { "vlayer.display-current-production" },
         tooltip = { "vlayer.display-current-production-tooltip" },
         style = "heading_2_label",
@@ -255,7 +255,7 @@ local vlayer_gui_display_signal_production_name = Gui.define("vlayer_gui_display
 local vlayer_gui_display_signal_production_count = Gui.define("vlayer_gui_display_signal_production_count")
     :draw{
         type = "progressbar",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = "",
         value = 0,
         style = "electric_satisfaction_statistics_progressbar",
@@ -269,7 +269,7 @@ local vlayer_gui_display_signal_production_count = Gui.define("vlayer_gui_displa
 local vlayer_gui_display_signal_capacity_name = Gui.define("vlayer_gui_display_signal_capacity_name")
     :draw{
         type = "label",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = { "vlayer.display-current-capacity" },
         tooltip = { "vlayer.display-current-capacity-tooltip" },
         style = "heading_2_label",
@@ -280,7 +280,7 @@ local vlayer_gui_display_signal_capacity_name = Gui.define("vlayer_gui_display_s
 local vlayer_gui_display_signal_capacity_count = Gui.define("vlayer_gui_display_signal_capacity_count")
     :draw{
         type = "progressbar",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = "",
         value = 0,
         style = "electric_satisfaction_statistics_progressbar",
@@ -334,7 +334,7 @@ end
 vlayer_gui_control_type = Gui.define("vlayer_gui_control_type")
     :draw{
         type = "drop-down",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         items = { { "vlayer.control-type-energy" }, { "vlayer.control-type-circuit" }, { "vlayer.control-type-storage-input" }, { "vlayer.control-type-storage-output" } },
         selected_index = 1,
     }:style{
@@ -348,7 +348,7 @@ vlayer_gui_control_type = Gui.define("vlayer_gui_control_type")
 vlayer_gui_control_list = Gui.define("vlayer_gui_control_list")
     :draw{
         type = "drop-down",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
     }:style{
         width = 200,
     }
@@ -358,7 +358,7 @@ vlayer_gui_control_list = Gui.define("vlayer_gui_control_list")
 local vlayer_gui_control_refresh = Gui.define("vlayer_gui_control_refresh")
     :draw{
         type = "button",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = { "vlayer.control-refresh" },
     }:style{
         width = 200,
@@ -371,7 +371,7 @@ local vlayer_gui_control_refresh = Gui.define("vlayer_gui_control_refresh")
 local vlayer_gui_control_see = Gui.define("vlayer_gui_control_see")
     :draw{
         type = "button",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = { "vlayer.control-see" },
     }:style{
         width = 200,
@@ -395,7 +395,7 @@ local vlayer_gui_control_see = Gui.define("vlayer_gui_control_see")
 local vlayer_gui_control_build = Gui.define("vlayer_gui_control_build")
     :draw{
         type = "button",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = { "vlayer.control-build" },
     }:style{
         width = 200,
@@ -416,7 +416,7 @@ local vlayer_gui_control_build = Gui.define("vlayer_gui_control_build")
 local vlayer_gui_control_remove = Gui.define("vlayer_gui_control_remove")
     :draw{
         type = "button",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = { "vlayer.control-remove" },
     }:style{
         width = 200,

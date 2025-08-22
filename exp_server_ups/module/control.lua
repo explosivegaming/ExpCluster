@@ -11,7 +11,7 @@ local server_ups = Gui.define("server_ups")
     :track_all_elements()
     :draw{
         type = "label",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
     }
     :style{
         font = "default-game",

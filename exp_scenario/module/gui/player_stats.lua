@@ -87,12 +87,12 @@ local computed_stats = {
 Elements.table_label = Gui.define("player_stats/table_label")
     :draw{
         type = "label",
-        caption = Gui.property_from_arg("caption"),
-        tooltip = Gui.property_from_arg("tooltip"),
+        caption = Gui.from_argument("caption"),
+        tooltip = Gui.from_argument("tooltip"),
         style = "heading_2_label",
     }
     :style{
-        width = Gui.property_from_arg("width"),
+        width = Gui.from_argument("width"),
     } --[[ @as any ]]
 
 --- Data table that shows all data for a player
@@ -176,7 +176,7 @@ Elements.player_dropdown = Gui.define("player_stats/player_dropdown")
     :draw(function(def, parent)
         return GuiElements.online_player_dropdown(parent)
     end)
-    :element_data(Gui.property_from_arg(1))
+    :element_data(Gui.from_argument(1))
     :on_selection_state_changed(function(def, player, element, event)
         --- @cast def ExpGui_PlayerStats.elements.player_dropdown
         local data_table = def.data[element]

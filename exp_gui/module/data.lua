@@ -105,7 +105,7 @@ end
 
 --- Set the value index of a given key
 -- Internal type is not used here to allow for creation of storage
---- @param self Gui.GuiData
+--- @param self GuiData
 --- @param key DataKey
 --- @param value unknown
 function GuiData._metatable.__newindex(self, key, value)
@@ -134,7 +134,7 @@ end
 
 --- Create the data object for a given scope
 --- @param scope string
---- @return Gui.GuiData
+--- @return GuiData
 function GuiData.create(scope)
     ExpUtil.assert_not_runtime()
     assert(GuiData._scopes[scope] == nil, "Scope already exists with name: " .. scope)
@@ -145,15 +145,15 @@ function GuiData.create(scope)
     }
 
     GuiData._scopes[scope] = instance
-    --- @cast instance Gui.GuiData
+    --- @cast instance GuiData
     return setmetatable(instance, GuiData._metatable)
 end
 
 --- Get the link to an existing data scope
 --- @param scope string
---- @return Gui.GuiData
+--- @return GuiData
 function GuiData.get(scope)
-    return GuiData._scopes[scope] --[[ @as Gui.GuiData ]]
+    return GuiData._scopes[scope] --[[ @as GuiData ]]
 end
 
 --- Used to clean up data from destroyed elements

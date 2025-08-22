@@ -44,7 +44,7 @@ local toggle_launch = Gui.define("toggle_launch")
         type = "sprite-button",
         sprite = "utility/play",
         tooltip = { "rocket-info.toggle-rocket-tooltip" },
-        name = Gui.property_from_name,
+        name = Gui.from_name,
     }
     :style(Gui.styles.sprite{
         size = 16,
@@ -399,7 +399,7 @@ local toggle_section = Gui.define("rocket_info_toggle_section")
         hovered_sprite = "utility/expand",
         tooltip = { "rocket-info.toggle-section-tooltip" },
         style = "frame_action_button",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
     }
     :style(Gui.styles.sprite{
         size = 20,

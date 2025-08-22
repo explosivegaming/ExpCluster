@@ -84,7 +84,7 @@ local add_new_warp = Gui.define("add_new_warp")
         sprite = "utility/add",
         tooltip = { "warp-list.add-tooltip" },
         style = "shortcut_bar_button",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
     }
     :style(Styles.sprite22)
     :on_click(function(def, player, element)
@@ -238,7 +238,7 @@ local warp_status = Gui.define("warp_status")
     :draw{
         type = "label",
         caption = "[img=utility/electricity_icon_unplugged]", -- Temporary icon
-        name = Gui.property_from_name,
+        name = Gui.from_name,
     }
     :style{
         -- When editing mode because textbox is larger the icon would move up.
@@ -287,7 +287,7 @@ local confirm_edit_button = Gui.define("confirm_edit_button")
         sprite = "utility/confirm_slot",
         tooltip = { "warp-list.confirm-tooltip" },
         style = "shortcut_bar_button_green",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
     }
     :style(Styles.sprite22)
     :on_click(function(def, player, element)
@@ -307,7 +307,7 @@ local cancel_edit_button = Gui.define("cancel_edit_button")
         sprite = "utility/close_black",
         tooltip = { "warp-list.cancel-tooltip" },
         style = "shortcut_bar_button_red",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
     }
     :style(Styles.sprite22)
     :on_click(function(def, player, element)
@@ -329,7 +329,7 @@ local remove_warp_button = Gui.define("remove_warp_button")
         sprite = "utility/trash",
         tooltip = { "warp-list.remove-tooltip" },
         style = "shortcut_bar_button_red",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
     }
     :style(Styles.sprite22)
     :on_click(function(def, player, element)
@@ -345,7 +345,7 @@ local edit_warp_button = Gui.define("edit_warp_button")
         sprite = "utility/rename_icon",
         tooltip = { "warp-list.edit-tooltip-none" },
         style = "shortcut_bar_button",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
     }
     :style(Styles.sprite22)
     :on_click(function(def, player, element)
@@ -410,7 +410,7 @@ end
 local warp_timer = Gui.define("warp_timer")
     :draw{
         type = "progressbar",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         tooltip = { "warp-list.timer-tooltip-zero", config.cooldown_duration },
         minimum_value = 0,
         maximum_value = config.cooldown_duration * config.update_smoothing,

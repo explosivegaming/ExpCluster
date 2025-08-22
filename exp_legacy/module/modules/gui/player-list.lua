@@ -29,7 +29,7 @@ local open_action_bar = Gui.define("open_action_bar")
         sprite = "utility/expand_dots",
         tooltip = { "player-list.open-action-bar" },
         style = "frame_button",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
     }
     :style{
         padding = -2,

@@ -19,8 +19,8 @@ end)
 --- @class Gui
 local Gui = {
     define = ExpElement.new,
-    property_from_arg = ExpElement.property_from_arg,
-    property_from_name = ExpElement.property_from_name,
+    from_argument = ExpElement.from_argument,
+    from_name = ExpElement.from_name,
     top_elements = {}, --- @type table<ExpElement, Gui.VisibleCallback | boolean>
     left_elements = {}, --- @type table<ExpElement, Gui.VisibleCallback | boolean>
     relative_elements = {}, --- @type table<ExpElement, Gui.VisibleCallback | boolean>

@@ -105,8 +105,8 @@ Elements.reset_button = Gui.define("player_bonus/reset_button")
         size = 26,
     }
     :element_data{
-        bonus_table = Gui.property_from_arg(1),
-        bonus_used = Gui.property_from_arg(2),
+        bonus_table = Gui.from_argument(1),
+        bonus_used = Gui.from_argument(2),
     }
     :on_click(function(def, player, element)
         --- @cast def ExpGui_PlayerBonus.elements.reset_button
@@ -149,8 +149,8 @@ Elements.apply_button = Gui.define("player_bonus/apply_button")
         size = 26,
     }
     :element_data{
-        bonus_table = Gui.property_from_arg(1),
-        bonus_used = Gui.property_from_arg(2),
+        bonus_table = Gui.from_argument(1),
+        bonus_used = Gui.from_argument(2),
     }
     :on_click(function(def, player, element)
         --- @cast def ExpGui_PlayerBonus.elements.apply_button
@@ -173,12 +173,12 @@ Elements.apply_button = Gui.define("player_bonus/apply_button")
 Elements.bonus_table_label = Gui.define("player_bonus/table_label")
     :draw{
         type = "label",
-        caption = Gui.property_from_arg(1),
-        tooltip = Gui.property_from_arg(2),
+        caption = Gui.from_argument(1),
+        tooltip = Gui.from_argument(2),
         style = "heading_2_label",
     }
     :style{
-        width = Gui.property_from_arg(3, 70),
+        width = Gui.from_argument(3, 70),
     } --[[ @as any ]]
 
 --- @class ExpGui_PlayerBonus.elements.bonus_slider.elements

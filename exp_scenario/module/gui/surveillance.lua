@@ -19,7 +19,7 @@ Elements.player_dropdown = Gui.define("surveillance/player_dropdown")
     :draw(function(def, parent)
         return GuiElements.online_player_dropdown(parent)
     end)
-    :element_data(Gui.property_from_arg(1))
+    :element_data(Gui.from_argument(1))
     :on_selection_state_changed(function(def, player, element, event)
         --- @cast def ExpGui_Surveillance.elements.player_dropdown
         local camera = def.data[element]
@@ -41,7 +41,7 @@ Elements.set_location_button = Gui.define("surveillance/set_location_button")
         width = 48,
         height = 24,
     }
-    :element_data(Gui.property_from_arg(1))
+    :element_data(Gui.from_argument(1))
     :on_click(function(def, player, element)
         --- @cast def ExpGui_Surveillance.elements.set_location_button
         local camera = def.data[element]
@@ -70,7 +70,7 @@ Elements.type_dropdown = Gui.define("surveillance/type_dropdown")
         width = 96,
         height = 24,
     }
-    :element_data(Gui.property_from_arg(1))
+    :element_data(Gui.from_argument(1))
     :on_selection_state_changed(function(def, player, element, event)
         --- @cast def ExpGui_Surveillance.elements.type_dropdown
         local data = def.data[element]
@@ -109,7 +109,7 @@ Elements.zoom_out_button = Gui.define("surveillance/zoom_out_button")
         height = 24,
         width = 24,
     }
-    :element_data(Gui.property_from_arg(1))
+    :element_data(Gui.from_argument(1))
     :on_click(function(def, player, element)
         --- @cast def ExpGui_Surveillance.elements.zoom_out_button
         local camera = def.data[element]
@@ -132,7 +132,7 @@ Elements.zoom_in_button = Gui.define("surveillance/zoom_in_button")
         height = 24,
         width = 24,
     }
-    :element_data(Gui.property_from_arg(1))
+    :element_data(Gui.from_argument(1))
     :on_click(function(def, player, element)
         --- @cast def ExpGui_Surveillance.elements.zoom_in_button
         local camera = def.data[element]
@@ -157,7 +157,7 @@ Elements.camera = Gui.define("surveillance/camera")
         width = 480,
         height = 290,
     }
-    :element_data(Gui.property_from_arg(1)) --[[ @as any ]]
+    :element_data(Gui.from_argument(1)) --[[ @as any ]]
 
 --- Container added to the screen
 Elements.container = Gui.define("surveillance/container")

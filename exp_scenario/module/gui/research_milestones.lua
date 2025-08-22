@@ -76,12 +76,12 @@ Elements.clock_label = Gui.define("research_milestones/clock_label")
 Elements.milestone_table_label = Gui.define("research_milestones/table_label")
     :draw{
         type = "label",
-        caption = Gui.property_from_arg(1),
+        caption = Gui.from_argument(1),
         style = "heading_2_label",
     }
     :style{
-        minimal_width = Gui.property_from_arg(2, 70),
-        horizontal_align = Gui.property_from_arg(3, "right"),
+        minimal_width = Gui.from_argument(2, 70),
+        horizontal_align = Gui.from_argument(3, "right"),
         font_color = font_color.neutral,
     } --[[ @as any ]]
 
