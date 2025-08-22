@@ -1,15 +1,15 @@
---- @class ExpGui
-local ExpGui = require("modules/exp_gui")
+--- @class Gui
+local Gui = require("modules/exp_gui")
 
---- @class ExpGui.elements
+--- @class Gui.elements
 local elements = {}
-ExpGui.elements = elements
+Gui.elements = elements
 
 --- A flow which aligns its content as specified
-elements.aligned_flow = ExpGui.element("aligned_flow")
+elements.aligned_flow = Gui.define("aligned_flow")
     :draw{
         type = "flow",
-        name = ExpGui.property_from_arg("name"),
+        name = Gui.property_from_arg("name"),
     }
     :style(function(def, element, parent, opts)
         opts = opts or {}
@@ -25,7 +25,7 @@ elements.aligned_flow = ExpGui.element("aligned_flow")
     end)
 
 --- A solid horizontal white bar element
-elements.bar = ExpGui.element("bar")
+elements.bar = Gui.define("bar")
     :draw{
         type = "progressbar",
         value = 1,
@@ -42,20 +42,20 @@ elements.bar = ExpGui.element("bar")
     end)
 
 --- A label which is centered
-elements.centered_label = ExpGui.element("centered_label")
+elements.centered_label = Gui.define("centered_label")
     :draw{
         type = "label",
-        caption = ExpGui.property_from_arg(2),
-        tooltip = ExpGui.property_from_arg(3),
+        caption = Gui.property_from_arg(2),
+        tooltip = Gui.property_from_arg(3),
     }
     :style{
         horizontal_align = "center",
         single_line = false,
-        width = ExpGui.property_from_arg(1),
+        width = Gui.property_from_arg(1),
     }
 
 --- A label which has two white bars on either side of it
-elements.title_label = ExpGui.element("title_label")
+elements.title_label = Gui.define("title_label")
     :draw(function(def, parent, width, caption, tooltip)
         local flow = parent.add{
             type = "flow"
@@ -78,10 +78,10 @@ elements.title_label = ExpGui.element("title_label")
     end)
 
 --- A fixed size vertical scroll pane
-elements.scroll_pane = ExpGui.element("scroll_pane")
+elements.scroll_pane = Gui.define("scroll_pane")
     :draw{
         type = "scroll-pane",
-        name = ExpGui.property_from_arg(2),
+        name = Gui.property_from_arg(2),
         direction = "vertical",
         horizontal_scroll_policy = "never",
         vertical_scroll_policy = "auto",
@@ -89,12 +89,12 @@ elements.scroll_pane = ExpGui.element("scroll_pane")
     }
     :style{
         padding = { 1, 3 },
-        maximal_height = ExpGui.property_from_arg(1),
+        maximal_height = Gui.property_from_arg(1),
         horizontally_stretchable = true,
     }
 
 --- A fixed size vertical scroll pane containing a table
-elements.scroll_table = ExpGui.element("scroll_table")
+elements.scroll_table = Gui.define("scroll_table")
     :draw(function(def, parent, height, column_count, scroll_name)
         local scroll_pane = elements.scroll_pane(parent, height, scroll_name)
 
@@ -112,7 +112,7 @@ elements.scroll_table = ExpGui.element("scroll_table")
     }
 
 --- A container frame
-elements.container = ExpGui.element("container")
+elements.container = Gui.define("container")
     :draw(function(def, parent, minimal_width, container_name)
         local container = parent.add{
             type = "frame",
@@ -131,15 +131,15 @@ elements.container = ExpGui.element("container")
     :style{
         vertically_stretchable = false,
         horizontally_stretchable = false,
-        minimal_width = ExpGui.property_from_arg(1),
+        minimal_width = Gui.property_from_arg(1),
     }
 
 --- A frame within a container
-elements.subframe_base = ExpGui.element("container_subframe")
+elements.subframe_base = Gui.define("container_subframe")
     :draw{
         type = "frame",
-        name = ExpGui.property_from_arg(2),
-        style = ExpGui.property_from_arg(1),
+        name = Gui.property_from_arg(2),
+        style = Gui.property_from_arg(1),
     }
     :style{
         height = 0,
@@ -150,7 +150,7 @@ elements.subframe_base = ExpGui.element("container_subframe")
     }
 
 --- A header frame within a container
-elements.header = ExpGui.element("container_header")
+elements.header = Gui.define("container_header")
     :draw(function(def, parent, opts)
         opts = opts or {}
         local subframe = elements.subframe_base(parent, "subheader_frame", opts.name)
@@ -171,7 +171,7 @@ elements.header = ExpGui.element("container_header")
     end)
 
 --- A footer frame within a container
-elements.footer = ExpGui.element("container_footer")
+elements.footer = Gui.define("container_footer")
     :draw(function(def, parent, opts)
         opts = opts or {}
         local subframe = elements.subframe_base(parent, "subfooter_frame", opts.name)
@@ -192,7 +192,7 @@ elements.footer = ExpGui.element("container_footer")
     end)
 
 --- A button used to destroy its target when clicked, intended for screen frames
-elements.screen_frame_close = ExpGui.element("screen_frame_close")
+elements.screen_frame_close = Gui.define("screen_frame_close")
     :draw{
         type = "sprite-button",
         style = "frame_action_button",
@@ -206,7 +206,7 @@ elements.screen_frame_close = ExpGui.element("screen_frame_close")
     end)
 
 --- A draggable frame with close button and button flow
-elements.screen_frame = ExpGui.element("screen_frame")
+elements.screen_frame = Gui.define("screen_frame")
     :draw(function(def, parent, caption, button_flow)
         local container = parent.add{
             type = "frame",

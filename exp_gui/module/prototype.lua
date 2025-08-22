@@ -4,7 +4,7 @@ local ExpUtil = require("modules/exp_util")
 local GuiData = require("modules/exp_gui/data")
 local GuiIter = require("modules/exp_gui/iter")
 
---- @class ExpGui_ExpElement
+--- @class _ExpElement
 local ExpElement = {
     _elements = {}, --- @type table<string, ExpElement>
 }
@@ -34,7 +34,7 @@ ExpElement.events = {}
 
 --- @class ExpElement
 --- @field name string
---- @field data ExpGui.GuiData
+--- @field data GuiData
 --- @field _debug ExpElement._debug
 --- @field _draw ExpElement.DrawCallback?
 --- @field _style ExpElement.PostDrawCallback?
@@ -152,7 +152,7 @@ function ExpElement.new(name)
         },
     }
 
-    ExpElement._elements[element_name] = instance
+    ExpElement._elements[element_name] = instance --[[ @as ExpElement ]]
     return setmetatable(instance, ExpElement._metatable)
 end
 
@@ -340,15 +340,15 @@ ExpElement._prototype.force_data = definition_factory("_force_data", "force_data
 ExpElement._prototype.global_data = definition_factory("_global_data", "global_data_definition", "global_data_signals")
 
 --- Iterate the tracked elements of all players
---- @param filter ExpGui_GuiIter.FilterType
---- @return ExpGui_GuiIter.ReturnType
+--- @param filter GuiIter.FilterType
+--- @return GuiIter.ReturnType
 function ExpElement._prototype:tracked_elements(filter)
     return GuiIter.get_tracked_elements(self.name, filter)
 end
 
 --- Iterate the tracked elements of all online players
---- @param filter ExpGui_GuiIter.FilterType
---- @return ExpGui_GuiIter.ReturnType
+--- @param filter GuiIter.FilterType
+--- @return GuiIter.ReturnType
 function ExpElement._prototype:online_elements(filter)
     return GuiIter.get_online_elements(self.name, filter)
 end
@@ -382,10 +382,10 @@ function ExpElement._prototype:link_element(element)
         element_tags = {}
     end
 
-    local event_tags = element_tags["ExpGui"]
+    local event_tags = element_tags["Gui"]
     if not event_tags then
         event_tags = {}
-        element_tags["ExpGui"] = event_tags
+        element_tags["Gui"] = event_tags
     end
     --- @cast event_tags string[]
 
@@ -408,10 +408,10 @@ function ExpElement._prototype:unlink_element(element)
         return element, ExpElement._prototype.unlink_element
     end
 
-    local event_tags = element_tags["ExpGui"]
+    local event_tags = element_tags["Gui"]
     if not event_tags then
         event_tags = {}
-        element_tags["ExpGui"] = event_tags
+        element_tags["Gui"] = event_tags
     end
     --- @cast event_tags string[]
 
@@ -426,7 +426,7 @@ local function event_handler(event)
     local element = event.element
     if not element or not element.valid then return end
 
-    local event_tags = element.tags and element.tags["ExpGui"]
+    local event_tags = element.tags and element.tags["Gui"]
     if not event_tags then return end
     --- @cast event_tags string[]
 
