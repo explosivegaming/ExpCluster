@@ -21,6 +21,7 @@ local Gui = {
     define = ExpElement.new,
     from_argument = ExpElement.from_argument,
     from_name = ExpElement.from_name,
+    no_return = ExpElement.no_return,
     top_elements = {}, --- @type table<ExpElement, Gui.VisibleCallback | boolean>
     left_elements = {}, --- @type table<ExpElement, Gui.VisibleCallback | boolean>
     relative_elements = {}, --- @type table<ExpElement, Gui.VisibleCallback | boolean>

@@ -55,6 +55,12 @@ ExpElement._metatable = {
     __class = "ExpElement",
 }
 
+--- Used to signal the intentional lack of a return value from draw
+--- @return function
+function ExpElement.no_return()
+    return ExpElement.no_return
+end
+
 --- Used to signal that the property should be the same as the define name
 --- @return function
 function ExpElement.from_name()
@@ -171,11 +177,16 @@ function ExpElement._prototype:create(parent, ...)
     assert(self._draw, "Element does not have a draw definition")
     local element, status = self:_draw(parent, ...)
     local player = assert(game.get_player(parent.player_index))
+    if element == ExpElement.no_return then
+        element = nil
+    else
+        assert(element and element.object_name == "LuaGuiElement", "Draw did not return a LuaGuiElement")
+    end
 
     if self._style then
+        assert(element, "Cannot set style when no element was returned by draw definition")
         local style = self:_style(element, parent, ...)
         if style then
-            assert(element, "Cannot set style when no element was returned by draw definition")
             local element_style = element.style
             for k, v in pairs(style) do
                 element_style[k] = v
@@ -184,23 +195,23 @@ function ExpElement._prototype:create(parent, ...)
     end
 
     if self._element_data then
+        assert(element, "Cannot set element data when no element was returned by draw definition")
         local data = self:_element_data(element, parent, ...)
-        if data then
-            assert(element, "Cannot set element data when no element was returned by draw definition")
+        if data ~= nil and self.data[element] == nil then
             self.data[element] = data
         end
     end
 
     if self._player_data then
         local data = self:_player_data(element, parent, ...)
-        if data then
+        if data ~= nil and self.data[player] == nil then
             self.data[player] = data
         end
     end
 
     if self._force_data then
         local data = self:_force_data(element, parent, ...)
-        if data then
+        if data ~= nil and self.data[player.force] == nil then
             self.data[player.force] = data
         end
     end
@@ -210,7 +221,9 @@ function ExpElement._prototype:create(parent, ...)
         if data then
             local global_data = self.data.global_data
             for k, v in pairs(data) do
-                global_data[k] = v
+                if global_data[k] == nil then
+                    global_data[k] = v
+                end
             end
         end
     end
@@ -238,8 +251,8 @@ end
 
 --- Add a temp draw definition, useful for when working top down
 --- @return ExpElement
-function ExpElement._prototype:dev()
-    log("Dev draw used for " .. self.name)
+function ExpElement._prototype:empty()
+    log("empty draw used for " .. self.name)
     return self:draw{
         type = "flow"
     }
