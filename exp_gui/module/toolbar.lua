@@ -20,6 +20,20 @@ local toolbar_buttons = {} --- @type ExpElement[]
 local left_elements_with_button = {} --- @type table<ExpElement, ExpElement>
 local buttons_with_left_element = {} --- @type table<string, ExpElement>
 
+--- Called when toolbar button toggle state is changed.
+Toolbar.on_gui_button_toggled = script.generate_event_name()
+--- @class (exact) EventData.on_gui_button_toggled: EventData
+--- @field element LuaGuiElement
+--- @field state boolean
+
+--- @class _ExpElement._prototype
+--- @field on_button_toggled ExpElement.OnEventAdder<EventData.on_gui_button_toggled>
+
+--- @diagnostic disable-next-line: invisible, inject-field
+function ExpElement._prototype.on_button_toggled(self, handler)
+    return self:on_event(Toolbar.on_gui_button_toggled, handler)
+end
+
 --- Set the visible state of the toolbar
 --- @param player LuaPlayer
 --- @param state boolean? toggles if nil
@@ -51,14 +65,20 @@ function Toolbar.get_visible_state(player)
     return top_flow.visible
 end
 
---- Set the toggle state of a toolbar button, does not check for a linked left element
+--- Set the toggle state of a toolbar button
 --- @param define ExpElement
 --- @param player LuaPlayer
 --- @param state boolean? toggles if nil
+--- @param _from_left boolean?
 --- @return boolean
-function Toolbar.set_button_toggled_state(define, player, state)
+function Toolbar.set_button_toggled_state(define, player, state, _from_left)
     local top_element = assert(Gui.get_top_element(define, player), "Element is not on the top flow")
     if state == nil then state = top_element.style.name == toolbar_button_default_style end
+
+    local left_element = buttons_with_left_element[define.name]
+    if left_element and not _from_left then
+        return Toolbar.set_left_element_visible_state(left_element, player, state)
+    end
 
     for _, element in define:tracked_elements(player) do
         local original_width, original_height = element.style.minimal_width, element.style.maximal_height
@@ -74,6 +94,13 @@ function Toolbar.set_button_toggled_state(define, player, state)
             style.font = "default-semibold"
             style.padding = 0
         end
+
+        script.raise_event(Toolbar.on_gui_button_toggled, {
+            name = Toolbar.on_gui_button_toggled,
+            tick = game.tick,
+            element = element,
+            state = state,
+        })
     end
 
     return state
@@ -102,7 +129,7 @@ function Toolbar.set_left_element_visible_state(define, player, state, _skip_con
     -- Check if there is a linked toolbar button and update it
     local button = left_elements_with_button[define]
     if button then
-        Toolbar.set_button_toggled_state(button, player, state)
+        Toolbar.set_button_toggled_state(button, player, state, true)
     end
 
     -- This check is O(n^2) when setting all left elements to hidden, so internals can it
@@ -500,9 +527,10 @@ function Toolbar._ensure_consistency(player)
         -- Update the toggle state and hide the linked left element if the button is not allowed
         local left_define = buttons_with_left_element[button.name]
         if left_define then
-            local left_element = Gui.get_left_element(left_define, player)
-            Toolbar.set_button_toggled_state(button, player, left_element.visible)
-            if not allowed then
+            if allowed then
+                local left_element = Gui.get_left_element(left_define, player)
+                Toolbar.set_button_toggled_state(button, player, left_element.visible, true)
+            else
                 Toolbar.set_left_element_visible_state(left_define, player, false)
             end
         end

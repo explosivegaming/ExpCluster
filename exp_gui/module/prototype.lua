@@ -69,11 +69,11 @@ end
 
 --- Used to signal that a property should be taken from the arguments, a string means key of last arg
 --- @generic A: number|string, D: any
---- @param arg A?
+--- @param arg A
 --- @param default D?
 --- @return [function, A, D]
 function ExpElement.from_argument(arg, default)
-    return { ExpElement.from_argument, arg, default }
+    return { ExpElement.from_argument, assert(arg), default }
 end
 
 --- @alias ExpElement._signals table<string|number, [string, any]> | [function, string|number, any|nil]
@@ -91,7 +91,7 @@ function ExpElement._prototype:_extract_signals(definition)
     local signals = {}
     for prop, value in pairs(definition) do
         if value == ExpElement.from_argument then
-            signals[#signals + 1] = { prop, nil }
+            error("ExpElement.from_argument must be called with an argument index / key")
         elseif value == ExpElement.from_name then
             definition[prop] = self.name
         elseif type(value) == "table" and rawget(value, 1) == ExpElement.from_argument then

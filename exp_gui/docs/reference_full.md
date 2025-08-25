@@ -448,8 +448,6 @@ Sets the toggled state for a toolbar button. It is expected that the element def
 
 If a state is not given then this becomes `toggle_button_toggled_state` and returns the new visible state.
 
-Note, this does not check for linked left elements, if it is known that a left element exists for this button then use [`Toolbar.set_left_element_visible_state`](#toolbarset_left_element_visible_state) which will call this function.
-
 ### `Toolbar.get_button_toggled_state`
 
 Gets the toggled state for a toolbar button. It is expected that the element define is given not the LuaGuiElement because all instances of a toolbar button should be in sync, and the toolbar does not expose the LuaGuiElement except though [`Gui.get_top_element`](#guiget_top_element).
