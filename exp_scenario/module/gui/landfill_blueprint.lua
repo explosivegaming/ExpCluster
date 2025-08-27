@@ -5,31 +5,14 @@ Adds a button to the toolbar which adds landfill to the held blueprint
 local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_legacy/expcore/roles")
 
---- @class ExpGui_LandfillBlueprint.elements
-local Elements = {}
-
-local rolling_stocks = {}
-local function landfill_init()
-    for name, _ in pairs(prototypes.get_entity_filtered{ { filter = "rolling-stock" } }) do
-        rolling_stocks[name] = true
-    end
-end
-
+--- @param box BoundingBox
 local function rotate_bounding_box(box)
-    return {
-        left_top = {
-            x = -box.right_bottom.y,
-            y = box.left_top.x,
-        },
-        right_bottom = {
-            x = -box.left_top.y,
-            y = box.right_bottom.x,
-        },
-    }
+    box.left_top.x, box.left_top.y, box.right_bottom.x, box.right_bottom.y
+    = -box.right_bottom.y, box.left_top.x, -box.left_top.y, box.right_bottom.x
 end
 
 local function curve_flip_lr(oc)
-    local nc = table.deepcopy(oc)
+    local nc = table.deep_copy(oc)
 
     for r = 1, 8 do
         for c = 1, 8 do
@@ -41,7 +24,7 @@ local function curve_flip_lr(oc)
 end
 
 local function curve_flip_d(oc)
-    local nc = table.deepcopy(oc)
+    local nc = table.deep_copy(oc)
 
     for r = 1, 8 do
         for c = 1, 8 do
@@ -52,44 +35,48 @@ local function curve_flip_d(oc)
     return nc
 end
 
-local curves = {}
+local curve_masks = {} do
+    local curves = { {
+        { 0, 0, 0, 0, 0, 1, 0, 0 },
+        { 0, 0, 0, 0, 1, 1, 1, 0 },
+        { 0, 0, 0, 1, 1, 1, 1, 0 },
+        { 0, 0, 0, 1, 1, 1, 0, 0 },
+        { 0, 0, 1, 1, 1, 0, 0, 0 },
+        { 0, 0, 1, 1, 1, 0, 0, 0 },
+        { 0, 0, 1, 1, 0, 0, 0, 0 },
+        { 0, 0, 1, 1, 0, 0, 0, 0 },
+    } }
 
-curves[1] = {
-    { 0, 0, 0, 0, 0, 1, 0, 0 },
-    { 0, 0, 0, 0, 1, 1, 1, 0 },
-    { 0, 0, 0, 1, 1, 1, 1, 0 },
-    { 0, 0, 0, 1, 1, 1, 0, 0 },
-    { 0, 0, 1, 1, 1, 0, 0, 0 },
-    { 0, 0, 1, 1, 1, 0, 0, 0 },
-    { 0, 0, 1, 1, 0, 0, 0, 0 },
-    { 0, 0, 1, 1, 0, 0, 0, 0 },
-}
-curves[6] = curve_flip_d(curves[1])
-curves[3] = curve_flip_lr(curves[6])
-curves[4] = curve_flip_d(curves[3])
-curves[5] = curve_flip_lr(curves[4])
-curves[2] = curve_flip_d(curves[5])
-curves[7] = curve_flip_lr(curves[2])
-curves[8] = curve_flip_d(curves[7])
+    curves[6] = curve_flip_d(curves[1])
+    curves[3] = curve_flip_lr(curves[6])
+    curves[4] = curve_flip_d(curves[3])
+    curves[5] = curve_flip_lr(curves[4])
+    curves[2] = curve_flip_d(curves[5])
+    curves[7] = curve_flip_lr(curves[2])
+    curves[8] = curve_flip_d(curves[7])
 
-local curve_n = {}
+    for i, map in ipairs(curves) do
+        local index = 0
+        local mask = {}
+        curve_masks[i] = mask
 
-for i, map in ipairs(curves) do
-    curve_n[i] = {}
-    local index = 1
-
-    for r = 1, 8 do
-        for c = 1, 8 do
-            if map[r][c] == 1 then
-                curve_n[i][index] = {
-                    ["x"] = c - 5,
-                    ["y"] = r - 5,
-                }
-
-                index = index + 1
+        for row = 1, 8 do
+            for col = 1, 8 do
+                if map[row][col] == 1 then
+                    index = index + 1
+                    mask[index] = {
+                        x = col - 5,
+                        y = row - 5,
+                    }
+                end
             end
         end
     end
+end
+
+local rolling_stocks = {}
+for name, _ in pairs(prototypes.get_entity_filtered{ { filter = "rolling-stock" } }) do
+    rolling_stocks[name] = true
 end
 
 --- @param blueprint LuaItemStack
@@ -99,66 +86,66 @@ local function landfill_gui_add_landfill(blueprint)
     local tile_index = 0
     local new_tiles = {}
 
-    for _, ent in pairs(entities) do
-        -- vehicle
-        if not (rolling_stocks[ent.name] or ent.name == "offshore-pump") then
-            -- curved rail, special
-            if ent.name ~= "curved-rail" then
-                local proto = prototypes.entity[ent.name]
-                local box = proto.collision_box or proto.selection_box
+    for _, entity in pairs(entities) do
+        if rolling_stocks[entity.name] or entity.name == "offshore-pump" then
+            goto continue
+        end
 
-                if proto.collision_mask["ground-tile"] == nil then
-                    if ent.direction then
-                        if ent.direction ~= defines.direction.north then
-                            box = rotate_bounding_box(box)
+        if entity.name == "curved-rail" then
+            -- Curved rail
+            local curve_mask = curve_masks[entity.direction or 8]
+            for _, offset in ipairs(curve_mask) do
+                tile_index = tile_index + 1
+                new_tiles[tile_index] = {
+                    name = "landfill",
+                    position = { entity.position.x + offset.x, entity.position.y + offset.y },
+                }
+            end
+        else
+            -- Any other entity
+            local proto = prototypes.entity[entity.name]
+            if proto.collision_mask["ground-tile"] ~= nil then
+                goto continue
+            end
 
-                            if ent.direction ~= defines.direction.east then
-                                box = rotate_bounding_box(box)
-
-                                if ent.direction ~= defines.direction.south then
-                                    box = rotate_bounding_box(box)
-                                end
-                            end
-                        end
-                    end
-
-                    for y = math.floor(ent.position.y + box.left_top.y), math.floor(ent.position.y + box.right_bottom.y), 1 do
-                        for x = math.floor(ent.position.x + box.left_top.x), math.floor(ent.position.x + box.right_bottom.x), 1 do
-                            tile_index = tile_index + 1
-                            new_tiles[tile_index] = {
-                                name = "landfill",
-                                position = { x, y },
-                            }
+            -- Rotate the collision box to be north facing
+            local box = proto.collision_box or proto.selection_box
+            if entity.direction then
+                if entity.direction ~= defines.direction.north then
+                    rotate_bounding_box(box)
+                    if entity.direction ~= defines.direction.east then
+                        rotate_bounding_box(box)
+                        if entity.direction ~= defines.direction.south then
+                            rotate_bounding_box(box)
                         end
                     end
                 end
+            end
 
-                -- curved rail
-            else
-                local curve_mask = curve_n[ent.direction or 8]
-
-                for m = 1, #curve_mask do
-                    new_tiles[tile_index + 1] = {
-                        name = "landfill",
-                        position = { curve_mask[m].x + ent.position.x, curve_mask[m].y + ent.position.y },
-                    }
-
+            -- Add the landfill
+            for y = math.floor(entity.position.y + box.left_top.y), math.floor(entity.position.y + box.right_bottom.y), 1 do
+                for x = math.floor(entity.position.x + box.left_top.x), math.floor(entity.position.x + box.right_bottom.x), 1 do
                     tile_index = tile_index + 1
+                    new_tiles[tile_index] = {
+                        name = "landfill",
+                        position = { x, y },
+                    }
                 end
             end
         end
+
+        ::continue::
     end
 
     local old_tiles = blueprint.get_blueprint_tiles()
 
     if old_tiles then
         for _, old_tile in pairs(old_tiles) do
-            new_tiles[tile_index + 1] = {
-                name = "landfill",
-                position = { old_tile.position.x, old_tile.position.y },
-            }
-
             tile_index = tile_index + 1
+            new_tiles[tile_index] = {
+                name = "landfill",
+                position = old_tile.position,
+            }
         end
     end
 
@@ -166,7 +153,7 @@ local function landfill_gui_add_landfill(blueprint)
 end
 
 --- Add the toolbar button
-Elements.landfill_blueprint = Gui.toolbar.create_button{
+Gui.toolbar.create_button{
     name = "trigger_landfill_blueprint",
     sprite = "item/landfill",
     tooltip = { "exp-gui_landfill-blueprint.tooltip-main" },
@@ -185,9 +172,4 @@ Elements.landfill_blueprint = Gui.toolbar.create_button{
     end
 end)
 
-return {
-    elements = Elements,
-    events = {
-        [defines.events.on_player_joined_game] = landfill_init
-    }
-}
+return {}

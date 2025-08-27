@@ -80,15 +80,15 @@ function Toolbar.set_button_toggled_state(define, player, state, _from_left)
         return Toolbar.set_left_element_visible_state(left_element, player, state)
     end
 
-    for _, element in define:tracked_elements(player) do
-        local original_width, original_height = element.style.minimal_width, element.style.maximal_height
-        element.style = state and toolbar_button_active_style or toolbar_button_default_style
+    for _, button in define:tracked_elements(player) do
+        local original_width, original_height = button.style.minimal_width, button.style.maximal_height
+        button.style = state and toolbar_button_active_style or toolbar_button_default_style
 
         -- Make the extra required adjustments
-        local style = element.style
+        local style = button.style
         style.minimal_width = original_width
         style.maximal_height = original_height
-        if element.type == "sprite-button" then
+        if button.type == "sprite-button" then
             style.padding = -2
         else
             style.font = "default-semibold"
@@ -98,7 +98,7 @@ function Toolbar.set_button_toggled_state(define, player, state, _from_left)
         script.raise_event(Toolbar.on_gui_button_toggled, {
             name = Toolbar.on_gui_button_toggled,
             tick = game.tick,
-            element = element,
+            element = button,
             state = state,
         })
     end
@@ -160,8 +160,8 @@ function Toolbar.has_visible_buttons(player)
     local top_flow = Gui.get_top_flow(player)
     local settings_button = Gui.get_top_element(elements.close_toolbar, player)
 
-    for _, element in pairs(top_flow.children) do
-        if element.visible and element ~= settings_button then
+    for _, top_element in pairs(top_flow.children) do
+        if top_element.visible and top_element ~= settings_button then
             return true
         end
     end
@@ -176,8 +176,8 @@ function Toolbar.has_visible_left_elements(player)
     local left_flow = Gui.get_left_flow(player)
     local core_button_flow = Gui.get_left_element(elements.core_button_flow, player)
 
-    for _, element in pairs(left_flow.children) do
-        if element.visible and element ~= core_button_flow then
+    for _, left_element in pairs(left_flow.children) do
+        if left_element.visible and left_element ~= core_button_flow then
             return true
         end
     end

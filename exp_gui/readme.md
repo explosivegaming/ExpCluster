@@ -152,8 +152,8 @@ Elements.container = Gui.define("container")
         })
 
         -- for elements registered to be drawn on join, the root element should be returned
-        -- note that container.parent ~= parent because container is a composite element
-        return container.parent
+        -- note that container.parent ~= parent because container is a composite element, so use get root
+        return Gui.elements.container.get_root_element(container)
     end)
 ```
 
@@ -191,7 +191,7 @@ If an element does not contain any child elements and all of its properties are 
 
 A draw table is simply a Lua table that describes the structure and properties of a single GUI element.
 The framework automatically converts this into a draw function internally, making it a convenient shorthand for simple elements.
-A direct comparison of the two can be found in the [motivation section](#1-expelement).
+A direct comparison of the two can be found in the [motivation section](./docs/motivation.md#expelement).
 
 This approach helps reduce boilerplate and improves readability when creating basic buttons, labels, flows, or other standalone GUI elements.
 
@@ -259,8 +259,9 @@ This separation makes your code cleaner and more modular.
 It also allows you to reuse the calculated data in other methods such as `refresh`, where the GUI needs to update without rebuilding everything from scratch.
 
 The return type of this function will typically be a collection of locale strings and other values that will be displayed in your GUI.
-For tables, this should be named `row_data` but other elements can include their name such as `example_button_data` or more specific details like `team_data`.
+For tables, this should be named `row_data` but other elements should be `display_data` or include more specific details like `team_data`.
 The value should then be passed to create or refresh an element or table row, tip 14 has an example of this.
+For intensive calculations called frequently, you can incorporate passing a previous table allocation, see second example.
 
 ```lua
 --- @class Elements.display_table.row_data
@@ -279,6 +280,19 @@ function Elements.display_table.calculate_row_data(inventory, item_name)
         name = { "item-name." .. item_name },
         count = inventory.get_item_count(item_name)
     }
+end
+
+--- @param inventory LuaInventory
+--- @param item_name string
+--- @param row_data Elements.display_table.row_data
+--- @return Elements.display_table.row_data
+function Elements.display_table.calculate_row_data(inventory, item_name, row_data)
+    row_data = row_data or { name = {} }
+    row_data.name = item_name
+    row_data.sprite = "item/" .. item_name
+    row_data.name[1] = "item-name." .. item_name
+    row_data.count = inventory.get_item_count(item_name)
+    return row_data
 end
 ```
 
@@ -343,7 +357,7 @@ Instead of clearing and rebuilding the entire table every time it changes, it’
 
 To keep your code clean and modular, place this update logic inside a `refresh` function.
 This function adjusts the current elements to match the new data state without unnecessary reconstruction.
-You may also encounter variants like `refresh_all` or `refresh_online` to indicate different scopes or contexts for the update.
+You may also encounter variants like `refresh_all`, `refresh_online`, `refresh_force` to indicate different scopes or contexts for the update.
 
 ```lua
 --- @param display_table LuaGuiElement

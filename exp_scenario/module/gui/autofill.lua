@@ -36,10 +36,13 @@ Elements.toggle_section_button = Gui.define("autofill/toggle_section_button")
         size = 20,
         padding = -2,
     }
-    :element_data(Gui.from_argument(1))
+    :element_data(
+        Gui.from_argument(1)
+    )
     :on_click(function(def, player, element)
         --- @cast def ExpGui_Autofill.elements.toggle_section_button
-        if Gui.toggle_visible_state(def.data[element]) then
+        local section = def.data[element]
+        if Gui.toggle_visible_state(section) then
             element.sprite = "utility/collapse"
             element.tooltip = { "exp-gui_autofill.tooltip-toggle-section-collapse" }
         else
@@ -55,18 +58,21 @@ Elements.toggle_section_button = Gui.define("autofill/toggle_section_button")
 Elements.toggle_entity_button = Gui.define("autofill/toggle_entity_button")
     :draw(function(_, parent, entity_settings)
         --- @cast entity_settings ExpGui_Autofill.entity_settings
+        local enabled = entity_settings.enabled
         return parent.add{
             type = "sprite-button",
             tooltip = { "exp-gui_autofill.tooltip-toggle-entity", rich_img("item", entity_settings.entity) },
-            sprite = entity_settings.enabled and "utility/confirm_slot" or "utility/close_black",
-            style = entity_settings.enabled and "shortcut_bar_button_green" or "shortcut_bar_button_red",
+            sprite = enabled and "utility/confirm_slot" or "utility/close_black",
+            style = enabled and "shortcut_bar_button_green" or "shortcut_bar_button_red",
         }
     end)
     :style{
         size = 22,
         padding = -2,
     }
-    :element_data(Gui.from_argument(1))
+    :element_data(
+        Gui.from_argument(1)
+    )
     :on_click(function(def, player, element)
         --- @cast def ExpGui_Autofill.elements.toggle_entity_button
         local entity_settings = def.data[element]
@@ -103,7 +109,9 @@ Elements.toggle_item_button = Gui.define("autofill/toggle_item_button")
         right_margin = -3,
         padding = -1,
     }
-    :element_data(Gui.from_argument(1))
+    :element_data(
+        Gui.from_argument(1)
+    )
     :on_click(function(def, player, element)
         --- @cast def ExpGui_Autofill.elements.toggle_item_button
         local item_settings = def.data[element]
@@ -144,7 +152,9 @@ Elements.amount_textfield = Gui.define("autofill/amount_textfield")
         height = 31,
         padding = -2,
     }
-    :element_data(Gui.from_argument(1))
+    :element_data(
+        Gui.from_argument(1)
+    )
     :on_text_changed(function(def, player, element, event)
         --- @cast def ExpGui_Autofill.elements.amount_textfield
         local value = tonumber(element.text) or 0
@@ -176,6 +186,8 @@ Elements.disabled_autofill_setting = Gui.define("autofill/empty_autofill_setting
         amount_element_style.minimal_width = 40
         amount_element_style.height = 31
         amount_element_style.padding = -2
+
+        return Gui.no_return()
     end)
 
 --- Section representing an entity
@@ -217,7 +229,7 @@ Elements.section = Gui.define("autofill/section")
 --- @param section LuaGuiElement
 --- @param category_name string
 --- @return LuaGuiElement, number
-function Elements.section.add_item_category(section, category_name)
+function Elements.section.add_category(section, category_name)
     local category = section.add{
         type = "table",
         column_count = 2,
@@ -251,11 +263,9 @@ end
 --- @field enabled boolean
 --- @field items ExpGui_Autofill.item_settings[]
 
---- @alias ExpGui_Autofill.player_settings table<string, ExpGui_Autofill.entity_settings>
-
 --- Container added to the left gui flow
 --- @class ExpGui_Autofill.elements.container: ExpElement
---- @field data ExpGui_Autofill.player_settings
+--- @field data table<string, ExpGui_Autofill.entity_settings>
 Elements.container = Gui.define("autofill/container")
     :draw(function(def, parent)
         --- @cast def ExpGui_Autofill.elements.container
@@ -263,7 +273,7 @@ Elements.container = Gui.define("autofill/container")
         local scroll_pane = Gui.elements.scroll_pane(container, 524)
         scroll_pane.style.padding = 0
 
-        -- Cant modify vertical spacing on scroll pane
+        -- Cant modify vertical spacing on scroll pane style so need a sub flow
         scroll_pane = scroll_pane.add{ type = "flow", direction = "vertical" }
         scroll_pane.style.vertical_spacing = 0
         scroll_pane.style.padding = 0
@@ -275,7 +285,8 @@ Elements.container = Gui.define("autofill/container")
 
         -- Setup the player data, this is used by section and item category so needs to be done here
         local player = assert(game.get_player(parent.player_index))
-        local player_data = def.data[player] or table.deep_copy(config.default_entities) --- @type ExpGui_Autofill.player_settings
+        --- @type table<string, ExpGui_Autofill.entity_settings>
+        local player_data = def.data[player] or table.deep_copy(config.default_entities)
         def.data[player] = player_data
 
         -- Add sections for each entity
@@ -285,7 +296,7 @@ Elements.container = Gui.define("autofill/container")
             -- Add the categories
             local categories, largest = {}, 0
             for _, category_name in pairs(config.categories) do
-                local category, size = Elements.section.add_item_category(section, category_name)
+                local category, size = Elements.section.add_category(section, category_name)
                 if largest < size then
                     largest = size
                 end
@@ -325,7 +336,7 @@ Gui.toolbar.create_button{
 
 --- @param event EventData.on_built_entity
 local function on_built_entity(event)
-    local player = assert(game.get_player(event.player_index))
+    local player = Gui.get_player(event)
 
     -- Check if the entity is in the config and enabled
     local entity = event.entity

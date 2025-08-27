@@ -64,17 +64,11 @@ Elements.precision_dropdown = Gui.define("production_stats/precision_dropdown")
         width = 80,
     }
 
---- @class ExpGui_ProductionStats.elements.item_selector.labels
---- @field production LuaGuiElement
---- @field consumption LuaGuiElement
---- @field net LuaGuiElement
-
 --- Used to select the item to be displayed on a row
 --- @class ExpGui_ProductionStats.elements.item_selector: ExpElement
---- @field data table<LuaGuiElement, { labels: ExpGui_ProductionStats.elements.item_selector.labels, on_last_row: boolean }>
---- @overload fun(parent: LuaGuiElement, labels: ExpGui_ProductionStats.elements.item_selector.labels): LuaGuiElement
+--- @field data table<LuaGuiElement, { on_last_row: boolean, production_table: LuaGuiElement }>
+--- @overload fun(parent: LuaGuiElement, production_table: LuaGuiElement): LuaGuiElement
 Elements.item_selector = Gui.define("production_stats/item_selector")
-    :track_all_elements()
     :draw{
         type = "choose-elem-button",
         elem_type = "item",
@@ -84,31 +78,21 @@ Elements.item_selector = Gui.define("production_stats/item_selector")
         size = 32,
     }
     :element_data{
-        labels = Gui.from_argument(1),
         on_last_row = true,
+        production_table = Gui.from_argument(1),
     }
     :on_elem_changed(function(def, player, element, event)
         --- @cast def ExpGui_ProductionStats.elements.item_selector
         local element_data = def.data[element]
         if not element.elem_value then
             if element_data.on_last_row then
-                -- This is the last, so reset the labels to 0
-                local labels = element_data.labels
-                labels.production.caption = "0.00"
-                labels.consumption.caption = "0.00"
-                labels.net.caption = "0.00"
-                labels.net.style.font_color = font_color.positive
+                Elements.production_table.reset_row(element_data.production_table, element)
             else
-                -- This is not the last row, so destroy it
-                Gui.destroy_if_valid(element)
-                for _, label in pairs(element_data.labels) do
-                    Gui.destroy_if_valid(label)
-                end
+                Elements.production_table.remove_row(element_data.production_table, element)
             end
-        elseif element.elem_value and element_data.on_last_row then
-            -- New item selected on the last row, so make a new row
+        elseif element_data.on_last_row then
             element_data.on_last_row = false
-            Elements.production_table.add_row(element.parent)
+            Elements.production_table.add_row(element_data.production_table)
         end
     end) --[[ @as any ]]
     
@@ -125,9 +109,24 @@ Elements.table_label = Gui.define("production_stats/table_label")
         minimal_width = 60,
     }
 
+--- @class ExpGui_ProductionStats.elements.production_table.row_elements
+--- @field item_selector LuaGuiElement
+--- @field production LuaGuiElement
+--- @field consumption LuaGuiElement
+--- @field net LuaGuiElement
+
+--- @class ExpGui_ProductionStats.elements.production_table.row_data
+--- @field production LocalisedString
+--- @field consumption LocalisedString
+--- @field net LocalisedString
+--- @field font_color Color
+
 --- A table that allows selecting items 
 --- @class ExpGui_ProductionStats.elements.production_table: ExpElement
+--- @field data table<LuaGuiElement, ExpGui_ProductionStats.elements.production_table.row_elements[]>
+--- @overload fun(parent: LuaGuiElement): LuaGuiElement
 Elements.production_table = Gui.define("production_stats/production_table")
+    :track_all_elements()
     :draw(function(def, parent)
         local scroll_table = Gui.elements.scroll_table(parent, 304, 4)
         local display_alignments = scroll_table.style.column_alignments
@@ -142,15 +141,91 @@ Elements.production_table = Gui.define("production_stats/production_table")
 
         return scroll_table
     end)
+    :element_data{} --[[ @as any ]]
+
+--- Calculate the row data for a production table
+--- @param force LuaForce
+--- @param surface LuaSurface
+--- @param item_name string
+--- @param precision_value defines.flow_precision_index
+--- @return ExpGui_ProductionStats.elements.production_table.row_data
+function Elements.production_table.calculate_row_data(force, surface, item_name, precision_value)
+    local get_flow_count = force.get_item_production_statistics(surface).get_flow_count
+    local production = math.floor(get_flow_count{ name = item_name, category = "input", precision_index = precision_value, count = false } / 6) / 10
+    local consumption = math.floor(get_flow_count{ name = item_name, category = "output", precision_index = precision_value, count = false } / 6) / 10
+    local net = production - consumption
+    return {
+        production = format_number(production),
+        consumption = format_number(consumption),
+        net = format_number(net),
+        font_color = net < 0 and font_color.negative or font_color.positive,
+    }
+end
 
 --- A single row of a production table, the parent must be a production table
 --- @param production_table LuaGuiElement
 function Elements.production_table.add_row(production_table)
-    local labels = {} --- @cast labels ExpGui_ProductionStats.elements.item_selector.labels
-    Elements.item_selector(production_table, labels)
-    labels.production = Elements.table_label(production_table, "0.00")
-    labels.consumption = Elements.table_label(production_table, "0.00")
-    labels.net = Elements.table_label(production_table, "0.00")
+    local rows = Elements.production_table.data[production_table]
+    local item_selector = Elements.item_selector(production_table, production_table)
+    rows[item_selector.index] = {
+        item_selector = item_selector,
+        production = Elements.table_label(production_table, "0.00"),
+        consumption = Elements.table_label(production_table, "0.00"),
+        net = Elements.table_label(production_table, "0.00"),
+    }
+end
+
+--- Remove a row from a production table
+--- @param production_table LuaGuiElement
+--- @param item_selector LuaGuiElement
+function Elements.production_table.remove_row(production_table, item_selector)
+    local rows = Elements.production_table.data[production_table]
+    local row = rows[item_selector.index]
+    rows[item_selector.index] = nil
+    Gui.destroy_if_valid(item_selector)
+    for _, element in pairs(row) do
+        Gui.destroy_if_valid(element)
+    end
+end
+
+--- Reset a row in a production table
+--- @param production_table LuaGuiElement
+--- @param item_selector LuaGuiElement
+function Elements.production_table.reset_row(production_table, item_selector)
+    local rows = Elements.production_table.data[production_table]
+    local row = rows[item_selector.index]
+    row.production.caption = "0.00"
+    row.consumption.caption = "0.00"
+    row.net.caption = "0.00"
+    row.net.style.font_color = font_color.positive
+end
+
+--- Refresh the data on a row
+--- @param production_table LuaGuiElement
+--- @param item_selector LuaGuiElement
+--- @param row_data ExpGui_ProductionStats.elements.production_table.row_data
+function Elements.production_table.refresh_row(production_table, item_selector, row_data)
+    local rows = Elements.production_table.data[production_table]
+    local row = rows[item_selector.index]
+    row.production.caption = row_data.production
+    row.consumption.caption = row_data.consumption
+    row.net.caption = row_data.net
+    row.net.style.font_color = row_data.font_color
+end
+
+--- Refresh all online tables
+function Elements.production_table.refresh_online()
+    for player, production_table in Elements.production_table:online_elements() do
+        for _, row in pairs(Elements.production_table.data[production_table]) do
+            local item_selector = row.item_selector
+            local item_name = item_selector.elem_value --[[ @as string? ]]
+            if item_name then
+                local precision_value = precision_values[item_selector.selected_index]
+                local row_data = Elements.production_table.calculate_row_data(player.force --[[ @as LuaForce ]], player.surface, item_name, precision_value)
+                Elements.production_table.refresh_row(production_table, item_selector, row_data)
+            end
+        end
+    end
 end
 
 --- Container added to the left gui flow
@@ -159,7 +234,7 @@ Elements.container = Gui.define("production_stats/container")
         local container = Gui.elements.container(parent)
         local production_table = Elements.production_table(container)
         Elements.production_table.add_row(production_table)
-        return container.parent
+        return Gui.elements.container.get_root_element(container)
     end)
 
 --- Add the element to the left flow with a toolbar button
@@ -174,33 +249,9 @@ Gui.toolbar.create_button{
     end
 }
 
---- Update all table rows with the latest production values
-local function update_table_rows()
-    for player, item_selector in Elements.item_selector:online_elements() do
-        local item_name = item_selector.elem_value --[[ @as string? ]]
-        if item_name then
-            -- An item is selected, so get the flow rate and update label captions
-            local element_data = Elements.item_selector.data[item_selector]
-            local precision_dropdown = Elements.production_table.data[item_selector.parent]
-            local precision_value = precision_values[precision_dropdown.selected_index]
-
-            local get_flow_count = player.force.get_item_production_statistics(player.surface).get_flow_count -- Allow remote view
-            local production = math.floor(get_flow_count{ name = item_name, category = "input", precision_index = precision_value, count = false } / 6) / 10
-            local consumption = math.floor(get_flow_count{ name = item_name, category = "output", precision_index = precision_value, count = false } / 6) / 10
-            local net = production - consumption
-
-            local labels = element_data.labels
-            labels.production.caption = format_number(production)
-            labels.consumption.caption = format_number(consumption)
-            labels.net.caption = format_number(net)
-            labels.net.style.font_color = net < 0 and font_color.negative or font_color.positive
-        end
-    end
-end
-
 return {
     elements = Elements,
     on_nth_tick = {
-        [60] = update_table_rows,
+        [60] = Elements.production_table.refresh_online,
     }
 }

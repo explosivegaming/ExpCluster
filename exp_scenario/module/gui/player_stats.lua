@@ -4,7 +4,7 @@ Displays the player data for a player
 
 local ExpUtil = require("modules/exp_util")
 local Gui = require("modules/exp_gui")
-local GuiElements = require("modules/exp_scenario/gui/elements")
+local ElementsExtra = require("modules/exp_scenario/gui/elements")
 local Roles = require("modules/exp_legacy/expcore/roles")
 
 require("modules/exp_legacy/modules/data/statistics")
@@ -98,8 +98,9 @@ Elements.table_label = Gui.define("player_stats/table_label")
 --- Data table that shows all data for a player
 --- @class ExpGui_PlayerStats.elements.player_stats_table: ExpElement
 --- @field data table<LuaGuiElement, { [string]: LuaGuiElement }>
+--- @overload fun(parent: LuaGuiElement): LuaGuiElement
 Elements.player_stats_table = Gui.define("player_stats/data_table")
-    :draw(function(def, parent, ...)
+    :draw(function(def, parent)
         --- @cast def ExpGui_PlayerStats.elements.player_stats_table
         local data_table = Gui.elements.scroll_table(parent, 240, 4)
         local labels = {}
@@ -138,12 +139,12 @@ Elements.player_stats_table = Gui.define("player_stats/data_table")
 
         def.data[data_table] = labels
         return data_table
-    end)
+    end) --[[ @as any ]]
 
---- Update a data table with the most recent stats for a player
+--- Refresh a data table with the most recent stats for a player
 --- @param data_table LuaGuiElement
 --- @param player LuaPlayer
-function Elements.player_stats_table.update(data_table, player)
+function Elements.player_stats_table.refresh(data_table, player)
     local labels = Elements.player_stats_table.data[data_table]
 
     -- Update all standalone stats
@@ -174,15 +175,26 @@ end
 Elements.player_dropdown = Gui.define("player_stats/player_dropdown")
     :track_all_elements()
     :draw(function(def, parent)
-        return GuiElements.online_player_dropdown(parent)
+        return ElementsExtra.online_player_dropdown(parent)
     end)
-    :element_data(Gui.from_argument(1))
+    :element_data(
+        Gui.from_argument(1)
+    )
     :on_selection_state_changed(function(def, player, element, event)
         --- @cast def ExpGui_PlayerStats.elements.player_dropdown
         local data_table = def.data[element]
-        local target_player_name = GuiElements.online_player_dropdown.player_names[element.selected_index]
-        Elements.player_stats_table.update(data_table, assert(game.get_player(target_player_name)))
+        local target_player = ElementsExtra.online_player_dropdown.get_selected(element)
+        Elements.player_stats_table.refresh(data_table, target_player)
     end) --[[ @as any ]]
+
+--- Refresh all stats tables associated with a player dropdown
+function Elements.player_dropdown.refresh_online()
+    for _, player_dropdown in Elements.player_dropdown:online_elements() do
+        local target_player = ElementsExtra.online_player_dropdown.get_selected(player_dropdown)
+        local data_table = Elements.player_dropdown.data[player_dropdown]
+        Elements.player_stats_table.refresh(data_table, target_player)
+    end
+end
 
 --- Container added to the left gui flow
 Elements.container = Gui.define("player_stats/container")
@@ -191,35 +203,24 @@ Elements.container = Gui.define("player_stats/container")
         local header = Gui.elements.header(container, { caption = { "exp-gui_player-stats.caption-main" } })
         local data_table = Elements.player_stats_table(container)
         Elements.player_dropdown(header, data_table)
-        return container.parent
+        return Gui.elements.container.get_root_element(container)
     end)
 
 --- Add the element to the left flow with a toolbar button
 Gui.add_left_element(Elements.container, false)
 Gui.toolbar.create_button{
     name = "toggle_player_stats",
-    left_element = Elements.container,
     sprite = "item/power-armor-mk2",
     tooltip = { "exp-gui_player-stats.tooltip-main" },
+    left_element = Elements.container,
     visible = function(player, element)
         return Roles.player_allowed(player, "gui/playerdata")
     end
 }
 
---- Refresh the data for all online data tables
-local function refresh_data_tables()
-    for _, player_dropdown in Elements.player_dropdown:online_elements() do
-        local target_player_name = GuiElements.online_player_dropdown.player_names[player_dropdown.selected_index]
-        if target_player_name then
-            local data_table = Elements.player_dropdown.data[player_dropdown]
-            Elements.player_stats_table.update(data_table, assert(game.get_player(target_player_name)))
-        end
-    end
-end
-
 return {
     elements = Elements,
     on_nth_tick = {
-        [300] = refresh_data_tables
+        [300] = Elements.player_dropdown.refresh_online
     }
 }

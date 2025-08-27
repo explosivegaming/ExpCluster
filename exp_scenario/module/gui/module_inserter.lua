@@ -71,7 +71,9 @@ Elements.create_selection_planner = Gui.define("module_inserter/create_selection
         size = 28,
         padding = 0,
     }
-    :element_data(Gui.from_argument(1))
+    :element_data(
+        Gui.from_argument(1)
+    )
     :on_click(function(def, player, element)
         --- @cast def ExpGui_ModuleInserter.elements.create_selection_planner
         Selection.start(player, SelectionModuleArea, false, def.data[element])
@@ -79,8 +81,8 @@ Elements.create_selection_planner = Gui.define("module_inserter/create_selection
 
 --- Used to select the machine to apply modules to
 --- @class ExpGui_ModuleInserter.elements.machine_selector: ExpElement
---- @field data table<LuaGuiElement, { on_last_row: boolean, row_separators: LuaGuiElement[], module_selectors: LuaGuiElement[] }>
---- @overload fun(parent: LuaGuiElement, row_separators: LuaGuiElement[], module_selectors: LuaGuiElement[]): LuaGuiElement
+--- @field data table<LuaGuiElement, { on_last_row: boolean, module_table: LuaGuiElement }>
+--- @overload fun(parent: LuaGuiElement, module_table: LuaGuiElement): LuaGuiElement
 Elements.machine_selector = Gui.define("module_inserter/machine_selector")
     :draw{
         type = "choose-elem-button",
@@ -90,67 +92,25 @@ Elements.machine_selector = Gui.define("module_inserter/machine_selector")
     }
     :element_data{
         on_last_row = true,
-        row_separators = Gui.from_argument(1),
-        module_selectors = Gui.from_argument(2),
+        module_table = Gui.from_argument(1),
     }
     :on_elem_changed(function(def, player, element, event)
         --- @cast def ExpGui_ModuleInserter.elements.machine_selector
         local element_data = def.data[element]
         local machine_name = element.elem_value --[[ @as string? ]]
         if not machine_name then
-            -- No machine selected
-            if not element_data.on_last_row then
-                -- Not the last row so delete it
-                Elements.module_table._on_remove_row(element)
-                Gui.destroy_if_valid(element)
-                for _, separator in pairs(element_data.row_separators) do
-                    Gui.destroy_if_valid(separator)
-                end
-                for _, selector in pairs(element_data.module_selectors) do
-                    Gui.destroy_if_valid(selector)
-                end
-                return
-            end
-            -- Reset to default state, all disabled with only first row visible
-            for _, separator in pairs(element_data.row_separators) do
-                separator.visible = false
-            end
-            for i, selector in pairs(element_data.module_selectors) do
-                selector.visible = i <= config.module_slots_per_row
-                selector.enabled = false
-                selector.elem_value = nil
-            end
-            return
-        end
-
-        -- Machine selected, update the number of enabled and visible module selectors
-        local active_to = prototypes.entity[machine_name].module_inventory_size
-        local row_count = math.ceil(active_to / config.module_slots_per_row)
-        local visible_to = row_count * config.module_slots_per_row
-        for i, separator in pairs(element_data.row_separators) do
-            separator.visible = i < row_count
-        end
-        for i, selector in pairs(element_data.module_selectors) do
-            if i <= active_to then
-                if config.machines[machine_name].prod then
-                    selector.elem_filters = elem_filter.with_prod
-                else
-                    selector.elem_filters = elem_filter.no_prod
-                end
-
-                selector.visible = true
-                selector.enabled = true
-                selector.elem_value = { name = config.machines[machine_name].module }
+            if element_data.on_last_row then
+                Elements.module_table.reset_row(element_data.module_table, element)
             else
-                selector.visible = i <= visible_to
-                selector.enabled = false
-                selector.elem_value = nil
+                Elements.module_table.remove_row(element_data.module_table, element)
+            end
+        else
+            Elements.module_table.refresh_row(element_data.module_table, element, machine_name)
+            if element_data.on_last_row then
+                element_data.on_last_row = false
+                Elements.module_table.reset_row(element_data.module_table, element)
             end
         end
-
-        -- Add a new row to the table
-        element_data.on_last_row = false
-        Elements.module_table.add_row(element.parent)
     end) --[[ @as any ]]
 
 --- Used to select the modules to be applied
@@ -164,9 +124,14 @@ Elements.module_selector = Gui.define("module_inserter/module_selector")
         style = "slot_button",
     }
 
+--- @class ExpGui_ModuleInserter.elements.module_table.row_elements
+--- @field row_separators LuaGuiElement[]
+--- @field module_selectors LuaGuiElement[]
+
 --- A table that allows selecting modules 
 --- @class ExpGui_ModuleInserter.elements.module_table: ExpElement
---- @field data table<LuaGuiElement, LuaGuiElement[]>
+--- @field data table<LuaGuiElement, ExpGui_ModuleInserter.elements.module_table.row_elements[]>
+--- @overload fun(parent: LuaGuiElement): LuaGuiElement
 Elements.module_table = Gui.define("module_inserter/module_table")
     :draw(function(def, parent)
         --- @cast def ExpGui_ModuleInserter.elements.module_table
@@ -178,9 +143,13 @@ Elements.module_table = Gui.define("module_inserter/module_table")
 --- Add a row to a module table
 --- @param module_table LuaGuiElement
 function Elements.module_table.add_row(module_table)
-    local row_separators, module_selectors = {}, {}
+    local machine_selector = Elements.machine_selector(module_table, module_table)
     local rows = Elements.module_table.data[module_table]
-    rows[#rows + 1] = Elements.machine_selector(module_table, row_separators, module_selectors)
+    local module_selectors, row_separators = {}, {}
+    rows[machine_selector.index] = {
+        module_selectors = module_selectors,
+        row_separators = row_separators,
+    }
 
     -- Add the module selectors and row separators
     local slots_per_row = config.module_slots_per_row + 1
@@ -192,10 +161,72 @@ function Elements.module_table.add_row(module_table)
     end
 end
 
---- Clean-up the data associated with a row
+--- Remove a row from a module table
+--- @param module_table LuaGuiElement
 --- @param machine_selector LuaGuiElement
-function Elements.module_table._on_remove_row(machine_selector)
-    table.remove_element(Elements.module_table.data[machine_selector.parent], machine_selector)
+function Elements.module_table.remove_row(module_table, machine_selector)
+    local rows = Elements.module_table.data[module_table]
+    local row = rows[machine_selector.index]
+    row[machine_selector.index] = nil
+    Gui.destroy_if_valid(machine_selector)
+    for _, separator in pairs(row.row_separators) do
+        Gui.destroy_if_valid(separator)
+    end
+    for _, selector in pairs(row.module_selectors) do
+        Gui.destroy_if_valid(selector)
+    end
+end
+
+--- Reset a row to be empty
+--- @param module_table LuaGuiElement
+--- @param machine_selector LuaGuiElement
+function Elements.module_table.reset_row(module_table, machine_selector)
+    local rows = Elements.module_table.data[module_table]
+    local row = rows[machine_selector.index]
+
+    for _, separator in pairs(row.row_separators) do
+        separator.visible = false
+    end
+    for i, selector in pairs(row.module_selectors) do
+        selector.visible = i <= config.module_slots_per_row
+        selector.enabled = false
+        selector.elem_value = nil
+    end
+end
+
+--- Refresh a row to match the config required for a given machine
+--- @param module_table LuaGuiElement
+--- @param machine_selector LuaGuiElement
+--- @param machine_name string
+function Elements.module_table.refresh_row(module_table, machine_selector, machine_name)
+    local rows = Elements.module_table.data[module_table]
+    local row = rows[machine_selector.index]
+
+    local active_module_count = prototypes.entity[machine_name].module_inventory_size
+    local visible_row_count = math.ceil(active_module_count / config.module_slots_per_row)
+    local visible_module_count = visible_row_count * config.module_slots_per_row
+    local module_elem_value = { name = config.machines[machine_name].module }
+
+    for i, separator in pairs(row.row_separators) do
+        separator.visible = i < visible_row_count
+    end
+    for i, selector in pairs(row.module_selectors) do
+        if i <= active_module_count then
+            if config.machines[machine_name].prod then
+                selector.elem_filters = elem_filter.with_prod
+            else
+                selector.elem_filters = elem_filter.no_prod
+            end
+
+            selector.visible = true
+            selector.enabled = true
+            selector.elem_value = module_elem_value
+        else
+            selector.visible = i <= visible_module_count
+            selector.enabled = false
+            selector.elem_value = nil
+        end
+    end
 end
 
 --- Container added to the left gui flow
@@ -206,7 +237,7 @@ Elements.container = Gui.define("module_inserter/container")
         local module_table = Elements.module_table(container)
         Elements.module_table.add_row(module_table)
         Elements.create_selection_planner(header, module_table)
-        return container.parent
+        return Gui.elements.container.get_root_element(container)
     end)
 
 --- Add the element to the left flow with a toolbar button

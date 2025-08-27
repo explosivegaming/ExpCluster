@@ -138,6 +138,11 @@ Elements.my_frame = Gui.define("my_Frame")
         })
         return frame
     end)
+
+Elements.no_return = Gui.define("no_Return")
+    :draw(function(def, parent)
+        return Gui.no_return()
+    end)
 ```
 
 ### `ExpElement:style`
@@ -317,6 +322,19 @@ As their names suggest, `:tracked_elements` returns all tracked elements while `
 
 If you're caching data per force, it is more efficient to use a single unfiltered iteration rather than multiple filtered ones.
 
+The naming convention to be followed is:
+
+- `refresh` when the first argument is an instance of the element.
+- `refresh_all` when there using `:tracked_elements` without a filter.
+- `refresh_online` when there using `:online_elements` without a filter.
+- `refresh_*` when there using `:tracked_elements` with a filter, e.g. `refresh_force`.
+- `refresh_*_online` when there using `:online_elements` with a filter, e.g. `refresh_force_online`.
+- `update` can be used when the new state is dependend on the old state, e.g. incrementing a counter.
+- `reset` can be used when the element has a default state it can be returned to.
+- `save` can be used when the current state is stored in some way.
+- `*_row` when the action applies to a row within a table rather than an element.
+- The name does not indicate if a cache is used, this is because a cache should be used where possible.
+
 ```lua
 function Elements.my_tracked_label.calculate_force_data(force)
     return {
@@ -336,14 +354,15 @@ function Elements.my_tracked_label.refresh_online()
     end
 end
 
-function Elements.my_tracked_label.refresh_all_force(force)
+function Elements.my_tracked_label.refresh_force(force)
     local force_data = Elements.my_tracked_label.calculate_force_data(force)
     for player, element in Elements.my_tracked_label:tracked_elements(force) do
         element.caption = force_data.caption
     end
 end
 
-function Elements.my_tracked_label.refresh_all_forces(force)
+-- a different implimention of refresh all with a force cache
+function Elements.my_tracked_label.refresh_all()
     local _force_data = {}
     for _, force in pairs(game.forces) do
         _force_data[force.name] = Elements.my_tracked_label.calculate_force_data(force)
@@ -355,7 +374,8 @@ function Elements.my_tracked_label.refresh_all_forces(force)
     end
 end
 
-function Elements.my_tracked_label.refresh_online_forces(force)
+-- a different implimention of refresh online with a force cache
+function Elements.my_tracked_label.refresh_online()
     local _force_data = {}
     for _, force in pairs(game.forces) do
         if next(force.connected_players) then

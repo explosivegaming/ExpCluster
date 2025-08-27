@@ -38,7 +38,7 @@ local function new_quick_action(name, command, on_click)
     Elements[name] = element
     Actions[name] = {
         command = command --[[ @as ExpCommand ]],
-        element = Elements[name],
+        element = element,
     }
 end
 
@@ -52,33 +52,40 @@ end)
 
 new_quick_action("waterfill", addon_waterfill.commands.waterfill)
 
---- Update the visible state of buttons for a player
---- @param player LuaPlayer
---- @param element LuaGuiElement
-local function update_visible_states(player, element)
-    local buttons = Elements.container.data[element]
-    for name, action in pairs(Actions) do
-        buttons[name].visible = Commands.player_has_permission(player, action.command)
-    end
-end
-
 --- Container added to the left gui flow
 --- @class ExpGui_QuickActions.elements.container: ExpElement
 --- @field data table<LuaGuiElement, { [string]: LuaGuiElement }>
 Elements.container = Gui.define("quick_actions/container")
     :draw(function(def, parent)
+        --- @cast def ExpGui_QuickActions.elements.container
         local player = Gui.get_player(parent)
         local container = Gui.elements.container(parent)
 
         local buttons = {}
         for name, action in pairs(Actions) do
-            buttons[name] = action.element(container)
+            local button = action.element(container)
+            button.visible = Commands.player_has_permission(player, action.command)
+            buttons[name] = button
         end
 
         def.data[container] = buttons
-        update_visible_states(player, container)
         return container.parent
     end)
+
+--- Refresh all containers for a player
+function Elements.container.refresh_player(player)
+    local allowed = {}
+    for name, action in pairs(Actions) do
+        allowed[name] = Commands.player_has_permission(player, action.command)
+    end
+
+    for _, container in Elements.container:tracked_elements(player) do
+        local buttons = Elements.container.data[container]
+        for name, visible in pairs(allowed) do
+            buttons[name].visible = visible
+        end
+    end
+end
 
 --- Add the element to the left flow with a toolbar button
 Gui.add_left_element(Elements.container, false)
@@ -94,10 +101,8 @@ Gui.toolbar.create_button{
 
 --- @param event { player_index: number }
 local function on_role_changed(event)
-    local player = assert(game.get_player(event.player_index))
-    for _, element in Elements.container:tracked_elements(player) do
-        update_visible_states(player, element)
-    end
+    local player = Gui.get_player(event)
+    Elements.container.refresh_player(player)
 end
 
 return {

@@ -35,7 +35,7 @@ export class InstancePlugin extends BaseInstancePlugin {
 		}
 
 		try {
-			const newGameTime = await this.sendRcon(`/_rcon return exp_server_ups.update(${ups})`);
+			const newGameTime = await this.sendRcon(`/_rcon return exp_server_ups.refresh(${ups})`);
 			this.gameTimes.push(Number(newGameTime));
 		} catch (error: any) {
 			this.logger.error(`Failed to receive new game time: ${error}`);

@@ -56,9 +56,9 @@ ExpElement._metatable = {
 }
 
 --- Used to signal the intentional lack of a return value from draw
---- @return function
+--- @return nil, function
 function ExpElement.no_return()
-    return ExpElement.no_return
+    return nil, ExpElement.no_return
 end
 
 --- Used to signal that the property should be the same as the define name
@@ -177,9 +177,7 @@ function ExpElement._prototype:create(parent, ...)
     assert(self._draw, "Element does not have a draw definition")
     local element, status = self:_draw(parent, ...)
     local player = assert(game.get_player(parent.player_index))
-    if element == ExpElement.no_return then
-        element = nil
-    else
+    if status ~= ExpElement.no_return then
         assert(element and element.object_name == "LuaGuiElement", "Draw did not return a LuaGuiElement")
     end
 
