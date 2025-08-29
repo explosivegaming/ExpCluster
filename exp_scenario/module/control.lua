@@ -41,3 +41,20 @@ require("modules/exp_scenario/commands/trains")
 require("modules/exp_scenario/commands/vlayer")
 require("modules/exp_scenario/commands/warnings")
 require("modules/exp_scenario/commands/waterfill")
+
+--- Control
+add(require("modules/exp_scenario/control/bonus"))
+add(require("modules/exp_scenario/control/research"))
+
+--- Guis
+add(require("modules/exp_scenario/gui/autofill"))
+add(require("modules/exp_scenario/gui/elements"))
+add(require("modules/exp_scenario/gui/landfill_blueprint"))
+add(require("modules/exp_scenario/gui/module_inserter"))
+add(require("modules/exp_scenario/gui/player_bonus"))
+add(require("modules/exp_scenario/gui/player_stats"))
+add(require("modules/exp_scenario/gui/production_stats"))
+add(require("modules/exp_scenario/gui/quick_actions"))
+add(require("modules/exp_scenario/gui/research_milestones"))
+add(require("modules/exp_scenario/gui/science_production"))
+add(require("modules/exp_scenario/gui/surveillance"))

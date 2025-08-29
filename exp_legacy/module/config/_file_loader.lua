@@ -46,20 +46,10 @@ return {
     --- GUI
     "modules.gui.readme",
     "modules.gui.rocket-info",
-    "modules.gui.science-info",
-    "modules.gui.autofill",
     "modules.gui.task-list",
     "modules.gui.warp-list",
     "modules.gui.player-list",
-    "modules.gui.bonus",
     "modules.gui.vlayer",
-    "modules.gui.research",
-    "modules.gui.module",
-    "modules.gui.landfill",
-    "modules.gui.tool",
-    "modules.gui.production",
-    "modules.gui.playerdata",
-    "modules.gui.surveillance",
     "modules.gui._role_updates",
 
     "modules.graftorio.require", -- graftorio

@@ -521,8 +521,12 @@ function vlayer.get_statistics()
 end
 
 --- add or reduce vlayer power
+--- @param power number
+--- @return number
 function vlayer.energy_changed(power)
-    vlayer_data.storage.energy = vlayer_data.storage.energy + power
+    local new_value = vlayer_data.storage.energy + power
+    vlayer_data.storage.energy = new_value
+    return new_value
 end
 
 --- Circuit signals used for the statistics

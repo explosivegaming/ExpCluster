@@ -10,8 +10,13 @@ local Commands = require("modules/exp_commands")
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
 local player_allowed = Roles.player_allowed
 
+--- @class ExpCommands_Teleport.commands
+local commands = {}
+
 --- Teleports a player to another player.
-Commands.new("teleport", { "exp-commands_teleport.description-teleport" })
+--- @class ExpCommands_Teleport.commands.teleport: ExpCommand
+--- @overload fun(player: LuaPlayer, other_player: LuaPlayer, target_player: LuaPlayer?)
+commands.teleport = Commands.new("teleport", { "exp-commands_teleport.description-teleport" })
     :argument("player", { "exp-commands_teleport.arg-player-teleport" }, Commands.types.player_alive)
     :optional("target", { "exp-commands_teleport.arg-player-to" }, Commands.types.player_alive)
     :add_aliases{ "tp" }
@@ -29,10 +34,12 @@ Commands.new("teleport", { "exp-commands_teleport.description-teleport" })
         elseif not teleport_player(other_player, target_player.physical_surface, target_player.physical_position) then
             return Commands.status.error{ "exp-commands_teleport.unavailable" }
         end
-    end)
+    end) --[[ @as any ]]
 
 --- Teleports a player to you.
-Commands.new("bring", { "exp-commands_teleport.description-bring" })
+--- @class ExpCommands_Teleport.commands.bring: ExpCommand
+--- @overload fun(player: LuaPlayer, other_player: LuaPlayer)
+commands.bring = Commands.new("bring", { "exp-commands_teleport.description-bring" })
     :argument("player", { "exp-commands_teleport.arg-player-from" }, Commands.types.player_alive)
     :add_flags{ "admin_only" }
     :register(function(player, other_player)
@@ -42,10 +49,12 @@ Commands.new("bring", { "exp-commands_teleport.description-bring" })
         elseif not teleport_player(other_player, player.physical_surface, player.physical_position) then
             return Commands.status.error{ "exp-commands_teleport.unavailable" }
         end
-    end)
+    end) --[[ @as any ]]
 
 --- Teleports you to a player.
-Commands.new("goto", { "exp-commands_teleport.description-goto" })
+--- @class ExpCommands_Teleport.commands.goto: ExpCommand
+--- @overload fun(player: LuaPlayer, other_player: LuaPlayer)
+commands["goto"] = Commands.new("goto", { "exp-commands_teleport.description-goto" })
     :argument("player", { "exp-commands_teleport.arg-player-to" }, Commands.types.player_alive)
     :add_flags{ "admin_only" }
     :register(function(player, other_player)
@@ -55,10 +64,12 @@ Commands.new("goto", { "exp-commands_teleport.description-goto" })
         elseif not teleport_player(player, other_player.physical_surface, other_player.physical_position) then
             return Commands.status.error{ "exp-commands_teleport.unavailable" }
         end
-    end)
+    end) --[[ @as any ]]
 
 --- Teleport to spawn
-Commands.new("spawn", { "exp-commands_teleport.description-spawn" })
+--- @class ExpCommands_Teleport.commands.spawn: ExpCommand
+--- @overload fun(player: LuaPlayer, other_player: LuaPlayer)
+commands.spawn = Commands.new("spawn", { "exp-commands_teleport.description-spawn" })
     :optional("player", { "exp-commands_teleport.arg-player-from" }, Commands.types.player_alive)
     :defaults{
         player = function(player)
@@ -81,4 +92,8 @@ Commands.new("spawn", { "exp-commands_teleport.description-spawn" })
         else
             return Commands.status.unauthorised()
         end
-    end)
+    end) --[[ @as any ]]
+
+return {
+    commands = commands,
+}

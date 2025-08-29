@@ -23,7 +23,7 @@ local title_width = 270 -- controls the centering of the titles
 local scroll_height = 275 -- controls the height of the scrolls
 
 --- Sub content area used within the content areas
-local sub_content = Gui.element("readme_sub_content")
+local sub_content = Gui.define("readme_sub_content")
     :draw{
         type = "frame",
         direction = "vertical",
@@ -37,7 +37,7 @@ local sub_content = Gui.element("readme_sub_content")
     }
 
 --- Table which has a title above it above it
-local title_table = Gui.element("readme_title_table")
+local title_table = Gui.define("readme_title_table")
     :draw(function(_, parent, bar_size, caption, column_count)
         Gui.elements.title_label(parent, bar_size, caption)
 
@@ -55,7 +55,7 @@ local title_table = Gui.element("readme_title_table")
     }
 
 --- Scroll to be used with Gui.elements.title_label tables
-local title_table_scroll = Gui.element("readme_title_table_scroll")
+local title_table_scroll = Gui.define("readme_title_table_scroll")
     :draw{
         type = "scroll-pane",
         direction = "vertical",
@@ -70,7 +70,7 @@ local title_table_scroll = Gui.element("readme_title_table_scroll")
     }
 
 --- Used to connect to servers in server list
-local join_server = Gui.element("readme_join_server")
+local join_server = Gui.define("readme_join_server")
     :draw(function(_, parent, server_id, wrong_version)
         local status = External.get_server_status(server_id) or "Offline"
         if wrong_version then status = "Version" end
@@ -111,7 +111,7 @@ local join_server = Gui.element("readme_join_server")
 local welcome_time_format = ExpUtil.format_time_factory_locale{ format = "long", days = true, hours = true, minutes = true }
 
 --- Content area for the welcome tab
-define_tab({ "readme.welcome-tab" }, { "readme.welcome-tooltip" }, Gui.element("readme_welcome")
+define_tab({ "readme.welcome-tab" }, { "readme.welcome-tooltip" }, Gui.define("readme_welcome")
     :draw(function(_, parent)
         local server_details = { name = "ExpGaming S0 - Local", welcome = "Failed to load description: disconnected from external api.", reset_time = "Non Set", branch = "Unknown" }
         if External.valid() then server_details = External.get_current_server() end
@@ -148,7 +148,7 @@ define_tab({ "readme.welcome-tab" }, { "readme.welcome-tooltip" }, Gui.element("
     end))
 
 --- Content area for the rules tab
-define_tab({ "readme.rules-tab" }, { "readme.rules-tooltip" }, Gui.element("readme_rules")
+define_tab({ "readme.rules-tab" }, { "readme.rules-tooltip" }, Gui.define("readme_rules")
     :draw(function(_, parent)
         local container = parent.add{ type = "flow", direction = "vertical" }
 
@@ -172,7 +172,7 @@ define_tab({ "readme.rules-tab" }, { "readme.rules-tooltip" }, Gui.element("read
     end))
 
 --- Content area for the commands tab
-define_tab({ "readme.commands-tab" }, { "readme.commands-tooltip" }, Gui.element("readme_commands")
+define_tab({ "readme.commands-tab" }, { "readme.commands-tooltip" }, Gui.define("readme_commands")
     :draw(function(_, parent)
         local container = parent.add{ type = "flow", direction = "vertical" }
         local player = Gui.get_player(parent)
@@ -198,7 +198,7 @@ define_tab({ "readme.commands-tab" }, { "readme.commands-tooltip" }, Gui.element
     end))
 
 --- Content area for the servers tab
-define_tab({ "readme.servers-tab" }, { "readme.servers-tooltip" }, Gui.element("readme_servers")
+define_tab({ "readme.servers-tab" }, { "readme.servers-tooltip" }, Gui.define("readme_servers")
     :draw(function(_, parent)
         local container = parent.add{ type = "flow", direction = "vertical" }
 
@@ -241,7 +241,7 @@ define_tab({ "readme.servers-tab" }, { "readme.servers-tooltip" }, Gui.element("
     end))
 
 --- Content area for the servers tab
-define_tab({ "readme.backers-tab" }, { "readme.backers-tooltip" }, Gui.element("readme_backers")
+define_tab({ "readme.backers-tab" }, { "readme.backers-tooltip" }, Gui.define("readme_backers")
     :draw(function(_, parent)
         local container = parent.add{ type = "flow", direction = "vertical" }
 
@@ -304,7 +304,7 @@ define_tab({ "readme.backers-tab" }, { "readme.backers-tooltip" }, Gui.element("
     end))
 
 --- Content area for the player data tab
-define_tab({ "readme.data-tab" }, { "readme.data-tooltip" }, Gui.element("readme_data")
+define_tab({ "readme.data-tab" }, { "readme.data-tooltip" }, Gui.define("readme_data")
     :draw(function(_, parent)
         local container = parent.add{ type = "flow", direction = "vertical" }
         local player = Gui.get_player(parent)
@@ -399,7 +399,7 @@ define_tab({ "readme.data-tab" }, { "readme.data-tooltip" }, Gui.element("readme
 
 --- Main readme container for the center flow
 local readme_toggle
-local readme = Gui.element("readme")
+local readme = Gui.define("readme")
     :draw(function(def, parent)
         local container = parent.add{
             name = def.name,

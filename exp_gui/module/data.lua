@@ -1,4 +1,4 @@
---[[-- ExpGui - GuiData
+--[[-- Gui - GuiData
 Provides a method of storing data for elements, players, and forces under a given scope.
 This is not limited to GUI element definitions but this is the most common use case.
 ]]
@@ -6,10 +6,10 @@ This is not limited to GUI element definitions but this is the most common use c
 local ExpUtil = require("modules/exp_util")
 local Storage = require("modules/exp_util/storage")
 
---- @type table<string, ExpGui.GuiData_Raw>
+--- @type table<string, GuiData_Raw>
 local scope_data = {}
 
---- @type table<string, ExpGui.GuiData_Internal>
+--- @type table<string, GuiData_Internal>
 local registered_scopes = {}
 
 --- @type table<uint, uint> Reg -> Player Index
@@ -38,12 +38,12 @@ Storage.register({
     end
 end)
 
---- @class ExpGui_GuiData
+--- @class _GuiData
 local GuiData = {
     _scopes = registered_scopes,
 }
 
---- @class ExpGui.GuiData_Raw
+--- @class GuiData_Raw
 --- @field element_data table<uint, table<uint, any>?>?
 --- @field player_data table<uint, any>?
 --- @field force_data table<uint, any>?
@@ -51,13 +51,13 @@ local GuiData = {
 -- This class has no prototype methods
 -- Keep this in sync with DataKeys to block arbitrary strings
 
---- @class ExpGui.GuiData_Internal
+--- @class GuiData_Internal
 --- @field _scope string
---- @field _raw ExpGui.GuiData_Raw
+--- @field _raw GuiData_Raw
 -- This class has no prototype methods
 -- Do add keys to _raw without also referencing scope_data
 
---- @class ExpGui.GuiData: ExpGui.GuiData_Internal
+--- @class GuiData: GuiData_Internal
 --- @field element_data table<uint, table<uint, any>>
 --- @field player_data table<uint, any>
 --- @field force_data table<uint, any>
@@ -70,7 +70,7 @@ GuiData._metatable = {
 }
 
 --- Return the index for a given key
---- @param self ExpGui.GuiData_Internal
+--- @param self GuiData_Internal
 --- @param key DataKeys | DataKey
 --- @return any
 function GuiData._metatable.__index(self, key)
@@ -105,7 +105,7 @@ end
 
 --- Set the value index of a given key
 -- Internal type is not used here to allow for creation of storage
---- @param self ExpGui.GuiData
+--- @param self GuiData
 --- @param key DataKey
 --- @param value unknown
 function GuiData._metatable.__newindex(self, key, value)
@@ -134,7 +134,7 @@ end
 
 --- Create the data object for a given scope
 --- @param scope string
---- @return ExpGui.GuiData
+--- @return GuiData
 function GuiData.create(scope)
     ExpUtil.assert_not_runtime()
     assert(GuiData._scopes[scope] == nil, "Scope already exists with name: " .. scope)
@@ -145,15 +145,15 @@ function GuiData.create(scope)
     }
 
     GuiData._scopes[scope] = instance
-    --- @cast instance ExpGui.GuiData
+    --- @cast instance GuiData
     return setmetatable(instance, GuiData._metatable)
 end
 
 --- Get the link to an existing data scope
 --- @param scope string
---- @return ExpGui.GuiData
+--- @return GuiData
 function GuiData.get(scope)
-    return GuiData._scopes[scope] --[[ @as ExpGui.GuiData ]]
+    return GuiData._scopes[scope] --[[ @as GuiData ]]
 end
 
 --- Used to clean up data from destroyed elements

@@ -1,12 +1,12 @@
---[[-- ExpGui - GuiData
+--[[-- Gui - GuiData
 Provides a method of storing elements created for a player and provide a global iterator for them.
 ]]
 
 local ExpUtil = require("modules/exp_util")
 local Storage = require("modules/exp_util/storage")
 
---- @alias ExpGui_GuiIter.FilterType LuaPlayer | LuaForce | LuaPlayer[] | nil
---- @alias ExpGui_GuiIter.ReturnType fun(): LuaPlayer?, LuaGuiElement?
+--- @alias GuiIter.FilterType LuaPlayer | LuaForce | LuaPlayer[] | nil
+--- @alias GuiIter.ReturnType fun(): LuaPlayer?, LuaGuiElement?
 
 --- @type table<string, table<uint, table<uint, LuaGuiElement>>>
 local registered_scopes = {}
@@ -23,7 +23,7 @@ Storage.register({
     registration_numbers = tbl.registration_numbers
 end)
 
---- @class ExpGui_GuiIter
+--- @class GuiIter
 local GuiIter = {
     _scopes = registered_scopes,
 }
@@ -76,7 +76,7 @@ end
 --- Iterate over all valid elements for a player
 --- @param scope string
 --- @param player LuaPlayer
---- @return ExpGui_GuiIter.ReturnType
+--- @return GuiIter.ReturnType
 function GuiIter.player_elements(scope, player)
     if not player.valid then return no_loop end
 
@@ -98,7 +98,7 @@ end
 --- @param scope string
 --- @param players LuaPlayer[]
 --- @param online boolean?
---- @return ExpGui_GuiIter.ReturnType
+--- @return GuiIter.ReturnType
 function GuiIter.filtered_elements(scope, players, online)
     local scope_elements = registered_scopes[scope]
     if not scope_elements then return no_loop end
@@ -125,7 +125,7 @@ end
 
 --- Iterate over all valid elements
 --- @param scope string
---- @return ExpGui_GuiIter.ReturnType
+--- @return GuiIter.ReturnType
 function GuiIter.all_elements(scope)
     local scope_elements = registered_scopes[scope]
     if not scope_elements then return no_loop end
@@ -161,8 +161,8 @@ end
 
 --- Iterate over all valid gui elements for all players
 --- @param scope string
---- @param filter ExpGui_GuiIter.FilterType
---- @return ExpGui_GuiIter.ReturnType
+--- @param filter GuiIter.FilterType
+--- @return GuiIter.ReturnType
 function GuiIter.get_tracked_elements(scope, filter)
     local class_name = ExpUtil.get_class_name(filter)
     if class_name == "nil" then
@@ -184,8 +184,8 @@ end
 
 --- Iterate over all valid gui elements for all online players
 --- @param scope string
---- @param filter ExpGui_GuiIter.FilterType
---- @return ExpGui_GuiIter.ReturnType
+--- @param filter GuiIter.FilterType
+--- @return GuiIter.ReturnType
 function GuiIter.get_online_elements(scope, filter)
     local class_name = ExpUtil.get_class_name(filter)
     if class_name == "nil" then

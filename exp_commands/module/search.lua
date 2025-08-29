@@ -18,7 +18,7 @@ local command_objects = {} --- @type table<string, Commands.Command>
 local required_translations = {} --- @type LocalisedString[]
 
 --- Gets the descriptions of all commands, not including their aliases
---- @param custom_commands table<string, Commands.ExpCommand> The complete list of registered custom commands
+--- @param custom_commands table<string, ExpCommand> The complete list of registered custom commands
 function Search.prepare(custom_commands)
     local known_aliases = {} --- @type table<string, string>
     for name, command in pairs(custom_commands) do
@@ -85,7 +85,7 @@ end
 
 --- Searches all game commands and the provided custom commands for the given keyword
 --- @param keyword string The keyword to search for
---- @param custom_commands table<string, Commands.ExpCommand> A dictionary of commands to search
+--- @param custom_commands table<string, ExpCommand> A dictionary of commands to search
 --- @param locale string? The local to search, default is english ("en")
 --- @return table<string, Commands.Command> # A dictionary of commands
 function Search.search_commands(keyword, custom_commands, locale)

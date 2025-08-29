@@ -1,6 +1,6 @@
 
---- @class ExpGui
-local ExpGui = require("modules/exp_gui")
+--- @class Gui
+local Gui = require("modules/exp_gui")
 local ExpElement = require("modules/exp_gui/prototype")
 local mod_gui = require("mod-gui")
 
@@ -9,9 +9,9 @@ local toolbar_button_active_style = "menu_button_continue"
 local toolbar_button_size = 36
 local toolbar_button_small = 20
 
---- @class ExpGui.toolbar
+--- @class Gui.toolbar
 local Toolbar = {}
-ExpGui.toolbar = Toolbar
+Gui.toolbar = Toolbar
 
 local elements = {}
 Toolbar.elements = elements
@@ -20,13 +20,27 @@ local toolbar_buttons = {} --- @type ExpElement[]
 local left_elements_with_button = {} --- @type table<ExpElement, ExpElement>
 local buttons_with_left_element = {} --- @type table<string, ExpElement>
 
+--- Called when toolbar button toggle state is changed.
+Toolbar.on_gui_button_toggled = script.generate_event_name()
+--- @class (exact) EventData.on_gui_button_toggled: EventData
+--- @field element LuaGuiElement
+--- @field state boolean
+
+--- @class _ExpElement._prototype
+--- @field on_button_toggled ExpElement.OnEventAdder<EventData.on_gui_button_toggled>
+
+--- @diagnostic disable-next-line: invisible, inject-field
+function ExpElement._prototype.on_button_toggled(self, handler)
+    return self:on_event(Toolbar.on_gui_button_toggled, handler)
+end
+
 --- Set the visible state of the toolbar
 --- @param player LuaPlayer
 --- @param state boolean? toggles if nil
 --- @return boolean
 function Toolbar.set_visible_state(player, state)
     -- Update the top flow
-    local top_flow = assert(ExpGui.get_top_flow(player).parent)
+    local top_flow = assert(Gui.get_top_flow(player).parent)
     if state == nil then state = not top_flow.visible end
     top_flow.visible = state
 
@@ -47,33 +61,46 @@ end
 --- @param player LuaPlayer
 --- @return boolean
 function Toolbar.get_visible_state(player)
-    local top_flow = assert(ExpGui.get_top_flow(player).parent)
+    local top_flow = assert(Gui.get_top_flow(player).parent)
     return top_flow.visible
 end
 
---- Set the toggle state of a toolbar button, does not check for a linked left element
+--- Set the toggle state of a toolbar button
 --- @param define ExpElement
 --- @param player LuaPlayer
 --- @param state boolean? toggles if nil
+--- @param _from_left boolean?
 --- @return boolean
-function Toolbar.set_button_toggled_state(define, player, state)
-    local top_element = assert(ExpGui.get_top_element(define, player), "Element is not on the top flow")
+function Toolbar.set_button_toggled_state(define, player, state, _from_left)
+    local top_element = assert(Gui.get_top_element(define, player), "Element is not on the top flow")
     if state == nil then state = top_element.style.name == toolbar_button_default_style end
 
-    for _, element in define:tracked_elements(player) do
-        local original_width, original_height = element.style.minimal_width, element.style.maximal_height
-        element.style = state and toolbar_button_active_style or toolbar_button_default_style
+    local left_element = buttons_with_left_element[define.name]
+    if left_element and not _from_left then
+        return Toolbar.set_left_element_visible_state(left_element, player, state)
+    end
+
+    for _, button in define:tracked_elements(player) do
+        local original_width, original_height = button.style.minimal_width, button.style.maximal_height
+        button.style = state and toolbar_button_active_style or toolbar_button_default_style
 
         -- Make the extra required adjustments
-        local style = element.style
+        local style = button.style
         style.minimal_width = original_width
         style.maximal_height = original_height
-        if element.type == "sprite-button" then
+        if button.type == "sprite-button" then
             style.padding = -2
         else
             style.font = "default-semibold"
             style.padding = 0
         end
+
+        script.raise_event(Toolbar.on_gui_button_toggled, {
+            name = Toolbar.on_gui_button_toggled,
+            tick = game.tick,
+            element = button,
+            state = state,
+        })
     end
 
     return state
@@ -84,7 +111,7 @@ end
 --- @param player LuaPlayer
 --- @return boolean
 function Toolbar.get_button_toggled_state(define, player)
-    local element = assert(ExpGui.get_top_element(define, player), "Element is not on the top flow")
+    local element = assert(Gui.get_top_element(define, player), "Element is not on the top flow")
     return element.style.name == toolbar_button_active_style
 end
 
@@ -95,14 +122,14 @@ end
 --- @param _skip_consistency boolean?
 --- @return boolean
 function Toolbar.set_left_element_visible_state(define, player, state, _skip_consistency)
-    local element = assert(ExpGui.get_left_element(define, player), "Element is not on the left flow")
+    local element = assert(Gui.get_left_element(define, player), "Element is not on the left flow")
     if state == nil then state = not element.visible end
     element.visible = state
 
     -- Check if there is a linked toolbar button and update it
     local button = left_elements_with_button[define]
     if button then
-        Toolbar.set_button_toggled_state(button, player, state)
+        Toolbar.set_button_toggled_state(button, player, state, true)
     end
 
     -- This check is O(n^2) when setting all left elements to hidden, so internals can it
@@ -122,7 +149,7 @@ end
 --- @param player LuaPlayer
 --- @return boolean
 function Toolbar.get_left_element_visible_state(define, player)
-    local element = assert(ExpGui.get_left_element(define, player), "Element is not on the left flow")
+    local element = assert(Gui.get_left_element(define, player), "Element is not on the left flow")
     return element.visible
 end
 
@@ -130,11 +157,11 @@ end
 --- @param player any
 --- @return boolean
 function Toolbar.has_visible_buttons(player)
-    local top_flow = ExpGui.get_top_flow(player)
-    local settings_button = ExpGui.get_top_element(elements.close_toolbar, player)
+    local top_flow = Gui.get_top_flow(player)
+    local settings_button = Gui.get_top_element(elements.close_toolbar, player)
 
-    for _, element in pairs(top_flow.children) do
-        if element.visible and element ~= settings_button then
+    for _, top_element in pairs(top_flow.children) do
+        if top_element.visible and top_element ~= settings_button then
             return true
         end
     end
@@ -146,11 +173,11 @@ end
 --- @param player any
 --- @return boolean
 function Toolbar.has_visible_left_elements(player)
-    local left_flow = ExpGui.get_left_flow(player)
-    local core_button_flow = ExpGui.get_left_element(elements.core_button_flow, player)
+    local left_flow = Gui.get_left_flow(player)
+    local core_button_flow = Gui.get_left_element(elements.core_button_flow, player)
 
-    for _, element in pairs(left_flow.children) do
-        if element.visible and element ~= core_button_flow then
+    for _, left_element in pairs(left_flow.children) do
+        if left_element.visible and left_element ~= core_button_flow then
             return true
         end
     end
@@ -158,14 +185,14 @@ function Toolbar.has_visible_left_elements(player)
     return false
 end
 
---- @class ExpGui.toolbar.create_button__param: LuaGuiElement.add_param.sprite_button, LuaGuiElement.add_param.button
+--- @class Gui.toolbar.create_button__param: LuaGuiElement.add_param.sprite_button, LuaGuiElement.add_param.button
 --- @field name string
 --- @field type nil
 --- @field left_element ExpElement| nil
---- @field visible ExpGui.VisibleCallback | boolean | nil
+--- @field visible Gui.VisibleCallback | boolean | nil
 
 --- Create a toolbar button
---- @param options ExpGui.toolbar.create_button__param
+--- @param options Gui.toolbar.create_button__param
 --- @return ExpElement
 function Toolbar.create_button(options)
     -- Extract the custom options from the element.add options
@@ -187,7 +214,7 @@ function Toolbar.create_button(options)
     end
 
     -- Create the new element define
-    local toolbar_button = ExpGui.element(name)
+    local toolbar_button = Gui.define(name)
         :track_all_elements()
         :draw(options)
         :style{
@@ -215,12 +242,12 @@ function Toolbar.create_button(options)
 
     -- Add the define to the top flow and return
     toolbar_buttons[#toolbar_buttons + 1] = toolbar_button
-    ExpGui.add_top_element(toolbar_button, visible)
+    Gui.add_top_element(toolbar_button, visible)
     return toolbar_button
 end
 
 --- Toggles the toolbar settings, RMB will instead hide the toolbar
-elements.close_toolbar = ExpGui.element("close_toolbar")
+elements.close_toolbar = Gui.define("close_toolbar")
     :draw{
         type = "sprite-button",
         sprite = "utility/preset",
@@ -241,7 +268,7 @@ elements.close_toolbar = ExpGui.element("close_toolbar")
     end)
 
 --- Shows the toolbar, if no buttons are visible then it shows the settings instead
-elements.open_toolbar = ExpGui.element("open_toolbar")
+elements.open_toolbar = Gui.define("open_toolbar")
     :track_all_elements()
     :draw{
         type = "sprite-button",
@@ -263,7 +290,7 @@ elements.open_toolbar = ExpGui.element("open_toolbar")
     end)
 
 --- Hides all left elements when clicked
-elements.clear_left_flow = ExpGui.element("clear_left_flow")
+elements.clear_left_flow = Gui.define("clear_left_flow")
     :track_all_elements()
     :draw{
         type = "sprite-button",
@@ -278,7 +305,7 @@ elements.clear_left_flow = ExpGui.element("clear_left_flow")
     }
     :on_click(function(def, player, element)
         element.visible = false
-        for define in pairs(ExpGui.left_elements) do
+        for define in pairs(Gui.left_elements) do
             if define ~= elements.core_button_flow then
                 Toolbar.set_left_element_visible_state(define, player, false, true)
             end
@@ -286,7 +313,7 @@ elements.clear_left_flow = ExpGui.element("clear_left_flow")
     end)
 
 --- Contains the two buttons on the left flow
-elements.core_button_flow = ExpGui.element("core_button_flow")
+elements.core_button_flow = Gui.define("core_button_flow")
     :draw(function(def, parent)
         local flow = parent.add{
             type = "flow",
@@ -327,15 +354,15 @@ local function move_toolbar_button(player, item, offset)
     list.swap_children(old_index, new_index)
 
     -- Swap the position in the top flow, offset by 1 because of settings button
-    local top_flow = ExpGui.get_top_flow(player)
+    local top_flow = Gui.get_top_flow(player)
     top_flow.swap_children(old_index + 1, new_index + 1)
 
     -- Check if the element has a left element to move
     local left_element = buttons_with_left_element[item.name]
     local other_left_element = buttons_with_left_element[other_item.name]
     if left_element and other_left_element then
-        local element = ExpGui.get_left_element(left_element, player)
-        local other_element = ExpGui.get_left_element(other_left_element, player)
+        local element = Gui.get_left_element(left_element, player)
+        local other_element = Gui.get_left_element(other_left_element, player)
         local left_index = element.get_index_in_parent()
         local other_index = other_element.get_index_in_parent()
         element.parent.swap_children(left_index, other_index)
@@ -360,15 +387,15 @@ local function move_toolbar_button(player, item, offset)
     end
 end
 
---- @alias ExpGui.ToolbarOrder { name: string, favourite: boolean }[]
+--- @alias Gui.ToolbarOrder { name: string, favourite: boolean }[]
 
 --- Reorder the toolbar buttons
 --- @param player LuaPlayer
---- @param order ExpGui.ToolbarOrder
+--- @param order Gui.ToolbarOrder
 function Toolbar.set_order(player, order)
     local list = elements.toolbar_settings.data[player] --[[ @as LuaGuiElement ]]
-    local left_flow = ExpGui.get_left_flow(player)
-    local top_flow = ExpGui.get_top_flow(player)
+    local left_flow = Gui.get_left_flow(player)
+    local top_flow = Gui.get_top_flow(player)
 
     -- Reorder the buttons
     local left_index = 1
@@ -380,7 +407,7 @@ function Toolbar.set_order(player, order)
 
         -- Switch the toolbar button order
         local element_define = ExpElement.get(item_state.name)
-        local toolbar_button = ExpGui.get_top_element(element_define, player)
+        local toolbar_button = Gui.get_top_element(element_define, player)
         top_flow.swap_children(index + 1, toolbar_button.get_index_in_parent())
 
         -- Update the children buttons
@@ -392,21 +419,21 @@ function Toolbar.set_order(player, order)
         -- Switch the left element order
         local left_define = buttons_with_left_element[item_state.name]
         if left_define then
-            local left_element = ExpGui.get_left_element(left_define, player)
+            local left_element = Gui.get_left_element(left_define, player)
             left_flow.swap_children(left_index, left_element.get_index_in_parent())
             left_index = left_index + 1
         end
     end
 end
 
---- @class (exact) ExpGui.ToolbarState 
---- @field order ExpGui.ToolbarOrder
+--- @class (exact) Gui.ToolbarState 
+--- @field order Gui.ToolbarOrder
 --- @field open string[]
 --- @field visible boolean
 
 --- Reorder the toolbar buttons and set the open state of the left flows
 --- @param player LuaPlayer
---- @param state ExpGui.ToolbarState
+--- @param state Gui.ToolbarState
 function Toolbar.set_state(player, state)
     Toolbar.set_order(player, state.order)
     Toolbar.set_visible_state(player, state.visible)
@@ -420,7 +447,7 @@ function Toolbar.set_state(player, state)
     end
 
     -- Make all other elements hidden
-    for left_element in pairs(ExpGui.left_elements) do
+    for left_element in pairs(Gui.left_elements) do
         if not done[left_element] then
             Toolbar.set_left_element_visible_state(left_element, player, false, true)
         end
@@ -435,7 +462,7 @@ end
 
 --- Get the full toolbar state for a player
 --- @param player LuaPlayer
---- @return ExpGui.ToolbarState
+--- @return Gui.ToolbarState
 function Toolbar.get_state(player)
     -- Get the order of toolbar buttons
     local order = {}
@@ -446,7 +473,7 @@ function Toolbar.get_state(player)
 
     -- Get the names of all open left elements
     local open, open_index = {}, 1
-    for left_element in pairs(ExpGui.left_elements) do
+    for left_element in pairs(Gui.left_elements) do
         if Toolbar.get_left_element_visible_state(left_element, player) then
             open[open_index] = left_element.name
             open_index = open_index + 1
@@ -462,10 +489,10 @@ function Toolbar._create_elements(player)
     -- Add any missing items to the gui
     local toolbar_list = elements.toolbar_settings.data[player] --[[ @as LuaGuiElement ]]
     local previous_last_index = #toolbar_list.children_names
-    for define in pairs(ExpGui.top_elements) do
+    for define in pairs(Gui.top_elements) do
         if define ~= elements.close_toolbar and toolbar_list[define.name] == nil then
             local element = elements.toolbar_list_item(toolbar_list, define)
-            element.visible = ExpGui.get_top_element(define, player).visible
+            element.visible = Gui.get_top_element(define, player).visible
         end
     end
 
@@ -489,8 +516,8 @@ function Toolbar._ensure_consistency(player)
     local list = elements.toolbar_settings.data[player] --[[ @as LuaGuiElement ]]
     for _, button in ipairs(toolbar_buttons) do
         -- Update the visible state based on if the player is allowed the button
-        local element = ExpGui.get_top_element(button, player)
-        local allowed = ExpGui.top_elements[button]
+        local element = Gui.get_top_element(button, player)
+        local allowed = Gui.top_elements[button]
         if type(allowed) == "function" then
             allowed = allowed(player, element)
         end
@@ -500,9 +527,10 @@ function Toolbar._ensure_consistency(player)
         -- Update the toggle state and hide the linked left element if the button is not allowed
         local left_define = buttons_with_left_element[button.name]
         if left_define then
-            local left_element = ExpGui.get_left_element(left_define, player)
-            Toolbar.set_button_toggled_state(button, player, left_element.visible)
-            if not allowed then
+            if allowed then
+                local left_element = Gui.get_left_element(left_define, player)
+                Toolbar.set_button_toggled_state(button, player, left_element.visible, true)
+            else
                 Toolbar.set_left_element_visible_state(left_define, player, false)
             end
         end
@@ -515,7 +543,7 @@ function Toolbar._ensure_consistency(player)
     end
 
     -- Update open_toolbar
-    local top_flow = assert(ExpGui.get_top_flow(player).parent)
+    local top_flow = assert(Gui.get_top_flow(player).parent)
     for _, open_toolbar in elements.open_toolbar:tracked_elements(player) do
         open_toolbar.visible = not top_flow.visible
     end
@@ -528,15 +556,15 @@ function Toolbar._ensure_consistency(player)
 end
 
 do
-    local default_order --- @type ExpGui.ToolbarOrder
+    local default_order --- @type Gui.ToolbarOrder
     --- Gets the default order for the toolbar
-    --- @return ExpGui.ToolbarOrder
+    --- @return Gui.ToolbarOrder
     function Toolbar.get_default_order()
         if default_order then return default_order end
 
         local index = 1
         default_order = {}
-        for define in pairs(ExpGui.top_elements) do
+        for define in pairs(Gui.top_elements) do
             if define ~= elements.close_toolbar then
                 default_order[index] = { name = define.name, favourite = true }
                 index = index + 1
@@ -548,7 +576,7 @@ do
 end
 
 --- Toggle the visibility of the toolbar, does not care if buttons are visible
-elements.toggle_toolbar = ExpGui.element("toggle_toolbar")
+elements.toggle_toolbar = Gui.define("toggle_toolbar")
     :track_all_elements()
     :draw{
         type = "sprite-button",
@@ -557,7 +585,7 @@ elements.toggle_toolbar = ExpGui.element("toggle_toolbar")
         style = "tool_button",
         auto_toggle = true,
     }
-    :style(ExpGui.styles.sprite{
+    :style(Gui.styles.sprite{
         size = 22,
     })
     :on_click(function(def, player, element)
@@ -565,14 +593,14 @@ elements.toggle_toolbar = ExpGui.element("toggle_toolbar")
     end)
 
 --- Reset the toolbar to its default state
-elements.reset_toolbar = ExpGui.element("reset_toolbar")
+elements.reset_toolbar = Gui.define("reset_toolbar")
     :draw{
         type = "sprite-button",
         sprite = "utility/reset",
         style = "shortcut_bar_button_red",
         tooltip = { "exp-gui_toolbar-settings.reset" },
     }
-    :style(ExpGui.styles.sprite{
+    :style(Gui.styles.sprite{
         size = 22,
         padding = -1,
     })
@@ -581,13 +609,13 @@ elements.reset_toolbar = ExpGui.element("reset_toolbar")
     end)
 
 --- Move an item up/left on the toolbar
-elements.move_item_up = ExpGui.element("move_item_up")
+elements.move_item_up = Gui.define("move_item_up")
     :draw{
         type = "sprite-button",
         sprite = "utility/speed_up",
         tooltip = { "exp-gui_toolbar-settings.move-up" },
     }
-    :style(ExpGui.styles.sprite{
+    :style(Gui.styles.sprite{
         size = toolbar_button_small,
     })
     :on_click(function(def, player, element)
@@ -596,13 +624,13 @@ elements.move_item_up = ExpGui.element("move_item_up")
     end)
 
 --- Move an item down/right on the toolbar
-elements.move_item_down = ExpGui.element("move_item_down")
+elements.move_item_down = Gui.define("move_item_down")
     :draw{
         type = "sprite-button",
         sprite = "utility/speed_down",
         tooltip = { "exp-gui_toolbar-settings.move-down" },
     }
-    :style(ExpGui.styles.sprite{
+    :style(Gui.styles.sprite{
         size = toolbar_button_small,
     })
     :on_click(function(def, player, element)
@@ -611,11 +639,11 @@ elements.move_item_down = ExpGui.element("move_item_down")
     end)
 
 --- Set an item as a favourite, making it appear on the toolbar
-elements.set_favourite = ExpGui.element("set_favourite")
+elements.set_favourite = Gui.define("set_favourite")
     :draw(function(def, parent, item_define)
         --- @cast item_define ExpElement
-        local player = ExpGui.get_player(parent)
-        local top_element = ExpGui.get_top_element(item_define, player)
+        local player = Gui.get_player(parent)
+        local top_element = Gui.get_top_element(item_define, player)
 
         return parent.add{
             type = "checkbox",
@@ -631,7 +659,7 @@ elements.set_favourite = ExpGui.element("set_favourite")
     }
     :on_checked_state_changed(function(def, player, element)
         local define = ExpElement.get(element.tags.element_name --[[ @as string ]])
-        local top_element = ExpGui.get_top_element(define, player)
+        local top_element = Gui.get_top_element(define, player)
         local had_visible = Toolbar.has_visible_buttons(player)
         top_element.visible = element.state
 
@@ -649,7 +677,7 @@ elements.set_favourite = ExpGui.element("set_favourite")
         end
     end)
 
-elements.toolbar_list_item = ExpGui.element("toolbar_list_item")
+elements.toolbar_list_item = Gui.define("toolbar_list_item")
     :draw(function(def, parent, item_define)
         --- @cast item_define ExpElement
         local data = {}
@@ -665,8 +693,8 @@ elements.toolbar_list_item = ExpGui.element("toolbar_list_item")
 
         -- Add the button and the icon edit button
         local element = item_define(flow)
-        local player = ExpGui.get_player(parent)
-        local top_element = ExpGui.get_top_element(item_define, player)
+        local player = Gui.get_player(parent)
+        local top_element = Gui.get_top_element(item_define, player)
         copy_style(top_element, element)
 
         -- Add the favourite checkbox and label
@@ -683,7 +711,7 @@ elements.toolbar_list_item = ExpGui.element("toolbar_list_item")
     end)
 
 --- Main list for all toolbar items
-elements.toolbar_list = ExpGui.element("toolbar_list")
+elements.toolbar_list = Gui.define("toolbar_list")
     :draw(function(def, parent)
         local scroll = parent.add{
             type = "scroll-pane",
@@ -708,16 +736,16 @@ elements.toolbar_list = ExpGui.element("toolbar_list")
     }
 
 -- The main container for the toolbar settings
-elements.toolbar_settings = ExpGui.element("toolbar_settings")
+elements.toolbar_settings = Gui.define("toolbar_settings")
     :draw(function(def, parent)
         -- Draw the container
-        local frame = ExpGui.elements.container(parent, 268)
+        local frame = Gui.elements.container(parent, 268)
         frame.style.maximal_width = 268
         frame.style.minimal_width = 268
 
         -- Draw the header
-        local player = ExpGui.get_player(parent)
-        local header = ExpGui.elements.header(frame, {
+        local player = Gui.get_player(parent)
+        local header = Gui.elements.header(frame, {
             caption = { "exp-gui_toolbar-settings.main-caption" },
             tooltip = { "exp-gui_toolbar-settings.main-tooltip" },
         })
@@ -732,8 +760,8 @@ elements.toolbar_settings = ExpGui.element("toolbar_settings")
         return frame.parent
     end)
 
-ExpGui.add_left_element(elements.core_button_flow, true)
-ExpGui.add_left_element(elements.toolbar_settings, false)
-ExpGui.add_top_element(elements.close_toolbar, true)
+Gui.add_left_element(elements.core_button_flow, true)
+Gui.add_left_element(elements.toolbar_settings, false)
+Gui.add_top_element(elements.close_toolbar, true)
 
 return Toolbar

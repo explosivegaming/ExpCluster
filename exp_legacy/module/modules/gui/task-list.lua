@@ -83,13 +83,13 @@ end
 
 --- Button displayed in the header bar, used to add a new task
 -- @element add_new_task
-local add_new_task = Gui.element("add_new_task")
+local add_new_task = Gui.define("add_new_task")
     :draw{
         type = "sprite-button",
         sprite = "utility/add",
         tooltip = { "task-list.add-tooltip" },
         style = "tool_button",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
     }
     :style(Styles.sprite22)
     :on_click(
@@ -105,7 +105,7 @@ local add_new_task = Gui.element("add_new_task")
 
 --- Header displayed when no tasks are in the task list
 -- @element no_tasks_found
-local no_tasks_found = Gui.element("no_tasks_found")
+local no_tasks_found = Gui.define("no_tasks_found")
     :draw(
         function(_, parent)
             local header =
@@ -137,10 +137,10 @@ local no_tasks_found = Gui.element("no_tasks_found")
 
 --- Frame element with the right styling
 -- @element subfooter_frame
-local subfooter_frame = Gui.element("task_list_subfooter_frame")
+local subfooter_frame = Gui.define("task_list_subfooter_frame")
     :draw{
         type = "frame",
-        name = Gui.property_from_arg(1),
+        name = Gui.from_argument(1),
         direction = "vertical",
         style = "subfooter_frame",
     }
@@ -153,17 +153,17 @@ local subfooter_frame = Gui.element("task_list_subfooter_frame")
 
 --- Label element preset
 -- @element subfooter_label
-local subfooter_label = Gui.element("task_list_subfooter_label")
+local subfooter_label = Gui.define("task_list_subfooter_label")
     :draw{
         name = "footer_label",
         type = "label",
         style = "frame_title",
-        caption = Gui.property_from_arg(1),
+        caption = Gui.from_argument(1),
     }
 
 --- Action flow that contains action buttons
 -- @element subfooter_actions
-local subfooter_actions = Gui.element("task_list_subfooter_actions")
+local subfooter_actions = Gui.define("task_list_subfooter_actions")
     :draw{
         type = "flow",
         name = "actions",
@@ -171,7 +171,7 @@ local subfooter_actions = Gui.element("task_list_subfooter_actions")
 
 --- Button element with a flow around it to fix duplicate name inside of the scroll flow
 -- @element task_list_item
-local task_list_item = Gui.element("task_list_item")
+local task_list_item = Gui.define("task_list_item")
     :draw(
         function(def, parent, task)
             local flow = parent.add{
@@ -205,7 +205,7 @@ local task_list_item = Gui.element("task_list_item")
 
 --- Scrollable list of all tasks
 -- @element task_list
-local task_list = Gui.element("task_list")
+local task_list = Gui.define("task_list")
     :draw(
         function(_, parent)
             local scroll_pane =
@@ -236,10 +236,10 @@ local task_list = Gui.element("task_list")
 
 --- Button element inside the task view footer to start editing a task
 -- @element task_view_edit_button
-local task_view_edit_button = Gui.element("task_view_edit_button")
+local task_view_edit_button = Gui.define("task_view_edit_button")
     :draw{
         type = "button",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = { "", "[img=utility/rename_icon] ", { "task-list.edit" } },
         tooltip = { "task-list.edit-tooltip" },
         style = "shortcut_bar_button",
@@ -254,7 +254,7 @@ local task_view_edit_button = Gui.element("task_view_edit_button")
 
 --- Button to close the task view footer
 -- @element task_view_close_button
-local task_view_close_button = Gui.element("task_view_close_button")
+local task_view_close_button = Gui.define("task_view_close_button")
     :draw{
         type = "sprite-button",
         sprite = "utility/collapse",
@@ -270,10 +270,10 @@ local task_view_close_button = Gui.element("task_view_close_button")
 
 --- Button to delete the task inside the task view footer
 -- @element task_view_delete_button
-local task_view_delete_button = Gui.element("task_view_delete_button")
+local task_view_delete_button = Gui.define("task_view_delete_button")
     :draw{
         type = "button",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = { "", "[img=utility/trash] ", { "task-list.delete" } },
         tooltip = { "task-list.delete-tooltip" },
         style = "shortcut_bar_button_red",
@@ -289,7 +289,7 @@ local task_view_delete_button = Gui.element("task_view_delete_button")
 
 --- Subfooter inside the tasklist container that holds all the elements for viewing a task
 -- @element task_view_footer
-local task_view_footer = Gui.element("task_view_footer")
+local task_view_footer = Gui.define("task_view_footer")
     :draw(
         function(_, parent)
             local footer = subfooter_frame(parent, "view")
@@ -345,9 +345,9 @@ local task_create_confirm_button
 
 --- Textfield element used in both the task create and edit footers
 -- @element task_message_textfield
-local task_message_textfield = Gui.element("task_message_textfield")
+local task_message_textfield = Gui.define("task_message_textfield")
     :draw{
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         type = "text-box",
         text = "",
     }:style{
@@ -372,10 +372,10 @@ local task_message_textfield = Gui.element("task_message_textfield")
 
 --- Button to confirm the changes inside the task edit footer
 -- @element task_edit_confirm_button
-task_edit_confirm_button = Gui.element("task_edit_confirm_button")
+task_edit_confirm_button = Gui.define("task_edit_confirm_button")
     :draw{
         type = "button",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = { "", "[img=utility/check_mark] ", { "task-list.confirm" } },
         tooltip = { "task-list.confirm-tooltip" },
         style = "shortcut_bar_button_green",
@@ -394,7 +394,7 @@ task_edit_confirm_button = Gui.element("task_edit_confirm_button")
 
 --- Button to discard the changes inside the task edit footer
 -- @element edit_task_discard_button
-local edit_task_discard_button = Gui.element("edit_task_discard_button")
+local edit_task_discard_button = Gui.define("edit_task_discard_button")
     :draw{
         type = "button",
         caption = { "", "[img=utility/close_black] ", { "task-list.discard" } },
@@ -412,7 +412,7 @@ local edit_task_discard_button = Gui.element("edit_task_discard_button")
 
 --- Subfooter inside the tasklist container that holds all the elements for editing a task
 -- @element task_edit_footer
-local task_edit_footer = Gui.element("task_edit_footer")
+local task_edit_footer = Gui.define("task_edit_footer")
     :draw(
         function(_, parent)
             local footer = subfooter_frame(parent, "edit")
@@ -431,10 +431,10 @@ local task_edit_footer = Gui.element("task_edit_footer")
 
 --- Button to confirm the changes inside the task create footer
 -- @element task_create_confirm_button
-task_create_confirm_button = Gui.element("task_create_confirm_button")
+task_create_confirm_button = Gui.define("task_create_confirm_button")
     :draw{
         type = "button",
-        name = Gui.property_from_name,
+        name = Gui.from_name,
         caption = { "", "[img=utility/check_mark] ", { "task-list.confirm" } },
         tooltip = { "task-list.confirm-tooltip" },
         style = "shortcut_bar_button_green",
@@ -453,7 +453,7 @@ task_create_confirm_button = Gui.element("task_create_confirm_button")
 
 --- Button to discard the changes inside the task create footer
 -- @element task_create_discard_button
-local task_create_discard_button = Gui.element("task_create_discard_button")
+local task_create_discard_button = Gui.define("task_create_discard_button")
     :draw{
         type = "button",
         caption = { "", "[img=utility/close_black] ", { "task-list.discard" } },
@@ -469,7 +469,7 @@ local task_create_discard_button = Gui.element("task_create_discard_button")
 
 --- Subfooter inside the tasklist container that holds all the elements to create a new task
 -- @element task_create_footer
-local task_create_footer = Gui.element("task_create_footer")
+local task_create_footer = Gui.define("task_create_footer")
     :draw(
         function(_, parent)
             local footer = subfooter_frame(parent, "create")
@@ -505,7 +505,7 @@ end
 
 --- Main task list container for the left flow
 -- @element task_list_container
-local task_list_container = Gui.element("task_list_container")
+local task_list_container = Gui.define("task_list_container")
     :draw(
         function(def, parent)
             -- Draw the internal container
@@ -762,7 +762,7 @@ local function role_update_event(event)
 
     -- Update the new task button and create footer in case the user can now add them
     local has_permission = check_player_permissions(player)
-    local add_new_task_element = frame.header.flow[add_new_task.name]
+    local add_new_task_element = frame.header[add_new_task.name]
     add_new_task_element.visible = has_permission
     local is_creating = PlayerIsCreating:get(player)
     if is_creating and not has_permission then

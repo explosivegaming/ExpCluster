@@ -16,7 +16,7 @@ Commands.new("_sudo", { "exp-commands_sudo.description" })
     :add_flags{ "system_only" }
     :register(function(_player, player, command, parameter)
         --- @cast player LuaPlayer
-        --- @cast command Commands.ExpCommand
+        --- @cast command ExpCommand
         --- @cast parameter string
 
         --- @diagnostic disable-next-line: invisible

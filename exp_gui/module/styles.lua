@@ -1,9 +1,9 @@
---- @class ExpGui
-local ExpGui = require("modules/exp_gui")
+--- @class Gui
+local Gui = require("modules/exp_gui")
 
---- @class ExpGui.styles
+--- @class Gui.styles
 local styles = {}
-ExpGui.styles = styles
+Gui.styles = styles
 
 function styles.sprite(style)
     style = style or {}

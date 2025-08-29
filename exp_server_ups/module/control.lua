@@ -6,32 +6,8 @@ local Gui = require("modules/exp_gui")
 local ExpUtil = require("modules/exp_util")
 local Commands = require("modules/exp_commands")
 
---- Label to show the server ups, drawn to screen on join
-local server_ups = Gui.element("server_ups")
-    :track_all_elements()
-    :draw{
-        type = "label",
-        name = Gui.property_from_name,
-    }
-    :style{
-        font = "default-game",
-    }
-    :player_data(function(def, element)
-        local player = Gui.get_player(element)
-        local existing = def.data[player]
-        if not existing or not existing.valid then
-            return element -- Only set if no previous
-        end
-    end)
-
---- Update the caption for all online players
---- @param ups number The UPS to be displayed
-local function update_server_ups(ups)
-    local caption = ("%.1f (%.1f%%)"):format(ups, ups * 5 / 3)
-    for _, element in server_ups:online_elements() do
-        element.caption = caption
-    end
-end
+--- @class ExpServerUps.elements
+local Elements = {}
 
 --- Stores the visible state of server ups element for a player
 local PlayerData = require("modules/exp_legacy/expcore/player_data")
@@ -45,35 +21,74 @@ UsesServerUps:set_metadata{
 --- Change the visible state when your data loads
 UsesServerUps:on_load(function(player_name, visible)
     local player = assert(game.get_player(player_name))
-    server_ups.data[player].visible = visible or false
+    Elements.server_ups.set_visible(player, visible or false)
 end)
+
+--- Label to show the server ups, drawn to screen on join
+--- @class ExpServerUps.elements.server_ups: ExpElement
+--- @overload fun(parent: LuaGuiElement, visible: boolean?): LuaGuiElement
+Elements.server_ups = Gui.define("server_ups")
+    :track_all_elements()
+    :draw{
+        type = "label",
+        visible = Gui.from_argument(1),
+    }
+    :style{
+        font = "default-game",
+    }
+    :player_data(function(def, element)
+        local player = Gui.get_player(element)
+        local existing = def.data[player]
+        if not existing or not existing.valid then
+            def.data[player] = element -- Only set if previous is invalid
+        end
+    end) --[[ @as any ]]
+
+--- Refresh the caption for all online players
+--- @param ups number The UPS to be displayed
+function Elements.server_ups.refresh_online(ups)
+    local caption = ("%.1f (%.1f%%)"):format(ups, ups * 5 / 3)
+    for _, server_ups in Elements.server_ups:online_elements() do
+        server_ups.caption = caption
+    end
+end
+
+--- Get the main label for a player
+--- @param player LuaPlayer
+--- @return LuaGuiElement
+function Elements.server_ups.get_main_label(player)
+    return Elements.server_ups.data[player] or Elements.server_ups(player.gui.screen, UsesServerUps:get(player))
+end
+
+--- Set the visible state of the main label
+--- @param player LuaPlayer
+--- @param visible boolean
+function Elements.server_ups.set_visible(player, visible)
+    Elements.server_ups.get_main_label(player).visible = visible
+end
 
 --- Toggles if the server ups is visbile
 Commands.new("server-ups", { "exp_server-ups.description" })
     :add_aliases{ "sups", "ups" }
     :register(function(player)
         local visible = not UsesServerUps:get(player)
-        server_ups.data[player].visible = visible
+        Elements.server_ups.set_visible(player, visible)
         UsesServerUps:set(player, visible)
     end)
 
 --- Add an interface which can be called from rcon
 Commands.add_rcon_static("exp_server_ups", {
-    update = function(ups)
+    refresh = function(ups)
         ExpUtil.assert_argument_type(ups, "number", 1, "ups")
-        update_server_ups(ups)
+        Elements.server_ups.refresh_online(ups)
         return game.tick
     end
 })
 
 --- Set the location of the label
 local function set_location(event)
-    local player = game.players[event.player_index]
-    local element = server_ups.data[player]
-    if not element then
-        element = server_ups(player.gui.screen)
-        element.visible = UsesServerUps:get(player)
-    end
+    local player = Gui.get_player(event)
+    local element = Elements.server_ups.get_main_label(player)
 
     local uis = player.display_scale
     local res = player.display_resolution
@@ -83,9 +98,7 @@ end
 local e = defines.events
 
 return {
-    elements = {
-        server_ups = server_ups,
-    },
+    elements = Elements,
     events = {
         [e.on_player_created] = set_location,
         [e.on_player_joined_game] = set_location,

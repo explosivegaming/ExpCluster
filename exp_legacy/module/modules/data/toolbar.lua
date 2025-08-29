@@ -18,7 +18,7 @@ ToolbarState:on_load(function(player_name, value)
 
     local decompressed = helpers.json_to_table(assert(helpers.decode_string(value), "Failed String Decode"))
     local player = assert(game.get_player(player_name))
-    Gui.toolbar.set_state(player, decompressed --[[ @as ExpGui.ToolbarState ]])
+    Gui.toolbar.set_state(player, decompressed --[[ @as Gui.ToolbarState ]])
 
     return nil -- We don't save the state, use Gui.toolbar.get_state
 end)

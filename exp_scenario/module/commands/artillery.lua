@@ -10,6 +10,9 @@ local SelectionName = "ExpCommand_Artillery"
 local floor = math.floor
 local abs = math.abs
 
+--- @class ExpCommand_Artillery.commands
+local commands = {}
+
 --- @param player LuaPlayer
 --- @param area BoundingBox
 --- @return boolean
@@ -30,7 +33,9 @@ local function location_break(player, area)
 end
 
 --- Toggle player selection mode for artillery
-Commands.new("artillery", { "exp-commands_artillery.description" })
+--- @class ExpCommand_Artillery.commands.artillery: ExpCommand
+--- @overload fun(player: LuaPlayer)
+commands.artillery = Commands.new("artillery", { "exp-commands_artillery.description" })
     :register(function(player)
         if Selection.is_selecting(player, SelectionName) then
             Selection.stop(player)
@@ -39,7 +44,7 @@ Commands.new("artillery", { "exp-commands_artillery.description" })
             Selection.start(player, SelectionName)
             return Commands.status.success{ "exp-commands_artillery.enter" }
         end
-    end)
+    end) --[[ @as any ]]
 
 --- when an area is selected to add protection to the area
 Selection.on_selection(SelectionName, function(event)
@@ -94,3 +99,7 @@ Selection.on_selection(SelectionName, function(event)
         end
     end
 end)
+
+return {
+    commands = commands,
+}

@@ -61,11 +61,7 @@ function Public.dump_text(text, player)
         return false
     end
 
-    rawset(game, "player", player)
-
     local suc, var = pcall(func)
-
-    rawset(game, "player", nil)
 
     if not suc then
         return false
