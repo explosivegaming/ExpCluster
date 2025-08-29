@@ -24,11 +24,11 @@ Commands.new("repair", { "exp-commands_repair.description" })
                 force = force,
             }
 
+            local param = { raise_revive = true } --- @type LuaEntity.silent_revive_param
             for _, entity in ipairs(entities) do
-                -- TODO test for ghost not being a blueprint, https://forums.factorio.com/viewtopic.php?f=28&t=119736
-                if not config.disallow[entity.ghost_name] and (config.allow_blueprint_repair or true) then
+                if not config.disallow[entity.ghost_name] and (config.allow_blueprint_repair or entity.created_by_corpse) then
                     revive_count = revive_count + 1
-                    entity.silent_revive()
+                    entity.silent_revive(param)
                 end
             end
 
