@@ -9,7 +9,7 @@ local Roles = require("modules/exp_legacy/expcore/roles")
 local Elements = {}
 
 --- The flow precision values in the same order as production_precision_dropdown.items
-local precision_values = {
+local precision_indexes = {
     defines.flow_precision_index.five_seconds,
     defines.flow_precision_index.one_minute,
     defines.flow_precision_index.ten_minutes,
@@ -123,7 +123,7 @@ Elements.table_label = Gui.define("production_stats/table_label")
 
 --- A table that allows selecting items 
 --- @class ExpGui_ProductionStats.elements.production_table: ExpElement
---- @field data table<LuaGuiElement, ExpGui_ProductionStats.elements.production_table.row_elements[]>
+--- @field data table<LuaGuiElement, { precision_dropdown: LuaGuiElement, rows: ExpGui_ProductionStats.elements.production_table.row_elements[] }>
 --- @overload fun(parent: LuaGuiElement): LuaGuiElement
 Elements.production_table = Gui.define("production_stats/production_table")
     :track_all_elements()
@@ -134,25 +134,28 @@ Elements.production_table = Gui.define("production_stats/production_table")
             display_alignments[i] = "right"
         end
 
-        def.data[scroll_table] = Elements.precision_dropdown(scroll_table)
+        def.data[scroll_table] = {
+            precision_dropdown = Elements.precision_dropdown(scroll_table),
+            rows = {},
+        }
+
         Elements.table_label(scroll_table, { "gui-production.production" }, { "exp-gui_production-stats.tooltip-per-second" }, "heading_2_label")
         Elements.table_label(scroll_table, { "gui-production.consumption" }, { "exp-gui_production-stats.tooltip-per-second" }, "heading_2_label")
         Elements.table_label(scroll_table, { "exp-gui_production-stats.caption-net" }, { "exp-gui_production-stats.tooltip-per-second" }, "heading_2_label")
 
         return scroll_table
-    end)
-    :element_data{} --[[ @as any ]]
+    end) --[[ @as any ]]
 
 --- Calculate the row data for a production table
 --- @param force LuaForce
 --- @param surface LuaSurface
 --- @param item_name string
---- @param precision_value defines.flow_precision_index
+--- @param precision_index defines.flow_precision_index
 --- @return ExpGui_ProductionStats.elements.production_table.row_data
-function Elements.production_table.calculate_row_data(force, surface, item_name, precision_value)
+function Elements.production_table.calculate_row_data(force, surface, item_name, precision_index)
     local get_flow_count = force.get_item_production_statistics(surface).get_flow_count
-    local production = math.floor(get_flow_count{ name = item_name, category = "input", precision_index = precision_value, count = false } / 6) / 10
-    local consumption = math.floor(get_flow_count{ name = item_name, category = "output", precision_index = precision_value, count = false } / 6) / 10
+    local production = math.floor(get_flow_count{ name = item_name, category = "input", precision_index = precision_index, count = false } / 6) / 10
+    local consumption = math.floor(get_flow_count{ name = item_name, category = "output", precision_index = precision_index, count = false } / 6) / 10
     local net = production - consumption
     return {
         production = format_number(production),
@@ -165,7 +168,7 @@ end
 --- A single row of a production table, the parent must be a production table
 --- @param production_table LuaGuiElement
 function Elements.production_table.add_row(production_table)
-    local rows = Elements.production_table.data[production_table]
+    local rows = Elements.production_table.data[production_table].rows
     local item_selector = Elements.item_selector(production_table, production_table)
     rows[item_selector.index] = {
         item_selector = item_selector,
@@ -179,7 +182,7 @@ end
 --- @param production_table LuaGuiElement
 --- @param item_selector LuaGuiElement
 function Elements.production_table.remove_row(production_table, item_selector)
-    local rows = Elements.production_table.data[production_table]
+    local rows = Elements.production_table.data[production_table].rows
     local row = rows[item_selector.index]
     rows[item_selector.index] = nil
     Gui.destroy_if_valid(item_selector)
@@ -192,7 +195,7 @@ end
 --- @param production_table LuaGuiElement
 --- @param item_selector LuaGuiElement
 function Elements.production_table.reset_row(production_table, item_selector)
-    local rows = Elements.production_table.data[production_table]
+    local rows = Elements.production_table.data[production_table].rows
     local row = rows[item_selector.index]
     row.production.caption = "0.00"
     row.consumption.caption = "0.00"
@@ -205,7 +208,7 @@ end
 --- @param item_selector LuaGuiElement
 --- @param row_data ExpGui_ProductionStats.elements.production_table.row_data
 function Elements.production_table.refresh_row(production_table, item_selector, row_data)
-    local rows = Elements.production_table.data[production_table]
+    local rows = Elements.production_table.data[production_table].rows
     local row = rows[item_selector.index]
     row.production.caption = row_data.production
     row.consumption.caption = row_data.consumption
@@ -216,12 +219,13 @@ end
 --- Refresh all online tables
 function Elements.production_table.refresh_online()
     for player, production_table in Elements.production_table:online_elements() do
-        for _, row in pairs(Elements.production_table.data[production_table]) do
+        local element_data = Elements.production_table.data[production_table]
+        local precision_index = precision_indexes[element_data.precision_dropdown.selected_index]
+        for _, row in pairs(element_data.rows) do
             local item_selector = row.item_selector
             local item_name = item_selector.elem_value --[[ @as string? ]]
             if item_name then
-                local precision_value = precision_values[item_selector.selected_index]
-                local row_data = Elements.production_table.calculate_row_data(player.force --[[ @as LuaForce ]], player.surface, item_name, precision_value)
+                local row_data = Elements.production_table.calculate_row_data(player.force --[[ @as LuaForce ]], player.surface, item_name, precision_index)
                 Elements.production_table.refresh_row(production_table, item_selector, row_data)
             end
         end

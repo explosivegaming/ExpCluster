@@ -157,7 +157,7 @@ end
 
 --- Apply the bonus for a player
 --- @class ExpGui_PlayerBonus.elements.apply_button: ExpElement
---- @field data table<LuaGuiElement, { bonus_table: LuaGuiElement, bonus_used: LuaGuiElement }>
+--- @field data table<LuaGuiElement, { bonus_table: LuaGuiElement, bonus_used: LuaGuiElement, reset_button: LuaGuiElement? }>
 --- @overload fun(parent: LuaGuiElement, bonus_table: LuaGuiElement, bonus_used: LuaGuiElement): LuaGuiElement
 Elements.apply_button = Gui.define("player_bonus/apply_button")
     :draw{
@@ -177,14 +177,24 @@ Elements.apply_button = Gui.define("player_bonus/apply_button")
     :on_click(function(def, player, element)
         --- @cast def ExpGui_PlayerBonus.elements.apply_button
         element.enabled = false
-
         local element_data = def.data[element]
+        if element_data.reset_button then
+            element_data.reset_button.enabled = false
+        end
+
         local bonus_cost = Elements.bonus_table.calculate_cost(element_data.bonus_table)
         if Elements.bonus_used.refresh(element_data.bonus_used, bonus_cost) then
             Elements.bonus_table.save_sliders(element_data.bonus_table)
             Elements.container.apply_player_bonus(player)
         end
     end) --[[ @as any ]]
+
+--- Link an apply button to this reset button so that it will be disabled after being pressed
+--- @param apply_button LuaGuiElement
+--- @param reset_button LuaGuiElement
+function Elements.apply_button.link_reset_button(apply_button, reset_button)
+    Elements.apply_button.data[apply_button].reset_button = reset_button
+end
 
 --- Label used within the bonus table
 --- @class ExpGui_PlayerBonus.elements.bonus_table_label: ExpElement
@@ -355,6 +365,7 @@ Elements.container = Gui.define("player_bonus/container")
         elements.reset_button = Elements.reset_button(header, bonus_table, elements.bonus_used)
         elements.apply_button = Elements.apply_button(header, bonus_table, elements.bonus_used)
         Elements.reset_button.link_apply_button(elements.reset_button, elements.apply_button)
+        Elements.apply_button.link_reset_button(elements.apply_button, elements.reset_button)
 
         for _, bonus_data in pairs(config.player_bonus) do
             --- @cast bonus_data ExpGui_PlayerBonus.bonus_data

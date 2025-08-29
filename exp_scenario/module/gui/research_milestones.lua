@@ -58,7 +58,7 @@ do --- Calculate the research targets
         research_index = research_index + 1
     end
     research_targets.length = research_index - 1
-    research_targets.max_start_index = math.max(1, research_index - display_size + 1)
+    research_targets.max_start_index = math.max(1, research_index - display_size)
 end
 
 --- Display label for the clock display

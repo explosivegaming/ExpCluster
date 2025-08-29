@@ -396,6 +396,8 @@ local add_warp_elements = Gui.define("add_warp_elements")
         cancel_edit_button(button_flow)
         edit_warp_button(button_flow)
         remove_warp_button(button_flow)
+
+        return Gui.no_return()
     end)
 
 -- Removes the three elements that are added as part of the warp base

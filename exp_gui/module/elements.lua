@@ -6,8 +6,8 @@ local Elements = {}
 Gui.elements = Elements
 
 --- @class Gui.elements.aligned_flow.opts
---- @field vertical_align ("left" | "center" | "right")?
---- @field horizontal_align ("top" | "center" | "bottom")?
+--- @field horizontal_align ("left" | "center" | "right")?
+--- @field vertical_align ("top" | "center" | "bottom")?
 
 --- A flow which aligns its content as specified
 --- @class Gui.elements.aligned_flow: ExpElement

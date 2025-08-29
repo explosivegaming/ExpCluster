@@ -48,7 +48,7 @@ function Elements.online_player_dropdown.get_selected(online_player_dropdown)
         online_player_dropdown.selected_index = 1
         name = _player_names[1] --- @cast name -nil
     end
-    return assert(game.get_player[name])
+    return assert(game.get_player(name))
 end
 
 

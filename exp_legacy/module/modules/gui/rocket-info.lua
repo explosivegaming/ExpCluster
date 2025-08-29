@@ -105,6 +105,8 @@ local silo_cords = Gui.define("silo_cords")
             definition:link_element(label_x)
             definition:link_element(label_y)
         end
+
+        return Gui.no_return()
     end)
     :on_click(function(def, player, element)
         local rocket_silo_name = element.parent.caption

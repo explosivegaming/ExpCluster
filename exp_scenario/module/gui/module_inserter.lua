@@ -108,7 +108,7 @@ Elements.machine_selector = Gui.define("module_inserter/machine_selector")
             Elements.module_table.refresh_row(element_data.module_table, element, machine_name)
             if element_data.on_last_row then
                 element_data.on_last_row = false
-                Elements.module_table.reset_row(element_data.module_table, element)
+                Elements.module_table.add_row(element_data.module_table)
             end
         end
     end) --[[ @as any ]]
@@ -125,6 +125,7 @@ Elements.module_selector = Gui.define("module_inserter/module_selector")
     }
 
 --- @class ExpGui_ModuleInserter.elements.module_table.row_elements
+--- @field machine_selector LuaGuiElement
 --- @field row_separators LuaGuiElement[]
 --- @field module_selectors LuaGuiElement[]
 
@@ -140,6 +141,14 @@ Elements.module_table = Gui.define("module_inserter/module_table")
     end)
     :element_data{} --[[ @as any ]]
 
+--- Get all the rows in a module table
+--- @param module_table LuaGuiElement
+--- @return ExpGui_ModuleInserter.elements.module_table.row_elements[]
+function Elements.module_table.get_rows(module_table)
+    return Elements.module_table.data[module_table]
+end
+
+
 --- Add a row to a module table
 --- @param module_table LuaGuiElement
 function Elements.module_table.add_row(module_table)
@@ -147,6 +156,7 @@ function Elements.module_table.add_row(module_table)
     local rows = Elements.module_table.data[module_table]
     local module_selectors, row_separators = {}, {}
     rows[machine_selector.index] = {
+        machine_selector = machine_selector,
         module_selectors = module_selectors,
         row_separators = row_separators,
     }
@@ -302,7 +312,7 @@ end
 --- @param event EventData.on_player_selected_area
 --- @param module_table LuaGuiElement
 Selection.on_selection(SelectionModuleArea, function(event, module_table)
-    local player = assert(game.get_player(event.player_index))
+    local player = Gui.get_player(event)
     local area = AABB.expand(event.area)
 
     -- Create an inventory with three upgrade planners
@@ -322,13 +332,13 @@ Selection.on_selection(SelectionModuleArea, function(event, module_table)
         comparator = "=",
     }
 
-    for _, machine_selector in pairs(Elements.module_table.data[module_table]) do
-        local machine_name = machine_selector.elem_value --[[ @as string? ]]
+    for _, row in pairs(Elements.module_table.get_rows(module_table)) do
+        local machine_name = row.machine_selector.elem_value --[[ @as string? ]]
         if not machine_name then
             goto continue
         end
 
-        local module_selectors = Elements.machine_selector.data[machine_selector].module_selectors
+        local module_selectors = row.module_selectors
         local entity_prototype = prototypes.entity[machine_name]
         local wants_prod_modules = false
         local module_index = 1
