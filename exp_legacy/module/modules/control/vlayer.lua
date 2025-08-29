@@ -612,7 +612,11 @@ local function handle_circuit_interfaces()
             -- Set the item signals based on stored items
             for item_name, count in pairs(vlayer_data.storage.items) do
                 if prototypes.item[item_name] and count > 0 then
-                    circuit_oc.set_slot(signal_index, { value = { type = "item", name = item_name, quality	= "normal" }, min = count })
+                    local existing_index = circuit_oc.set_slot(signal_index, { value = { type = "item", name = item_name, quality	= "normal" }, min = count })
+                    if existing_index then
+                        circuit_oc.clear_slot(existing_index)
+                        circuit_oc.set_slot(signal_index, { value = { type = "item", name = item_name, quality	= "normal" }, min = count })
+                    end
                     signal_index = signal_index + 1
                 end
             end
