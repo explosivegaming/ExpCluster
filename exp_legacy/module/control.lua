@@ -41,6 +41,6 @@ for _, error in ipairs(errors) do log(error) end
 
 log("[END] -----| Explosive Gaming Scenario Loader |-----")
 
---- Register all event handlers via clusterio
+--- Register all event handlers via event handler
 local Event = require("modules/exp_legacy/utils/event")
 return Event.real_handlers

@@ -119,12 +119,10 @@ function Storage.on_init()
     end
 end
 
-local events = {}
+--- @package
+Storage.events = {
+    [defines.events.on_multiplayer_init] = Storage.on_init,
+    [defines.events.on_singleplayer_init] = Storage.on_init,
+}
 
-local Clustorio = ExpUtil.optional_require("modules/clusterio/api")
-if Clustorio then
-    events[Clustorio.events.on_server_startup] = Storage.on_init
-end
-
-Storage.events = events --- @package
 return Storage

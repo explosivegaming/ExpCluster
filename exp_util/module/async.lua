@@ -408,12 +408,9 @@ end
 local e = defines.events
 local events = {
     [e.on_tick] = on_tick,
+    [e.on_singleplayer_init] = Async.on_init,
+    [e.on_multiplayer_init] = Async.on_init,
 }
-
-local Clustorio = ExpUtil.optional_require("modules/clusterio/api")
-if Clustorio then
-    events[Clustorio.events.on_server_startup] = Async.on_init
-end
 
 Async._function_metatable.__call = Async._function_prototype.start_soon
 Async.events = events --- @package

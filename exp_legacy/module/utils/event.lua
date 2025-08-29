@@ -1,4 +1,3 @@
-local Clustorio = require("modules/clusterio/api")
 local ExpUtil = require("modules/exp_util")
 
 local Event = {
@@ -66,7 +65,8 @@ function Event.on_init(handler)
     end
 
     handlers[#handlers + 1] = handler
-    Event.add(Clustorio.events.on_server_startup, handler)
+    Event.add(defines.events.on_singleplayer_init, handler)
+    Event.add(defines.events.on_multiplayer_init, handler)
 end
 
 function Event.on_load(handler)

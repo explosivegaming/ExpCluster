@@ -1,7 +1,5 @@
 -- luacheck:ignore global package
 
-local Clustorio = require("modules/clusterio/api")
-
 --- Enum values for the different lifecycle stages within a factorio module
 -- Info on the data lifecycle and how we use it: https://lua-api.factorio.com/latest/auxiliary/data-lifecycle.html
 -- We start in control stage and so values 1 thorough 3 are only present for completeness
@@ -25,10 +23,9 @@ return setmetatable({
     on_load = function() package.lifecycle = package.lifecycle_stage.load end,
     on_configuration_changed = function() package.lifecycle = package.lifecycle_stage.config_change end,
     events = {
-        -- TODO find a reliable way to set to runtime because currently it will desync if accessed before player joined
-        -- TODO make clusterio optional dependency
         [defines.events.on_player_joined_game] = function() package.lifecycle = package.lifecycle_stage.runtime end,
-        [Clustorio.events.on_server_startup] = function() package.lifecycle = package.lifecycle_stage.runtime end,
+        [defines.events.on_singleplayer_init] = function() package.lifecycle = package.lifecycle_stage.runtime end,
+        [defines.events.on_multiplayer_init] = function() package.lifecycle = package.lifecycle_stage.runtime end,
     },
 }, {
     __index = package,
