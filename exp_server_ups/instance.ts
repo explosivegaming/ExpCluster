@@ -24,6 +24,14 @@ export class InstancePlugin extends BaseInstancePlugin {
 		}
 	}
 
+	async onPlayerEvent(event: lib.PlayerEvent): Promise<void> {
+		if (event.type === "join" && !this.updateInterval) {
+			await this.onStart();
+		} else if (event.type === "leave" && this.instance.playersOnline.size == 0 && this.instance.config.get("factorio.settings")["auto_pause"] as boolean) {
+			this.onExit();
+		}
+	}
+
 	async updateUps() {
 		let ups = 0;
 		const collected = this.gameTimes.length - 1;
