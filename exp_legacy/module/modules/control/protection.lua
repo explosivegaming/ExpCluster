@@ -199,6 +199,7 @@ local function event_remove_entity(event)
     EntityProtection.remove_entity(event.entity)
 end
 
+Event.add(defines.events.on_space_platform_pre_mined, event_remove_entity)
 Event.add(defines.events.on_pre_player_mined_item, event_remove_entity)
 Event.add(defines.events.on_robot_pre_mined, event_remove_entity)
 Event.add(defines.events.on_entity_died, event_remove_entity)
