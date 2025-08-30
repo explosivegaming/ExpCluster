@@ -359,6 +359,9 @@ Elements.container = Gui.define("player_bonus/container")
         local container = Gui.elements.container(parent)
         local header = Gui.elements.header(container, { caption = { "exp-gui_player-bonus.caption-main" } })
 
+        local player = Gui.get_player(parent)
+        def.data[player] = def.data[player] or {} -- Used within bonus_table.add_row
+
         local elements = {} --- @cast elements ExpGui_PlayerBonus.elements.bonus_slider.elements
         local bonus_table = Elements.bonus_table(container)
         elements.bonus_used = Elements.bonus_used(header)
@@ -376,8 +379,7 @@ Elements.container = Gui.define("player_bonus/container")
         Elements.bonus_used.refresh(elements.bonus_used, bonus_cost)
 
         return Gui.elements.container.get_root_element(container)
-    end)
-    :player_data{} --[[ @as any ]]
+    end) --[[ @as any ]]
 
 --- Set the bonus value for a player
 --- @param player LuaPlayer
