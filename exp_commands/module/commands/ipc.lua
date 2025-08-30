@@ -10,6 +10,9 @@ local Clustorio = require("modules/clusterio/api")
 
 local json_to_table = helpers.json_to_table
 
+Commands.add_rcon_static("Clustorio", Clustorio)
+Commands.add_rcon_static("ipc", Clustorio.send_json)
+
 Commands.new("_ipc", { "exp-commands_ipc.description" })
     :argument("channel", { "exp-commands_ipc.arg-channel" }, Commands.types.string)
     :argument("message", { "exp-commands_ipc.arg-message" }, Commands.types.string)

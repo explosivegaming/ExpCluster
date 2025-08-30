@@ -11,7 +11,6 @@ System command which runs arbitrary code within a custom (not sandboxed) environ
 local ExpUtil = require("modules/exp_util")
 local Async = require("modules/exp_util/async")
 local Storage = require("modules/exp_util/storage")
-local Clustorio = require("modules/clusterio/api")
 
 local Commands = require("modules/exp_commands") --- @class Commands
 
@@ -26,9 +25,7 @@ setmetatable(rcon_env, { __index = rcon_static })
 rcon_static.Async = Async
 rcon_static.ExpUtil = ExpUtil
 rcon_static.Commands = Commands
-rcon_static.Clustorio = Clustorio
 rcon_static.print = Commands.print
-rcon_static.ipc = Clustorio.send_json
 --- @diagnostic enable: name-style-check
 
 --- Some common callback values which are useful when a player uses the command
