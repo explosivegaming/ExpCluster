@@ -6,7 +6,7 @@ local Gui = require("modules/exp_gui")
 local AABB = require("modules/exp_util/aabb")
 local Roles = require("modules/exp_legacy/expcore/roles")
 
-local Selection = require("modules/exp_utils/selection")
+local Selection = require("modules/exp_util/selection")
 local SelectArea = Selection.connect("ModuleArea")
 
 local config = require("modules/exp_legacy/config/module")

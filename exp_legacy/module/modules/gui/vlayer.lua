@@ -73,8 +73,10 @@ local function format_energy(amount, unit)
     return formatted .. " " .. suffix .. unit
 end
 
+local ExpUtil = require("modules/exp_util")
 --- When an area is selected to add protection to the area
 SelectArea:on_selection(function(event)
+    log(ExpUtil.format_any(event))
     local area = aabb_align_expand(event.area)
     local player = game.players[event.player_index]
 

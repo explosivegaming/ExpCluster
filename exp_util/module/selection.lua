@@ -199,9 +199,9 @@ local function on_event_factory(event)
         ExpUtil.assert_argument_type(callback, "function", 1, "callback")
         Selection.events[event] = event_dispatch
 
-        local handlers = self._handlers[Selection.on_selection_start] or {}
-        self._handlers[Selection.on_selection_start] = handlers
+        local handlers = self._handlers[event] or {}
         handlers[#handlers + 1] = callback
+        self._handlers[event] = handlers
         return self
     end
 end

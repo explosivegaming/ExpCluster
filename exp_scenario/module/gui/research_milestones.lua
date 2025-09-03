@@ -301,8 +301,9 @@ end
 --- @param force LuaForce
 --- @return number
 function Elements.container.calculate_starting_research_index(force)
-    local force_data = Elements.container.data[force]
+    local force_data = Elements.container.data[force] or {}
     local research_index = research_targets.length
+    Elements.container.data[force] = force_data -- needed because of @clusterio/research_sync
 
     -- # does not work here because it returned the array alloc size
     for i = 1, research_targets.length do
