@@ -4,6 +4,7 @@
 		"include/package.lua",
 		"include/require.lua",
 		"storage.lua",
+		"selection.lua",
 		"async.lua"
 	],
 	"require": [
