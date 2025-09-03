@@ -158,13 +158,14 @@ function Selection._prototype:start(player, ...)
     })
 end
 
---- Stop this selection if it is active
+--- Stop this selection if it is active, returns if this selection was active
 --- @param player LuaPlayer
+--- @return boolean
 function Selection._prototype:stop(player)
     local player_index = player.index
     local active_selection = script_data[player_index]
     if not active_selection or active_selection.name ~= self.name then
-        return
+        return false
     end
 
     remove_selection_tool(player, active_selection.character)
@@ -174,6 +175,8 @@ function Selection._prototype:stop(player)
         player_index = player_index,
         selection = active_selection,
     })
+
+    return true
 end
 
 --- Dispatch events to the correct handlers
@@ -199,21 +202,24 @@ local function on_event_factory(event)
         local handlers = self._handlers[Selection.on_selection_start] or {}
         self._handlers[Selection.on_selection_start] = handlers
         handlers[#handlers + 1] = callback
+        return self
     end
 end
 
 local e = defines.events
 
---- @type Selection.event_handler<EventData.on_selection_start>
+--- @alias Selection.on_event<E> fun(self: Selection, callback: fun(event: E, ...: any)): Selection
+
+--- @type Selection.on_event<EventData.on_selection_start>
 Selection._prototype.on_start = on_event_factory(Selection.on_selection_start)
 
---- @type Selection.event_handler<EventData.on_selection_stop>
+--- @type Selection.on_event<EventData.on_selection_stop>
 Selection._prototype.on_stop = on_event_factory(Selection.on_selection_stop)
 
---- @type Selection.event_handler<EventData.on_player_selected_area>
+--- @type Selection.on_event<EventData.on_player_selected_area>
 Selection._prototype.on_selection = on_event_factory(e.on_player_selected_area)
 
---- @type Selection.event_handler<EventData.on_player_alt_selected_area>
+--- @type Selection.on_event<EventData.on_player_alt_selected_area>
 Selection._prototype.on_alt_selection = on_event_factory(e.on_player_alt_selected_area)
 
 --- Stop selection if the selection tool is removed from the cursor
