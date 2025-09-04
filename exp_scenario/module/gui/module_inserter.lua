@@ -178,7 +178,7 @@ end
 function Elements.module_table.remove_row(module_table, machine_selector)
     local rows = Elements.module_table.data[module_table]
     local row = rows[machine_selector.index]
-    row[machine_selector.index] = nil
+    rows[machine_selector.index] = nil
     Gui.destroy_if_valid(machine_selector)
     for _, separator in pairs(row.row_separators) do
         Gui.destroy_if_valid(separator)
