@@ -4,8 +4,9 @@ Adds a command that places shallow water
 
 local AABB = require("modules/exp_util/aabb")
 local Commands = require("modules/exp_commands")
-local Selection = require("modules.exp_legacy.modules.control.selection") --- @dep modules.control.selection
-local SelectionName = "ExpCommand_Waterfill"
+
+local Selection = require("modules/exp_util/selection")
+local SelectArea = Selection.connect("ExpCommand_Waterfill")
 
 local planet = {
     ["nauvis"] = "water-mud",
@@ -23,25 +24,22 @@ local commands = {}
 --- @overload fun(player: LuaPlayer)
 commands.waterfill = Commands.new("waterfill", { "exp-commands_waterfill.description" })
     :register(function(player)
-        if Selection.is_selecting(player, SelectionName) then
-            Selection.stop(player)
+        if SelectArea:stop(player) then
             return Commands.status.success{ "exp-commands_waterfill.exit" }
+        end
+        local item_count_cliff = player.get_item_count("cliff-explosives")
+        local item_count_craft = math.min(math.floor(player.get_item_count("explosives") / 10), player.get_item_count("barrel"), player.get_item_count("grenade"))
+        local item_count_total = item_count_cliff + item_count_craft
+        if item_count_total == 0 then
+            return Commands.status.error{ "exp-commands_waterfill.requires-explosives" }
         else
-            local item_count_cliff = player.get_item_count("cliff-explosives")
-            local item_count_craft = math.min(math.floor(player.get_item_count("explosives") / 10), player.get_item_count("barrel"), player.get_item_count("grenade"))
-            local item_count_total = item_count_cliff + item_count_craft
-            if item_count_total == 0 then
-                return Commands.status.error{ "exp-commands_waterfill.requires-explosives" }
-            else
-                Selection.start(player, SelectionName)
-                return Commands.status.success{ "exp-commands_waterfill.enter" }
-            end
+            SelectArea:start(player)
+            return Commands.status.success{ "exp-commands_waterfill.enter" }
         end
     end) --[[ @as any ]]
 
 --- When an area is selected to be converted to water
-Selection.on_selection(SelectionName, function(event)
-    --- @cast event EventData.on_player_selected_area
+SelectArea:on_selection(function(event)
     local area = AABB.expand(event.area)
     local player = game.players[event.player_index]
     local surface = event.surface

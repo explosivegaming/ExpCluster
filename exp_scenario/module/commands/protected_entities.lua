@@ -12,14 +12,14 @@ local Commands = require("modules/exp_commands")
 local format_player_name = Commands.format_player_name_locale
 
 local Roles = require("modules.exp_legacy.expcore.roles") --- @dep expcore.roles
-local Selection = require("modules.exp_legacy.modules.control.selection") --- @dep modules.control.selection
 local EntityProtection = require("modules.exp_legacy.modules.control.protection") --- @dep modules.control.protection
 
 local format_string = string.format
 local floor = math.floor
 
-local SelectionNameEntity = "ExpCommand_ProtectEntity"
-local SelectionNameArea = "ExpCommand_ProtectArea"
+local Selection = require("modules/exp_util/selection")
+local SelectEntities = Selection.connect("ExpCommand_ProtectEntity")
+local SelectArea = Selection.connect("ExpCommand_ProtectArea")
 
 local renders = {} --- @type table<number, table<string, LuaRenderObject>> Stores all renders for a player
 Storage.register({
@@ -95,31 +95,26 @@ end
 Commands.new("protect-entity", { "exp-commands_entity-protection.description-entity" })
     :add_aliases{ "pe" }
     :register(function(player)
-        if Selection.is_selecting(player, SelectionNameEntity) then
-            Selection.stop(player)
+        if SelectEntities:stop(player) then
             return Commands.status.success{ "exp-commands_entity-protection.exit-entity" }
-        else
-            Selection.start(player, SelectionNameEntity)
-            return Commands.status.success{ "exp-commands_entity-protection.enter-entity" }
         end
+        SelectEntities:start(player)
+        return Commands.status.success{ "exp-commands_entity-protection.enter-entity" }
     end)
 
 --- Toggles area protection selection
 Commands.new("protect-area", { "exp-commands_entity-protection.description-area" })
     :add_aliases{ "pa" }
     :register(function(player)
-        if Selection.is_selecting(player, SelectionNameEntity) then
-            Selection.stop(player)
+        if SelectArea:stop(player) then
             return Commands.status.success{ "exp-commands_entity-protection.exit-area" }
-        else
-            Selection.start(player, SelectionNameEntity)
-            return Commands.status.success{ "exp-commands_entity-protection.enter-area" }
         end
+        SelectArea:start(player)
+        return Commands.status.success{ "exp-commands_entity-protection.enter-area" }
     end)
 
 --- When an area is selected to add protection to entities
-Selection.on_selection(SelectionNameEntity, function(event)
-    --- @cast event EventData.on_player_selected_area
+SelectEntities:on_selection(function(event)
     local player = game.players[event.player_index]
     for _, entity in ipairs(event.entities) do
         EntityProtection.add_entity(entity)
@@ -130,8 +125,7 @@ Selection.on_selection(SelectionNameEntity, function(event)
 end)
 
 --- When an area is selected to remove protection from entities
-Selection.on_alt_selection(SelectionNameEntity, function(event)
-    --- @cast event EventData.on_player_alt_selected_area
+SelectEntities:on_alt_selection(function(event)
     local player = game.players[event.player_index]
     for _, entity in ipairs(event.entities) do
         EntityProtection.remove_entity(entity)
@@ -142,8 +136,7 @@ Selection.on_alt_selection(SelectionNameEntity, function(event)
 end)
 
 --- When an area is selected to add protection to the area
-Selection.on_selection(SelectionNameArea, function(event)
-    --- @cast event EventData.on_player_selected_area
+SelectArea:on_selection(function(event)
     local surface = event.surface
     local area = expand_area(event.area)
     local areas = EntityProtection.get_areas(event.surface)
@@ -160,8 +153,7 @@ Selection.on_selection(SelectionNameArea, function(event)
 end)
 
 --- When an area is selected to remove protection from the area
-Selection.on_alt_selection(SelectionNameArea, function(event)
-    --- @cast event EventData.on_player_alt_selected_area
+SelectArea:on_alt_selection(function(event)
     local surface = event.surface
     local area = expand_area(event.area)
     local areas = EntityProtection.get_areas(surface)
@@ -177,7 +169,6 @@ end)
 
 --- When selection starts show all protected entities and protected areas
 local function on_player_selection_start(event)
-    if event.selection ~= SelectionNameEntity and event.selection ~= SelectionNameArea then return end
     local player = game.players[event.player_index]
     local surface = player.surface -- Allow remote view
     renders[player.index] = {}
@@ -210,14 +201,18 @@ local function on_player_selection_start(event)
 end
 
 --- When selection ends hide protected entities and protected areas
-local function on_player_selection_end(event)
-    if event.selection ~= SelectionNameEntity and event.selection ~= SelectionNameArea then return end
+local function on_player_selection_stop(event)
     for _, render in pairs(renders[event.player_index]) do
         if render.valid then render.destroy() end
     end
 
     renders[event.player_index] = nil
 end
+
+SelectArea:on_start(on_player_selection_start)
+SelectEntities:on_start(on_player_selection_start)
+SelectArea:on_stop(on_player_selection_stop)
+SelectEntities:on_stop(on_player_selection_stop)
 
 --- When there is a repeat offence print it in chat
 local function on_repeat_violation(event)
@@ -232,8 +227,6 @@ end
 
 return {
     events = {
-        [Selection.events.on_player_selection_start] = on_player_selection_start,
-        [Selection.events.on_player_selection_end] = on_player_selection_end,
         [EntityProtection.events.on_repeat_violation] = on_repeat_violation,
     }
 }

@@ -10,8 +10,9 @@ local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local format_number = require("util").format_number --- @dep util
 local config = require("modules.exp_legacy.config.vlayer") --- @dep config.vlayer
 local vlayer = require("modules.exp_legacy.modules.control.vlayer")
-local Selection = require("modules.exp_legacy.modules.control.selection") --- @dep modules.control.selection
-local SelectionConvertArea = "VlayerConvertChest"
+
+local Selection = require("modules/exp_util/selection")
+local SelectArea = Selection.connect("ExpGui_VLayer")
 
 --- Align an aabb to the grid by expanding it
 local function aabb_align_expand(aabb)
@@ -72,13 +73,15 @@ local function format_energy(amount, unit)
     return formatted .. " " .. suffix .. unit
 end
 
+local ExpUtil = require("modules/exp_util")
 --- When an area is selected to add protection to the area
-Selection.on_selection(SelectionConvertArea, function(event)
+SelectArea:on_selection(function(event)
+    log(ExpUtil.format_any(event))
     local area = aabb_align_expand(event.area)
     local player = game.players[event.player_index]
 
     if not player then
-        return nil
+        return
     end
 
     local container = Gui.get_left_element(vlayer_container, player)
@@ -91,7 +94,7 @@ Selection.on_selection(SelectionConvertArea, function(event)
             entities = event.surface.find_entities_filtered{ area = area, name = "constant-combinator", force = player.force }
         else
             player.print{ "vlayer.power-on-space-research", config.power_on_space_research.name, config.power_on_space_research.level }
-            return nil
+            return
         end
     else
         entities = event.surface.find_entities_filtered{ area = area, name = "steel-chest", force = player.force }
@@ -99,14 +102,14 @@ Selection.on_selection(SelectionConvertArea, function(event)
 
     if #entities == 0 then
         player.print{ "vlayer.steel-chest-detect" }
-        return nil
+        return
     elseif #entities > 1 then
         player.print{ "vlayer.result-unable", { "vlayer.control-type-" .. target:gsub("_", "-") }, { "vlayer.result-multiple" } }
-        return nil
+        return
     end
 
     if not entities[1] then
-        return nil
+        return
     end
 
     local e = entities[1]
@@ -115,12 +118,12 @@ Selection.on_selection(SelectionConvertArea, function(event)
 
     if e.name and e.name == "steel-chest" and (not e.get_inventory(defines.inventory.chest).is_empty()) then
         player.print{ "vlayer.steel-chest-empty" }
-        return nil
+        return
     end
 
     if (vlayer.get_interface_counts()[target] >= config.interface_limit[target]) then
         player.print{ "vlayer.result-unable", { "vlayer.control-type-" .. target:gsub("_", "-") }, { "vlayer.result-limit" } }
-        return nil
+        return
     end
 
     e.destroy()
@@ -128,7 +131,7 @@ Selection.on_selection(SelectionConvertArea, function(event)
     if target == "energy" then
         if not vlayer.create_energy_interface(event.surface, e_pos, player) then
             player.print{ "vlayer.result-unable", { "vlayer.control-type-energy" }, { "vlayer.result-space" } }
-            return nil
+            return
         end
     elseif target == "circuit" then
         vlayer.create_circuit_interface(event.surface, e_pos, e_circ, player)
@@ -400,11 +403,10 @@ local vlayer_gui_control_build = Gui.define("vlayer_gui_control_build")
     }:style{
         width = 200,
     }:on_click(function(def, player, element)
-        if Selection.is_selecting(player, SelectionConvertArea) then
-            Selection.stop(player)
+        if SelectArea:stop(player) then
             player.print{ "vlayer.exit" }
         else
-            Selection.start(player, SelectionConvertArea)
+            SelectArea:start(player)
             player.print{ "vlayer.enter" }
         end
 

@@ -5,8 +5,9 @@ Adds a Gui which creates an selection planner to insert modules into buildings
 local Gui = require("modules/exp_gui")
 local AABB = require("modules/exp_util/aabb")
 local Roles = require("modules/exp_legacy/expcore/roles")
-local Selection = require("modules/exp_legacy/modules/control/selection")
-local SelectionModuleArea = "ModuleArea"
+
+local Selection = require("modules/exp_util/selection")
+local SelectArea = Selection.connect("ModuleArea")
 
 local config = require("modules/exp_legacy/config/module")
 
@@ -76,7 +77,7 @@ Elements.create_selection_planner = Gui.define("module_inserter/create_selection
     )
     :on_click(function(def, player, element)
         --- @cast def ExpGui_ModuleInserter.elements.create_selection_planner
-        Selection.start(player, SelectionModuleArea, false, def.data[element])
+        SelectArea:start(player, def.data[element])
     end) --[[ @as any ]]
 
 --- Used to select the machine to apply modules to
@@ -311,7 +312,7 @@ end
 --- When an area is selected to have module changes applied to it
 --- @param event EventData.on_player_selected_area
 --- @param module_table LuaGuiElement
-Selection.on_selection(SelectionModuleArea, function(event, module_table)
+SelectArea:on_selection(function(event, module_table)
     local player = Gui.get_player(event)
     local area = AABB.expand(event.area)
 

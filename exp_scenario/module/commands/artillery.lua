@@ -4,8 +4,9 @@ Adds a command that helps shoot artillery
 
 local AABB = require("modules/exp_util/aabb")
 local Commands = require("modules/exp_commands")
-local Selection = require("modules.exp_legacy.modules.control.selection") --- @dep modules.control.selection
-local SelectionName = "ExpCommand_Artillery"
+
+local Selection = require("modules/exp_util/selection")
+local SelectArea = Selection.connect("ExpCommand_Artillery")
 
 local floor = math.floor
 local abs = math.abs
@@ -37,18 +38,15 @@ end
 --- @overload fun(player: LuaPlayer)
 commands.artillery = Commands.new("artillery", { "exp-commands_artillery.description" })
     :register(function(player)
-        if Selection.is_selecting(player, SelectionName) then
-            Selection.stop(player)
+        if SelectArea:stop(player) then
             return Commands.status.success{ "exp-commands_artillery.exit" }
-        else
-            Selection.start(player, SelectionName)
-            return Commands.status.success{ "exp-commands_artillery.enter" }
         end
+        SelectArea:start(player)
+        return Commands.status.success{ "exp-commands_artillery.enter" }
     end) --[[ @as any ]]
 
 --- when an area is selected to add protection to the area
-Selection.on_selection(SelectionName, function(event)
-    --- @cast event EventData.on_player_selected_area
+SelectArea:on_selection(function(event)
     local area = AABB.expand(event.area)
     local player = game.players[event.player_index]
     local surface = event.surface
