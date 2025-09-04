@@ -6,29 +6,42 @@ export class InstancePlugin extends BaseInstancePlugin {
 	private gameTimes: number[] = [];
 
 	async onStart() {
-		this.updateInterval = setInterval(this.updateUps.bind(this), this.instance.config.get("exp_server_ups.update_interval"));
+		if (!this.instance.config.get("factorio.settings")["auto_pause"]) {
+			this.setInterval();
+		}
 	}
 
 	onExit() {
-		if (this.updateInterval) {
-			clearInterval(this.updateInterval);
-		}
+		this.clearInterval();
 	}
 
 	async onInstanceConfigFieldChanged(field: string, curr: unknown): Promise<void> {
 		if (field === "exp_server_ups.update_interval") {
-			this.onExit();
-			await this.onStart();
+			this.clearInterval();
+			this.setInterval();
 		} else if (field === "exp_server_ups.average_interval") {
 			this.gameTimes.splice(curr as number);
 		}
 	}
 
 	async onPlayerEvent(event: lib.PlayerEvent): Promise<void> {
-		if (event.type === "join" && !this.updateInterval) {
-			await this.onStart();
-		} else if (event.type === "leave" && this.instance.playersOnline.size == 0 && this.instance.config.get("factorio.settings")["auto_pause"] as boolean) {
-			this.onExit();
+		if (event.type === "join") {
+			this.setInterval();
+		} else if (event.type === "leave" && this.instance.playersOnline.size == 0 && this.instance.config.get("factorio.settings")["auto_pause"]) {
+			this.clearInterval();
+		}
+	}
+
+	setInterval() {
+		if (!this.updateInterval) {
+			this.updateInterval = setInterval(this.updateUps.bind(this), this.instance.config.get("exp_server_ups.update_interval"));
+		}
+	}
+
+	clearInterval() {
+		if (this.updateInterval) {
+			clearInterval(this.updateInterval);
+			this.updateInterval = undefined;
 		}
 	}
 
