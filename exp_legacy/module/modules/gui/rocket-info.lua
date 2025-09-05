@@ -549,7 +549,7 @@ Event.on_nth_tick(150, function()
 end)
 
 --- Adds a silo to the list when it is built
---- @param event EventData.on_built_entity | EventData.on_robot_built_entity
+--- @param event EventData.on_built_entity | EventData.on_robot_built_entity | EventData.script_raised_built | EventData.script_raised_revive
 local function on_built(event)
     local entity = event.entity
     if entity.valid and entity.name == "rocket-silo" then
@@ -559,6 +559,8 @@ end
 
 Event.add(defines.events.on_built_entity, on_built)
 Event.add(defines.events.on_robot_built_entity, on_built)
+Event.add(defines.events.script_raised_built, on_built)
+Event.add(defines.events.script_raised_revive, on_built)
 
 --- Redraw the progress section on role change
 local function role_update_event(event)
