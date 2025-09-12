@@ -7,7 +7,7 @@
 	"repository": "explosivegaming/ExpCluster",
 	"main": "dist/node/index.js",
 	"scripts": {
-		"prepare": "tsc --build"
+		"prepare": "tsc --build && webpack-cli --env production"
 	},
 	"engines": {
 		"node": ">=18"
@@ -18,7 +18,10 @@
 	"devDependencies": {
 		"@clusterio/lib": "catalog:",
 		"@types/node": "catalog:",
-		"typescript": "catalog:"
+		"typescript": "catalog:",
+		"webpack": "catalog:",
+		"webpack-cli": "catalog:",
+		"webpack-merge": "catalog:"
 	},
 	"dependencies": {
 		"@sinclair/typebox": "catalog:"
