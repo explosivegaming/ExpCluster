@@ -401,6 +401,9 @@ end
 --- @param player LuaPlayer
 function Elements.container.clear_player_bonus(player)
     Elements.container.data[player] = {}
+    if not player.character then
+        return
+    end
     for _, bonus_data in pairs(config.player_bonus) do
         if not bonus_data.is_special then
             player[bonus_data.name] = 0
