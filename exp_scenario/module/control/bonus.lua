@@ -9,15 +9,16 @@ local config = require("modules/exp_legacy/config/bonus")
 
 --- @param event EventData.on_force_created
 local function apply_force_bonus(event)
+    local force = event.force
     for k, v in pairs(config.force_bonus) do
-        event.force[k] = v.initial_value
+        force[k] = v.initial_value
     end
 end
 
 --- @param event EventData.on_surface_created
 local function apply_surface_bonus(event)
     local surface = assert(game.get_surface(event.surface_index))
-    for k, v in pairs(config.force_bonus) do
+    for k, v in pairs(config.surface_bonus) do
         surface[k] = v.initial_value
     end
 end
