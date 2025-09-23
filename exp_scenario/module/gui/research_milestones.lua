@@ -46,16 +46,18 @@ do --- Calculate the research targets
     local research_index = 1
     local total_time = 0
     for name, time in pairs(config.milestone[config.mod_set]) do
-        research_targets.index_lookup[name] = research_index
-        total_time = total_time + time * 60
+        if prototypes.technology[name] and (not prototypes.technology[name].hidden) then
+            research_targets.index_lookup[name] = research_index
+            total_time = total_time + time * 60
 
-        research_targets.target_times[research_index] = {
-            name = name,
-            target = total_time,
-            label = research_time_format(total_time),
-        }
+            research_targets.target_times[research_index] = {
+                name = name,
+                target = total_time,
+                label = research_time_format(total_time),
+            }
 
-        research_index = research_index + 1
+            research_index = research_index + 1
+        end
     end
     research_targets.length = research_index - 1
     research_targets.max_start_index = math.max(1, research_index - display_size)
