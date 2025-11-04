@@ -44,6 +44,7 @@ require("modules/exp_scenario/commands/waterfill")
 
 --- Control
 add(require("modules/exp_scenario/control/bonus"))
+add(require("modules/exp_scenario/control/custom_start"))
 add(require("modules/exp_scenario/control/research"))
 
 --- Guis
