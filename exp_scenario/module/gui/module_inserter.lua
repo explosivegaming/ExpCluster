@@ -484,7 +484,7 @@ local function on_entity_settings_pasted(event)
         planner.set_mapper(1, "to", mapper)
 
         -- Apply the planner
-        local player = assert(game.get_player(event.player_index))
+        local player = Gui.get_player(event)
         player.surface.upgrade_area{
             area = destination.bounding_box,
             item = planner,

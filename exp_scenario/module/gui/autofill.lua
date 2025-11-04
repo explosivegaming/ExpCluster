@@ -284,7 +284,7 @@ Elements.container = Gui.define("autofill/container")
         })
 
         -- Setup the player data, this is used by section and item category so needs to be done here
-        local player = assert(game.get_player(parent.player_index))
+        local player = Gui.get_player(parent)
         --- @type table<string, ExpGui_Autofill.entity_settings>
         local player_data = def.data[player] or table.deep_copy(config.default_entities)
         def.data[player] = player_data
