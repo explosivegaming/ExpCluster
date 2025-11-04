@@ -7,7 +7,6 @@ return {
     "expcore.player_data", -- must be loaded first to register event handlers
 
     --- Addons
-    "modules.addons.chat-popups",
     "modules.addons.damage-popups",
     "modules.addons.death-logger",
     "modules.addons.spawn-area",
