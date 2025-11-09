@@ -10,7 +10,6 @@ return {
     "modules.addons.damage-popups",
     "modules.addons.death-logger",
     "modules.addons.spawn-area",
-    "modules.addons.compilatron",
     "modules.addons.scorched-earth",
     "modules.addons.pollution-grading",
     "modules.addons.station-auto-name",

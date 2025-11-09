@@ -48,6 +48,7 @@ add(require("modules/exp_scenario/control/bonus"))
 add(require("modules/exp_scenario/control/chat_reply"))
 add(require("modules/exp_scenario/control/chat_popup"))
 add(require("modules/exp_scenario/control/custom_start"))
+add(require("modules/exp_scenario/control/help_bubbles"))
 add(require("modules/exp_scenario/control/research"))
 
 --- Guis
