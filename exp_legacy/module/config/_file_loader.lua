@@ -16,7 +16,6 @@ return {
     "modules.addons.report-jail",
     "modules.addons.protection-jail",
     "modules.addons.nukeprotect",
-    "modules.addons.inserter",
     "modules.addons.miner",
     "modules.addons.logging",
 
