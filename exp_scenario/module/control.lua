@@ -54,6 +54,7 @@ add(require("modules/exp_scenario/control/deconstruction_log"))
 add(require("modules/exp_scenario/control/discord_alerts"))
 add(require("modules/exp_scenario/control/help_bubbles"))
 add(require("modules/exp_scenario/control/inserter_pickup"))
+add(require("modules/exp_scenario/control/inventory_clear"))
 add(require("modules/exp_scenario/control/research"))
 
 --- Guis
