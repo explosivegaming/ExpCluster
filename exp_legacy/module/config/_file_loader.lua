@@ -17,7 +17,6 @@ return {
     "modules.addons.protection-jail",
     "modules.addons.nukeprotect",
     "modules.addons.miner",
-    "modules.addons.logging",
 
     -- Control
     "modules.control.vlayer",
