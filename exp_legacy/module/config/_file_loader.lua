@@ -16,7 +16,6 @@ return {
     "modules.addons.afk-kick",
     "modules.addons.report-jail",
     "modules.addons.protection-jail",
-    "modules.addons.deconlog",
     "modules.addons.nukeprotect",
     "modules.addons.inserter",
     "modules.addons.miner",
