@@ -51,6 +51,7 @@ add(require("modules/exp_scenario/control/custom_start"))
 add(require("modules/exp_scenario/control/damage_popups"))
 add(require("modules/exp_scenario/control/death_makers"))
 add(require("modules/exp_scenario/control/deconstruction_log"))
+add(require("modules/exp_scenario/control/discord_alerts"))
 add(require("modules/exp_scenario/control/help_bubbles"))
 add(require("modules/exp_scenario/control/research"))
 
