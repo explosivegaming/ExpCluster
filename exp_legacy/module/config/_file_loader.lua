@@ -8,7 +8,6 @@ return {
 
     --- Addons
     "modules.addons.spawn-area",
-    "modules.addons.scorched-earth",
     "modules.addons.station-auto-name",
     "modules.addons.tree-decon",
 
