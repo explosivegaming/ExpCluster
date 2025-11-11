@@ -13,7 +13,6 @@ return {
     "modules.addons.tree-decon",
     "modules.addons.afk-kick",
     "modules.addons.report-jail",
-    "modules.addons.protection-jail",
     "modules.addons.miner",
 
     -- Control
