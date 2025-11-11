@@ -63,6 +63,7 @@ add(require("modules/exp_scenario/control/pollution_grading"))
 add(require("modules/exp_scenario/control/protection_jail"))
 add(require("modules/exp_scenario/control/report_jail"))
 add(require("modules/exp_scenario/control/research"))
+add(require("modules/exp_scenario/control/station_auto_name"))
 
 --- Guis
 add(require("modules/exp_scenario/gui/autofill"))
