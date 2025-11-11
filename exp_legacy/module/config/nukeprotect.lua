@@ -25,6 +25,6 @@ return {
             },
         },
     },
-    ignore_permisison = "bypass-nukeprotect", -- @setting ignore_permisison The permission that nukeprotect will ignore
+    ignore_permission = "bypass-nukeprotect", -- @setting ignore_permission The permission that nukeprotect will ignore
     ignore_admins = true, -- @setting ignore_admins Ignore admins, true by default. Allows usage outside of the roles module
 }

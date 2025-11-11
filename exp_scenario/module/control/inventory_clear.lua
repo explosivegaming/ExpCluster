@@ -11,7 +11,7 @@ local function clear_items(event)
     local inventory = assert(player.get_main_inventory())
     ExpUtil.transfer_inventory_to_surface{
         inventory = inventory,
-        surface = game.surfaces[1],
+        surface = game.planets.nauvis.surface,
         name = "iron-chest",
         allow_creation = true,
     }
