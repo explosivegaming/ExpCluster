@@ -11,7 +11,6 @@ return {
     "modules.addons.scorched-earth",
     "modules.addons.station-auto-name",
     "modules.addons.tree-decon",
-    "modules.addons.miner",
 
     -- Control
     "modules.control.vlayer",
