@@ -48,7 +48,7 @@ local function check_afk_players()
         local frame = player.gui.screen.add{
             type = "frame",
             name = "afk-kick",
-            caption = { "afk-kick.message" },
+            caption = { "exp_afk-kick.kick-message" },
         }
 
         local uis = player.display_scale

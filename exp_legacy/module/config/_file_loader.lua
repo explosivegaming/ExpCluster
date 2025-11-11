@@ -11,8 +11,6 @@ return {
     "modules.addons.scorched-earth",
     "modules.addons.station-auto-name",
     "modules.addons.tree-decon",
-    "modules.addons.afk-kick",
-    "modules.addons.report-jail",
     "modules.addons.miner",
 
     -- Control

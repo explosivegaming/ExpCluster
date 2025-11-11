@@ -59,6 +59,7 @@ add(require("modules/exp_scenario/control/inventory_clear"))
 add(require("modules/exp_scenario/control/nuke_protection"))
 add(require("modules/exp_scenario/control/pollution_grading"))
 add(require("modules/exp_scenario/control/protection_jail"))
+add(require("modules/exp_scenario/control/report_jail"))
 add(require("modules/exp_scenario/control/research"))
 
 --- Guis
