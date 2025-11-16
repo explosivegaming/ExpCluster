@@ -6,9 +6,6 @@
 return {
     "expcore.player_data", -- must be loaded first to register event handlers
 
-    --- Addons
-    "modules.addons.tree-decon",
-
     -- Control
     "modules.control.vlayer",
 
