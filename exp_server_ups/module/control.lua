@@ -57,7 +57,11 @@ end
 --- @param player LuaPlayer
 --- @return LuaGuiElement
 function Elements.server_ups.get_main_label(player)
-    return Elements.server_ups.data[player] or Elements.server_ups(player.gui.screen, UsesServerUps:get(player))
+    local element = Elements.server_ups.data[player]
+    if element and element.valid then
+        return element
+    end
+    return Elements.server_ups(player.gui.screen, UsesServerUps:get(player))
 end
 
 --- Set the visible state of the main label

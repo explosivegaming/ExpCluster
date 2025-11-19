@@ -11,7 +11,7 @@ local write_file = helpers.write_file
 --- Add a line to the log file
 --- @param ... string
 local function add_log_line(...)
-    write_file(config.file_name, concat{ ... } .. "\n", true, 0)
+    write_file(config.file_name, concat({ ... }, " ") .. "\n", true, 0)
 end
 
 --- Add a line to the log file
@@ -61,7 +61,7 @@ end
 --- @param event EventData.on_player_joined_game
 local function on_player_joined_game(event)
     local player = assert(game.get_player(event.player_index))
-    add_log_line("[JOIN] " .. player.name .. " joined the game")
+    add_log_line("[JOIN]", player.name, "joined the game")
 end
 
 --- @param event EventData.on_player_left_game

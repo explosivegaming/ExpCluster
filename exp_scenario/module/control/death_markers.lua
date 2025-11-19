@@ -90,7 +90,7 @@ local function on_object_destroyed(event)
     end
 
     local tag = corpse_data.tag
-    if tag then
+    if tag and config.clean_map_markers then
         tag.destroy()
     end
 end

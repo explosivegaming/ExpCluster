@@ -59,7 +59,7 @@ local function check_afk_players()
         }
 
         -- Kick the player, some delay needed allow the gui to show
-        afk_kick_player_async:start_after(10, player)
+        afk_kick_player_async:start_after(60, player)
     end
 end
 

@@ -31,7 +31,8 @@ types.lower_role =
         --- @cast result any TODO role is not a defined type
 
         local player_highest = highest_role(player)
-        if player_highest.index >= result.index then
+        local is_root = Roles.config.internal.root == player_highest.name
+        if not is_root and player_highest.index >= result.index then
             return invalid{ "exp-commands-parse_role.lower-role" }
         else
             return valid(result)
@@ -47,7 +48,8 @@ types.lower_role_player =
 
         local other_highest = highest_role(result)
         local player_highest = highest_role(player)
-        if player_highest.index >= other_highest.index then
+        local is_root = Roles.config.internal.root == player_highest.name
+        if not is_root and player_highest.index >= other_highest.index then
             return invalid{ "exp-commands-parse_role.lower-role-player" }
         else
             return valid(result)
@@ -63,7 +65,8 @@ types.lower_role_player_online =
 
         local other_highest = highest_role(result)
         local player_highest = highest_role(player)
-        if player_highest.index >= other_highest.index then
+        local is_root = Roles.config.internal.root == player_highest.name
+        if not is_root and player_highest.index >= other_highest.index then
             return invalid{ "exp-commands-parse_role.lower-role-player" }
         else
             return valid(result)
@@ -79,7 +82,8 @@ types.lower_role_player_alive =
 
         local other_highest = highest_role(result)
         local player_highest = highest_role(player)
-        if player_highest.index >= other_highest.index then
+        local is_root = Roles.config.internal.root == player_highest.name
+        if not is_root and player_highest.index >= other_highest.index then
             return invalid{ "exp-commands-parse_role.lower-role-player" }
         else
             return valid(result)

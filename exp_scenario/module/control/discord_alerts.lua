@@ -49,7 +49,7 @@ local function to_hex(color)
         return hex_digits:sub(major, major) .. hex_digits:sub(minor, minor)
     end
 
-    return format_string("0x%s%s%S", hex(color.r), hex(color.g), hex(color.b))
+    return format_string("0x%s%s%s", hex(color.r), hex(color.g), hex(color.b))
 end
 
 --- Emit the requires json to file for the given event arguments
@@ -102,6 +102,7 @@ if config.player_reports then
     local Reports = require("modules.exp_legacy.modules.control.reports")
     events[Reports.events.on_player_reported] = function(event)
         local player_name, by_player_name = get_player_name(event)
+        local player = assert(game.get_player(player_name))
         emit_event{
             title = "Report",
             description = "A player was reported",
@@ -109,7 +110,7 @@ if config.player_reports then
             fields = {
                 { name = "Player", inline = true, value = append_playtime(player_name) },
                 { name = "By", inline = true, value = append_playtime(by_player_name) },
-                { name = "Report Count", inline = true, value = Reports.count_reports(player_name) },
+                { name = "Report Count", inline = true, value = Reports.count_reports(player) },
                 { name = "Reason", value = event.reason },
             },
         }
@@ -135,7 +136,7 @@ if config.player_warnings then
     local Warnings = require("modules.exp_legacy.modules.control.warnings")
     events[Warnings.events.on_warning_added] = function(event)
         local player_name, by_player_name = get_player_name(event)
-        local player = game.get_player(player_name)
+        local player = assert(game.get_player(player_name))
         emit_event{
             title = "Warning",
             description = "A player has been given a warning",
@@ -143,7 +144,7 @@ if config.player_warnings then
             fields = {
                 { name = "Player", inline = true, value = append_playtime(player_name) },
                 { name = "By", inline = true, value = append_playtime(by_player_name) },
-                { name = "Report Count", inline = true, value = Warnings.count_reports(player_name) },
+                { name = "Report Count", inline = true, value = Warnings.count_warnings(player) },
                 { name = "Reason", value = event.reason },
             },
         }

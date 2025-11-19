@@ -70,16 +70,21 @@ end
 --- @param player_index number
 --- @return TreeDeconCache
 local function get_player_cache(player_index)
+    -- Return the current cache if it is valid
     if cache and cache.tick == game.tick and cache.player_index == player_index then
         return cache
     end
 
-    local player = assert(game.get_player[player_index])
-    cache = cache or {}
+    -- Create a new cache if the previous on is in use
+    if not cache or cache.task and not cache.task.completed then
+        cache = {} --[[@as any]]
+    end
+
+    local player = assert(game.get_player(player_index))
     cache.tick = game.tick
     cache.player_index = player_index
     cache.player = player
-    cache.force = player.force
+    cache.force = player.force --[[ @as LuaForce ]]
     cache.tree_count = 0
     cache.trees = {}
     cache.permission = get_permission(player)
@@ -92,7 +97,7 @@ end
 Gui.toolbar.create_button{
     name = "toggle-tree-decon",
     sprite = "entity/tree-01",
-    tooltip = { "exp_tree-decon.tooltip-main" },
+    tooltip = { "exp_fast-decon.tooltip-main" },
     auto_toggle = true,
     visible = function(player, _)
         return Roles.player_allowed(player, "fast-tree-decon")
@@ -100,7 +105,7 @@ Gui.toolbar.create_button{
 }:on_click(function(def, player, element)
     local state = Gui.toolbar.get_button_toggled_state(def, player)
     HasEnabledDecon:set(player, state)
-    player.print{ "exp_tree-decon.chat-toggle", state and { "exp_tree-decon.chat-enabled" } or { "exp_tree-decon.chat-disabled" } }
+    player.print{ "exp_fast-decon.chat-toggle", state and { "exp_fast-decon.chat-enabled" } or { "exp_fast-decon.chat-disabled" } }
 end)
 
 -- Add trees to queue when marked, only allows simple entities and for players with role permission

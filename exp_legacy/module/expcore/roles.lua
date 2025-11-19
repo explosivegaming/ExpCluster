@@ -802,7 +802,7 @@ local allowed = role:is_allowed('command/kill')
 
 ]]
 function Roles._prototype:is_allowed(action)
-    local is_root = Roles.config.internal.root.name == self.name
+    local is_root = Roles.config.internal.root == self.name
     return self.allowed_actions[action] or self.allow_all_actions or is_root
 end
 

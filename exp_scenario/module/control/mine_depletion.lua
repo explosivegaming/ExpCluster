@@ -20,14 +20,14 @@ local order_deconstruction_async =
 local function get_drop_chest(entity)
     -- First check the direct drop target
     local target = entity.drop_target
-    if target and (target.type == "container" or target.type == "logistic-container") then
+    if target and (target.type == "container" or target.type == "logistic-container" or target.type == "infinity-container") then
         return target
     end
 
     -- Then check all entities at the drop position
     local entities = entity.surface.find_entities_filtered{
         position = entity.drop_position,
-        type = { "container", "logistic-container" },
+        type = { "container", "logistic-container", "infinity-container" },
     }
 
     return #entities > 0 and entities[1] or nil
@@ -136,8 +136,8 @@ local function try_deconstruct_miner(entity)
         { bounding_box.right_bottom.x + 1, bounding_box.right_bottom.y + 1 },
     }
 
-    local entities = surface.find_entities_filtered{ area = search_area, type = { "mining-drill", "pipe", "pipe-to-ground" } }
-    local ghosts = surface.find_entities_filtered{ area = search_area, ghost_type = { "pipe", "pipe-to-ground" } }
+    local entities = surface.find_entities_filtered{ area = search_area, type = { "mining-drill", "pipe", "pipe-to-ground", "infinity-pipe" } }
+    local ghosts = surface.find_entities_filtered{ area = search_area, ghost_type = { "pipe", "pipe-to-ground", "infinity-pipe" } }
     table.insert_array(entities, ghosts)
 
     -- Check which directions to add pipes in
@@ -187,7 +187,7 @@ end
 
 --- Get the max mining radius
 local max_mining_radius = 0
-for _, proto in pairs(prototypes.get_entity_filtered{ type = "mining-drill" }) do
+for _, proto in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "mining-drill" } }) do
     if proto.mining_drill_radius > max_mining_radius then
         max_mining_radius = proto.mining_drill_radius
     end

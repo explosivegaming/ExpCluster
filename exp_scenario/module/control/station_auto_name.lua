@@ -40,7 +40,7 @@ local custom_string_len = #custom_string
 local function rename_station(event)
     local entity = event.entity
     local name = entity.name
-    if name == "entity-ghost" and entity.ghost_name ~= "train-stop" then
+    if name == "entity-ghost" and entity.ghost_name == "train-stop" then
         local backer_name = entity.backer_name
         if backer_name ~= "" then
             entity.backer_name = backer_name .. custom_string
@@ -78,8 +78,8 @@ local function rename_station(event)
             -- Set the item name and icon
             if closest_recourse then
                 item_name = closest_recourse.name:gsub("^%l", string.upper):gsub("-", " ") -- remove dashes and making first letter capital
-                local item_type = closest_recourse.prototype.resource_category == "basic-fluid" and "fluid" or "item"
-                icon = string.format("[img=%s.%s]", item_type, closest_recourse.name)
+                local product = closest_recourse.prototype.mineable_properties.products[1]
+                icon = string.format("[img=%s.%s]", product.type, product.name)
             end
         end
 
@@ -88,7 +88,7 @@ local function rename_station(event)
             :gsub("__icon__", icon)
             :gsub("__item_name__", item_name)
             :gsub("__backer_name__", entity.backer_name)
-            :gsub("__direction__", get_direction(entity))
+            :gsub("__direction__", get_direction(entity.position))
             :gsub("__x__", math.floor(entity.position.x))
             :gsub("__y__", math.floor(entity.position.y))
     end
