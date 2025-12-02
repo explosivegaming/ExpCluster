@@ -109,7 +109,8 @@ Async._function_metatable = {
 --- @field tick number? If present, the function will be called on this game tick
 --- @field next_id number? The id of the async function to be called with the return value
 --- @field canceled boolean? True if the call has been canceled
---- @field returned any[]? The return values of the function call
+--- @field completed boolean? True if the call has completed
+--- @field return_values any? The return values of the function call
 Async._return_prototype = {} -- Prototype of the async return type
 
 Async._return_metatable = {
@@ -164,8 +165,8 @@ end
 --- @param async_func Async.AsyncFunction The function which will be called using start_soon
 function Async._return_prototype:return_to(async_func)
     self.next_id = async_func.id
-    if self.returned then
-        async_func(table.unpack(self.returned))
+    if self.completed then
+        async_func(table.unpack(self.return_values))
     end
 end
 
@@ -239,7 +240,8 @@ function Async._function_prototype:start_now(...)
         return setmetatable({
             func_id = self.id,
             args = { ... },
-            returned = rtn1,
+            completed = true,
+            return_values = rtn1,
         }, Async._return_metatable)
     else
         error("Async function " .. self.id .. " returned an invalid status: " .. table.inspect(status))
@@ -315,7 +317,8 @@ local function exec(pending, tick)
     elseif status == Async.status.complete or status == nil then
         -- The function has finished execution, raise the custom event
         Async._queue_pressure[pending.func_id] = Async._queue_pressure[pending.func_id] - 1
-        pending.returned = rtn1
+        pending.return_values = rtn1 or {}
+        pending.completed = true
         if pending.next_id then
             resolve_next[#resolve_next + 1] = setmetatable({
                 func_id = pending.next_id,

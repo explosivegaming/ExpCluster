@@ -76,6 +76,7 @@ return {
     skip_intro = true, --- @setting skip_intro skips the intro given in the default factorio free play scenario
     skip_victory = true, --- @setting skip_victory will skip the victory screen when a rocket is launched
     friendly_fire = false, --- @setting friendly_fire weather players will be able to attack each other on the same force
+    disable_crashsite = true, --- @setting disable_crashsite weather to disable creation of the crashsite
     enemy_expansion = false, --- @setting enemy_expansion a catch all for in case the map settings file fails to load
     chart_radius = 10 * 32, --- @setting chart_radius the number of tiles that will be charted when the map starts
     items = { --- @setting items items and there condition for being given

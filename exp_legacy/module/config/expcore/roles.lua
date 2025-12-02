@@ -204,7 +204,7 @@ Roles.new_role("Veteran", "Vet")
     :set_custom_color{ r = 140, g = 120, b = 200 }
     :set_parent("Member")
     :allow{
-        "command/chat-bot",
+        "command/chat-commands",
         "command/clear-ground-items",
         "command/clear-blueprints-radius",
         "command/set-trains-to-automatic",
