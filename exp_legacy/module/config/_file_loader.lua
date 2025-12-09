@@ -24,7 +24,6 @@ return {
     --- GUI
     "modules.gui.readme",
     "modules.gui.rocket-info",
-    "modules.gui.task-list",
     "modules.gui.warp-list",
     "modules.gui.player-list",
     "modules.gui.vlayer",
