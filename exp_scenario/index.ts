@@ -1,5 +1,5 @@
 import * as lib from "@clusterio/lib";
-import * as Messages from "./messages";
+// import * as Messages from "./messages";
 
 lib.definePermission({
 	name: "exp_scenario.config.view",
@@ -24,6 +24,7 @@ export const plugin: lib.PluginDeclaration = {
 	controllerEntrypoint: "./dist/node/controller",
 	instanceEntrypoint: "./dist/node/instance",
 
+	/*
 	messages: [
 	],
 
@@ -31,4 +32,5 @@ export const plugin: lib.PluginDeclaration = {
 	routes: [
 		"/exp_scenario",
 	],
+	*/
 };
