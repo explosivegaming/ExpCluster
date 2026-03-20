@@ -8,9 +8,10 @@ on_player_kicked - player_index
 local ExpUtil = require("modules/exp_util")
 local events = require("modules.exp_legacy.config.inventory_clear")
 
---- @param event { player_index: number, player_name: string }
+--- @param event { player_index: number }
 local function clear_items(event)
-    local player = assert(game.get_player(event.player_index or event.player_name))
+    if event.player_index then return end
+    local player = assert(game.get_player(event.player_index))
     local inventory = assert(player.get_main_inventory())
     ExpUtil.transfer_inventory_to_surface{
         inventory = inventory,
