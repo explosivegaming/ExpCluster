@@ -10,7 +10,7 @@ local events = require("modules.exp_legacy.config.inventory_clear")
 
 --- @param event { player_index: number }
 local function clear_items(event)
-    if event.player_index then return end
+    if not event.player_index then return end
     local player = assert(game.get_player(event.player_index))
     local inventory = assert(player.get_main_inventory())
     ExpUtil.transfer_inventory_to_surface{
