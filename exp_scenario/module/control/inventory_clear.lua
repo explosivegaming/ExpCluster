@@ -1,5 +1,8 @@
 --[[-- Control - Inventory Clear
 Will move players items to spawn when they are banned or kicked, option to clear on leave
+
+on_player_banned - player_name
+on_player_kicked - player_index
 ]]
 
 local ExpUtil = require("modules/exp_util")
@@ -7,6 +10,7 @@ local events = require("modules.exp_legacy.config.inventory_clear")
 
 --- @param event { player_index: number }
 local function clear_items(event)
+    if not event.player_index then return end
     local player = assert(game.get_player(event.player_index))
     local inventory = assert(player.get_main_inventory())
     ExpUtil.transfer_inventory_to_surface{
