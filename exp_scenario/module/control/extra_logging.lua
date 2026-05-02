@@ -25,9 +25,9 @@ local function on_cargo_pod_finished_ascending(event)
     if event.launched_by_rocket then
         local force = event.cargo_pod.force
         if force.rockets_launched >= config.rocket_launch_display_rate and force.rockets_launched % config.rocket_launch_display_rate == 0 then
-            add_log_line("[ROCKET]", force.rockets_launched, "rockets launched")
+            add_log_line("[ROCKET] ", force.rockets_launched, " rockets launched")
         elseif config.rocket_launch_display[force.rockets_launched] then
-            add_log_line("[ROCKET]", force.rockets_launched, "rockets launched")
+            add_log_line("[ROCKET] ", force.rockets_launched, " rockets launched")
         end
     end
 end
@@ -37,10 +37,13 @@ local function on_pre_player_died(event)
     local player = assert(game.get_player(event.player_index))
     local cause = event.cause
     if cause then
-        local by_player = event.cause.player
-        add_log_line("[DEATH]", player.name, "died because of", by_player and by_player.name or event.cause.name)
+        if cause.type == "character" then
+            add_log_line("[DEATH] ", player.name, " died because of ", (cause.player and cause.player.name) or cause.name)
+        else
+            add_log_line("[DEATH] ", player.name, " died because of ", cause.name)
+        end
     else
-        add_log_line("[DEATH]", player.name, "died because of unknown reason")
+        add_log_line("[DEATH] ", player.name, " died because of unknown reason")
     end
 end
 
@@ -52,22 +55,22 @@ local function on_research_finished(event)
 
     local inf_research_level = config_res.inf_res[config_res.mod_set][event.research.name]
     if inf_research_level and event.research.level >= inf_research_level then
-        add_log_line_locale{ "", "[RES] ", event.research.prototype.localised_name, " at level ", event.research.level - 1, "has been researched\n" }
+        add_log_line_locale{ "", "[RES] ", event.research.prototype.localised_name, " at level ", event.research.level - 1, " has been researched\n" }
     else
-        add_log_line_locale{ "", "[RES] ", event.research.prototype.localised_name, "has been researched\n" }
+        add_log_line_locale{ "", "[RES] ", event.research.prototype.localised_name, " has been researched\n" }
     end
 end
 
 --- @param event EventData.on_player_joined_game
 local function on_player_joined_game(event)
     local player = assert(game.get_player(event.player_index))
-    add_log_line("[JOIN]", player.name, "joined the game")
+    add_log_line("[JOIN] ", player.name, " joined the game")
 end
 
 --- @param event EventData.on_player_left_game
 local function on_player_left_game(event)
     local player = assert(game.get_player(event.player_index))
-    add_log_line("[LEAVE]", game.players[event.player_index].name, config.disconnect_reason[event.reason])
+    add_log_line("[LEAVE] ", player.name, " left the game: ", config.disconnect_reason[event.reason])
 end
 
 local e = defines.events
