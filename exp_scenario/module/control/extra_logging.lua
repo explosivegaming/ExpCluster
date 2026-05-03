@@ -55,9 +55,9 @@ local function on_research_finished(event)
 
     local inf_research_level = config_res.inf_res[config_res.mod_set][event.research.name]
     if inf_research_level and event.research.level >= inf_research_level then
-        add_log_line_locale{ "", "[RES]", event.research.prototype.localised_name, "at level", event.research.level - 1, "has been researched\n" }
+        add_log_line_locale{ "", "[RES]", event.research.prototype.localised_name, " at level ", event.research.level - 1, " has been researched\n" }
     else
-        add_log_line_locale{ "", "[RES]", event.research.prototype.localised_name, "has been researched\n" }
+        add_log_line_locale{ "", "[RES]", event.research.prototype.localised_name, " has been researched\n" }
     end
 end
 
@@ -70,7 +70,7 @@ end
 --- @param event EventData.on_player_left_game
 local function on_player_left_game(event)
     local player = assert(game.get_player(event.player_index))
-    add_log_line("[LEAVE]", player.name, "left the game: ", config.disconnect_reason[event.reason])
+    add_log_line("[LEAVE]", player.name, "left the game:", config.disconnect_reason[event.reason])
 end
 
 local e = defines.events
