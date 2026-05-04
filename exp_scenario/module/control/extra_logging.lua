@@ -70,7 +70,7 @@ end
 --- @param event EventData.on_player_left_game
 local function on_player_left_game(event)
     local player = assert(game.get_player(event.player_index))
-    add_log_line("[LEAVE]", player.name, "left the game:", config.disconnect_reason[event.reason])
+    add_log_line("[LEAVE]", player.name, config.disconnect_reason[event.reason])
 end
 
 local e = defines.events
