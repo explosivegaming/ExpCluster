@@ -38,7 +38,7 @@ local function on_pre_player_died(event)
     local cause = event.cause
     if cause then
         if cause.type == "character" then
-            add_log_line("[DEATH]", player.name, "died because of", (cause.player and cause.player.name) or cause.name)
+            add_log_line("[DEATH]", player.name, "died because of", cause.player.name)
         else
             add_log_line("[DEATH]", player.name, "died because of", cause.name)
         end
