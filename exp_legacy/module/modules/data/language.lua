@@ -5,6 +5,10 @@ local Event = require("modules/exp_legacy/utils/event") --- @dep utils.event
 local PlayerData = require("modules.exp_legacy.expcore.player_data") --- @dep expcore.player_data
 local LocalLanguage = PlayerData.Statistics:combine("LocalLanguage")
 LocalLanguage:set_default("Unknown")
+LocalLanguage:set_metadata{
+    name = { "exp-statistics.Locale" },
+    tooltip = { "exp-statistics.Locale-tooltip" },
+}
 
 local function set_locale(event)
     local player = game.players[event.player_index]
