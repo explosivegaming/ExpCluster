@@ -274,6 +274,7 @@ function ExpElement._prototype:draw(definition)
 
     if not next(signals) then
         -- If no signals then skip var arg
+        --- @cast definition LuaGuiElement.add_param
         self._draw = function(_, parent)
             return parent.add(definition)
         end
