@@ -133,7 +133,7 @@ export const plugin: lib.PluginDeclaration = {
 
 	messages: [
 		messages.GroupUpdatedEvent,
-		messages.AssignmentUpdatedEvent,
+		messages.ManualAssignmentUpdatedEvent,
 		messages.RoleMappingUpdatedEvent,
 
 		messages.GroupCreateRequest,

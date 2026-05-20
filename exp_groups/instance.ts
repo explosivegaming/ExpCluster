@@ -18,9 +18,15 @@ export type IpcPlayerAssignments = {
 };
 
 export class InstancePlugin extends BaseInstancePlugin {
+    // Once only, don't send permissions for these groups
+    // This is used for groups created on this instance that only need the controller generated id
+    skipSendingPermissions = new Set<string>(); 
+    // Track known online players so that we only apply assignment updates for them
+    onlinePlayers = new Set<string>();
+
     async init() {
         this.instance.handle(messages.GroupUpdatedEvent, this.handleGroupUpdatedEvent.bind(this));
-        this.instance.handle(messages.AssignmentUpdatedEvent, this.handleAssignmentUpdatedEvent.bind(this));
+        this.instance.handle(messages.ResolvedAssignmentUpdatedEvent, this.handleResolvedAssignmentUpdatedEvent.bind(this));
         this.instance.server.handle(`exp_group:group_updated`, this.handleGroupUpdatedIPC.bind(this))
         this.instance.server.handle(`exp_group:group_deleted`, this.handleGroupDeletedIPC.bind(this))
         this.instance.server.handle(`exp_group:player_assignments`, this.handlePlayerAssignmentsIPC.bind(this))
@@ -35,8 +41,9 @@ export class InstancePlugin extends BaseInstancePlugin {
     }
 
     async onStart() {
+        // We use Date.now() because we need to manually initialise the groups on the lua side
         await this.instance.sendTo("controller", new lib.SubscriptionRequest(
-            `exp_groups:${messages.GroupUpdatedEvent.name}`, true
+            `exp_groups:${messages.GroupUpdatedEvent.name}`, true, Date.now()
         ));
         const groups = await this.instance.sendTo("controller", new messages.GroupListRequest())
         await this.luaSendInitialGroups(groups);
@@ -46,21 +53,14 @@ export class InstancePlugin extends BaseInstancePlugin {
     async onPlayerEvent(event: lib.PlayerEvent) {
         switch(event.type) {
             case "join":
-                this.handlePlayerJoin(event.name);
+                this.onlinePlayers.add(event.name);
+                await this.subscribePlayerAssignment(event.name);
                 break;
             case "leave":
-                this.handlePlayerLeave(event.name);
+                this.onlinePlayers.delete(event.name);
+                await this.unsubscribePlayerAssignment(event.name);
                 break;
         }
-    }
-
-    async handlePlayerJoin(playerName: string) {
-        await this.subscribePlayerAssignment(playerName);
-        await this.requestPlayerAssignment(playerName);
-    }
-
-    async handlePlayerLeave(playerName: string) {
-        await this.unsubscribePlayerAssignment(playerName);
     }
 
     async handleGroupUpdatedEvent(event: messages.GroupUpdatedEvent) {
@@ -69,9 +69,11 @@ export class InstancePlugin extends BaseInstancePlugin {
         }
     }
 
-    async handleAssignmentUpdatedEvent(event: messages.AssignmentUpdatedEvent) {
+    async handleResolvedAssignmentUpdatedEvent(event: messages.ManualAssignmentUpdatedEvent) {
         for (const assignment of event.updates) {
-            await this.luaSendAssignmentUpdate(assignment);
+            if (this.onlinePlayers.has(assignment.name)) {
+                await this.luaSendAssignmentUpdate(assignment);
+            }
         }
     }
 
@@ -82,6 +84,7 @@ export class InstancePlugin extends BaseInstancePlugin {
         );
 
         if (event.group_id === undefined) {
+            this.skipSendingPermissions.add(event.group_name);
             await this.instance.sendTo("controller",
                 new messages.GroupCreateRequest(event.group_name, permissions),
             );
@@ -111,19 +114,14 @@ export class InstancePlugin extends BaseInstancePlugin {
 
     async subscribePlayerAssignment(playerName: string) {
         await this.instance.sendTo("controller", new lib.SubscriptionRequest(
-            `exp_groups:${messages.AssignmentUpdatedEvent.name}`, true, 0, playerName
+            `exp_groups:${messages.ResolvedAssignmentUpdatedEvent.name}`, true, 0, playerName
         ));
     }
 
     async unsubscribePlayerAssignment(playerName: string) {
         await this.instance.sendTo("controller", new lib.SubscriptionRequest(
-            `exp_groups:${messages.AssignmentUpdatedEvent.name}`, false, 0, playerName
+            `exp_groups:${messages.ResolvedAssignmentUpdatedEvent.name}`, false, 0, playerName
         ));
-    }
-
-    async requestPlayerAssignment(playerName: string) {
-        const assignment = await this.instance.sendTo("controller", new messages.AssignmentGetRequest(playerName));
-        await this.luaSendAssignmentUpdate(assignment);
     }
 
     async luaSendInitialGroups(groups: messages.GroupRecord[]) {
@@ -137,7 +135,14 @@ export class InstancePlugin extends BaseInstancePlugin {
         if (this.instance.config.get("exp_groups.sync_mode") == "disabled") {
             return;
         }
-        await this.instance.sendRcon(`/sc exp_groups.receive_group_update(helpers.json_to_table${JSON.stringify(group)})`)
+
+        const json = group.toJSON();
+        if (this.skipSendingPermissions.has(group.name)) {
+            this.skipSendingPermissions.delete(group.name);
+            delete (json as any).permissions;
+        }
+
+        await this.instance.sendRcon(`/sc exp_groups.receive_group_update(helpers.json_to_table${JSON.stringify(json)})`)
     }
 
     async luaSendAssignmentUpdate(assignment: messages.AssignmentRecord) {

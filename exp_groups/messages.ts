@@ -85,6 +85,10 @@ export class AssignmentRecord {
         public isDeleted: boolean = false,
     ) {}
 
+    get id() {
+        return this.name;
+    }
+
     static jsonSchema = Type.Object({
         name: Type.String(),
         group_id: Type.Integer(),
@@ -202,8 +206,33 @@ export class GroupUpdatedEvent {
     }
 }
 
-export class AssignmentUpdatedEvent {
-    declare ["constructor"]: typeof AssignmentUpdatedEvent;
+export class ManualAssignmentUpdatedEvent {
+    declare ["constructor"]: typeof ManualAssignmentUpdatedEvent;
+    static plugin = "exp_groups" as const;
+    static type = "event" as const;
+    static src = "controller" as const;
+    static dst = ["control", "instance"] as const;
+    static permission = "exp_groups.assignment.subscribe" as const;
+
+    constructor(
+        public updates: AssignmentRecord[],
+    ) {}
+
+    static jsonSchema = Type.Object({
+        updates: Type.Array(AssignmentRecord.jsonSchema),
+    });
+
+    toJSON() {
+        return { updates: this.updates.map(assignment => assignment.toJSON()) };
+    }
+
+    static fromJSON(json: Static<typeof this.jsonSchema>) {
+        return new this(json.updates.map(assignment => AssignmentRecord.fromJSON(assignment)));
+    }
+}
+
+export class ResolvedAssignmentUpdatedEvent {
+    declare ["constructor"]: typeof ResolvedAssignmentUpdatedEvent;
     static plugin = "exp_groups" as const;
     static type = "event" as const;
     static src = "controller" as const;
@@ -486,20 +515,23 @@ export class AssignmentGetRequest {
 
     constructor(
         public name: string,
+        public resolve: boolean = false,
     ) {}
 
     static jsonSchema = Type.Object({
         name: Type.String(),
+        resolve: Type.Boolean(),
     });
 
     toJSON() {
         return {
             name: this.name,
+            resolve: this.resolve,
         };
     }
 
     static fromJSON(json: Static<typeof this.jsonSchema>) {
-        return new this(json.name);
+        return new this(json.name, json.resolve);
     }
 }
 
