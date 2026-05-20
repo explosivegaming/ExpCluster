@@ -1,4 +1,4 @@
---[[-- Exp Permission Groups
+--[[-- ExpGroups
 Adds permission group syncing to clusterio
 ]]
 
@@ -6,18 +6,18 @@ local clusterio_api = require("modules/clusterio/api")
 local compat = require("modules/clusterio/compat")
 
 --- Top level module table, contains event handlers and public methods
---- @class ExpPermissionGroups
-local ExpPermissionGroups = {}
+--- @class ExpGroups
+local ExpGroups = {}
 
 --- @class ExpPermissionGroups.GroupPermissions
---- @field [1] boolean -- is_blacklist, true means action names is a backlist
---- @field [2] string[] -- action_names, the actions to allow or disallow
+--- @field is_blacklist boolean
+--- @field permissions string[]
 
 --- @class ExpPermissionGroups.GroupRecord
 --- @field id number
 --- @field name string
 --- @field permissions ExpPermissionGroups.GroupPermissions?
---- @field isDeleted boolean
+--- @field is_deleted boolean
 
 --- @class ExpPermissionGroups.AssignmentRecord
 --- @field name string
@@ -44,7 +44,7 @@ local function setup_script_data()
         }
     end
 
-    ExpPermissionGroups.on_load()
+    ExpGroups.on_load()
 end
 
 --[[
@@ -71,17 +71,15 @@ end
 --- @param group LuaPermissionGroup
 --- @param permissions ExpPermissionGroups.GroupPermissions
 local function decode_group_permissions(group, permissions)
-    local is_blacklist = permissions[1]
-    local actions_names = permissions[2]
-    local action_allowed = not is_blacklist
-
     -- Construct a hash map for faster lookup
     local action_map = {}
-    for _, input_action_name in pairs(actions_names) do
+    for _, input_action_name in pairs(permissions.permissions) do
         action_map[input_action_name] = true
     end
 
     -- Apply the whitelist / backlist to the group
+    local is_blacklist = permissions.is_blacklist
+    local action_allowed = not is_blacklist
     for input_action_name, input_action in pairs(defines.input_action) do
         if action_map[input_action_name] then
             group.set_allows_action(input_action, action_allowed)
@@ -114,11 +112,11 @@ local function encode_group_permissions(group)
 
     -- Return the whitelist if it is smaller
     if blacklist_index > whitelist_index then
-        return { false, whitelist }
+        return { is_blacklist = false, permissions = whitelist }
     end
 
     -- Otherwise return the blacklist as it is smaller
-    return { true, blacklist }
+    return { is_blacklist = true, permissions = blacklist }
 end
 
 --[[
@@ -128,7 +126,7 @@ end
 --- Update the factorio permission group
 --- @param group_record ExpPermissionGroups.GroupRecord
 local function update_group(group_record)
-    assert(not group_record.isDeleted)
+    assert(not group_record.is_deleted)
 
     -- Try find the group by id and then then name
     local group = script_data.clusterio_id_to_group[group_record.id]
@@ -156,7 +154,7 @@ end
 --- Delete the factorio permission group
 --- @param group_record ExpPermissionGroups.GroupRecord
 local function delete_group(group_record)
-    assert(group_record.isDeleted)
+    assert(group_record.is_deleted)
 
     local default_group = get_default_group()
     local group = script_data.clusterio_id_to_group[group_record.id]
@@ -193,19 +191,19 @@ end
 ]]
 
 --- Restore local references to persistent script data after load
-function ExpPermissionGroups.on_load()
+function ExpGroups.on_load()
     script_data = compat.script_data["exp_groups"]
 end
 
 --- Enable or disable emitting lua changes back to the instance plugin
 --- @param enabled boolean?
-function ExpPermissionGroups.set_emit_events(enabled)
+function ExpGroups.set_emit_events(enabled)
     script_data.emit_updates = enabled ~= false
 end
 
 --- Replace local state with expected controller state on startup
 --- @param group_records ExpPermissionGroups.GroupRecord[]
-function ExpPermissionGroups.initialise_groups(group_records)
+function ExpGroups.initialise_groups(group_records)
     local _emit_events = script_data.emit_updates
     script_data.emit_updates = false
 
@@ -241,11 +239,11 @@ end
 
 --- Receive an updated version of a group record
 --- @param group_record ExpPermissionGroups.GroupRecord
-function ExpPermissionGroups.receive_group_update(group_record)
+function ExpGroups.receive_group_update(group_record)
     local _emit_events = script_data.emit_updates
     script_data.emit_updates = false
 
-    if group_record.isDeleted then
+    if group_record.is_deleted then
         delete_group(group_record)
     else
         update_group(group_record)
@@ -256,7 +254,7 @@ end
 
 --- Receive an updated version of a assignment record
 --- @param assignment_record ExpPermissionGroups.AssignmentRecord
-function ExpPermissionGroups.receive_assignment_update(assignment_record)
+function ExpGroups.receive_assignment_update(assignment_record)
     local _emit_events = script_data.emit_updates
     script_data.emit_updates = false
 
@@ -271,7 +269,7 @@ end
 
 --- Get the current script data for debugging purposes
 --- @package
-function ExpPermissionGroups._script_data()
+function ExpGroups._script_data()
     return script_data
 end
 
@@ -332,7 +330,6 @@ local function flush_group_updates()
     end
 
     -- Get all the groups and emit their updates
-    local get_group = game.permissions.get_group
     for _, group in pairs(script_data.dirty_groups) do
         if group.valid then
             emit_group_update(group)
@@ -431,6 +428,6 @@ local on_nth_tick = {
     [300] = on_nth_tick_flush,
 }
 
-ExpPermissionGroups.events = events --- @package
-ExpPermissionGroups.on_nth_tick = on_nth_tick --- @package
-return ExpPermissionGroups
+ExpGroups.events = events --- @package
+ExpGroups.on_nth_tick = on_nth_tick --- @package
+return ExpGroups
