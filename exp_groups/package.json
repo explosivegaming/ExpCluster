@@ -13,12 +13,24 @@
 		"node": ">=18"
 	},
 	"peerDependencies": {
-		"@clusterio/lib": "catalog:"
+		"@clusterio/controller": "workspace:^",
+		"@clusterio/host": "workspace:^",
+		"@clusterio/lib": "workspace:^",
+		"@clusterio/web_ui": "workspace:^"
 	},
 	"devDependencies": {
-		"typescript": "catalog:",
+		"@ant-design/icons": "^6.2.3",
+		"@clusterio/controller": "workspace:^",
+		"@clusterio/host": "workspace:^",
+		"@clusterio/lib": "workspace:^",
+		"@clusterio/web_ui": "workspace:^",
 		"@types/node": "catalog:",
-		"@clusterio/lib": "catalog:",
+		"@types/react": "catalog:",
+		"antd": "catalog:",
+		"react": "catalog:",
+		"react-dom": "catalog:",
+		"react-router-dom": "catalog:",
+		"typescript": "catalog:",
 		"webpack": "catalog:",
 		"webpack-cli": "catalog:",
 		"webpack-merge": "catalog:"
