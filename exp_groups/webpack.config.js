@@ -23,6 +23,11 @@ module.exports = (env = {}) => merge(common(env), {
 			shared: {
 				"@clusterio/lib": { import: false },
 				"@clusterio/web_ui": { import: false },
+				"antd": { import: false },
+				"react": { import: false },
+				"react-dom": { import: false },
+				"react-router": { import: false },
+				"react-router-dom": { import: false },
 			},
 		}),
 	],

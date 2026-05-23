@@ -134,6 +134,7 @@ export const plugin: lib.PluginDeclaration = {
 	messages: [
 		messages.GroupUpdatedEvent,
 		messages.ManualAssignmentUpdatedEvent,
+		messages.ResolvedAssignmentUpdatedEvent,
 		messages.RoleMappingUpdatedEvent,
 
 		messages.GroupCreateRequest,
@@ -168,4 +169,10 @@ export const plugin: lib.PluginDeclaration = {
 	controllerEntrypoint: "./dist/node/controller",
 	controllerConfigFields: {
 	},
+
+	webEntrypoint: "./web",
+	routes: [
+		"/exp_groups",
+		"/exp_groups/:id/view",
+	]
 };

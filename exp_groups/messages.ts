@@ -292,6 +292,7 @@ export class GroupCreateRequest {
     static src = ["control", "instance"] as const;
     static dst = "controller" as const;
     static permission = "exp_groups.group.create" as const;
+    static Response = GroupRecord;
 
     constructor(
         public name: string,
@@ -425,6 +426,7 @@ export class AssignmentCreateRequest {
     static src = ["control", "instance"] as const;
     static dst = "controller" as const;
     static permission = "exp_groups.assignment.create" as const;
+    static Response = AssignmentRecord;
 
     constructor(
         public name: string,
@@ -558,6 +560,7 @@ export class RoleMappingCreateRequest {
     static src = ["control", "instance"] as const;
     static dst = "controller" as const;
     static permission = "exp_groups.role_mapping.create" as const;
+    static Response = RoleMappingRecord;
 
     constructor(
         public roleIds: number[],

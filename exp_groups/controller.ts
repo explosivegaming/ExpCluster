@@ -228,6 +228,7 @@ export class ControllerPlugin extends BaseControllerPlugin {
 
         const group = new messages.GroupRecord(id, request.name, request.permissions);
         this.groups.set(group);
+        return group;
     }
 
     async handleGroupUpdateRequest(request: messages.GroupUpdateRequest) {
@@ -275,6 +276,7 @@ export class ControllerPlugin extends BaseControllerPlugin {
 
         const assignment = new messages.AssignmentRecord(name, groupId);
         this.manualAssignments.set(assignment);
+        return assignment;
     }
 
     async handleAssignmentUpdateRequest(request: messages.AssignmentUpdateRequest) {
@@ -330,24 +332,38 @@ export class ControllerPlugin extends BaseControllerPlugin {
             id = Math.random() * 2**31 | 0;
         }
 
-        const mapping = new messages.RoleMappingRecord(
-            id,
-            new Set(request.roleIds),
-            request.groupId,
-            request.priority,
-            request.enabled,
+        let priority = request.priority;
+        const existing = new Set([...this.roleMappings.values()].map(m => m.priority));
+        while (existing.has(priority)) {
+            priority++;
+        }
+
+        const roleMapping = new messages.RoleMappingRecord(
+            id, new Set(request.roleIds), request.groupId, priority, request.enabled,
         );
 
-        this.roleMappings.set(mapping);
+        this.roleMappings.set(roleMapping);
+        return roleMapping;
     }
 
     async handleRoleMappingUpdateRequest(request: messages.RoleMappingUpdateRequest) {
-        const mapping = request.roleMapping;
-        if (mapping.id === undefined || !this.roleMappings.has(mapping.id)) {
-            throw new lib.RequestError(`Role mapping with ID ${mapping.id} does not exist`);
+        const roleMapping = request.roleMapping;
+        if (roleMapping.id === undefined || !this.roleMappings.has(roleMapping.id)) {
+            throw new lib.RequestError(`Role mapping with ID ${roleMapping.id} does not exist`);
         }
 
-        this.roleMappings.set(mapping);
+        const existing = new Set(
+            [...this.roleMappings.values()]
+                .filter(m => m.id !== roleMapping.id)
+                .map(m => m.priority)
+        );
+
+        let priority = roleMapping.priority;
+        while (existing.has(priority)) {
+            priority++;
+        }
+
+        this.roleMappings.set(roleMapping);
     }
 
     async handleRoleMappingDeleteRequest(request: messages.RoleMappingDeleteRequest) {

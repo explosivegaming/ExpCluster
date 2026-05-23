@@ -419,6 +419,7 @@ local e = defines.events
 
 local events = {
     [clusterio_api.events.on_server_startup] = on_server_startup,
+    [e.on_multiplayer_init] = on_server_startup,
     [e.on_permission_group_added] = on_permission_group_added,
     [e.on_permission_group_deleted] = on_permission_group_deleted,
     [e.on_permission_group_edited] = on_permission_group_edited,
