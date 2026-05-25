@@ -1,23 +1,35 @@
 import React, { useContext, useState } from "react";
-import { Table, Button, Popconfirm, Space, Tag } from "antd";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { Table, Button, Space, Tag } from "antd";
+import { EditOutlined } from "@ant-design/icons";
 
 import { ControlContext, useAccount, useRoles } from "@clusterio/web_ui";
-import * as messages from "../../messages";
+import { RoleMappingRecord, RoleMappingDeleteRequest } from "../../messages";
+import type { WebPlugin } from "..";
 
 import RoleMappingForm from "./RoleMappingForm";
+import DeletedConfirm from "./DeleteConfirm";
 
 export default function RoleMappingsTable() {
 	const control = useContext(ControlContext);
-	const plugin = control.plugins.get("exp_groups") as any;
+	const plugin = control.plugins.get("exp_groups") as WebPlugin;
 	const account = useAccount();
 
-	const [roleMappings, synced] = plugin.useRoleMappings();
-	const [groups] = plugin.useGroups();
-	const [roles] = useRoles();
+	const [roleMappings, roleMappingsSynced] = plugin.useRoleMappings();
+	const [groups, groupsSynced] = plugin.useGroups();
+	const [roles, rolesSynced] = useRoles();
 
-	const [editing, setEditing] = useState<any>(null);
+	const [editing, setEditing] = useState<RoleMappingRecord | undefined>();
 	const [open, setOpen] = useState(false);
+
+	const roleMappingArray = [...roleMappings.values()];
+
+	const roleFilters = [...roles.values()]
+		.filter(role => roleMappingArray.some(mapping => mapping.roleIds.has(role.id)))
+		.map(role => ({ text: role.name, value: role.id }));
+
+	const groupFilters = [...groups.values()]
+		.filter(group => roleMappingArray.some(mapping => mapping.groupId === group.id))
+		.map(group => ({ text: group.name, value: group.id }))
 
 	return <>
 		<Table
@@ -25,48 +37,69 @@ export default function RoleMappingsTable() {
 				{
 					title: "Priority",
 					dataIndex: "priority",
+					width: "10%",
 				},
 				{
 					title: "Roles",
-					render: (_: any, m: any) => [...m.roleIds].map((id: number) => {
-						const role = roles.get(id);
-						return <Tag key={id}>{role?.name ?? id}</Tag>;
-					}),
+					filters: roleFilters,
+					onFilter: (value, record: RoleMappingRecord) => (
+						record.roleIds.has(value as number)
+					),
+					render: (_: any, record: RoleMappingRecord) => (
+						[...record.roleIds].map(id => <Tag key={id}>{roles.get(id)?.name ?? id}</Tag>)
+					),
 				},
 				{
 					title: "Group",
-					render: (_: any, m: any) => groups.get(m.groupId)?.name ?? m.groupId,
+					width: "30%",
+					filters: groupFilters,
+					onFilter: (value, record: RoleMappingRecord) => (
+						record.groupId === value
+					),
+					render: (_: any, record: RoleMappingRecord) => (
+						groups.get(record.groupId)?.name ?? record.groupId
+					),
 				},
 				{
 					title: "Enabled",
-					render: (_: any, m: any) => m.enabled ? "Yes" : "No",
-				},
-				{
-					title: "Actions",
-					render: (_: any, record: any) => (
-						<Space>
-							{account.hasPermission("exp_groups.role_mapping.update") &&
-								<Button icon={<EditOutlined />} onClick={() => {
-									setEditing(record);
-									setOpen(true);
-								}} />
-							}
-							{account.hasPermission("exp_groups.role_mapping.delete") &&
-								<Popconfirm
-									title="Delete?"
-									onConfirm={() => control.send(new messages.RoleMappingDeleteRequest(record.id))}
-								>
-									<Button danger icon={<DeleteOutlined />} />
-								</Popconfirm>
-							}
-						</Space>
+					width: "10%",
+					filters: [
+						{ text: "Enabled", value: true },
+						{ text: "Disabled", value: false },
+					],
+					onFilter: (value, record: RoleMappingRecord) => (
+						record.enabled === value
+					),
+					render: (_: any, record: RoleMappingRecord) => (
+						record.enabled ? "Yes" : "No"
 					),
 				},
+				...(account.hasAnyPermission(
+					"exp_groups.role_mapping.update",
+					"exp_groups.role_mapping.delete",
+				) ? [{
+					title: "Actions",
+					width: "10%",
+					render: (_: any, record: any) => (
+						<Space>
+							{account.hasPermission("exp_groups.role_mapping.update") && <Button
+								icon={<EditOutlined />}
+								onClick={() => {
+									setEditing(record);
+									setOpen(true);
+								}}
+							/>}
+							{account.hasPermission("exp_groups.role_mapping.delete") && <DeletedConfirm
+								onConfirm={() => control.send(new RoleMappingDeleteRequest(record.id))}
+							/>}
+						</Space>
+					),
+				}] : []),
 			]}
-			dataSource={[...roleMappings.values()].sort((a, b) => b.priority - a.priority)}
-			loading={!synced}
-			pagination={false}
+			dataSource={roleMappingArray.sort((a, b) => b.priority - a.priority)}
+			loading={!roleMappingsSynced || !groupsSynced || !rolesSynced}
 			rowKey={(m) => m.id}
+			pagination={false}
 		/>
 
 		<RoleMappingForm open={open} setOpen={setOpen} initial={editing} />

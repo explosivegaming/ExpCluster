@@ -1,13 +1,14 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button, Checkbox, Input, Space, Spin, Alert } from "antd";
 
-import { ControlContext, useAccount, useDefaultModPack } from "@clusterio/web_ui";
-import { PageLayout, PageHeader, notifyErrorHandler } from "@clusterio/web_ui";
+import { ControlContext, useAccount, useDefaultModPack, PageLayout, PageHeader, notifyErrorHandler } from "@clusterio/web_ui";
+import DeletedConfirm from "./DeleteConfirm";
 
 import * as messages from "../../messages";
+import type { WebPlugin } from "..";
 
-const DOMAIN_RULES: Record<string, string[]> = {
+const DOMAIN_MAPPING = {
 	"Admin": ["admin", "cheat", "permission", "infinity", "editor", "spawn"],
 	"Building & Crafting": ["mining", "build", "craft", "deconstruct", "rotate", "entity"],
 	"Inventory": ["inventory", "stack", "cursor", "slot", "quick_bar", "item", "equipment"],
@@ -24,7 +25,7 @@ const DOMAIN_RULES: Record<string, string[]> = {
 function getDomain(name: string) {
 	const n = name.toLowerCase();
 
-	for (const [domain, keywords] of Object.entries(DOMAIN_RULES)) {
+	for (const [domain, keywords] of Object.entries(DOMAIN_MAPPING)) {
 		if (keywords.some(k => n.includes(k))) return domain;
 	}
 
@@ -33,7 +34,8 @@ function getDomain(name: string) {
 
 export default function GroupViewPage() {
 	const control = useContext(ControlContext);
-	const plugin = control.plugins.get("exp_groups") as any;
+	const plugin = control.plugins.get("exp_groups") as WebPlugin;
+	const navigate = useNavigate();
 	const account = useAccount();
 
 	const { id } = useParams();
@@ -52,6 +54,7 @@ export default function GroupViewPage() {
 	const [search, setSearch] = useState("");
 
 	const canUpdate = Boolean(account.hasPermission("exp_groups.group.update"));
+	const canDelete = Boolean(account.hasPermission("exp_groups.group.delete"));
 
 	// fetch defines
 	useEffect(() => {
@@ -59,16 +62,12 @@ export default function GroupViewPage() {
 		if (definesJson) return;
 
 		const assetName = defaultModPack.exportManifest.assets.defines;
-
+		
 		(async () => {
-			try {
-				const response = await fetch(`${staticRoot}static/${assetName}`);
-				const json = await response.json();
-				setDefinesJson(json.input_action ?? {});
-			} catch (err) {
-				console.error("Failed to load defines", err);
-			}
-		})();
+			const response = await fetch(`${staticRoot}static/${assetName}`);
+			const json = await response.json();
+			setDefinesJson(json.input_action ?? {});
+		})().catch(notifyErrorHandler("Failed to load permissions"));
 	}, [defaultModPack]);
 
 	// initialise permissions
@@ -94,17 +93,13 @@ export default function GroupViewPage() {
 	}, [group]);
 
 	// derived data
-	const allPermissions = useMemo(
-		() => Object.keys(definesJson ?? {}),
-		[definesJson]
-	);
+	const allPermissions = useMemo(() => (
+		Object.keys(definesJson ?? {})
+	), [definesJson]);
 
-	const filtered = useMemo(
-		() => allPermissions.filter(p =>
-			p.toLowerCase().includes(search.toLowerCase())
-		),
-		[allPermissions, search]
-	);
+	const filtered = useMemo(() => allPermissions.filter(p =>
+		p.toLowerCase().includes(search.toLowerCase())
+	), [allPermissions, search]);
 
 	const grouped = useMemo(() => {
 		const map = new Map<string, string[]>();
@@ -169,8 +164,16 @@ export default function GroupViewPage() {
 		</PageLayout>;
 	}
 
-	return <PageLayout nav={[{ name: "exp_groups", path: "/exp_groups" }, { name: group.name }]}>
-		<PageHeader title={group.name} />
+	return <PageLayout nav={[{ name: "Permission Groups", path: "/permission_groups" }, { name: group.name }]}>
+		<PageHeader
+			title={group.name}
+			extra={<Space wrap>
+				{canDelete && <DeletedConfirm placement="bottomRight" onConfirm={async () => {
+					control.send(new messages.GroupDeleteRequest(group.id));
+					navigate(`/permission_groups`);
+				}}/>}
+			</Space>}
+		/>
 
 		{edited && (
 			<div style={{
@@ -204,7 +207,8 @@ export default function GroupViewPage() {
 			<Alert
 				type="warning"
 				message="Missing export"
-				description="An export of the default mod pack is required to see all available permissions."
+				description="An export of the default mod pack is required to modify permissions."
+				style={{ marginBottom: 16 }}
 				showIcon
 			/>
 		)}

@@ -5,7 +5,7 @@ import * as messages from "./messages";
 export type IpcGroupUpdated = {
 	group_name: string,
 	group_id: number | undefined,
-	permissions: { is_blacklist: boolean, permissions: string[] },
+	permissions: { is_blacklist: boolean, permissions: string[] | undefined },
 };
 
 export type IpcGroupDeleted = {
@@ -21,6 +21,8 @@ export class InstancePlugin extends BaseInstancePlugin {
     // Once only, don't send permissions for these groups
     // This is used for groups created on this instance that only need the controller generated id
     skipSendingPermissions = new Set<string>(); 
+    // This is used for groups updated / deleted on this instance to stop cycles
+    skipSendingUpdate = new Set<number>(); 
     // Track known online players so that we only apply assignment updates for them
     onlinePlayers = new Set<string>();
 
@@ -80,8 +82,8 @@ export class InstancePlugin extends BaseInstancePlugin {
     async handleGroupUpdatedIPC(event: IpcGroupUpdated) {
         const permissions = new messages.GroupPermissions(
             event.permissions.is_blacklist,
-            event.permissions.permissions,
-        );
+            event.permissions.permissions ?? [],
+        )
 
         if (event.group_id === undefined) {
             this.skipSendingPermissions.add(event.group_name);
@@ -89,6 +91,7 @@ export class InstancePlugin extends BaseInstancePlugin {
                 new messages.GroupCreateRequest(event.group_name, permissions),
             );
         } else {
+            this.skipSendingUpdate.add(event.group_id);
             await this.instance.sendTo("controller", new messages.GroupUpdateRequest(
                 new messages.GroupRecord(event.group_id, event.group_name, permissions),
             ));
@@ -99,6 +102,7 @@ export class InstancePlugin extends BaseInstancePlugin {
         if (event.group_id === undefined) {
             return;
         }
+        this.skipSendingUpdate.add(event.group_id);
         await this.instance.sendTo("controller", new messages.GroupDeleteRequest(event.group_id));
     }
 
@@ -125,14 +129,19 @@ export class InstancePlugin extends BaseInstancePlugin {
     }
 
     async luaSendInitialGroups(groups: messages.GroupRecord[]) {
-        if (this.instance.config.get("exp_groups.sync_mode") == "disabled") {
+        if (this.instance.config.get("exp_groups.sync_mode") === "disabled") {
             return;
         }
-        await this.instance.sendRcon(`/sc exp_groups.initialise_groups(helpers.json_to_table${JSON.stringify(groups)})`)
+        await this.luaSend("initialise_groups", groups);
     }
 
     async luaSendGroupUpdate(group: messages.GroupRecord) {
-        if (this.instance.config.get("exp_groups.sync_mode") == "disabled") {
+        if (this.instance.config.get("exp_groups.sync_mode") === "disabled") {
+            return;
+        }
+
+        if (this.skipSendingUpdate.has(group.id)) {
+            this.skipSendingUpdate.delete(group.id);
             return;
         }
 
@@ -142,17 +151,21 @@ export class InstancePlugin extends BaseInstancePlugin {
             delete (json as any).permissions;
         }
 
-        await this.instance.sendRcon(`/sc exp_groups.receive_group_update(helpers.json_to_table${JSON.stringify(json)})`)
+        await this.luaSend("receive_group_update", json);
     }
 
     async luaSendAssignmentUpdate(assignment: messages.AssignmentRecord) {
-        if (this.instance.config.get("exp_groups.sync_mode") == "disabled") {
+        if (this.instance.config.get("exp_groups.sync_mode") === "disabled") {
             return;
         }
-        await this.instance.sendRcon(`/sc exp_groups.initialise_groups(helpers.receive_assignment_update${JSON.stringify(assignment)})`)
+        await this.luaSend("receive_assignment_update", assignment);
     }
 
     async luaSetEmitEvents(emitEvents: boolean) {
-        await this.instance.sendRcon(`/sc exp_groups.set_emit_events(${emitEvents})`)
+        await this.luaSend("set_emit_events", emitEvents);
+    }
+
+    async luaSend(receiver: string, json: any) {
+        await this.instance.sendRcon(`/c exp_groups.${receiver}(helpers.json_to_table[=[${JSON.stringify(json)}]=])`, true)
     }
 }

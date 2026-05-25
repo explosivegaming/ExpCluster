@@ -11,7 +11,7 @@ local ExpGroups = {}
 
 --- @class ExpPermissionGroups.GroupPermissions
 --- @field is_blacklist boolean
---- @field permissions string[]
+--- @field permissions string[]?
 
 --- @class ExpPermissionGroups.GroupRecord
 --- @field id number
@@ -21,8 +21,8 @@ local ExpGroups = {}
 
 --- @class ExpPermissionGroups.AssignmentRecord
 --- @field name string
---- @field groupId number
---- @field isDeleted boolean
+--- @field group_id number
+--- @field is_deleted boolean
 
 --- @class ExpPermissionGroups.ScriptData
 --- @field factorio_to_clusterio_id table<number, number?>
@@ -73,7 +73,7 @@ end
 local function decode_group_permissions(group, permissions)
     -- Construct a hash map for faster lookup
     local action_map = {}
-    for _, input_action_name in pairs(permissions.permissions) do
+    for _, input_action_name in pairs(assert(permissions.permissions)) do
         action_map[input_action_name] = true
     end
 
@@ -112,11 +112,15 @@ local function encode_group_permissions(group)
 
     -- Return the whitelist if it is smaller
     if blacklist_index > whitelist_index then
-        return { is_blacklist = false, permissions = whitelist }
+        return whitelist_index > 0
+            and { is_blacklist = false, permissions = whitelist }
+            or { is_blacklist = false }
     end
 
     -- Otherwise return the blacklist as it is smaller
-    return { is_blacklist = true, permissions = blacklist }
+    return blacklist_index > 0
+        and { is_blacklist = true, permissions = blacklist }
+        or { is_blacklist = true }
 end
 
 --[[
@@ -167,9 +171,9 @@ end
 --- Update an assignment by moving the player to their new group
 --- @param assignment_record ExpPermissionGroups.AssignmentRecord
 local function update_assignment(assignment_record)
-    assert(not assignment_record.isDeleted)
+    assert(not assignment_record.is_deleted)
 
-    local group = script_data.clusterio_id_to_group[assignment_record.groupId]
+    local group = script_data.clusterio_id_to_group[assignment_record.group_id]
     local player = assert(game.get_player(assignment_record.name))
     if group then
         group.add_player(player)
@@ -179,7 +183,7 @@ end
 --- Clear an assignment by moving the player to the default group
 --- @param assignment_record ExpPermissionGroups.AssignmentRecord
 local function delete_assignment(assignment_record)
-    assert(assignment_record.isDeleted)
+    assert(assignment_record.is_deleted)
 
     local default_group = get_default_group()
     local player = assert(game.get_player(assignment_record.name))
@@ -258,7 +262,7 @@ function ExpGroups.receive_assignment_update(assignment_record)
     local _emit_events = script_data.emit_updates
     script_data.emit_updates = false
 
-    if assignment_record.isDeleted then
+    if assignment_record.is_deleted then
         delete_assignment(assignment_record)
     else
         update_assignment(assignment_record)
@@ -378,7 +382,7 @@ local function on_permission_group_added(event)
         return
     end
 
-    emit_group_update(event.group)
+    mark_group_dirty(event.group)
 end
 
 --- Handle deletion of permission groups

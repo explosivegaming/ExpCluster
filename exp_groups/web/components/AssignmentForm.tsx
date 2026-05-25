@@ -1,12 +1,17 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { Modal, Form, Select } from "antd";
 
 import { ControlContext, useUsers } from "@clusterio/web_ui";
 import * as messages from "../../messages";
+import type { WebPlugin } from "..";
 
-export default function AssignmentForm({ open, setOpen, initial }: any) {
+export default function AssignmentForm({ open, setOpen, initial }: {
+	open: boolean,
+	setOpen: (open: boolean) => void,
+	initial?: messages.AssignmentRecord,
+}) {
 	const control = useContext(ControlContext);
-	const plugin = control.plugins.get("exp_groups") as any;
+	const plugin = control.plugins.get("exp_groups") as WebPlugin;
 
 	const [groups] = plugin.useGroups();
 	const [users] = useUsers();
@@ -16,7 +21,10 @@ export default function AssignmentForm({ open, setOpen, initial }: any) {
 	function submit(values: any) {
 		if (initial) {
 			control.send(new messages.AssignmentUpdateRequest(
-				new messages.AssignmentRecord(values.name, values.groupId)
+				new messages.AssignmentRecord(
+					values.name,
+					values.groupId,
+				)
 			));
 		} else {
 			control.send(new messages.AssignmentCreateRequest(
@@ -28,13 +36,20 @@ export default function AssignmentForm({ open, setOpen, initial }: any) {
 		setOpen(false);
 	}
 
+	useEffect(() => {
+		if (open) {
+			form.resetFields();
+			form.setFieldsValue(initial);
+		}
+	}, [open, initial]);
+
 	return <Modal
 		title={initial ? "Edit Assignment" : "Create Assignment"}
 		open={open}
 		onCancel={() => setOpen(false)}
 		onOk={() => form.submit()}
 	>
-		<Form form={form} initialValues={initial} onFinish={submit}>
+		<Form form={form} onFinish={submit}>
 			<Form.Item name="name" label="Player" rules={[{ required: true }]}>
 				<Select disabled={Boolean(initial)} showSearch>
 					{[...users.values()].map(u => (

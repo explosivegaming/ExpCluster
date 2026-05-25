@@ -2,7 +2,9 @@ import React, { useContext, useState } from "react";
 import { Table } from "antd";
 import { useNavigate } from "react-router-dom";
 
-import { ControlContext, useAccount } from "@clusterio/web_ui";
+import { ControlContext } from "@clusterio/web_ui";
+import { GroupRecord } from "../../messages";
+import type { WebPlugin } from "..";
 
 import GroupForm from "./GroupForm";
 
@@ -10,7 +12,7 @@ const strcmp = new Intl.Collator(undefined, { numeric: true, sensitivity: "base"
 
 export default function GroupsTable() {
 	const control = useContext(ControlContext);
-	const plugin = control.plugins.get("exp_groups") as any;
+	const plugin = control.plugins.get("exp_groups") as WebPlugin;
 	const navigate = useNavigate();
 
 	const [groups, synced] = plugin.useGroups();
@@ -23,23 +25,22 @@ export default function GroupsTable() {
 				{
 					title: "Name",
 					dataIndex: "name",
-					sorter: (a: any, b: any) => strcmp(a.name, b.name),
-				},
-				{
-					title: "Type",
-					render: (_: any, g: any) => g.permissions.isBlacklist ? "Blacklist" : "Whitelist",
+					sorter: (a: any, b: GroupRecord) => strcmp(a.name, b.name),
 				},
 				{
 					title: "Permissions",
-					render: (_: any, g: any) => g.permissions.permissions.length,
+					width: "50%",
+					render: (_: any, g: GroupRecord) => (
+						`${g.permissions.permissions.length} ${g.permissions.isBlacklist ? "Disallowed" : "Allowed"}`
+					),
 				},
 			]}
 			dataSource={[...groups.values()]}
 			loading={!synced}
-			pagination={false}
 			rowKey={(g) => g.id}
+			pagination={false}
 			onRow={(g) => ({
-				onClick: () => navigate(`/exp_groups/${g.id}/view`),
+				onClick: () => navigate(`/permission_groups/${g.id}/view`),
 			})}
 		/>
 

@@ -21,7 +21,7 @@ function ExpGroupsPage() {
 	const [assignmentOpen, setAssignmentOpen] = useState(false);
 	const [roleMappingOpen, setRoleMappingOpen] = useState(false);
 
-	return <PageLayout nav={[{ name: "exp_groups" }]}>
+	return <PageLayout nav={[{ name: "Permission Groups" }]}>
 		<PageHeader title="Permission Groups" />
 
 		{account.hasPermission("exp_groups.group.list") && <>
@@ -73,7 +73,7 @@ export class WebPlugin extends BaseWebPlugin {
 	async init() {
 		this.pages = [
 			{
-				path: "/exp_groups",
+				path: "/permission_groups",
 				sidebarName: "Permission Groups",
 				permission: (account => account.hasAnyPermission(
                     "exp_groups.group.list",
@@ -83,8 +83,8 @@ export class WebPlugin extends BaseWebPlugin {
 				content: <ExpGroupsPage />,
 			},
 			{
-				path: "/exp_groups/:id/view",
-				sidebarPath: "/exp_groups",
+				path: "/permission_groups/:id/view",
+				sidebarPath: "/permission_groups",
 				permission: "exp_groups.group.get",
 				content: <GroupViewPage />,
 			},

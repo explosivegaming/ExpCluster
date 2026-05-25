@@ -131,6 +131,11 @@ export const plugin: lib.PluginDeclaration = {
 	title: "ExpGaming - Permission Groups",
 	description: "Clusterio plugin providing syncing of permission groups",
 
+	features: [
+		"SavePatching",
+		"ScriptCommands",
+	],
+
 	messages: [
 		messages.GroupUpdatedEvent,
 		messages.ManualAssignmentUpdatedEvent,
@@ -172,7 +177,7 @@ export const plugin: lib.PluginDeclaration = {
 
 	webEntrypoint: "./web",
 	routes: [
-		"/exp_groups",
-		"/exp_groups/:id/view",
+		"/permission_groups",
+		"/permission_groups/:id/view",
 	]
 };

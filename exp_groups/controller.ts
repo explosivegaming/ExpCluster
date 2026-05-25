@@ -397,7 +397,7 @@ export class ControllerPlugin extends BaseControllerPlugin {
             return manual;
         }
 
-        const user = this.controller.users.get(playerName);
+        const user = this.controller.users.getByName(playerName);
         const userRoles = user?.roleIds ?? new Set<number>();
 
         // 2) Role mappings
