@@ -26,6 +26,8 @@ module.exports = (env = {}) => merge(common(env), {
 				"antd": { import: false },
 				"react": { import: false },
 				"react-dom": { import: false },
+				"react-router": { import: false },
+				"react-router-dom": { import: false },
 			},
 		}),
 	],

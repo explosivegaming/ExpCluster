@@ -1,84 +1,183 @@
 import * as lib from "@clusterio/lib";
-import * as Messages from "./messages";
-
-lib.definePermission({
-	name: "exp_groups.create_delete_groups",
-	title: "Create and delete permission groups",
-	description: "Create and delete permission groups.",
-});
-
-lib.definePermission({
-	name: "exp_groups.reorder_groups",
-	title: "Reorder permission groups",
-	description: "Reorder groups and link them to user roles.",
-});
-
-lib.definePermission({
-	name: "exp_groups.modify_permissions",
-	title: "Modify permission groups",
-	description: "Modify game permissions for groups.",
-});
-
-lib.definePermission({
-	name: "exp_groups.assign_players",
-	title: "Change player group",
-	description: "Change the permission group of a player",
-});
-
-lib.definePermission({
-	name: "exp_groups.list",
-	title: "View permission groups",
-	description: "View permission groups.",
-});
-
-lib.definePermission({
-	name: "exp_groups.list.subscribe",
-	title: "Subscribe to permission group updates",
-	description: "Subscribe to permission group updates.",
-});
+import * as messages from "./messages";
 
 declare module "@clusterio/lib" {
-	export interface ControllerConfigFields {
-		"exp_groups.allow_role_inconsistency": boolean;
-	}
 	export interface InstanceConfigFields {
-		"exp_groups.sync_permission_groups": boolean;
+		"exp_groups.sync_mode": "enabled" | "disabled" | "bidirectional"
+	}
+	export interface ControllerConfigFields {
 	}
 }
 
+// Group permissions
+
+lib.definePermission({
+	name: "exp_groups.group.get",
+	title: "Get Groups",
+	description: "Retrieve a specific Factorio permission group by ID.",
+	grantByDefault: true,
+});
+lib.definePermission({
+	name: "exp_groups.group.list",
+	title: "List Groups",
+	description: "List all Factorio permission groups.",
+	grantByDefault: true,
+});
+lib.definePermission({
+	name: "exp_groups.group.subscribe",
+	title: "Subscribe to Group Updates",
+	description: "Receive updates when Factorio permission groups change.",
+	grantByDefault: true,
+});
+lib.definePermission({
+	name: "exp_groups.group.create",
+	title: "Create Groups",
+	description: "Create new Factorio permission groups.",
+	grantByDefault: false,
+});
+lib.definePermission({
+	name: "exp_groups.group.update",
+	title: "Update Groups",
+	description: "Modify existing Factorio permission groups.",
+	grantByDefault: false,
+});
+lib.definePermission({
+	name: "exp_groups.group.delete",
+	title: "Delete Groups",
+	description: "Delete Factorio permission groups.",
+	grantByDefault: false,
+});
+
+// Assignment permissions
+
+lib.definePermission({
+	name: "exp_groups.assignment.get",
+	title: "Get Assignments",
+	description: "Retrieve a specific manual group assignment for a player.",
+	grantByDefault: true,
+});
+lib.definePermission({
+	name: "exp_groups.assignment.list",
+	title: "List Assignments",
+	description: "List all manual group assignments.",
+	grantByDefault: true,
+});
+lib.definePermission({
+	name: "exp_groups.assignment.subscribe",
+	title: "Subscribe to Assignment Updates",
+	description: "Receive updates when manual group assignments change.",
+	grantByDefault: true,
+});
+lib.definePermission({
+	name: "exp_groups.assignment.create",
+	title: "Create Assignments",
+	description: "Manually assign players to groups, overriding role mappings.",
+	grantByDefault: false,
+});
+lib.definePermission({
+	name: "exp_groups.assignment.update",
+	title: "Update Assignments",
+	description: "Modify existing manual group assignments.",
+	grantByDefault: false,
+});
+lib.definePermission({
+	name: "exp_groups.assignment.delete",
+	title: "Delete Assignments",
+	description: "Remove manual group assignments.",
+	grantByDefault: false,
+});
+
+// Role mapping permissions
+
+lib.definePermission({
+	name: "exp_groups.role_mapping.get",
+	title: "Get Role Mappings",
+	description: "Retrieve a specific role mapping rule.",
+	grantByDefault: true,
+});
+lib.definePermission({
+	name: "exp_groups.role_mapping.list",
+	title: "List Role Mappings",
+	description: "List all role mapping rules.",
+	grantByDefault: true,
+});
+lib.definePermission({
+	name: "exp_groups.role_mapping.subscribe",
+	title: "Subscribe to Role Mapping Updates",
+	description: "Receive updates when role mapping rules change.",
+	grantByDefault: true,
+});
+lib.definePermission({
+	name: "exp_groups.role_mapping.create",
+	title: "Create Role Mappings",
+	description: "Create rules that map user roles to Factorio permission groups.",
+	grantByDefault: false,
+});
+lib.definePermission({
+	name: "exp_groups.role_mapping.update",
+	title: "Update Role Mappings",
+	description: "Modify existing role mapping rules.",
+	grantByDefault: false,
+});
+lib.definePermission({
+	name: "exp_groups.role_mapping.delete",
+	title: "Delete Role Mappings",
+	description: "Delete role mapping rules.",
+	grantByDefault: false,
+});
+
 export const plugin: lib.PluginDeclaration = {
 	name: "exp_groups",
-	title: "exp_groups",
-	description: "Create, modify, and link factorio permission groups to clusterio user roles.",
+	title: "ExpGaming - Permission Groups",
+	description: "Clusterio plugin providing syncing of permission groups",
 
-	controllerEntrypoint: "./dist/node/controller",
-	controllerConfigFields: {
-		"exp_groups.allow_role_inconsistency": {
-			title: "Allow User Role Inconsistency",
-			description: "When true, users can be assgined to any group regardless of their roles",
-			type: "boolean",
-			initialValue: false,
-		},
-	},
+	features: [
+		"SavePatching",
+		"ScriptCommands",
+	],
+
+	messages: [
+		messages.GroupUpdatedEvent,
+		messages.ManualAssignmentUpdatedEvent,
+		messages.ResolvedAssignmentUpdatedEvent,
+		messages.RoleMappingUpdatedEvent,
+
+		messages.GroupCreateRequest,
+		messages.GroupUpdateRequest,
+		messages.GroupDeleteRequest,
+		messages.GroupGetRequest,
+		messages.GroupListRequest,
+
+		messages.AssignmentCreateRequest,
+		messages.AssignmentUpdateRequest,
+		messages.AssignmentDeleteRequest,
+		messages.AssignmentGetRequest,
+		messages.AssignmentListRequest,
+
+		messages.RoleMappingCreateRequest,
+		messages.RoleMappingUpdateRequest,
+		messages.RoleMappingDeleteRequest,
+		messages.RoleMappingGetRequest,
+		messages.RoleMappingListRequest,
+	],
 
 	instanceEntrypoint: "./dist/node/instance",
 	instanceConfigFields: {
-		"exp_groups.sync_permission_groups": {
-			title: "Sync Permission Groups",
-			description: "When true, the instance cannot deviate from the global group settings and will be hidden from the sellection dropdown.",
-			type: "boolean",
-			initialValue: true,
+		"exp_groups.sync_mode": {
+			description: "Synchronize permission groups with the controller",
+			type: "string",
+			enum: ["disabled", "enabled", "bidirectional"],
+			initialValue: "bidirectional",
 		},
 	},
 
-	messages: [
-		Messages.PermissionGroupEditEvent,
-		Messages.PermissionStringsUpdate,
-		Messages.PermissionGroupUpdate,
-	],
+	controllerEntrypoint: "./dist/node/controller",
+	controllerConfigFields: {
+	},
 
 	webEntrypoint: "./web",
 	routes: [
-		"/exp_groups",
-	],
+		"/permission_groups",
+		"/permission_groups/:id/view",
+	]
 };

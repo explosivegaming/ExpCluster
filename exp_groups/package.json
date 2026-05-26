@@ -1,41 +1,49 @@
 {
-	"name": "@expcluster/permission_groups",
-	"private": true,
-	"version": "0.0.0",
-	"description": "Example Description. Package. Change me in package.json",
+	"name": "@expcluster/permission-groups",
+	"version": "0.1.0",
+	"description": "Clusterio plugin providing syncing of permission groups",
+	"author": "Cooldude2606 <https://github.com/Cooldude2606>",
+	"license": "MIT",
+	"repository": "explosivegaming/ExpCluster",
 	"main": "dist/node/index.js",
 	"scripts": {
-		"$prepare": "tsc --build && webpack-cli --env production"
+		"prepare": "tsc --build && webpack-cli --env production"
 	},
 	"engines": {
 		"node": ">=18"
 	},
 	"peerDependencies": {
-		"@clusterio/lib": "catalog:"
+		"@clusterio/controller": "workspace:^",
+		"@clusterio/host": "workspace:^",
+		"@clusterio/lib": "workspace:^",
+		"@clusterio/web_ui": "workspace:^"
 	},
 	"devDependencies": {
-		"@clusterio/lib": "catalog:",
-		"@clusterio/web_ui": "catalog:",
-		"@types/fs-extra": "^11.0.4",
+		"@ant-design/icons": "^6.2.3",
+		"@clusterio/controller": "workspace:^",
+		"@clusterio/host": "workspace:^",
+		"@clusterio/lib": "workspace:^",
+		"@clusterio/web_ui": "workspace:^",
 		"@types/node": "catalog:",
 		"@types/react": "catalog:",
 		"antd": "catalog:",
 		"react": "catalog:",
 		"react-dom": "catalog:",
+		"react-router-dom": "catalog:",
 		"typescript": "catalog:",
 		"webpack": "catalog:",
 		"webpack-cli": "catalog:",
 		"webpack-merge": "catalog:"
 	},
 	"dependencies": {
-		"@sinclair/typebox": "catalog:",
-		"fs-extra": "^11.3.3"
+		"@sinclair/typebox": "catalog:"
 	},
 	"publishConfig": {
 		"access": "public"
 	},
 	"keywords": [
 		"clusterio",
+		"clusterio-plugin",
 		"factorio"
 	]
 }

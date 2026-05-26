@@ -1,5 +1,5 @@
 {
-	"name": "@expcluster/server_ups",
+	"name": "@expcluster/server-ups",
 	"version": "0.1.0",
 	"description": "Clusterio plugin providing in game server ups counter",
 	"author": "Cooldude2606 <https://github.com/Cooldude2606>",
@@ -13,12 +13,12 @@
 		"node": ">=18"
 	},
 	"peerDependencies": {
-		"@clusterio/lib": "catalog:"
+		"@clusterio/lib": "workspace:^"
 	},
 	"devDependencies": {
+		"@clusterio/lib": "workspace:^",
 		"typescript": "catalog:",
 		"@types/node": "catalog:",
-		"@clusterio/lib": "catalog:",
 		"webpack": "catalog:",
 		"webpack-cli": "catalog:",
 		"webpack-merge": "catalog:"

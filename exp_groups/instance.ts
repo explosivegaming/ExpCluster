@@ -1,129 +1,171 @@
-import * as lib from "@clusterio/lib";
 import { BaseInstancePlugin } from "@clusterio/host";
-import {
-	PermissionGroup, PermissionGroupEditEvent, PermissionGroupEditType,
-	PermissionGroupUpdate, PermissionInstanceId, PermissionStrings, PermissionStringsUpdate
-} from "./messages";
+import * as lib from "@clusterio/lib";
+import * as messages from "./messages";
 
-const rconBase = "/sc local Groups = package.loaded['modules/exp_groups/module_exports'];"
-
-type EditIPC = {
-	type: PermissionGroupEditType,
-	changes: string[],
-	group: string,
+export type IpcGroupUpdated = {
+	group_name: string,
+	group_id: number | undefined,
+	permissions: { is_blacklist: boolean, permissions: string[] | undefined },
 };
 
-type CreateIPC = {
-	group: string,
-	defiantion: [boolean, string[] | {}]
-}
+export type IpcGroupDeleted = {
+	group_name: string,
+	group_id: number | undefined,
+};
 
-type DeleteIPC = {
-	group: string,
-}
+export type IpcPlayerAssignments = {
+	assignments: Record<string, number>,
+};
 
 export class InstancePlugin extends BaseInstancePlugin {
-	permissions: Set<string> = new Set();
-	permissionGroups = new lib.EventSubscriber(PermissionGroupUpdate, this.instance);
-	permissionGroupUpdates = new lib.EventSubscriber(PermissionGroupEditEvent, this.instance);
-	syncId: PermissionInstanceId = this.instance.config.get("exp_groups.sync_permission_groups") ? "Global" : this.instance.id;
+    // Once only, don't send permissions for these groups
+    // This is used for groups created on this instance that only need the controller generated id
+    skipSendingPermissions = new Set<string>(); 
+    // This is used for groups updated / deleted on this instance to stop cycles
+    skipSendingUpdate = new Set<number>(); 
+    // Track known online players so that we only apply assignment updates for them
+    onlinePlayers = new Set<string>();
 
-	async init() {
-		this.instance.server.handle("exp_groups-permission_group_edit", this.handleEditIPC.bind(this));
-		this.instance.server.handle("exp_groups-permission_group_create", this.handleCreateIPC.bind(this));
-		this.instance.server.handle("exp_groups-permission_group_delete", this.handleDeleteIPC.bind(this));
-	}
+    async init() {
+        this.instance.handle(messages.GroupUpdatedEvent, this.handleGroupUpdatedEvent.bind(this));
+        this.instance.handle(messages.ResolvedAssignmentUpdatedEvent, this.handleResolvedAssignmentUpdatedEvent.bind(this));
+        this.instance.server.handle(`exp_group:group_updated`, this.handleGroupUpdatedIPC.bind(this))
+        this.instance.server.handle(`exp_group:group_deleted`, this.handleGroupDeletedIPC.bind(this))
+        this.instance.server.handle(`exp_group:player_assignments`, this.handlePlayerAssignmentsIPC.bind(this))
+    }
 
-	async onStart() {
-		// Send the most recent version of the permission string
-		const permissionsString = await this.sendRcon(rconBase + "rcon.print(Groups.get_actions_json())");
-		this.permissions = new Set(JSON.parse(permissionsString));
-		this.instance.sendTo("controller", new PermissionStringsUpdate([
-			new PermissionStrings(this.instance.id, this.permissions, Date.now())
-		]));
+    async onInstanceConfigFieldChanged(field: string, curr: unknown, prev: unknown) {
+        switch(field) {
+            case "exp_groups.sync_mode":
+                await this.luaSetEmitEvents(curr == "bidirectional")
+                break;
+        }
+    }
 
-		// Subscribe to get updates for permission groups
-		this.permissionGroups.subscribe(this.onPermissionGroupsUpdate.bind(this));
-		this.permissionGroupUpdates.subscribe(this.onPermissionGroupUpdate.bind(this));
-	}
+    async onStart() {
+        // We use Date.now() because we need to manually initialise the groups on the lua side
+        await this.instance.sendTo("controller", new lib.SubscriptionRequest(
+            `exp_groups:${messages.GroupUpdatedEvent.name}`, true, Date.now()
+        ));
+        const groups = await this.instance.sendTo("controller", new messages.GroupListRequest())
+        await this.luaSendInitialGroups(groups);
+        await this.luaSetEmitEvents(this.instance.config.get("exp_groups.sync_mode") == "bidirectional")
+    }
 
-	async onControllerConnectionEvent(event: any) {
-		this.permissionGroups.handleConnectionEvent(event);
-	}
+    async onPlayerEvent(event: lib.PlayerEvent) {
+        switch(event.type) {
+            case "join":
+                this.onlinePlayers.add(event.name);
+                await this.subscribePlayerAssignment(event.name);
+                break;
+            case "leave":
+                this.onlinePlayers.delete(event.name);
+                await this.unsubscribePlayerAssignment(event.name);
+                break;
+        }
+    }
 
-	async onInstanceConfigFieldChanged(field: string, curr: unknown, prev: unknown) {
-		if (field === "exp_groups.sync_permission_groups") {
-			this.syncId = curr ? "Global" : this.instance.id;
-			const [snapshot, synced] = this.permissionGroups.getSnapshot();
-			if (synced && this.instance.status !== "running") await this.syncPermissionGroups(snapshot.values());
-		}
-	}
+    async handleGroupUpdatedEvent(event: messages.GroupUpdatedEvent) {
+        for (const group of event.updates) {
+            await this.luaSendGroupUpdate(group);
+        }
+    }
 
-	async onPermissionGroupsUpdate(event: PermissionGroupUpdate | null, synced: boolean) {
-		if (!synced || this.instance.status !== "running" || !event?.updates.length) return;
-		await this.syncPermissionGroups(event.updates);
-	}
+    async handleResolvedAssignmentUpdatedEvent(event: messages.ManualAssignmentUpdatedEvent) {
+        for (const assignment of event.updates) {
+            if (this.onlinePlayers.has(assignment.name)) {
+                await this.luaSendAssignmentUpdate(assignment);
+            }
+        }
+    }
 
-	async syncPermissionGroups(groups: Iterable<PermissionGroup>) {
-		const updateCommands = [rconBase];
-		for (const group of groups) {
-			if (group.instanceId === this.syncId && group.updatedAtMs > (this.permissionGroups.values.get(group.id)?.updatedAtMs ?? 0)) {
-				if (group.isDeleted) {
-					updateCommands.push(`Groups.destroy_group('${group.name}')`);
-				} else if (group.permissions.size < this.permissions.size / 2) {
-					updateCommands.push(`Groups.get_or_create('${group.name}'):from_json('${JSON.stringify([false, [...this.permissions.values()]])}')`);
-				} else {
-					const inverted = [...this.permissions.values()].filter(permission => !group.permissions.has(permission));
-					updateCommands.push(`Groups.get_or_create('${group.name}'):from_json('${JSON.stringify([true, inverted])}')`);
-				}
-			}
-		}
-		await this.sendRcon(updateCommands.join(";"), true);
-	}
+    async handleGroupUpdatedIPC(event: IpcGroupUpdated) {
+        const permissions = new messages.GroupPermissions(
+            event.permissions.is_blacklist,
+            event.permissions.permissions ?? [],
+        )
 
-	async onPermissionGroupUpdate(event: PermissionGroupEditEvent | null, synced: boolean) {
-		if (!synced || this.instance.status !== "running" || !event) return;
-		if (event.src.equals(lib.Address.fromShorthand({ instanceId: this.instance.id }))) return;
-		const getCmd = `Groups.get_or_create('${event.group}')`;
-		if (event.type === "add_permissions") {
-			await this.sendRcon(rconBase + getCmd + `:allow_actions(Groups.json_to_actions('${JSON.stringify(event.changes)}'))`);
-		} else if (event.type === "remove_permissions") {
-			await this.sendRcon(rconBase + getCmd + `:disallow_actions(Groups.json_to_actions('${JSON.stringify(event.changes)}'))`);
-		} else if (event.type === "assign_players") {
-			await this.sendRcon(rconBase + getCmd + `:add_players(game.json_to_table('${JSON.stringify(event.changes)}'))`);
-		}
-	}
+        if (event.group_id === undefined) {
+            this.skipSendingPermissions.add(event.group_name);
+            await this.instance.sendTo("controller",
+                new messages.GroupCreateRequest(event.group_name, permissions),
+            );
+        } else {
+            this.skipSendingUpdate.add(event.group_id);
+            await this.instance.sendTo("controller", new messages.GroupUpdateRequest(
+                new messages.GroupRecord(event.group_id, event.group_name, permissions),
+            ));
+        }
+    }
 
-	async handleEditIPC(event: EditIPC) {
-		this.logger.info(JSON.stringify(event))
-		this.instance.sendTo("controller", new PermissionGroupEditEvent(
-			lib.Address.fromShorthand({ instanceId: this.instance.id }),
-			event.type, event.group, event.changes
-		))
-	}
+    async handleGroupDeletedIPC(event: IpcGroupDeleted) {
+        if (event.group_id === undefined) {
+            return;
+        }
+        this.skipSendingUpdate.add(event.group_id);
+        await this.instance.sendTo("controller", new messages.GroupDeleteRequest(event.group_id));
+    }
 
-	async handleCreateIPC(event: CreateIPC) {
-		this.logger.info(JSON.stringify(event))
-		if (!this.permissionGroups.synced) return;
-		let [defaultAllow, permissionsRaw] = event.defiantion;
-		if (!Array.isArray(permissionsRaw)) {
-			permissionsRaw = [] // lua outputs {} for empty arrays
-		}
-		const permissions = [...this.permissions.values()]
-			.filter(permission => defaultAllow !== (permissionsRaw as String[]).includes(permission));
-		this.instance.sendTo("controller", new PermissionGroupUpdate([ new PermissionGroup(
-			this.syncId, event.group, 0, new Set(), new Set(permissions)
-		) ]));
-	}
+    async handlePlayerAssignmentsIPC(event: IpcPlayerAssignments) {
+        await Promise.all(
+            Object.entries(event.assignments).map(([playerName, groupId]) =>
+                this.instance.sendTo("controller",
+                    new messages.AssignmentUpdateRequest(new messages.AssignmentRecord(playerName, groupId)),
+                )
+            )
+        );
+    }
 
-	async handleDeleteIPC(event: DeleteIPC) {
-		if (!this.permissionGroups.synced) return;
-		const group = [...this.permissionGroups.values.values()]
-			.find(group => group.instanceId === this.syncId && group.name === event.group);
-		if (group) {
-			group.updatedAtMs = Date.now();
-			group.isDeleted = true;
-			this.instance.sendTo("controller", new PermissionGroupUpdate([ group ]));
-		}
-	}
+    async subscribePlayerAssignment(playerName: string) {
+        await this.instance.sendTo("controller", new lib.SubscriptionRequest(
+            `exp_groups:${messages.ResolvedAssignmentUpdatedEvent.name}`, true, 0, playerName
+        ));
+    }
+
+    async unsubscribePlayerAssignment(playerName: string) {
+        await this.instance.sendTo("controller", new lib.SubscriptionRequest(
+            `exp_groups:${messages.ResolvedAssignmentUpdatedEvent.name}`, false, 0, playerName
+        ));
+    }
+
+    async luaSendInitialGroups(groups: messages.GroupRecord[]) {
+        if (this.instance.config.get("exp_groups.sync_mode") === "disabled") {
+            return;
+        }
+        await this.luaSend("initialise_groups", groups);
+    }
+
+    async luaSendGroupUpdate(group: messages.GroupRecord) {
+        if (this.instance.config.get("exp_groups.sync_mode") === "disabled") {
+            return;
+        }
+
+        if (this.skipSendingUpdate.has(group.id)) {
+            this.skipSendingUpdate.delete(group.id);
+            return;
+        }
+
+        const json = group.toJSON();
+        if (this.skipSendingPermissions.has(group.name)) {
+            this.skipSendingPermissions.delete(group.name);
+            delete (json as any).permissions;
+        }
+
+        await this.luaSend("receive_group_update", json);
+    }
+
+    async luaSendAssignmentUpdate(assignment: messages.AssignmentRecord) {
+        if (this.instance.config.get("exp_groups.sync_mode") === "disabled") {
+            return;
+        }
+        await this.luaSend("receive_assignment_update", assignment);
+    }
+
+    async luaSetEmitEvents(emitEvents: boolean) {
+        await this.luaSend("set_emit_events", emitEvents);
+    }
+
+    async luaSend(receiver: string, json: any) {
+        await this.instance.sendRcon(`/c exp_groups.${receiver}(helpers.json_to_table[=[${JSON.stringify(json)}]=])`, true)
+    }
 }

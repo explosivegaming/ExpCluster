@@ -1,282 +1,434 @@
+import { BaseControllerPlugin } from "@clusterio/controller";
 import * as lib from "@clusterio/lib";
-import { BaseControllerPlugin, InstanceInfo } from "@clusterio/controller";
-
-import {
-	PermissionStrings, PermissionStringsUpdate,
-	PermissionGroup, PermissionGroupUpdate,
-	InstancePermissionGroups,
-	PermissionInstanceId,
-	PermissionGroupEditEvent,
-} from "./messages";
-
-import path from "path";
-import fs from "fs-extra";
+import * as messages from "./messages";
+import * as path from "node:path";
 
 export class ControllerPlugin extends BaseControllerPlugin {
-	static permissionGroupsPath = "exp_groups.json";
-	static userGroupsPath = "exp_user_groups.json";
+    groups!: lib.SubscribableDatastore<messages.GroupRecord>;
+    roleMappings!: lib.SubscribableDatastore<messages.RoleMappingRecord>;
+    manualAssignments!: lib.SubscribableDatastore<messages.AssignmentRecord>;
+    resolvedAssignments!: lib.SubscribableDatastore<messages.AssignmentRecord>;
 
-	userToGroup: Map<lib.User["id"], PermissionGroup> = new Map(); // TODO this needs to be per instance
-	permissionStrings!: Map<PermissionStrings["id"], PermissionStrings>;
-	permissionGroups!: Map<InstancePermissionGroups["id"], InstancePermissionGroups>;
+    async init() {
+        const databaseDirectory = this.controller.config.get("controller.database_directory");
 
-	async init() {
-		this.controller.handle(PermissionStringsUpdate, this.handlePermissionStringsUpdate.bind(this));
-		this.controller.handle(PermissionGroupUpdate, this.handlePermissionGroupUpdate.bind(this));
-		this.controller.handle(PermissionGroupEditEvent, this.handlePermissionGroupEditEvent.bind(this));
-		this.controller.subscriptions.handle(PermissionStringsUpdate, this.handlePermissionStringsSubscription.bind(this));
-		this.controller.subscriptions.handle(PermissionGroupUpdate, this.handlePermissionGroupSubscription.bind(this));
-		this.controller.subscriptions.handle(PermissionGroupEditEvent);
-		this.permissionStrings = new Map([["Global", new PermissionStrings("Global", new Set())]]);
-		this.permissionGroups = new Map([["Global", new InstancePermissionGroups("Global")]]);
-		await this.loadData();
+        this.groups = new lib.SubscribableDatastore(
+            ...await new lib.JsonIdDatastoreProvider(
+                path.join(databaseDirectory, "exp_groups", "groups.json"),
+                messages.GroupRecord.fromJSON.bind(messages.GroupRecord),
+            ).bootstrap()
+        );
 
-		// Add the default group if missing and add any missing cluster roles
-		const clusterRoles = [...this.controller.userManager.roles.values()]
-		for (const instanceGroups of this.permissionGroups.values()) {
-			const groups = instanceGroups.groups;
-			const instanceRoles = [...groups.values()].flatMap(group => [...group.roleIds.values()]);
-			const missingRoles = clusterRoles.filter(role => instanceRoles.includes(role.id));
-			const defaultGroup = groups.get("Default");
-			if (defaultGroup) {
-				for (const role of missingRoles) {
-					defaultGroup.roleIds.add(role.id)
-				}
-			} else {
-				groups.set("Default", new PermissionGroup(
-					instanceGroups.instanceId, 
-					"Default",
-					groups.size,
-					new Set(missingRoles.map(role => role.id))
-				));
-			}
-		}
-	}
+        this.roleMappings = new lib.SubscribableDatastore(
+            ...await new lib.JsonIdDatastoreProvider(
+                path.join(databaseDirectory, "exp_groups", "role_mappings.json"),
+                messages.RoleMappingRecord.fromJSON.bind(messages.RoleMappingRecord),
+            ).bootstrap()
+        );
 
-	async onControllerConfigFieldChanged(field: string, curr: unknown, prev: unknown) {
-		if (field === "exp_groups.allow_role_inconsistency") {
-			// Do something with this.userToGroup
-		}
-	}
+        this.manualAssignments = new lib.SubscribableDatastore(
+            ...await new lib.JsonIdDatastoreProvider(
+                path.join(databaseDirectory, "exp_groups", "assignments.json"),
+                messages.AssignmentRecord.fromJSON.bind(messages.AssignmentRecord),
+            ).bootstrap()
+        );
 
-	async onInstanceConfigFieldChanged(instance: InstanceInfo, field: string, curr: unknown, prev: unknown) {
-		this.logger.info(`controller::onInstanceConfigFieldChanged ${instance.id} ${field}`);
-		if (field === "exp_groups.sync_permission_groups") {
-			const updates = []
-			const now = Date.now();
-			if (curr) {
-				// Global sync enabled, we dont need the instance config
-				const instanceGroups = this.permissionGroups.get(instance.id);
-				if (instanceGroups) {
-					this.permissionGroups.delete(instance.id);
-					for (const group of instanceGroups.groups.values()) {
-						group.updatedAtMs = now;
-						group.isDeleted = true;
-						updates.push(group);
-					}
-				}
-			} else {
-				// Global sync disabled, make a copy of the global config as a base
-				const global = this.permissionGroups.get("Global")!;
-				const oldInstanceGroups = this.permissionGroups.get(instance.id);
-				const instanceGroups = new InstancePermissionGroups(
-					instance.id, new Map([...global.groups.values()].map(group => [group.name, group.copy(instance.id)]))
-				)
-				this.permissionGroups.set(instance.id, instanceGroups);
-				for (const group of instanceGroups.groups.values()) {
-					group.updatedAtMs = now; 
-					updates.push(group);
-				}
-				// If it has an old config (unexpected) then deal with it
-				if (oldInstanceGroups) {
-					for (const group of oldInstanceGroups.groups.values()) {
-						if (!instanceGroups.groups.has(group.name)) {
-							group.updatedAtMs = now; 
-							group.isDeleted = true;
-							updates.push(group);
-						}
-					}
-				}
-			}
-			// Send the updates to all instances and controls
-			if (updates.length) {
-				this.controller.subscriptions.broadcast(new PermissionGroupUpdate(updates));
-			}
-		}
-	}
+        this.resolvedAssignments = new lib.SubscribableDatastore();
 
-	async loadPermissionGroups() {
-		const file = path.resolve(this.controller.config.get("controller.database_directory"), ControllerPlugin.permissionGroupsPath);
-		this.logger.verbose(`Loading ${file}`);
-		try {
-			const content = await fs.readFile(file, { encoding: "utf8" });
-			for (const groupRaw of JSON.parse(content)) {
-				const group = PermissionGroup.fromJSON(groupRaw);
-				const instanceGroups = this.permissionGroups.get(group.instanceId);
-				if (instanceGroups) {
-					instanceGroups.groups.set(group.name, group);
-				} else {
-					this.permissionGroups.set(group.instanceId,
-						new InstancePermissionGroups(group.instanceId, new Map([[group.name, group]]))
-					);
-				}
-			};
+        this.controller.subscriptions.handle(messages.GroupUpdatedEvent, this.handleGroupSubscription.bind(this));
+        this.controller.subscriptions.handle(messages.RoleMappingUpdatedEvent, this.handleRoleMappingSubscription.bind(this));
+        this.controller.subscriptions.handle(messages.ManualAssignmentUpdatedEvent, this.handleManualAssignmentSubscription.bind(this));
+        this.controller.subscriptions.handle(messages.ResolvedAssignmentUpdatedEvent, this.handleResolvedAssignmentSubscription.bind(this));
 
-		} catch (err: any) {
-			if (err.code === "ENOENT") {
-				this.logger.verbose("Creating new permission group database");
-				return;
-			}
-			throw err;
-		}
-	}
+        this.groups.on("update", this.groupsUpdated.bind(this));
+        this.roleMappings.on("update", this.roleMappingsUpdated.bind(this));
+        this.manualAssignments.on("update", this.manualAssignmentsUpdated.bind(this));
+        this.resolvedAssignments.on("update", this.resolvedAssignmentsUpdated.bind(this));
 
-	async savePermissionGroups() {
-		const file = path.resolve(this.controller.config.get("controller.database_directory"), ControllerPlugin.permissionGroupsPath);
-		this.logger.verbose(`Writing ${file}`);
-		await lib.safeOutputFile(file, JSON.stringify(
-			[...this.permissionGroups.values()].flatMap(instanceGroups => [...instanceGroups.groups.values()])
-		));
-	}
+        this.controller.handle(messages.GroupCreateRequest, this.handleGroupCreateRequest.bind(this));
+        this.controller.handle(messages.GroupUpdateRequest, this.handleGroupUpdateRequest.bind(this));
+        this.controller.handle(messages.GroupDeleteRequest, this.handleGroupDeleteRequest.bind(this));
+        this.controller.handle(messages.GroupGetRequest, this.handleGroupGetRequest.bind(this));
+        this.controller.handle(messages.GroupListRequest, this.handleGroupListRequest.bind(this));
 
-	async loadUserGroups() {
-		if (!this.controller.config.get("exp_groups.allow_role_inconsistency")) return;
-		const file = path.resolve(this.controller.config.get("controller.database_directory"), ControllerPlugin.userGroupsPath);
-		this.logger.verbose(`Loading ${file}`);
-		try {
-			const content = await fs.readFile(file, { encoding: "utf8" });
-			this.userToGroup = new Map(JSON.parse(content));
+        this.controller.handle(messages.AssignmentCreateRequest, this.handleAssignmentCreateRequest.bind(this));
+        this.controller.handle(messages.AssignmentUpdateRequest, this.handleAssignmentUpdateRequest.bind(this));
+        this.controller.handle(messages.AssignmentDeleteRequest, this.handleAssignmentDeleteRequest.bind(this));
+        this.controller.handle(messages.AssignmentGetRequest, this.handleAssignmentGetRequest.bind(this));
+        this.controller.handle(messages.AssignmentListRequest, this.handleAssignmentListRequest.bind(this));
 
-		} catch (err: any) {
-			if (err.code === "ENOENT") {
-				this.logger.verbose("Creating new user group database");
-				return;
-			}
-			throw err;
-		}
-	}
+        this.controller.handle(messages.RoleMappingCreateRequest, this.handleRoleMappingCreateRequest.bind(this));
+        this.controller.handle(messages.RoleMappingUpdateRequest, this.handleRoleMappingUpdateRequest.bind(this));
+        this.controller.handle(messages.RoleMappingDeleteRequest, this.handleRoleMappingDeleteRequest.bind(this));
+        this.controller.handle(messages.RoleMappingGetRequest, this.handleRoleMappingGetRequest.bind(this));
+        this.controller.handle(messages.RoleMappingListRequest, this.handleRoleMappingListRequest.bind(this));
+    }
 
-	async saveUserGroups() {
-		if (!this.controller.config.get("exp_groups.allow_role_inconsistency")) return;
-		const file = path.resolve(this.controller.config.get("controller.database_directory"), ControllerPlugin.userGroupsPath);
-		this.logger.verbose(`Writing ${file}`);
-		await lib.safeOutputFile(file, JSON.stringify([...this.permissionGroups.entries()]));
-	}
+    async onShutdown() {
+        await Promise.all([
+            this.groups.save(),
+            this.manualAssignments.save(),
+            this.roleMappings.save(),
+        ])
+    }
 
-	async loadData() {
-		await Promise.all([
-			this.loadPermissionGroups(),
-			this.loadUserGroups(),
-		])
-	}
+    /*
+        Subscriptions
+    */
 
-	async onSaveData() {
-		await Promise.all([
-			this.savePermissionGroups(),
-			this.saveUserGroups(),
-		])
-	}
+    async groupsUpdated(groups: messages.GroupRecord[]) {
+        this.controller.subscriptions.broadcast(new messages.GroupUpdatedEvent(groups));
 
-	addPermisisonGroup(instanceId: PermissionInstanceId, name: string, permissions = new Set<string>(), silent = false) {
-		const instanceGroups = this.permissionGroups.get(instanceId);
-		if (!instanceGroups) {
-			throw new Error("Instance ID does not exist");
-		} 
-		if (instanceGroups.groups.has(name)) {
-			return instanceGroups.groups.get(name)!;
-		}
-		for (const group of instanceGroups.groups.values()) {
-			group.order += 1;
-		}
-		const group = new PermissionGroup(instanceId, name, 0, new Set(), permissions, Date.now(), false);
-		instanceGroups.groups.set(group.id, group);
-		if (!silent) {
-			this.controller.subscriptions.broadcast(new PermissionGroupUpdate([group]));
-		}
-		return group;
-	}
+        // We need to do extra work if the group was deleted
+        const deletedGroupIds = groups.filter(g => g.isDeleted).map(g => g.id);
+        if (!deletedGroupIds.length) {
+            return;
+        }
 
-	removePermissionGroup(instanceId: PermissionInstanceId, name: string, silent = false) {
-		const instanceGroups = this.permissionGroups.get(instanceId);
-		if (!instanceGroups) {
-			throw new Error("Instance ID does not exist");
-		}
-		const group = instanceGroups.groups.get(name)
-		if (!group) {
-			return null;
-		}
-		for (const nextGroup of instanceGroups.groups.values()) {
-			if (nextGroup.order > group.order) {
-				nextGroup.order -= 1;
-			}
-		}
-		instanceGroups.groups.delete(group.id);
-		group.updatedAtMs = Date.now();
-		group.isDeleted = true;
-		if (!silent) {
-			this.controller.subscriptions.broadcast(new PermissionGroupUpdate([group]));
-		}
-		return group;
-	}
+        // Cascade the delete down to affected role mappings
+        const mappingsToDelete = [];
+        for (const mapping of this.roleMappings.values()) {
+            if (deletedGroupIds.includes(mapping.groupId)) {
+                mappingsToDelete.push(mapping);
+            }
+        }
+        if (mappingsToDelete.length) {
+            this.roleMappings.deleteMany(mappingsToDelete);
+        }
 
-	async handlePermissionGroupEditEvent(event: PermissionGroupEditEvent) {
-		// TODO
-	}
+        // Cascade the delete down to affected manual assignments
+        const affectedPlayers = new Set<string>();
+        const assignmentsToDelete = [];
+        for (const assignment of this.manualAssignments.values()) {
+            if (deletedGroupIds.includes(assignment.groupId)) {
+                assignmentsToDelete.push(assignment);
+                affectedPlayers.add(assignment.name);
+            }
+        }
+        if (assignmentsToDelete.length) {
+            this.manualAssignments.deleteMany(assignmentsToDelete);
+        }
 
-	async handlePermissionStringsUpdate(event: PermissionStringsUpdate) {
-		for (const update of event.updates) {
-			const global = this.permissionStrings.get("Global")!
-			this.permissionStrings.set(update.instanceId as number, update)
-			global.updatedAtMs = Math.max(global.updatedAtMs, update.updatedAtMs)
-			for (const permission of update.permissions) {
-				global.permissions.add(permission)
-			}
-			// TODO maybe check if changes have happened rather than always pushing updates
-			this.controller.subscriptions.broadcast(new PermissionStringsUpdate([global, update]))
-		}
-	}
+        // Find all the affected players who were assigned to this group
+        for (const resolved of this.resolvedAssignments.values()) {
+            if (deletedGroupIds.includes(resolved.groupId)) {
+                affectedPlayers.add(resolved.name);
+            }
+        }
+        if (affectedPlayers.size) {
+            this.resolvedAssignments.setMany(await this.computeResolvedAssignments([...affectedPlayers]));
+        }
+    }
 
-	async handlePermissionGroupUpdate(event: PermissionGroupUpdate) {
-		const updates = [];
-		for (const group of event.updates) {
-			const groups = this.permissionGroups.get(group.instanceId);
-			if (!groups) continue;
-			const existingGroup = groups.groups.get(group.id);
-			let update
-			if (!existingGroup) {
-				update = this.addPermisisonGroup(group.instanceId, group.name, group.permissions, true);
-			} else if (group.isDeleted) {
-				update = this.removePermissionGroup(group.instanceId, group.name, true);
-			} else {
-				existingGroup.permissions = group.permissions;
-				existingGroup.updatedAtMs = Date.now();
-				update = existingGroup;
-			}
-			if (update) updates.push(update);
-		}
-		this.controller.subscriptions.broadcast(new PermissionGroupUpdate(updates));
-	}
+    async handleGroupSubscription(request: lib.SubscriptionRequest) {
+        const groups = [...this.groups.values()]
+            .filter(group => group.updatedAtMs > request.lastRequestTimeMs);
+        return groups.length ? new messages.GroupUpdatedEvent(groups) : null;
+    }
 
-	async handlePermissionStringsSubscription(request: lib.SubscriptionRequest, src: lib.Address) {
-		const updates = [ ...this.permissionStrings.values() ]
-			.filter(
-				value => value.updatedAtMs > request.lastRequestTimeMs,
-			)
-		return updates.length ? new PermissionStringsUpdate(updates) : null;
-	}
+    async roleMappingsUpdated(roleMappings: messages.RoleMappingRecord[]) {
+        this.controller.subscriptions.broadcast(new messages.RoleMappingUpdatedEvent(roleMappings));
 
-	async handlePermissionGroupSubscription(request: lib.SubscriptionRequest, src: lib.Address) {
-		const updates = [ ...this.permissionGroups.values() ]
-			.flatMap(instanceGroups => [...instanceGroups.groups.values()])
-			.filter(
-				value => value.updatedAtMs > request.lastRequestTimeMs,
-			)
-		if (src.type === lib.Address.instance) {
-			const instanceUpdates = updates.filter(group => group.instanceId === src.id || group.instanceId === "Global");
-			this.logger.info(JSON.stringify(updates))
-			this.logger.info(JSON.stringify(instanceUpdates))
-			return instanceUpdates.length ? new PermissionGroupUpdate(instanceUpdates) : null;
-		}
-		return updates.length ? new PermissionGroupUpdate(updates) : null;
-	}
+        // Mappings pointing to a deleted group have already been handled
+        // But if any are active, then we still must recompute all assignments
+        let hasActiveGroup = false;
+        for (const roleMapping of roleMappings) {
+            const group = this.groups.get(roleMapping.groupId);
+            if (group && !group.isDeleted) {
+                hasActiveGroup = true;
+                break;
+            }
+        }
+        if (!hasActiveGroup) {
+            return;
+        }
+
+        // Affected players are those without manual assignments
+        const affectedPlayers = [];
+        for (const resolved of this.resolvedAssignments.values()) {
+            if (!this.manualAssignments.has(resolved.name)) {
+                affectedPlayers.push(resolved.name);
+            }
+        }
+        if (affectedPlayers.length) {
+            this.resolvedAssignments.setMany(await this.computeResolvedAssignments(affectedPlayers));
+        }
+    }
+
+    async handleRoleMappingSubscription(request: lib.SubscriptionRequest) {
+        const mappings = [...this.roleMappings.values()]
+            .filter(mapping => mapping.updatedAtMs > request.lastRequestTimeMs);
+        return mappings.length ? new messages.RoleMappingUpdatedEvent(mappings) : null;
+    }
+
+    async manualAssignmentsUpdated(assignments: messages.AssignmentRecord[]) {
+        this.controller.subscriptions.broadcast(new messages.ManualAssignmentUpdatedEvent(assignments));
+
+        // Assignments pointing to a deleted group have already been handled
+        const affectedPlayers: string[] = [];
+        for (const assignment of assignments) {
+            const group = this.groups.get(assignment.groupId);
+            if (!group || group.isDeleted) continue;
+            affectedPlayers.push(assignment.name);
+        }
+        if (affectedPlayers.length) {
+            this.resolvedAssignments.setMany(await this.computeResolvedAssignments(affectedPlayers));
+        }
+    }
+
+    async handleManualAssignmentSubscription(request: lib.SubscriptionRequest) {
+        const assignments = [...this.resolvedAssignments.values()]
+            .filter(a => a.updatedAtMs > request.lastRequestTimeMs);
+        return assignments.length ? new messages.ManualAssignmentUpdatedEvent(assignments) : null;
+    }
+
+    resolvedAssignmentsUpdated(assignments: messages.AssignmentRecord[]) {
+        this.controller.subscriptions.broadcast(
+            new messages.ResolvedAssignmentUpdatedEvent(assignments),
+            assignments.map(assignment => assignment.name),
+        );
+    }
+
+    async handleResolvedAssignmentSubscription(request: lib.SubscriptionRequest) {
+        // Check for any missing assignments to be computed on demand
+        const filters = Array.isArray(request.filters) ? request.filters : [request.filters!];
+        if (request.filters && filters.length) {
+            const missing = filters.filter(name => !this.resolvedAssignments.has(name));
+            if (missing.length) {
+                this.resolvedAssignments.setMany(await this.computeResolvedAssignments(missing));
+            }
+        }
+
+        // Filter the assignments
+        const assignments = (filters.length
+            ? filters.map(name => this.resolvedAssignments.get(name)).filter(Boolean)
+            : [...this.resolvedAssignments.values()]
+        ).filter(a => a.updatedAtMs > request.lastRequestTimeMs);
+
+        return assignments.length ? new messages.ResolvedAssignmentUpdatedEvent(assignments) : null;
+    }
+
+    /*
+        Groups
+    */
+
+    async handleGroupListRequest() {
+        return [...this.groups.values()];
+    }
+
+    async handleGroupCreateRequest(request: messages.GroupCreateRequest) {
+        if ([...this.groups.values()].some(g => g.name === request.name)) {
+            throw new lib.RequestError(`Group with name '${request.name}' already exists`);
+        }
+
+        let id = Math.random() * 2**31 | 0;
+        while (this.groups.has(id)) {
+            id = Math.random() * 2**31 | 0;
+        }
+
+        const group = new messages.GroupRecord(id, request.name, request.permissions);
+        this.groups.set(group);
+        return group;
+    }
+
+    async handleGroupUpdateRequest(request: messages.GroupUpdateRequest) {
+        const group = request.group;
+        if (group.id === undefined || !this.groups.has(group.id)) {
+            throw new lib.RequestError(`Group with ID ${group.id} does not exist`);
+        }
+
+        this.groups.set(group);
+    }
+
+    async handleGroupDeleteRequest(request: messages.GroupDeleteRequest) {
+        const { groupId } = request;
+
+        const group = this.groups.getMutable(groupId);
+        if (!group) {
+            throw new lib.RequestError(`Group with ID ${groupId} does not exist`);
+        }
+
+        this.groups.delete(group);
+    }
+
+    async handleGroupGetRequest(request: messages.GroupGetRequest) {
+        const group = this.groups.get(request.groupId);
+        if (!group) {
+            throw new lib.RequestError(`Group with ID ${request.groupId} does not exist`);
+        }
+
+        return group;
+    }
+
+    /*
+        Groups
+    */
+
+    async handleAssignmentListRequest() {
+        return [...this.manualAssignments.values()];
+    }
+
+    async handleAssignmentCreateRequest(request: messages.AssignmentCreateRequest) {
+        const { name, groupId } = request;
+        if (this.manualAssignments.has(name)) {
+            throw new lib.RequestError(`Assignment for '${name}' already exists`);
+        }
+
+        const assignment = new messages.AssignmentRecord(name, groupId);
+        this.manualAssignments.set(assignment);
+        return assignment;
+    }
+
+    async handleAssignmentUpdateRequest(request: messages.AssignmentUpdateRequest) {
+        const assignment = request.assignment;
+        if (!this.manualAssignments.has(assignment.name)) {
+            throw new lib.RequestError(`Assignment for '${assignment.name}' does not exist`);
+        }
+
+        this.manualAssignments.set(assignment);
+    }
+
+    async handleAssignmentDeleteRequest(request: messages.AssignmentDeleteRequest) {
+        const { name } = request;
+
+        const assignment = this.manualAssignments.getMutable(name);
+        if (!assignment) {
+            throw new lib.RequestError(`Assignment for '${name}' does not exist`);
+        }
+
+        this.manualAssignments.delete(assignment);
+    }
+
+    async handleAssignmentGetRequest(request: messages.AssignmentGetRequest) {
+        if (request.resolve) {
+            let assignment = this.resolvedAssignments.get(request.name);
+            if (!assignment) {
+                assignment = await this.computeResolvedAssignment(request.name);
+                this.resolvedAssignments.set(assignment);
+            }
+
+            return assignment;
+        }
+
+        const assignment = this.manualAssignments.get(request.name);
+        if (!assignment) {
+            throw new lib.RequestError(`Assignment for '${request.name}' does not exist`);
+        }
+
+        return assignment;
+    }
+
+    /*
+        Role mappings
+    */
+
+    async handleRoleMappingListRequest() {
+        return [...this.roleMappings.values()];
+    }
+
+    async handleRoleMappingCreateRequest(request: messages.RoleMappingCreateRequest) {
+        let id = Math.random() * 2**31 | 0;
+        while (this.roleMappings.has(id)) {
+            id = Math.random() * 2**31 | 0;
+        }
+
+        let priority = request.priority;
+        const existing = new Set([...this.roleMappings.values()].map(m => m.priority));
+        while (existing.has(priority)) {
+            priority++;
+        }
+
+        const roleMapping = new messages.RoleMappingRecord(
+            id, new Set(request.roleIds), request.groupId, priority, request.enabled,
+        );
+
+        this.roleMappings.set(roleMapping);
+        return roleMapping;
+    }
+
+    async handleRoleMappingUpdateRequest(request: messages.RoleMappingUpdateRequest) {
+        const roleMapping = request.roleMapping;
+        if (roleMapping.id === undefined || !this.roleMappings.has(roleMapping.id)) {
+            throw new lib.RequestError(`Role mapping with ID ${roleMapping.id} does not exist`);
+        }
+
+        const existing = new Set(
+            [...this.roleMappings.values()]
+                .filter(m => m.id !== roleMapping.id)
+                .map(m => m.priority)
+        );
+
+        let priority = roleMapping.priority;
+        while (existing.has(priority)) {
+            priority++;
+        }
+
+        this.roleMappings.set(roleMapping);
+    }
+
+    async handleRoleMappingDeleteRequest(request: messages.RoleMappingDeleteRequest) {
+        const { id } = request;
+
+        const mapping = this.roleMappings.getMutable(id);
+        if (!mapping) {
+            throw new lib.RequestError(`Role mapping with ID ${id} does not exist`);
+        }
+
+        this.roleMappings.delete(mapping);
+    }
+
+    async handleRoleMappingGetRequest(request: messages.RoleMappingGetRequest) {
+        const mapping = this.roleMappings.get(request.id);
+        if (!mapping) {
+            throw new lib.RequestError(`Role mapping with ID ${request.id} does not exist`);
+        }
+
+        return mapping;
+    }
+
+    /*
+        Calculating assignments
+    */
+
+    async computeResolvedAssignment(playerName: string): Promise<messages.AssignmentRecord> {
+        // 1) Manual override
+        const manual = this.manualAssignments.get(playerName);
+        if (manual) {
+            return manual;
+        }
+
+        const user = this.controller.users.getByName(playerName);
+        const userRoles = user?.roleIds ?? new Set<number>();
+
+        // 2) Role mappings
+        let best: messages.RoleMappingRecord | null = null;
+        for (const mapping of this.roleMappings.values()) {
+            if (!mapping.enabled) continue;
+
+            let matches = true;
+            for (const roleId of mapping.roleIds) {
+                if (!userRoles.has(roleId)) {
+                    matches = false;
+                    break;
+                }
+            }
+
+            if (!matches) continue;
+
+            if (!best || mapping.priority > best.priority) {
+                best = mapping;
+            }
+        }
+
+        if (best) {
+            return new messages.AssignmentRecord(playerName, best.groupId);
+        }
+
+        // 3) Default (deleted assignment, assigns to 'Default' in game)
+        return new messages.AssignmentRecord(playerName, 0, 0, true);
+    }
+
+    async computeResolvedAssignments(playerNames: string[]): Promise<messages.AssignmentRecord[]> {
+        return Promise.all(playerNames.map(name => this.computeResolvedAssignment(name)));
+    }
 }

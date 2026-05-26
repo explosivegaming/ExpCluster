@@ -13,11 +13,11 @@
 		"node": ">=18"
 	},
 	"peerDependencies": {
-		"@clusterio/lib": "catalog:"
+		"@clusterio/lib": "workspace:^"
 	},
 	"devDependencies": {
-		"@clusterio/lib": "catalog:",
-		"@clusterio/web_ui": "catalog:",
+		"@clusterio/lib": "workspace:^",
+		"@clusterio/web_ui": "workspace:^",
 		"@types/node": "catalog:",
 		"@types/react": "catalog:",
 		"antd": "catalog:",
