@@ -5,5 +5,7 @@ Therefore, we advise that this should be the only file in your module to expose 
 Typically this would be your control file as shown in the example below
 ]]
 
+--- @diagnostic disable: global-element
+
 -- Access using `/sc exp_groups.foo()`
 exp_groups = require("modules/exp_groups/control")
