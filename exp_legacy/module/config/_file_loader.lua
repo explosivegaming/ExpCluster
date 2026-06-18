@@ -22,7 +22,7 @@ return {
     --"modules.data.toolbar",
 
     --- GUI
-    "modules.gui.rocket-info",
+    -- "modules.gui.rocket-info", -- migrated to exp_scenario/gui/rocket_info
     "modules.gui.warp-list",
     "modules.gui.player-list",
     "modules.gui.vlayer",
