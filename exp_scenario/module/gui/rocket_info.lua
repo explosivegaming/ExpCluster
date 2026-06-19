@@ -155,13 +155,15 @@ local function compute_milestone_rows(force)
     local rows = {}
 
     for _, milestone in ipairs(config.milestones) do
-        --- @cast milestone number
-        if milestone <= force_rockets then
-            local time = times[milestone] or 0
-            rows[#rows + 1] = { milestone = milestone, value = time_formats.caption_hours(time), tooltip = time_formats.tooltip_hours(time) }
-        else
-            rows[#rows + 1] = { milestone = milestone, value = { "exp-gui_rocket-info.data-caption-milestone-next" }, tooltip = { "exp-gui_rocket-info.data-tooltip-milestone-next" } }
-            break
+        -- The milestones config mixes the show_milestones flag with the milestone numbers
+        if type(milestone) == "number" then
+            if milestone <= force_rockets then
+                local time = times[milestone] or 0
+                rows[#rows + 1] = { milestone = milestone, value = time_formats.caption_hours(time), tooltip = time_formats.tooltip_hours(time) }
+            else
+                rows[#rows + 1] = { milestone = milestone, value = { "exp-gui_rocket-info.data-caption-milestone-next" }, tooltip = { "exp-gui_rocket-info.data-tooltip-milestone-next" } }
+                break
+            end
         end
     end
 
