@@ -353,7 +353,7 @@ Elements.progress_table = Gui.define("rocket_info/progress_table")
         -- The no silos label lives next to the table inside the same collapsible scroll pane
         local no_silos = assert(progress_table.parent).add{
             type = "label",
-            caption = { "exp-gui_rocket-info.progress-no-silos" },
+            caption = { "exp-gui_rocket-info.progress-caption-no-silos" },
         }
         no_silos.style.padding = { 1, 2 }
 
