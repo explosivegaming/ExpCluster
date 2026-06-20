@@ -14,9 +14,10 @@ local Jail = require("modules.exp_legacy.modules.control.jail") --- @dep modules
 local Colors = require("modules/exp_util/include/color")
 local format_player_name = ExpUtil.format_player_name_locale
 
-local SelectedPlayer, SelectedAction
-local function set_datastores(player, action)
-    SelectedPlayer, SelectedAction = player, action
+--- Accessors injected by the gui so the actions can read the selected player and set the selected action
+local get_selected_player, set_selected_action
+local function set_accessors(player_getter, action_setter)
+    get_selected_player, set_selected_action = player_getter, action_setter
 end
 
 -- auth that will only allow when on player's of lower roles
@@ -30,7 +31,7 @@ end
 
 -- gets the action player and a coloured name for the action to be used on
 local function get_action_player_name(player)
-    local selected_player_name = SelectedPlayer:get(player)
+    local selected_player_name = get_selected_player(player)
     local selected_player = game.players[selected_player_name]
     local selected_player_color = format_player_name(selected_player)
     return selected_player_name, selected_player_color
@@ -63,7 +64,7 @@ end
 
 --- Teleports the user to the action player
 -- @element goto_player
-local goto_player = new_button("utility/export", { "player-list.goto-player" })
+local goto_player = new_button("utility/export", { "exp-gui_player-list.goto-player" })
     :on_click(function(def, player, element)
         local selected_player_name = get_action_player_name(player)
         local selected_player = game.players[selected_player_name]
@@ -76,7 +77,7 @@ local goto_player = new_button("utility/export", { "player-list.goto-player" })
 
 --- Teleports the action player to the user
 -- @element bring_player
-local bring_player = new_button("utility/import", { "player-list.bring-player" })
+local bring_player = new_button("utility/import", { "exp-gui_player-list.bring-player" })
     :on_click(function(def, player, element)
         local selected_player_name = get_action_player_name(player)
         local selected_player = game.players[selected_player_name]
@@ -89,13 +90,13 @@ local bring_player = new_button("utility/import", { "player-list.bring-player" }
 
 --- Reports the action player, requires a reason to be given
 -- @element report_player
-local report_player = new_button("utility/spawn_flag", { "player-list.report-player" })
+local report_player = new_button("utility/spawn_flag", { "exp-gui_player-list.report-player" })
     :on_click(function(def, player, element)
         local selected_player_name = get_action_player_name(player)
         if Reports.is_reported(selected_player_name, player.name) then
             player.print({ "exp-commands_report.already-reported" }, Colors.orange_red)
         else
-            SelectedAction:set(player, "command/report")
+            set_selected_action(player, "command/report")
         end
     end)
 
@@ -109,9 +110,9 @@ end
 
 --- Gives the action player a warning, requires a reason
 -- @element warn_player
-local warn_player = new_button("utility/spawn_flag", { "player-list.warn-player" })
+local warn_player = new_button("utility/spawn_flag", { "exp-gui_player-list.warn-player" })
     :on_click(function(def, player, element)
-        SelectedAction:set(player, "command/give-warning")
+        set_selected_action(player, "command/give-warning")
     end)
 
 local function warn_player_callback(player, reason)
@@ -123,13 +124,13 @@ end
 
 --- Jails the action player, requires a reason
 -- @element jail_player
-local jail_player = new_button("utility/multiplayer_waiting_icon", { "player-list.jail-player" })
+local jail_player = new_button("utility/multiplayer_waiting_icon", { "exp-gui_player-list.jail-player" })
     :on_click(function(def, player, element)
         local selected_player_name, selected_player_color = get_action_player_name(player)
         if Jail.is_jailed(selected_player_name) then
             player.print({ "exp-commands_jail.already-jailed", selected_player_color }, Colors.orange_red)
         else
-            SelectedAction:set(player, "command/jail")
+            set_selected_action(player, "command/jail")
         end
     end)
 
@@ -142,9 +143,9 @@ end
 
 --- Kicks the action player, requires a reason
 -- @element kick_player
-local kick_player = new_button("utility/warning_icon", { "player-list.kick-player" })
+local kick_player = new_button("utility/warning_icon", { "exp-gui_player-list.kick-player" })
     :on_click(function(def, player, element)
-        SelectedAction:set(player, "command/kick")
+        set_selected_action(player, "command/kick")
     end)
 
 local function kick_player_callback(player, reason)
@@ -154,9 +155,9 @@ end
 
 --- Bans the action player, requires a reason
 -- @element ban_player
-local ban_player = new_button("utility/danger_icon", { "player-list.ban-player" })
+local ban_player = new_button("utility/danger_icon", { "exp-gui_player-list.ban-player" })
     :on_click(function(def, player, element)
-        SelectedAction:set(player, "command/ban")
+        set_selected_action(player, "command/ban")
     end)
 
 local function ban_player_callback(player, reason)
@@ -165,7 +166,7 @@ local function ban_player_callback(player, reason)
 end
 
 return {
-    set_datastores = set_datastores,
+    set_accessors = set_accessors,
     buttons = {
         ["command/teleport"] = {
             auth = function(player, selected_player)
