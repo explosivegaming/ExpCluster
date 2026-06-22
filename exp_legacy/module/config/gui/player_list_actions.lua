@@ -30,11 +30,10 @@ local function auth_lower_role(player, selected_player_name)
 end
 
 -- gets the action player and a coloured name for the action to be used on
-local function get_action_player_name(player)
-    local selected_player_name = get_selected_player(player)
-    local selected_player = game.players[selected_player_name]
+local function get_action_player(player)
+    local selected_player = get_selected_player(player) --[[ @as LuaPlayer ]]
     local selected_player_color = format_player_name(selected_player)
-    return selected_player_name, selected_player_color
+    return selected_player, selected_player_color
 end
 
 -- teleports one player to another
@@ -66,8 +65,7 @@ end
 -- @element goto_player
 local goto_player = new_button("utility/export", { "exp-gui_player-list.goto-player" })
     :on_click(function(def, player, element)
-        local selected_player_name = get_action_player_name(player)
-        local selected_player = game.players[selected_player_name]
+        local selected_player = get_action_player(player)
         if not player.character or not selected_player.character then
             player.print({ "expcore-commands.reject-player-alive" }, Colors.orange_red)
         else
@@ -79,8 +77,7 @@ local goto_player = new_button("utility/export", { "exp-gui_player-list.goto-pla
 -- @element bring_player
 local bring_player = new_button("utility/import", { "exp-gui_player-list.bring-player" })
     :on_click(function(def, player, element)
-        local selected_player_name = get_action_player_name(player)
-        local selected_player = game.players[selected_player_name]
+        local selected_player = get_action_player(player)
         if not player.character or not selected_player.character then
             player.print({ "expcore-commands.reject-player-alive" }, Colors.orange_red)
         else
@@ -92,8 +89,8 @@ local bring_player = new_button("utility/import", { "exp-gui_player-list.bring-p
 -- @element report_player
 local report_player = new_button("utility/spawn_flag", { "exp-gui_player-list.report-player" })
     :on_click(function(def, player, element)
-        local selected_player_name = get_action_player_name(player)
-        if Reports.is_reported(selected_player_name, player.name) then
+        local selected_player = get_action_player(player)
+        if Reports.is_reported(selected_player.name, player.name) then
             player.print({ "exp-commands_report.already-reported" }, Colors.orange_red)
         else
             set_selected_action(player, "command/report")
@@ -101,11 +98,11 @@ local report_player = new_button("utility/spawn_flag", { "exp-gui_player-list.re
     end)
 
 local function report_player_callback(player, reason)
-    local selected_player_name, selected_player_color = get_action_player_name(player)
+    local selected_player, selected_player_color = get_action_player(player)
     local by_player_name_color = format_player_name(player)
     game.print{ "exp-commands_reports.response", selected_player_color, reason }
     Roles.print_to_roles_higher("Trainee", { "exp-commands_reports.response-admin", selected_player_color, by_player_name_color, reason })
-    Reports.report_player(selected_player_name, player.name, reason)
+    Reports.report_player(selected_player.name, player.name, reason)
 end
 
 --- Gives the action player a warning, requires a reason
@@ -116,18 +113,18 @@ local warn_player = new_button("utility/spawn_flag", { "exp-gui_player-list.warn
     end)
 
 local function warn_player_callback(player, reason)
-    local selected_player_name, selected_player_color = get_action_player_name(player)
+    local selected_player, selected_player_color = get_action_player(player)
     local by_player_name_color = format_player_name(player)
     game.print{ "exp-commands_warnings.create", selected_player_color, by_player_name_color, reason }
-    Warnings.add_warning(selected_player_name, player.name, reason)
+    Warnings.add_warning(selected_player.name, player.name, reason)
 end
 
 --- Jails the action player, requires a reason
 -- @element jail_player
 local jail_player = new_button("utility/multiplayer_waiting_icon", { "exp-gui_player-list.jail-player" })
     :on_click(function(def, player, element)
-        local selected_player_name, selected_player_color = get_action_player_name(player)
-        if Jail.is_jailed(selected_player_name) then
+        local selected_player, selected_player_color = get_action_player(player)
+        if Jail.is_jailed(selected_player.name) then
             player.print({ "exp-commands_jail.already-jailed", selected_player_color }, Colors.orange_red)
         else
             set_selected_action(player, "command/jail")
@@ -135,10 +132,10 @@ local jail_player = new_button("utility/multiplayer_waiting_icon", { "exp-gui_pl
     end)
 
 local function jail_player_callback(player, reason)
-    local selected_player_name, selected_player_color = get_action_player_name(player)
+    local selected_player, selected_player_color = get_action_player(player)
     local by_player_name_color = format_player_name(player)
     game.print{ "exp-commands_jail.jailed", selected_player_color, by_player_name_color, reason }
-    Jail.jail_player(selected_player_name, player.name, reason)
+    Jail.jail_player(selected_player.name, player.name, reason)
 end
 
 --- Kicks the action player, requires a reason
@@ -149,7 +146,7 @@ local kick_player = new_button("utility/warning_icon", { "exp-gui_player-list.ki
     end)
 
 local function kick_player_callback(player, reason)
-    local selected_player = get_action_player_name(player)
+    local selected_player = get_action_player(player)
     game.kick_player(selected_player, reason)
 end
 
@@ -161,7 +158,7 @@ local ban_player = new_button("utility/danger_icon", { "exp-gui_player-list.ban-
     end)
 
 local function ban_player_callback(player, reason)
-    local selected_player = get_action_player_name(player)
+    local selected_player = get_action_player(player)
     game.ban_player(selected_player, reason)
 end
 

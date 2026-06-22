@@ -24,7 +24,6 @@ return {
     --- GUI
     "modules.gui.rocket-info",
     "modules.gui.warp-list",
-    -- "modules.gui.player-list", -- migrated to exp_scenario/gui/player_list
     "modules.gui.vlayer",
     "modules.gui._role_updates",
 
