@@ -149,14 +149,14 @@ Elements.player_name_label = Gui.define("player_list/player_name_label")
 --- @field name_label LuaGuiElement
 --- @field time_label LuaGuiElement
 
---- @class ExpGui_PlayerList.elements.player_table.data
+--- @class ExpGui_PlayerList.elements.player_table.element_data
 --- @field rows table<string, ExpGui_PlayerList.elements.player_table.row>
 --- @field action_bar LuaGuiElement
 --- @field reason_bar LuaGuiElement
 
 --- Scroll table containing a row for each online player
 --- @class ExpGui_PlayerList.elements.player_table: ExpElement
---- @field data table<LuaGuiElement, ExpGui_PlayerList.elements.player_table.data>
+--- @field data table<LuaGuiElement, ExpGui_PlayerList.elements.player_table.element_data>
 --- @overload fun(parent: LuaGuiElement): LuaGuiElement
 Elements.player_table = Gui.define("player_list/player_table")
     :track_all_elements()
@@ -305,24 +305,13 @@ end
 --- Refresh the action bar, reason bar and row highlights for a player to match their selection
 --- @param player LuaPlayer
 function Elements.player_table.refresh_player(player)
-    -- Clear the selection if the selected player has gone offline
     local selected_player = Elements.container.get_selected_player(player)
-    if selected_player and not selected_player.connected then
-        Elements.container.set_selected_player(player, nil)
-        selected_player = nil
-    end
     local selected_action = Elements.container.get_selected_action(player)
 
     for _, player_table in Elements.player_table:online_elements(player) do
         local element_data = Elements.player_table.data[player_table]
-
-        -- Update the action bar and reason bar visibility
-        if selected_player then
-            Elements.action_bar.refresh(element_data.action_bar, player, selected_player)
-        else
-            element_data.action_bar.visible = false
-        end
-        element_data.reason_bar.visible = selected_player ~= nil and selected_action ~= nil
+        Elements.action_bar.refresh(element_data.action_bar, player, selected_player)
+        Elements.reason_bar.refresh(element_data.reason_bar, selected_player, selected_action)
 
         -- Highlight the open button of the selected player
         for player_name, row in pairs(element_data.rows) do
@@ -355,11 +344,16 @@ Elements.action_bar = Gui.define("player_list/action_bar")
         padding = { 1, 3 },
     } --[[ @as any ]]
 
---- Update the action bar buttons to match the selection for a player
+--- Update the action bar buttons to match the selection for a player, hidden when nothing is selected
 --- @param action_bar LuaGuiElement
 --- @param player LuaPlayer
---- @param selected_player LuaPlayer
+--- @param selected_player LuaPlayer?
 function Elements.action_bar.refresh(action_bar, player, selected_player)
+    if not selected_player then
+        action_bar.visible = false
+        return
+    end
+
     action_bar.visible = true
     for action_name, buttons in pairs(config.buttons) do
         local flow = action_bar[action_name]
@@ -397,6 +391,14 @@ Elements.reason_bar = Gui.define("player_list/reason_bar")
         height = 35,
         padding = { -1, 3 },
     } --[[ @as any ]]
+
+--- Update the reason bar visibility to match the selection, shown only while an action awaits a reason
+--- @param reason_bar LuaGuiElement
+--- @param selected_player LuaPlayer?
+--- @param selected_action string?
+function Elements.reason_bar.refresh(reason_bar, selected_player, selected_action)
+    reason_bar.visible = selected_player ~= nil and selected_action ~= nil
+end
 
 --- @class ExpGui_PlayerList.elements.container.selection
 --- @field selected_player LuaPlayer?
