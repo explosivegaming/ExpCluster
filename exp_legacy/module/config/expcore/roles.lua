@@ -234,7 +234,6 @@ Roles.new_role("Member", "Mem")
         "gui/tool",
         "command/save-quickbar",
         "command/vlayer-info",
-        "command/personal-logistic",
         "command/lawnmower",
         "command/waterfill",
         "command/artillery",
