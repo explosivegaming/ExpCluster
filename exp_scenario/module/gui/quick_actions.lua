@@ -7,7 +7,6 @@ local Commands = require("modules/exp_commands")
 local Roles = require("modules/exp_legacy/expcore/roles")
 
 local addon_artillery = require("modules/exp_scenario/commands/artillery")
-local addon_research = require("modules/exp_scenario/commands/research")
 local addon_trains = require("modules/exp_scenario/commands/trains")
 local addon_teleport = require("modules/exp_scenario/commands/teleport")
 local addon_waterfill = require("modules/exp_scenario/commands/waterfill")
@@ -44,12 +43,9 @@ end
 
 new_quick_action("artillery", addon_artillery.commands.artillery)
 new_quick_action("trains", addon_trains.commands.set_trains_to_automatic)
-new_quick_action("research", addon_research.commands.set_auto_research)
-
-new_quick_action("spawn", addon_teleport.commands.spawn, function(def, player, element, event)
+new_quick_action("spawn", addon_teleport.commands.spawn, function(_def, player, _element, _event)
     addon_teleport.commands.spawn(player, player)
 end)
-
 new_quick_action("waterfill", addon_waterfill.commands.waterfill)
 
 --- Container added to the left gui flow
