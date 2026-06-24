@@ -17,7 +17,6 @@ return {
     "modules.data.alt-view",
     "modules.data.tag",
     -- 'modules.data.bonus',
-    "modules.data.personal-logistic",
     "modules.data.language",
     --"modules.data.toolbar",
 
