@@ -41,6 +41,8 @@ local e = defines.events
 return {
     events = {
         [e.on_research_finished] = on_research_finished,
+        [e.on_research_reversed] = on_research_finished,
         [e.on_research_started] = on_research_started,
+        [e.on_research_queued] = on_research_started,
     }
 }
