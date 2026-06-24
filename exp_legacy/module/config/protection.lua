@@ -5,15 +5,13 @@ return {
     repeat_lifetime = 3600 * 20, --- @setting repeat_lifetime The length of time, in ticks, that protected removals will be remembered for
     refresh_rate = 3600 * 5, --- @setting refresh_rate How often the age of protected removals are checked against repeat_lifetime
     always_protected_names = { --- @setting always_protected_names Names of entities which are always protected
-
     },
     always_protected_types = { --- @setting always_protected_types Types of entities which are always protected
-        "boiler", "generator", "offshore-pump", "power-switch", "reactor", "rocket-silo",
+        "boiler", "generator", "offshore-pump", "reactor", "heat-exchanger", "heat-pipe", "fusion-reactor", "fusion-generator", "power-switch", "rocket-silo",
     },
     always_trigger_repeat_names = { --- @setting always_trigger_repeat_names Names of entities which always trigger repeated removal protection
-
     },
     always_trigger_repeat_types = { --- @setting always_trigger_repeat_types Types of entities which always trigger repeated removal protection
-        "reactor", "rocket-silo",
+        "reactor", "fusion-reactor", "rocket-silo",
     },
 }
