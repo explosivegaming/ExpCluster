@@ -24,7 +24,7 @@ local function get_ground_items(surface)
 end
 
 --- Clear all items on the ground, optional to select a single surface
-commands.clear_ground_items = Commands.new("clear-ground-item", { "exp-commands_surface.description-items" })
+commands.clear_ground_items = Commands.new("clear-ground-item", { "exp-commands_surface.description-item" })
     :register(function(player)
         move_items{
             surface = player.surface,
@@ -36,7 +36,7 @@ commands.clear_ground_items = Commands.new("clear-ground-item", { "exp-commands_
     end)
 
 --- Clear all blueprints, optional to select a single surface
-commands.clear_blueprints_surface = Commands.new("clear-blueprints-surface", { "exp-commands_surface.description-blueprints" })
+commands.clear_blueprints_surface = Commands.new("clear-blueprints-surface", { "exp-commands_surface.description-blueprint" })
     :register(function(player)
         local entities = player.surface.find_entities_filtered{ type = "entity-ghost" }
         for _, entity in ipairs(entities) do
@@ -49,7 +49,7 @@ commands.clear_blueprints_surface = Commands.new("clear-blueprints-surface", { "
 --- Toggle player selection mode
 --- @class ExpCommands_ClearBlueprint.commands.clear_blueprints: ExpCommand
 --- @overload fun(player: LuaPlayer)
-commands.clear_blueprints = Commands.new("clear-blueprints", { "exp-commands_surface.description-blueprints" })
+commands.clear_blueprints = Commands.new("clear-blueprints", { "exp-commands_surface.description-blueprint" })
     :register(function(player)
         if SelectArea:stop(player) then
             return Commands.status.success{ "exp-commands_surface.exit" }
