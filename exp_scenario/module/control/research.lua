@@ -9,7 +9,10 @@ local config = require("modules/exp_legacy/config/research")
 --- @param event EventData.on_research_finished
 local function on_research_finished(event)
     local research_name = event.research.name
-
+    if config.bonus_inventory.enabled and config.bonus_inventory.res[research_name] then
+        event.research.force[config.bonus_inventory.name] = math.min((event.research.level - 1) * config.bonus_inventory.rate, config.bonus_inventory.limit)
+    end
+    
     if config.pollution_ageing_by_research and config.bonus_inventory.res[research_name] then
         game.map_settings.pollution.ageing = math.min(10, event.research.level / 5)
     end
