@@ -5,11 +5,13 @@ Adds a command that allows an admin to repair and revive a large area
 local Commands = require("modules/exp_commands")
 local config = require("modules.exp_legacy.config.repair") --- @dep config.repair
 
+--- @class ExpCommands_Repair.commands
+local commands = {}
+
 --- Repairs entities on your force around you
-Commands.new("repair", { "exp-commands_repair.description" })
-    :argument("range", { "exp-commands_repair.arg-range" }, Commands.types.integer_range(1, config.max_range))
-    :register(function(player, range)
-        --- @cast range number
+--- @class ExpCommands_Repair.commands.repair: ExpCommand
+commands.repair = Commands.new("repair", { "exp-commands_repair.description" })
+    :register(function(player)
         local force = player.force
         local surface = player.surface -- Allow remote view
         local position = player.position -- Allow remote view
@@ -20,13 +22,13 @@ Commands.new("repair", { "exp-commands_repair.description" })
             local entities = surface.find_entities_filtered{
                 type = "entity-ghost",
                 position = position,
-                radius = range,
+                radius = config.max_range,
                 force = force,
             }
 
             local param = { raise_revive = true } --- @type LuaEntity.silent_revive_param
             for _, entity in ipairs(entities) do
-                if not config.disallow[entity.ghost_name] and (config.allow_blueprint_repair or entity.created_by_corpse) then
+                if not (entity.ghost_prototype and entity.ghost_prototype.hidden) and (config.allow_blueprint_repair or entity.created_by_corpse) then
                     revive_count = revive_count + 1
                     entity.silent_revive(param)
                 end
@@ -39,7 +41,7 @@ Commands.new("repair", { "exp-commands_repair.description" })
             local healed_count = 0
             local entities = surface.find_entities_filtered{
                 position = position,
-                radius = range,
+                radius = config.max_range,
                 force = force,
             }
 
@@ -55,3 +57,7 @@ Commands.new("repair", { "exp-commands_repair.description" })
 
         return Commands.status.success(response)
     end)
+
+return {
+    commands = commands,
+}
