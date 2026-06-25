@@ -16,7 +16,6 @@ local Elements = {}
 --- @field cost number
 --- @field scale number
 --- @field max_value number
---- @field initial_value number
 --- @field is_percentage boolean
 --- @field is_special boolean
 --- @field value_step number
@@ -229,7 +228,7 @@ Elements.bonus_slider = Gui.define("player_bonus/bonus_slider")
         local player = Gui.get_player(parent)
         local value = Elements.container.get_player_bonus(player, bonus_data.name)
         if not value then
-            value = bonus_data.initial_value
+            value = math.floor(bonus_data.initial_value / 2)
             elements.apply_button.enabled = true
         end
 
@@ -290,7 +289,7 @@ function Elements.bonus_slider.reset_value(slider)
     local player = Gui.get_player(slider)
     local element_data = Elements.bonus_slider.data[slider]
     local bonus_data = element_data.bonus_data
-    local value = Elements.container.get_player_bonus(player, bonus_data.name) or bonus_data.initial_value
+    local value = Elements.container.get_player_bonus(player, bonus_data.name) or math.floor(bonus_data.initial_value / 2)
     slider.slider_value = value
     element_data.label.caption = Elements.bonus_slider.calculate_slider_caption(bonus_data, value)
     element_data.previous_value = value

@@ -70,7 +70,6 @@ add(require("modules/exp_scenario/control/station_auto_name"))
 --- Guis
 add(require("modules/exp_scenario/gui/autofill"))
 add(require("modules/exp_scenario/gui/elements"))
-add(require("modules/exp_scenario/gui/landfill_blueprint"))
 add(require("modules/exp_scenario/gui/module_inserter"))
 add(require("modules/exp_scenario/gui/player_bonus"))
 add(require("modules/exp_scenario/gui/player_stats"))

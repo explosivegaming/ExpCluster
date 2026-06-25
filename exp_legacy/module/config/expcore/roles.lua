@@ -80,7 +80,6 @@ Roles.new_role("Moderator", "Mod")
         "command/clear-inventory",
         "command/kill-enemies",
         "command/remove-enemies",
-        --'command/bonus',
         "command/home",
         "command/set-home",
         "command/get-home",
@@ -167,7 +166,6 @@ Roles.new_role("Sponsor", "Spon")
         "gui/rocket-info/toggle-active",
         "gui/rocket-info/remote_launch",
         "gui/bonus",
-        --"command/bonus",
         "command/home",
         "command/set-home",
         "command/get-home",
@@ -235,7 +233,6 @@ Roles.new_role("Member", "Mem")
         "gui/tool",
         "command/save-quickbar",
         "command/vlayer-info",
-        "command/personal-logistic",
         "command/lawnmower",
         "command/waterfill",
         "command/artillery",
@@ -291,7 +288,6 @@ local default = Roles.new_role("Guest", "")
         "gui/research",
         "gui/autofill",
         "gui/module",
-        "gui/landfill",
         "gui/production",
     }
 

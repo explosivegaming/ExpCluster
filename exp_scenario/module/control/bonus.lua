@@ -11,7 +11,7 @@ local config = require("modules/exp_legacy/config/bonus")
 local function apply_force_bonus(event)
     local force = event.force
     for k, v in pairs(config.force_bonus) do
-        force[k] = v.initial_value
+        force[k] = math.floor(v.max_value / 2)
     end
 end
 
@@ -19,7 +19,7 @@ end
 local function apply_surface_bonus(event)
     local surface = assert(game.get_surface(event.surface_index))
     for k, v in pairs(config.surface_bonus) do
-        surface[k] = v.initial_value
+        surface[k] = math.floor(v.max_value / 2)
     end
 end
 
