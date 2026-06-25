@@ -88,6 +88,37 @@ local function try_deconstruct_output_chest(entity)
     order_deconstruction_async:start_after(10, target)
 end
 
+--- Check if beacon should be deconstructed
+--- @param entity LuaEntity
+local function try_deconstruct_nearby_beacon(entity)
+    -- Get a valid chest as the target
+    local beacons = entity.get_beacons()
+    local beacon_in_use = false
+
+    -- if beacon is not supported
+    if not beacons then
+        return
+    end
+
+    for _, b in pairs(beacons) do
+        if not b.to_be_deconstructed() then
+            for _, r in pairs(b.get_beacon_effect_receivers()) do
+                if r ~= entity then
+                    if not r.to_be_deconstructed() then
+                        beacon_in_use = true
+                        break
+                    end
+                end
+            end
+
+            -- Deconstruct the beacon
+            if not beacon_in_use then
+                order_deconstruction_async:start_after(10, { name = b.name, position = b.position })
+            end
+        end
+    end
+end
+
 --- Check if a miner should be deconstructed
 --- @param entity LuaEntity
 local function try_deconstruct_miner(entity)
@@ -117,8 +148,18 @@ local function try_deconstruct_miner(entity)
         try_deconstruct_output_chest(entity)
     end
 
+    -- Try deconstruct the beacon
+    if config.beacon then
+        try_deconstruct_nearby_beacon(entity)
+    end
+
     -- Skip pipe build if not required
-    if not config.fluid or #entity.fluidbox == 0 then
+    if not config.fluid or not entity.fluids_count then
+        return
+    end
+
+    -- too complex to handle
+    if entity.fluids_count ~= 1 then
         return
     end
 
@@ -185,11 +226,19 @@ local function try_deconstruct_miner(entity)
     end
 end
 
+local max_quality = ""
+
+for _, q in pairs(prototypes.quality) do
+    if not q.next then
+        max_quality = q.name
+    end
+end
+
 --- Get the max mining radius
 local max_mining_radius = 0
 for _, proto in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "mining-drill" } }) do
-    if proto.mining_drill_radius > max_mining_radius then
-        max_mining_radius = proto.mining_drill_radius
+    if proto.mining_drill_radius then
+        max_mining_radius = math.max(proto.get_mining_drill_radius(max_quality), max_mining_radius)
     end
 end
 
@@ -214,8 +263,8 @@ local function on_resource_depleted(event)
     -- Check which could have reached this resource
     for _, drill in pairs(drills) do
         local radius = drill.prototype.mining_drill_radius
-        local dx = math.abs(drill.position.x - resource.position.x)
-        local dy = math.abs(drill.position.y - resource.position.y)
+        local dx = math.abs(drill.position.x - position.x)
+        local dy = math.abs(drill.position.y - position.y)
         if dx <= radius and dy <= radius then
             try_deconstruct_miner(drill)
         end
