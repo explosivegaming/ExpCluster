@@ -12,6 +12,7 @@ local addon_trains = require("modules/exp_scenario/commands/trains")
 local addon_teleport = require("modules/exp_scenario/commands/teleport")
 local addon_waterfill = require("modules/exp_scenario/commands/waterfill")
 local addon_home = require("modules/exp_scenario/commands/home")
+local addon_vlayer = require("modules/exp_scenario/commands/vlayer")
 
 --- @class ExpGui_QuickActions.elements
 local Elements = {}
@@ -56,6 +57,7 @@ new_quick_action("home", addon_home.commands.home)
 new_quick_action("return", addon_home.commands._return)
 new_quick_action("set-home", addon_home.commands.set_home)
 new_quick_action("get-home", addon_home.commands.get_home)
+new_quick_action("vlayer", addon_vlayer.commands.vlayer)
 
 --- Container added to the left gui flow
 --- @class ExpGui_QuickActions.elements.container: ExpElement
