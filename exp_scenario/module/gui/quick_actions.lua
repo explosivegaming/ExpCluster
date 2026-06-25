@@ -11,6 +11,7 @@ local addon_research = require("modules/exp_scenario/commands/research")
 local addon_trains = require("modules/exp_scenario/commands/trains")
 local addon_teleport = require("modules/exp_scenario/commands/teleport")
 local addon_waterfill = require("modules/exp_scenario/commands/waterfill")
+local addon_surface = require("modules/exp_scenario/commands/surface")
 
 --- @class ExpGui_QuickActions.elements
 local Elements = {}
@@ -51,6 +52,9 @@ new_quick_action("spawn", addon_teleport.commands.spawn, function(def, player, e
 end)
 
 new_quick_action("waterfill", addon_waterfill.commands.waterfill)
+new_quick_action("clear-ground-item", addon_surface.commands.clear_ground_item)
+new_quick_action("clear-blueprint-surface", addon_surface.commands.clear_blueprint_surface)
+new_quick_action("clear-blueprint", addon_surface.commands.clear_blueprint)
 
 --- Container added to the left gui flow
 --- @class ExpGui_QuickActions.elements.container: ExpElement
