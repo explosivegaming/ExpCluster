@@ -23,8 +23,8 @@ local function get_ground_items(surface)
     return items
 end
 
---- Clear all items on the ground, optional to select a single surface
-commands.clear_ground_items = Commands.new("clear-ground-item", { "exp-commands_surface.description-item" })
+--- Clear all item on the ground on a single surface
+commands.clear_ground_item = Commands.new("clear-ground-item", { "exp-commands_surface.description-item" })
     :register(function(player)
         move_items{
             surface = player.surface,
@@ -35,8 +35,8 @@ commands.clear_ground_items = Commands.new("clear-ground-item", { "exp-commands_
         game.print{ "exp-commands_surface.item" }
     end)
 
---- Clear all blueprints, optional to select a single surface
-commands.clear_blueprints_surface = Commands.new("clear-blueprints-surface", { "exp-commands_surface.description-blueprint" })
+--- Clear all blueprint in a single surface
+commands.clear_blueprint_surface = Commands.new("clear-blueprint-surface", { "exp-commands_surface.description-blueprint" })
     :register(function(player)
         local entities = player.surface.find_entities_filtered{ type = "entity-ghost" }
         for _, entity in ipairs(entities) do
@@ -45,11 +45,10 @@ commands.clear_blueprints_surface = Commands.new("clear-blueprints-surface", { "
         game.print{ "exp-commands_surface.blueprint" }
     end)
 
---- Clear all blueprints in a radius around you
---- Toggle player selection mode
---- @class ExpCommands_ClearBlueprint.commands.clear_blueprints: ExpCommand
+--- Clear all blueprint in the area, selected by toggle player selection mode
+--- @class ExpCommands_ClearBlueprint.commands.clear_blueprint: ExpCommand
 --- @overload fun(player: LuaPlayer)
-commands.clear_blueprints = Commands.new("clear-blueprints", { "exp-commands_surface.description-blueprint" })
+commands.clear_blueprint = Commands.new("clear-blueprint", { "exp-commands_surface.description-blueprint" })
     :register(function(player)
         if SelectArea:stop(player) then
             return Commands.status.success{ "exp-commands_surface.exit" }
