@@ -5,7 +5,7 @@ Adds a command that clean up biter corpse and nuclear hole
 local AABB = require("modules/exp_util/aabb")
 local Commands = require("modules/exp_commands")
 local Selection = require("modules/exp_util/selection")
-local SelectArea = Selection.connect("ExpCommand_Waterfill")
+local SelectArea = Selection.connect("ExpCommand_Lawnmower")
 local config = require("modules.exp_legacy.config.lawnmower")
 
 --- @class ExpCommand_Lawnmower.commands
@@ -36,8 +36,7 @@ SelectArea:on_selection(function(event)
         return
     end
 
-    -- Intentionally left as player.position to allow use in remote view
-    local entities = surface.find_entities_filtered{ position = player.position, area = area, type = "corpse" }
+    local entities = surface.find_entities_filtered{ area = area, type = "corpse" }
     for _, entity in pairs(entities) do
         if (entity.name ~= "transport-caution-corpse" and entity.name ~= "invisible-transport-caution-corpse") then
             entity.destroy()
@@ -45,15 +44,15 @@ SelectArea:on_selection(function(event)
     end
 
     local replace_tiles = {}
-    local tiles = surface.find_tiles_filtered{ position = player.position, area = area, name = { "nuclear-ground" } }
+    local tiles = surface.find_tiles_filtered{ area = area, name = { "nuclear-ground" } }
     for i, tile in pairs(tiles) do
         replace_tiles[i] = { name = "grass-1", position = tile.position }
     end
 
     surface.set_tiles(replace_tiles)
-    surface.destroy_decoratives{ position = player.position, area = area }
+    surface.destroy_decoratives{ area = area }
 
-    player.print({ "exp-commands_waterfill.complete", tile_count }, Commands.print_settings.default)
+    player.print({ "exp-commands_waterfill.complete", #replace_tiles }, Commands.print_settings.default)
 end)
 
 --- @param event EventData.on_built_entity | EventData.on_robot_built_entity | EventData.script_raised_built | EventData.script_raised_revive
