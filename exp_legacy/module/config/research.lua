@@ -9,6 +9,19 @@ return {
     mod_set_lookup = {
         "space-age",
     },
+    bonus_inventory = {
+        enabled = true,
+        res = {
+            -- Mining Productivity
+            ["mining-productivity"] = true,
+            ["mining-productivity-2"] = true,
+            ["mining-productivity-3"] = true,
+            ["mining-productivity-4"] = true,
+        },
+        name = "character_inventory_slots_bonus",
+        rate = 5,
+        limit = 20,
+    },
     file_name = "log/research.log",
     milestone = {
         ["base"] = {
