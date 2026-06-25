@@ -2,11 +2,16 @@
 Adds a command that clear item on ground so blueprint can deploy safely
 ]]
 
+local AABB = require("modules/exp_util/aabb")
+local Commands = require("modules/exp_commands")
 local ExpUtil = require("modules/exp_util")
 local move_items = ExpUtil.move_items_to_surface
-
-local Commands = require("modules/exp_commands")
 local format_player_name = Commands.format_player_name_locale
+local Selection = require("modules/exp_util/selection")
+local SelectArea = Selection.connect("ExpCommand_ClearBlueprint")
+
+--- @class ExpCommand_ClearBlueprint.commands
+local commands = {}
 
 --- @param surface LuaSurface
 --- @return LuaItemStack[]
@@ -20,7 +25,7 @@ local function get_ground_items(surface)
 end
 
 --- Clear all items on the ground, optional to select a single surface
-Commands.new("clear-ground-items", { "exp-commands_surface.description-items" })
+commands.clear_ground_items = Commands.new("clear-ground-items", { "exp-commands_surface.description-items" })
     :optional("surface", { "exp-commands_surface.arg-surface" }, Commands.types.surface)
     :register(function(player, surface)
         --- @cast surface LuaSurface?
@@ -47,7 +52,7 @@ Commands.new("clear-ground-items", { "exp-commands_surface.description-items" })
     end)
 
 --- Clear all blueprints, optional to select a single surface
-Commands.new("clear-blueprints", { "exp-commands_surface.description-blueprints" })
+commands.clear_blueprints_surface = Commands.new("clear-blueprints-surface", { "exp-commands_surface.description-blueprints" })
     :optional("surface", { "exp-commands_surface.arg-surface" }, Commands.types.surface)
     :register(function(player, surface)
         --- @cast surface LuaSurface?
@@ -70,20 +75,41 @@ Commands.new("clear-blueprints", { "exp-commands_surface.description-blueprints"
     end)
 
 --- Clear all blueprints in a radius around you
-Commands.new("clear-blueprints-radius", { "exp-commands_surface.description-radius" })
-    :argument("radius", { "exp-commands_surface.arg-radius" }, Commands.types.number_range(1, 100))
-    :register(function(player, radius)
-        --- @cast radius number
-        local player_name = format_player_name(player)
-        local entities = player.surface.find_entities_filtered{
-            type = "entity-ghost",
-            position = player.position,
-            radius = radius,
-        }
-
-        for _, entity in ipairs(entities) do
-            entity.destroy()
+--- Toggle player selection mode
+--- @class ExpCommands_ClearBlueprint.commands.clear_blueprints: ExpCommand
+--- @overload fun(player: LuaPlayer)
+commands.clear_blueprints = Commands.new("clear-blueprints", { "exp-commands_surface.description-blueprints" })
+    :register(function(player)
+        if SelectArea:stop(player) then
+            return Commands.status.success{ "exp-commands_waterfill.exit" }
         end
+        SelectArea:start(player)
+        return Commands.status.success{ "exp-commands_waterfill.enter" }
+    end) --[[ @as any ]]
 
-        game.print{ "exp-commands_surface.blueprint-radius", player_name, radius, player.surface.localised_name }
-    end)
+--- When an area is selected to be converted
+SelectArea:on_selection(function(event)
+    local area = AABB.expand(event.area)
+    local player = game.players[event.player_index]
+    local player_name = format_player_name(player)
+    local surface = event.surface
+
+    local area_size = (area.right_bottom.x - area.left_top.x) * (area.right_bottom.y - area.left_top.y)
+
+    if area_size > 1000 then
+        player.print({ "exp-commands_waterfill.area-too-large", 1000, area_size }, Commands.print_settings.error)
+        return
+    end
+
+    local entities = surface.find_entities_filtered{ type = "entity-ghost", area = area }
+
+    for _, entity in ipairs(entities) do
+        entity.destroy()
+    end
+
+    player.print({ "exp-commands_waterfill.complete", #entities }, Commands.print_settings.default)
+end)
+
+return {
+    commands = commands,
+}
