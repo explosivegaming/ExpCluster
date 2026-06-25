@@ -9,6 +9,7 @@ return {
     mod_set_lookup = {
         "space-age",
     },
+    -- this enable 20 more inventory for each mining productivity level up to 4
     bonus_inventory = {
         enabled = true,
         res = {
