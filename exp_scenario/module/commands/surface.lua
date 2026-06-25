@@ -6,7 +6,6 @@ local AABB = require("modules/exp_util/aabb")
 local Commands = require("modules/exp_commands")
 local ExpUtil = require("modules/exp_util")
 local move_items = ExpUtil.move_items_to_surface
-local format_player_name = Commands.format_player_name_locale
 local Selection = require("modules/exp_util/selection")
 local SelectArea = Selection.connect("ExpCommand_ClearBlueprint")
 
@@ -25,53 +24,25 @@ local function get_ground_items(surface)
 end
 
 --- Clear all items on the ground, optional to select a single surface
-commands.clear_ground_items = Commands.new("clear-ground-items", { "exp-commands_surface.description-items" })
-    :optional("surface", { "exp-commands_surface.arg-surface" }, Commands.types.surface)
-    :register(function(player, surface)
-        --- @cast surface LuaSurface?
-        local player_name = format_player_name(player)
-        if surface then
-            move_items{
-                surface = surface,
-                items = get_ground_items(surface),
-                allow_creation = true,
-                name = "iron-chest",
-            }
-            game.print{ "exp-commands_surface.items-surface", player_name, surface.localised_name }
-        else
-            for _, surface in pairs(game.surfaces) do
-                move_items{
-                    surface = surface,
-                    items = get_ground_items(surface),
-                    allow_creation = true,
-                    name = "iron-chest",
-                }
-            end
-            game.print{ "exp-commands_surface.items-all", player_name }
-        end
+commands.clear_ground_items = Commands.new("clear-ground-item", { "exp-commands_surface.description-items" })
+    :register(function(player)
+        move_items{
+            surface = player.surface,
+            items = get_ground_items(player.surface),
+            allow_creation = true,
+            name = "iron-chest",
+        }
+        game.print{ "exp-commands_surface.item" }
     end)
 
 --- Clear all blueprints, optional to select a single surface
 commands.clear_blueprints_surface = Commands.new("clear-blueprints-surface", { "exp-commands_surface.description-blueprints" })
-    :optional("surface", { "exp-commands_surface.arg-surface" }, Commands.types.surface)
-    :register(function(player, surface)
-        --- @cast surface LuaSurface?
-        local player_name = format_player_name(player)
-        if surface then
-            local entities = surface.find_entities_filtered{ type = "entity-ghost" }
-            for _, entity in ipairs(entities) do
-                entity.destroy()
-            end
-            game.print{ "exp-commands_surface.blueprint-surface", player_name, surface.localised_name }
-        else
-            for _, surface in pairs(game.surfaces) do
-                local entities = surface.find_entities_filtered{ type = "entity-ghost" }
-                for _, entity in ipairs(entities) do
-                    entity.destroy()
-                end
-            end
-            game.print{ "exp-commands_surface.blueprint-all", player_name }
+    :register(function(player)
+        local entities = player.surface.find_entities_filtered{ type = "entity-ghost" }
+        for _, entity in ipairs(entities) do
+            entity.destroy()
         end
+        game.print{ "exp-commands_surface.blueprint" }
     end)
 
 --- Clear all blueprints in a radius around you
@@ -81,23 +52,21 @@ commands.clear_blueprints_surface = Commands.new("clear-blueprints-surface", { "
 commands.clear_blueprints = Commands.new("clear-blueprints", { "exp-commands_surface.description-blueprints" })
     :register(function(player)
         if SelectArea:stop(player) then
-            return Commands.status.success{ "exp-commands_waterfill.exit" }
+            return Commands.status.success{ "exp-commands_surface.exit" }
         end
         SelectArea:start(player)
-        return Commands.status.success{ "exp-commands_waterfill.enter" }
+        return Commands.status.success{ "exp-commands_surface.enter" }
     end) --[[ @as any ]]
 
---- When an area is selected to be converted
+--- When an area is selected
 SelectArea:on_selection(function(event)
     local area = AABB.expand(event.area)
     local player = game.players[event.player_index]
-    local player_name = format_player_name(player)
     local surface = event.surface
-
     local area_size = (area.right_bottom.x - area.left_top.x) * (area.right_bottom.y - area.left_top.y)
 
     if area_size > 1000 then
-        player.print({ "exp-commands_waterfill.area-too-large", 1000, area_size }, Commands.print_settings.error)
+        player.print({ "exp-commands_surface.area-too-large", 1000, area_size }, Commands.print_settings.error)
         return
     end
 
@@ -107,7 +76,7 @@ SelectArea:on_selection(function(event)
         entity.destroy()
     end
 
-    player.print({ "exp-commands_waterfill.complete", #entities }, Commands.print_settings.default)
+    player.print({ "exp-commands_surface.complete", #entities }, Commands.print_settings.default)
 end)
 
 return {
