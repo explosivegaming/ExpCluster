@@ -17,11 +17,11 @@ local commands = {}
 commands.lawnmower = Commands.new("lawnmower", { "exp-commands_lawnmower.description" })
     :register(function(player)
         if SelectArea:stop(player) then
-            return Commands.status.success{ "exp-commands_waterfill.exit" }
+            return Commands.status.success{ "exp-commands_lawnmower.exit" }
         end
 
         SelectArea:start(player)
-        return Commands.status.success{ "exp-commands_waterfill.enter" }
+        return Commands.status.success{ "exp-commands_lawnmower.enter" }
     end) --[[ @as any ]]
 
 --- When an area is selected to be handled
@@ -32,7 +32,7 @@ SelectArea:on_selection(function(event)
     local area_size = (area.right_bottom.x - area.left_top.x) * (area.right_bottom.y - area.left_top.y)
 
     if area_size > 1000 then
-        player.print({ "exp-commands_waterfill.area-too-large", 1000, area_size }, Commands.print_settings.error)
+        player.print({ "exp-commands_lawnmower.area-too-large", 1000, area_size }, Commands.print_settings.error)
         return
     end
 
@@ -52,7 +52,7 @@ SelectArea:on_selection(function(event)
     surface.set_tiles(replace_tiles)
     surface.destroy_decoratives{ area = area }
 
-    player.print({ "exp-commands_waterfill.complete", #replace_tiles }, Commands.print_settings.default)
+    player.print({ "exp-commands_lawnmower.complete", #replace_tiles }, Commands.print_settings.default)
 end)
 
 --- @param event EventData.on_built_entity | EventData.on_robot_built_entity | EventData.script_raised_built | EventData.script_raised_revive
