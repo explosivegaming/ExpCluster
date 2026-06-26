@@ -154,14 +154,7 @@ local function try_deconstruct_miner(entity)
     end
 
     -- Skip pipe build if not required
-    if not config.fluid then
-        return
-    end
-
-    -- too complex to handle
-    if (not entity.fluidbox and not entity.fluids_count) or 
-       (entity.fluidbox and #entity.fluidbox ~= 1) or 
-       (entity.fluids_count and entity.fluids_count ~= 1) then
+    if not config.fluid or entity.fluids_count > 1 then
         return
     end
 
