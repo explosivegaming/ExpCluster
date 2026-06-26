@@ -36,13 +36,13 @@ commands.clear_ground_item = Commands.new("clear-ground-item", { "exp-commands_s
     end)
 
 --- Clear all blueprint in a single surface
-commands.clear_blueprint_surface = Commands.new("clear-blueprint-surface", { "exp-commands_surface.description-blueprint" })
+commands.clear_blueprint_surface = Commands.new("clear-blueprint-surface", { "exp-commands_surface.description-blueprint-surface" })
     :register(function(player)
         local entities = player.surface.find_entities_filtered{ type = "entity-ghost" }
         for _, entity in ipairs(entities) do
             entity.destroy()
         end
-        game.print{ "exp-commands_surface.blueprint" }
+        game.print{ "exp-commands_surface.blueprint-surface" }
     end)
 
 --- Clear all blueprint in the area, selected by toggle player selection mode
