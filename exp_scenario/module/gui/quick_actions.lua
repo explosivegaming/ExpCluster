@@ -12,8 +12,10 @@ local addon_trains = require("modules/exp_scenario/commands/trains")
 local addon_teleport = require("modules/exp_scenario/commands/teleport")
 local addon_waterfill = require("modules/exp_scenario/commands/waterfill")
 local addon_surface = require("modules/exp_scenario/commands/surface")
+local addon_lawnmower = require("modules/exp_scenario/commands/lawnmower")
 local addon_home = require("modules/exp_scenario/commands/home")
 local addon_vlayer = require("modules/exp_scenario/commands/vlayer")
+local addon_repair = require("modules/exp_scenario/commands/repair")
 
 --- @class ExpGui_QuickActions.elements
 local Elements = {}
@@ -61,6 +63,7 @@ new_quick_action("teleport", "spawn", addon_teleport.commands.spawn, function(de
 end)
 
 new_quick_action("waterfill", "waterfill", addon_waterfill.commands.waterfill)
+new_quick_action("lawnmower", "lawnmower", addon_lawnmower.commands.lawnmower)
 new_quick_action("surface", "item", addon_surface.commands.clear_ground_item)
 new_quick_action("surface", "blueprint-surface", addon_surface.commands.clear_blueprint_surface)
 new_quick_action("surface", "blueprint", addon_surface.commands.clear_blueprint)
@@ -69,6 +72,7 @@ new_quick_action("home", "return", addon_home.commands._return)
 new_quick_action("home", "set", addon_home.commands.set_home)
 new_quick_action("home", "get", addon_home.commands.get_home)
 new_quick_action("vlayer", "vlayer", addon_vlayer.commands.vlayer)
+new_quick_action("repair", addon_repair.commands.repair)
 
 --- Container added to the left gui flow
 --- @class ExpGui_QuickActions.elements.container: ExpElement
