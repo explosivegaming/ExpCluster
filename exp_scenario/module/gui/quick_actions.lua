@@ -7,7 +7,6 @@ local Commands = require("modules/exp_commands")
 local Roles = require("modules/exp_legacy/expcore/roles")
 
 local addon_artillery = require("modules/exp_scenario/commands/artillery")
-local addon_research = require("modules/exp_scenario/commands/research")
 local addon_trains = require("modules/exp_scenario/commands/trains")
 local addon_teleport = require("modules/exp_scenario/commands/teleport")
 local addon_waterfill = require("modules/exp_scenario/commands/waterfill")
@@ -56,7 +55,6 @@ end
 
 new_quick_action("artillery", "artillery", addon_artillery.commands.artillery)
 new_quick_action("trains", "trains", addon_trains.commands.set_trains_to_automatic)
-new_quick_action("research", "research", addon_research.commands.set_auto_research)
 
 new_quick_action("teleport", "spawn", addon_teleport.commands.spawn, function(def, player, element, event)
     addon_teleport.commands.spawn(player, player)
@@ -72,7 +70,7 @@ new_quick_action("home", "return", addon_home.commands._return)
 new_quick_action("home", "set", addon_home.commands.set_home)
 new_quick_action("home", "get", addon_home.commands.get_home)
 new_quick_action("vlayer", "vlayer", addon_vlayer.commands.vlayer)
-new_quick_action("repair", addon_repair.commands.repair)
+new_quick_action("repair", "repair", addon_repair.commands.repair)
 
 --- Container added to the left gui flow
 --- @class ExpGui_QuickActions.elements.container: ExpElement
