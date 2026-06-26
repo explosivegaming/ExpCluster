@@ -54,7 +54,7 @@ commands.home = Commands.new("home", { "exp-commands_home.description-home" })
 
 --- Teleports you to your previous location on the current surface
 --- @class ExpCommand_Home.commands._return: ExpCommand
-commands._return = Commands.new("return", { "exp-commands_home.description-return" })
+commands.home_return = Commands.new("return", { "exp-commands_home.description-return" })
     :add_flags{ "character_only" }
     :register(function(player)
         local surface = player.surface
