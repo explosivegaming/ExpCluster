@@ -125,7 +125,7 @@ Roles.new_role("Trainee", "TrMod")
         "command/search-online",
         "command/search-amount",
         "command/search-recent",
-        "command/clear-blueprint-surface",
+        "command/clear-blueprints-surface",
         "gui/playerdata",
     }
 
@@ -203,8 +203,8 @@ Roles.new_role("Veteran", "Vet")
     :set_parent("Member")
     :allow{
         "command/chat-commands",
-        "command/clear-ground-item",
-        "command/clear-blueprint",
+        "command/clear-ground-items",
+        "command/clear-blueprints",
         "command/set-trains-to-automatic",
     }
     :set_auto_assign_condition(function(player)

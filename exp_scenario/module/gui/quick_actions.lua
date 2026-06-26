@@ -22,20 +22,21 @@ local Elements = {}
 --- @type table<string, { command: ExpCommand, element: ExpElement }>
 local Actions = {}
 
---- @param name string
 --- @param command ExpCommand | function (this is needed because of the overload on commands)
 --- @param on_click? ExpElement.EventHandler<EventData.on_gui_click>
-local function new_quick_action(group_name, command_name, command, on_click)
-    local element = Gui.define("quick_actions/" .. group_name .. '_' .. command_name)
+local function new_quick_action(command, on_click)
+    local command_name = command.name
+
+    local element = Gui.define("quick_actions/" .. command_name)
         :draw{
             type = "button",
             caption = { "?", 
                 { "exp-gui_quick-actions.caption-" .. command_name },
-                group_name .. '_' .. command_name
+                command_name,
             },
             tooltip = { "?",
-                { "exp-commands_" .. group_name .. ".description-" .. command_name }, 
-                { "exp-commands_" .. group_name .. ".description" }, 
+                { "exp-gui_quick-actions.tooltip-" .. command_name },
+                command.description,
                 ""
             },
         }
@@ -46,31 +47,31 @@ local function new_quick_action(group_name, command_name, command, on_click)
             command(player)
         end)
 
-    Elements[group_name .. '-' .. command_name] = element
-    Actions[group_name .. '-' .. command_name] = {
+    Elements[command_name] = element
+    Actions[command_name] = {
         command = command --[[ @as ExpCommand ]],
         element = element,
     }
 end
 
-new_quick_action("artillery", "artillery", addon_artillery.commands.artillery)
-new_quick_action("trains", "trains", addon_trains.commands.set_trains_to_automatic)
+new_quick_action(addon_artillery.commands.artillery)
+new_quick_action(addon_trains.commands.set_trains_to_automatic)
 
-new_quick_action("teleport", "spawn", addon_teleport.commands.spawn, function(def, player, element, event)
+new_quick_action(addon_teleport.commands.spawn, function(def, player, element, event)
     addon_teleport.commands.spawn(player, player)
 end)
 
-new_quick_action("waterfill", "waterfill", addon_waterfill.commands.waterfill)
-new_quick_action("lawnmower", "lawnmower", addon_lawnmower.commands.lawnmower)
-new_quick_action("surface", "item", addon_surface.commands.clear_ground_item)
-new_quick_action("surface", "blueprint-surface", addon_surface.commands.clear_blueprint_surface)
-new_quick_action("surface", "blueprint", addon_surface.commands.clear_blueprint)
-new_quick_action("home", "home", addon_home.commands.home)
-new_quick_action("home", "return", addon_home.commands._return)
-new_quick_action("home", "set", addon_home.commands.set_home)
-new_quick_action("home", "get", addon_home.commands.get_home)
-new_quick_action("vlayer", "vlayer", addon_vlayer.commands.vlayer)
-new_quick_action("repair", "repair", addon_repair.commands.repair)
+new_quick_action(addon_waterfill.commands.waterfill)
+new_quick_action(addon_lawnmower.commands.lawnmower)
+new_quick_action(addon_surface.commands.clear_ground_items)
+new_quick_action(addon_surface.commands.clear_blueprints_surface)
+new_quick_action(addon_surface.commands.clear_blueprints)
+new_quick_action(addon_home.commands.home)
+new_quick_action(addon_home.commands._return)
+new_quick_action(addon_home.commands.set_home)
+new_quick_action(addon_home.commands.get_home)
+new_quick_action(addon_vlayer.commands.vlayer)
+new_quick_action(addon_repair.commands.repair)
 
 --- Container added to the left gui flow
 --- @class ExpGui_QuickActions.elements.container: ExpElement
