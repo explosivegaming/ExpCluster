@@ -12,16 +12,6 @@ return {
     -- this enable 20 more inventory for each mining productivity level up to 4
     bonus_inventory = {
         enabled = true,
-        log = {
-            ["base"] = {
-                ["name"] = "mining-productivity-4",
-                ["level"] = 4
-            },
-            ["space-age"] = {
-                ["name"] = "mining-productivity-3",
-                ["level"] = 3
-            },
-        },
         res = {
             -- Mining Productivity
             ["mining-productivity"] = true,
