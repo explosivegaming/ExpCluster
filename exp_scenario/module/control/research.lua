@@ -12,7 +12,7 @@ local function on_research_finished(event)
     if config.bonus_inventory.enabled and config.bonus_inventory.res[research_name] then
         event.research.force[config.bonus_inventory.name] = math.min((event.research.level - 1) * config.bonus_inventory.rate, config.bonus_inventory.limit)
     end
-
+    
     if config.pollution_ageing_by_research and config.bonus_inventory.res[research_name] then
         game.map_settings.pollution.ageing = math.min(10, event.research.level / 5)
     end
@@ -41,6 +41,8 @@ local e = defines.events
 return {
     events = {
         [e.on_research_finished] = on_research_finished,
+        [e.on_research_reversed] = on_research_finished,
         [e.on_research_started] = on_research_started,
+        [e.on_research_queued] = on_research_started,
     }
 }

@@ -206,7 +206,6 @@ Roles.new_role("Veteran", "Vet")
         "command/clear-ground-items",
         "command/clear-blueprints-radius",
         "command/set-trains-to-automatic",
-        "command/set-auto-research",
     }
     :set_auto_assign_condition(function(player)
         if player.online_time >= hours10 then
