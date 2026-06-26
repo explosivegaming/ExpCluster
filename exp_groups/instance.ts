@@ -45,7 +45,7 @@ export class InstancePlugin extends BaseInstancePlugin {
     async onStart() {
         // We use Date.now() because we need to manually initialise the groups on the lua side
         await this.instance.sendTo("controller", new lib.SubscriptionRequest(
-            `exp_groups:${messages.GroupUpdatedEvent.name}`, true, Date.now()
+            `exp_groups:${messages.GroupUpdatedEvent.name}`, "subscribe", Date.now()
         ));
         const groups = await this.instance.sendTo("controller", new messages.GroupListRequest())
         await this.luaSendInitialGroups(groups);
@@ -118,13 +118,13 @@ export class InstancePlugin extends BaseInstancePlugin {
 
     async subscribePlayerAssignment(playerName: string) {
         await this.instance.sendTo("controller", new lib.SubscriptionRequest(
-            `exp_groups:${messages.ResolvedAssignmentUpdatedEvent.name}`, true, 0, playerName
+            `exp_groups:${messages.ResolvedAssignmentUpdatedEvent.name}`, "subscribe", 0, lib.SubscriptionFilters.fromShorthand(playerName)
         ));
     }
 
     async unsubscribePlayerAssignment(playerName: string) {
         await this.instance.sendTo("controller", new lib.SubscriptionRequest(
-            `exp_groups:${messages.ResolvedAssignmentUpdatedEvent.name}`, false, 0, playerName
+            `exp_groups:${messages.ResolvedAssignmentUpdatedEvent.name}`, "unsubscribe", 0, lib.SubscriptionFilters.fromShorthand(playerName)
         ));
     }
 
