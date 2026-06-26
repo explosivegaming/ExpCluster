@@ -1,5 +1,4 @@
 local Storage = require("modules/exp_util/storage")
-local Event = require("modules/exp_legacy/utils/event")
 local mod_gui = require "mod-gui"
 
 local Gui = {}
@@ -70,14 +69,15 @@ function Gui.clear(element)
     element.clear()
 end
 
+Gui.events = {}
 local function handler_factory(event_name)
     return function(element_name, handler)
-        Event.add(defines.events[event_name], function(event)
+        Gui.events[defines.events[event_name]] = function(event)
             if event.element and event.element.valid and event.element.name == element_name then
                 event.player = game.players[event.player_index]
                 handler(event)
             end
-        end)
+        end
     end
 end
 

@@ -1,4 +1,4 @@
-local Gui = require("modules.exp_legacy.utils.gui") --- @dep utils.gui
+local Gui = require("modules/exp_scenario/gui/debug/shim") --- @dep utils.gui
 local ExpUtil = require("modules/exp_util")
 
 local concat = table.concat
