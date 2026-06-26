@@ -349,7 +349,7 @@ function vlayer.create_input_interface(surface, position, circuit, last_user)
     end
 
     interface.destructible = false
-    interface.minable = false
+    interface.minable_flag = false
     interface.operable = true
 
     return interface
@@ -427,7 +427,7 @@ function vlayer.create_output_interface(surface, position, circuit, last_user)
     end
 
     interface.destructible = false
-    interface.minable = false
+    interface.minable_flag = false
     interface.operable = true
 
     return interface
@@ -568,7 +568,7 @@ function vlayer.create_circuit_interface(surface, position, circuit, last_user)
     end
 
     interface.destructible = false
-    interface.minable = false
+    interface.minable_flag = false
     interface.operable = true
 
     return interface
@@ -647,7 +647,7 @@ function vlayer.create_energy_interface(surface, position, last_user)
     end
 
     interface.destructible = false
-    interface.minable = false
+    interface.minable_flag = false
     interface.operable = false
     interface.electric_buffer_size = 0
     interface.power_production = 0
