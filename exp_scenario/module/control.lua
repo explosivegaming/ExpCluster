@@ -11,7 +11,6 @@ require("modules/exp_scenario/commands/_types")
 --- Commands with events
 add(require("modules/exp_scenario/commands/protected_entities"))
 add(require("modules/exp_scenario/commands/protected_tags"))
-add(require("modules/exp_scenario/commands/research"))
 
 --- Commands
 require("modules/exp_scenario/commands/admin_chat")

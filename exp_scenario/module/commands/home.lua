@@ -120,3 +120,7 @@ commands.get_home = Commands.new("get-home", { "exp-commands_home.description-ge
         local _, floor_position = align_to_grid(player_home[1])
         return Commands.status.success{ "exp-commands_home.home-get", surface.localised_name, floor_position.x, floor_position.y }
     end)
+
+return {
+    commands = commands,
+}
