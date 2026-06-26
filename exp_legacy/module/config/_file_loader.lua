@@ -21,7 +21,6 @@ return {
 
     --- GUI
     "modules.gui.warp-list",
-    "modules.gui.player-list",
     "modules.gui.vlayer",
     "modules.gui._role_updates",
 

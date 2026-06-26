@@ -14,7 +14,7 @@ Commands.new("clear-inventory", { "exp-commands_clear-inventory.description" })
     :register(function(player, other_player)
         local inventory = other_player.get_main_inventory()
         if not inventory then
-            return Commands.status.error{ "expcore-commands.reject-player-alive" }
+            return Commands.status.error{ "exp-commands-parse.player-alive" }
         end
 
         transfer_inventory{
