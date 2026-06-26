@@ -4,9 +4,11 @@ Adds a command that allows setting and teleporting to your home position
 
 local ExpUtil = require("modules/exp_util")
 local teleport = ExpUtil.teleport_player
-
 local Commands = require("modules/exp_commands")
 local Storage = require("modules/exp_util/storage")
+
+--- @class ExpCommand_Home.commands
+local commands = {}
 
 --- @type table<number, table<number, [MapPosition?, MapPosition?]>>
 local homes = {} -- homes[player_index][surface_index] = { home_pos, return_pos }
@@ -28,7 +30,8 @@ local function align_to_grid(position)
 end
 
 --- Teleports you to your home location on the current surface
-Commands.new("home", { "exp-commands_home.description-home" })
+--- @class ExpCommand_Home.commands.home: ExpCommand
+commands.home = Commands.new("home", { "exp-commands_home.description-home" })
     :add_flags{ "character_only" }
     :register(function(player)
         local surface = player.surface
@@ -50,7 +53,8 @@ Commands.new("home", { "exp-commands_home.description-home" })
     end)
 
 --- Teleports you to your previous location on the current surface
-Commands.new("return", { "exp-commands_home.description-return" })
+--- @class ExpCommand_Home.commands._return: ExpCommand
+commands._return = Commands.new("return", { "exp-commands_home.description-return" })
     :add_flags{ "character_only" }
     :register(function(player)
         local surface = player.surface
@@ -72,7 +76,8 @@ Commands.new("return", { "exp-commands_home.description-return" })
     end)
 
 --- Sets your home location on your current surface to your current position
-Commands.new("set-home", { "exp-commands_home.description-set" })
+--- @class ExpCommand_Home.commands.set_home: ExpCommand
+commands.set_home = Commands.new("set-home", { "exp-commands_home.description-set" })
     :add_flags{ "character_only" }
     :register(function(player)
         local home_position, floor_position = align_to_grid(player.position)
@@ -97,7 +102,8 @@ Commands.new("set-home", { "exp-commands_home.description-set" })
     end)
 
 --- Gets your home location on your current surface, is allowed in remote view
-Commands.new("get-home", { "exp-commands_home.description-get" })
+--- @class ExpCommand_Home.commands.get_home: ExpCommand
+commands.get_home = Commands.new("get-home", { "exp-commands_home.description-get" })
     :register(function(player)
         local surface = player.surface
 

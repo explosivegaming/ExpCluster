@@ -5,8 +5,12 @@ Adds a virtual layer to store power to save space.
 local Commands = require("modules/exp_commands")
 local vlayer = require("modules.exp_legacy.modules.control.vlayer")
 
+--- @class ExpCommand_vlayer.commands
+local commands = {}
+
 --- Print all vlayer information
-Commands.new("vlayer-info", { "exp-commands_vlayer.description" })
+--- @class ExpCommands_vlayer.commands.vlayer: ExpCommand
+commands.vlayer = Commands.new("vlayer-info", { "exp-commands_vlayer.description" })
     :register(function(player)
         local index = 3
         local response = { "", "exp-commands_vlayer.title" } --- @type LocalisedString
@@ -16,3 +20,7 @@ Commands.new("vlayer-info", { "exp-commands_vlayer.description" })
         end
         return Commands.status.success(response)
     end)
+
+return {
+    commands = commands,
+}
