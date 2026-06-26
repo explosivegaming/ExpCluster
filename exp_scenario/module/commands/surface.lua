@@ -75,7 +75,7 @@ SelectArea:on_selection(function(event)
         entity.destroy()
     end
 
-    player.print({ "exp-commands_surface.complete", #entities }, Commands.print_settings.default)
+    game.print({ "exp-commands_surface.complete", #entities }, Commands.print_settings.default)
 end)
 
 return {
