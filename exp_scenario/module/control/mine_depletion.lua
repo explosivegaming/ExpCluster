@@ -43,7 +43,7 @@ local function prevent_deconstruction(entity)
     end
 
     -- Not minable, selectable, or deconstructive
-    if not entity.minable or not entity.prototype.selectable_in_game or entity.has_flag("not-deconstructable") then
+    if not entity.minable_flag or not entity.prototype.selectable_in_game or entity.has_flag("not-deconstructable") then
         return true
     end
 

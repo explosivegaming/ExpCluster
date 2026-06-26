@@ -56,7 +56,7 @@ end
 local function protect_entity(entity)
     if entity and entity.valid then
         entity.destructible = false
-        entity.minable = false
+        entity.minable_flag = false
         entity.rotatable = false
         entity.operable = false
     end
