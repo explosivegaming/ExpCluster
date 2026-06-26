@@ -182,7 +182,7 @@ function Warps.make_warp_area(warp_id)
         }
         entity.destructible = false
         entity.health = 0
-        entity.minable = false
+        entity.minable_flag = false
         entity.rotatable = false
 
         -- Save reference of the last power pole
