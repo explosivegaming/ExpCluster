@@ -67,7 +67,7 @@ local goto_player = new_button("utility/export", { "exp-gui_player-list.goto-pla
     :on_click(function(def, player, element)
         local selected_player = get_action_player(player)
         if not player.character or not selected_player.character then
-            player.print({ "expcore-commands.reject-player-alive" }, Colors.orange_red)
+            player.print({ "exp-commands-parse.player-alive" }, Colors.orange_red)
         else
             teleport(player, selected_player)
         end
@@ -79,7 +79,7 @@ local bring_player = new_button("utility/import", { "exp-gui_player-list.bring-p
     :on_click(function(def, player, element)
         local selected_player = get_action_player(player)
         if not player.character or not selected_player.character then
-            player.print({ "expcore-commands.reject-player-alive" }, Colors.orange_red)
+            player.print({ "exp-commands-parse.player-alive" }, Colors.orange_red)
         else
             teleport(selected_player, player)
         end

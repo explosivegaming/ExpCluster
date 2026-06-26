@@ -71,12 +71,12 @@ Elements.close_action_bar = Gui.define("player_list/close_action_bar")
         tooltip = { "exp-gui_player-list.close-action-bar" },
         style = "slot_sized_button_red",
     }
-    :style(Gui.styles.sprite{
-        size = 20,
+    :style{
+        size = 30,
         padding = -1,
         top_margin = -1,
         right_margin = -1,
-    })
+    }
     :on_click(function(_, player)
         Elements.container.set_selected_player(player, nil)
         Elements.player_table.refresh_player(player)
@@ -92,12 +92,12 @@ Elements.reason_confirm = Gui.define("player_list/reason_confirm")
         tooltip = { "exp-gui_player-list.reason-confirm" },
         style = "slot_sized_button_green",
     }
-    :style(Gui.styles.sprite{
+    :style{
         size = 30,
         padding = -1,
         left_margin = -2,
         right_margin = -1,
-    })
+    }
     :on_click(function(_, player, element)
         local action_name = Elements.container.get_selected_action(player)
         local button_data = action_name and config.buttons[action_name]
@@ -382,7 +382,7 @@ Elements.reason_bar = Gui.define("player_list/reason_bar")
         local entry_style = reason_field.style
         entry_style.padding = 0
         entry_style.height = 28
-        entry_style.minimal_width = 160
+        entry_style.minimal_width = 158
 
         Elements.reason_confirm(reason_bar)
         return reason_bar
