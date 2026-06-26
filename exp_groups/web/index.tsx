@@ -66,9 +66,9 @@ function ExpGroupsPage() {
 }
 
 export class WebPlugin extends BaseWebPlugin {
-	groups = new lib.EventSubscriber(messages.GroupUpdatedEvent, this.control);
-	assignments = new lib.EventSubscriber(messages.ManualAssignmentUpdatedEvent, this.control);
-	roleMappings = new lib.EventSubscriber(messages.RoleMappingUpdatedEvent, this.control);
+	groups = new lib.MapSubscriber(messages.GroupUpdatedEvent, this.control);
+	assignments = new lib.MapSubscriber(messages.ManualAssignmentUpdatedEvent, this.control);
+	roleMappings = new lib.MapSubscriber(messages.RoleMappingUpdatedEvent, this.control);
 
 	async init() {
 		this.pages = [

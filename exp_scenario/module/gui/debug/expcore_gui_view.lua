@@ -3,8 +3,8 @@ local ExpData = require("modules/exp_gui/data")
 local ExpIter = require("modules/exp_gui/iter")
 local Color = require("modules/exp_util/include/color")
 
-local Gui = require("modules.exp_legacy.utils.gui") --- @dep utils.gui
-local Model = require("modules.exp_legacy.modules.gui.debug.model") --- @dep modules.gui.debug.model
+local Gui = require("modules/exp_scenario/gui/debug/shim")
+local Model = require("modules/exp_scenario/gui/debug/model")
 
 local dump = Model.dump
 local dump_text = Model.dump_text

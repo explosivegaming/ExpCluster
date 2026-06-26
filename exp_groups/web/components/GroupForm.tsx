@@ -18,7 +18,7 @@ export default function GroupForm({ open, setOpen }: {
 		const group = await control.send(new messages.GroupCreateRequest(
 			values.name, new messages.GroupPermissions(Boolean(values.isBlacklist), [])
 		));
-		navigate(`/exp_groups/${group.id}/view`);
+		navigate(`/permission_groups/${group.id}/view`);
 		setOpen(false);
 	}
 

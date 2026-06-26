@@ -43,10 +43,14 @@ local ignored_items = {
 --- Saves your quickbar preset to the script-output folder
 Commands.new("save-quickbar", "Saves your Quickbar preset items to file")
     :add_aliases{ "save-toolbar" }
+    :add_flags{ "disabled" }
     :register(function(player)
         local filters = {}
 
+        error("2.1 changes to get_quick_bar_slot beak compatibility with 2.0; waiting for upstream")
+        -- Upstream may add method to compat, or change inventory sync to have a quickbar only mode
         for i = 1, 100 do
+            --[[
             local slot = player.get_quick_bar_slot(i)
             -- Need to filter out blueprint and blueprint books because the slot is a LuaItemPrototype and does not contain a way to export blueprint data
             if slot ~= nil then
@@ -55,6 +59,7 @@ Commands.new("save-quickbar", "Saves your Quickbar preset items to file")
                     filters[i] = slot.name
                 end
             end
+            ]]
         end
 
         if next(filters) then

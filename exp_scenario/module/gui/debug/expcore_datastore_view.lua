@@ -1,14 +1,12 @@
-local Gui = require("modules.exp_legacy.utils.gui") --- @dep utils.gui
-local Model = require("modules.exp_legacy.modules.gui.debug.model") --- @dep modules.gui.debug.model
+local Gui = require("modules/exp_scenario/gui/debug/shim")
+local Datastore = require("modules.exp_legacy.expcore.datastore")
 local Color = require("modules/exp_util/include/color")
+local Model = require("modules/exp_scenario/gui/debug/model")
 
 local dump = Model.dump
-local dump_text = Model.dump_text
 local concat = table.concat
 
 local Public = {}
-
-local ignore = { tokens = true, data_store = true, datastores = true }
 
 local header_name = Gui.uid_name()
 local left_panel_name = Gui.uid_name()
@@ -16,7 +14,7 @@ local right_panel_name = Gui.uid_name()
 local input_text_box_name = Gui.uid_name()
 local refresh_name = Gui.uid_name()
 
-Public.name = "storage"
+Public.name = "Datastore"
 
 function Public.show(container)
     local main_flow = container.add{ type = "flow", direction = "horizontal" }
@@ -25,12 +23,9 @@ function Public.show(container)
     local left_panel_style = left_panel.style
     left_panel_style.width = 300
 
-    for key, _ in pairs(storage) do
-        if not ignore[key] then
-            local header =
-                left_panel.add{ type = "flow" }.add{ type = "label", name = header_name, caption = tostring(key) }
-            Gui.set_data(header, key)
-        end
+    for name in pairs(table.key_sort(Datastore.debug())) do
+        local header = left_panel.add{ type = "flow" }.add{ type = "label", name = header_name, caption = name }
+        Gui.set_data(header, name)
     end
 
     local right_flow = main_flow.add{ type = "flow", direction = "vertical" }
@@ -63,7 +58,6 @@ function Public.show(container)
         right_panel = right_panel,
         input_text_box = input_text_box,
         selected_header = nil,
-        selected_token_id = nil,
     }
 
     Gui.set_data(input_text_box, data)
@@ -75,7 +69,7 @@ Gui.on_click(
     header_name,
     function(event)
         local element = event.element
-        local key = Gui.get_data(element)
+        local table_name = Gui.get_data(element)
 
         local left_panel = element.parent.parent
         local data = Gui.get_data(left_panel)
@@ -90,22 +84,27 @@ Gui.on_click(
         element.style.font_color = Color.orange
         data.selected_header = element
 
-        input_text_box.text = concat{ "storage['", key, "']" }
+        input_text_box.text = table_name
         input_text_box.style.font_color = Color.black
 
-        local content = dump(storage[key]) or "nil"
-        right_panel.text = content
+        local content = Datastore.debug(table_name)
+        local content_string = {}
+        for key, value in pairs(content) do
+            content_string[#content_string + 1] = key:gsub("^%l", string.upper) .. " = " .. dump(value)
+        end
+
+        right_panel.text = concat(content_string, "\n")
     end
 )
 
-local function update_dump(text_input, data, player)
-    local suc, ouput = dump_text(text_input.text, player)
-    if not suc then
-        text_input.style.font_color = Color.red
-    else
-        text_input.style.font_color = Color.black
-        data.right_panel.text = ouput
+local function update_dump(text_input, data)
+    local content = Datastore.debug(text_input.text)
+    local content_string = {}
+    for key, value in pairs(content) do
+        content_string[#content_string + 1] = key:gsub("^%l", string.upper) .. " = " .. dump(value)
     end
+
+    data.right_panel.text = concat(content_string, "\n")
 end
 
 Gui.on_text_changed(
@@ -114,7 +113,7 @@ Gui.on_text_changed(
         local element = event.element
         local data = Gui.get_data(element)
 
-        update_dump(element, data, event.player)
+        update_dump(element, data)
     end
 )
 
@@ -126,7 +125,7 @@ Gui.on_click(
 
         local input_text_box = data.input_text_box
 
-        update_dump(input_text_box, data, event.player)
+        update_dump(input_text_box, data)
     end
 )
 

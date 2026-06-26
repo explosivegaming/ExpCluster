@@ -11,7 +11,6 @@ require("modules/exp_scenario/commands/_types")
 --- Commands with events
 add(require("modules/exp_scenario/commands/protected_entities"))
 add(require("modules/exp_scenario/commands/protected_tags"))
-add(require("modules/exp_scenario/commands/research"))
 
 --- Commands
 require("modules/exp_scenario/commands/admin_chat")
@@ -82,3 +81,5 @@ add(require("modules/exp_scenario/gui/rocket_info"))
 add(require("modules/exp_scenario/gui/science_production"))
 add(require("modules/exp_scenario/gui/surveillance"))
 add(require("modules/exp_scenario/gui/task_list"))
+add(require("modules/exp_scenario/gui/debug/shim"))
+add(require("modules/exp_scenario/gui/debug/event_view"))

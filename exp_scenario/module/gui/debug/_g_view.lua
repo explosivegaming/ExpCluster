@@ -1,5 +1,5 @@
-local Gui = require("modules.exp_legacy.utils.gui") --- @dep utils.gui
-local Model = require("modules.exp_legacy.modules.gui.debug.model") --- @dep modules.gui.debug.model
+local Gui = require("modules/exp_scenario/gui/debug/shim")
+local Model = require("modules/exp_scenario/gui/debug/model")
 local Color = require("modules/exp_util/include/color")
 
 local dump = Model.dump

@@ -191,8 +191,8 @@ export class ControllerPlugin extends BaseControllerPlugin {
 
     async handleResolvedAssignmentSubscription(request: lib.SubscriptionRequest) {
         // Check for any missing assignments to be computed on demand
-        const filters = Array.isArray(request.filters) ? request.filters : [request.filters!];
-        if (request.filters && filters.length) {
+        const filters = request.filters.toJSON();
+        if (filters.length) {
             const missing = filters.filter(name => !this.resolvedAssignments.has(name));
             if (missing.length) {
                 this.resolvedAssignments.setMany(await this.computeResolvedAssignments(missing));

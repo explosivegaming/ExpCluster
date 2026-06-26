@@ -200,7 +200,7 @@ define_tab(
         local container = parent.add{ type = "flow", direction = "vertical" }
 
         local top_flow = container.add{ type = "flow" }
-        top_flow.add{ type = "sprite", sprite = "file/modules/exp_legacy/modules/gui/logo.png" }
+        top_flow.add{ type = "sprite", sprite = "file/modules/exp_scenario/gui/logo.png" }
 
         local center_flow = top_flow.add{ type = "flow", direction = "vertical" }
         center_flow.style.horizontal_align = "center"
@@ -208,7 +208,7 @@ define_tab(
         Gui.elements.title_label(center_flow, 62, { "exp-gui_readme.welcome-title", server_details.name })
         Gui.elements.centered_label(center_flow, 380, server_details.welcome)
 
-        top_flow.add{ type = "sprite", sprite = "file/modules/exp_legacy/modules/gui/logo.png" }
+        top_flow.add{ type = "sprite", sprite = "file/modules/exp_scenario/gui/logo.png" }
 
         Gui.elements.bar(container)
         container.add{ type = "flow" }.style.height = 4

@@ -1,7 +1,6 @@
-local Event = require("modules/exp_legacy/utils/event")
 local Storage = require("modules/exp_util/storage")
-local Gui = require("modules.exp_legacy.utils.gui")
-local Model = require("modules.exp_legacy.modules.gui.debug.model")
+local Gui = require("modules/exp_scenario/gui/debug/shim")
+local Model = require("modules/exp_scenario/gui/debug/model")
 
 local format = string.format
 local insert = table.insert
@@ -14,6 +13,7 @@ local events_to_keep = 10
 -- Local vars
 local Public = {
     name = "Events",
+    events = {}
 }
 local name_lookup = {}
 
@@ -168,7 +168,7 @@ Gui.on_click(
 -- Event registers (TODO: turn to removable hooks.. maybe)
 for name, id in pairs(events) do
     name_lookup[id] = name
-    Event.add(id, event_callback)
+    Public.events[id] = event_callback
 end
 
 return Public
