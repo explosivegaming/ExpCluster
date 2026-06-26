@@ -25,10 +25,14 @@ end
 
 --- Clear all item on the ground on a single surface
 commands.clear_ground_item = Commands.new("clear-ground-item", { "exp-commands_surface.description-item" })
+    :optional("surface", { "exp-commands_surface.arg-surface" }, Commands.types.surface)
+    :defaults{
+        surface = function(player) return player.surface end
+    }
     :register(function(player)
         move_items{
-            surface = player.surface,
-            items = get_ground_items(player.surface),
+            surface = surface,
+            items = get_ground_items(surface),
             allow_creation = true,
             name = "iron-chest",
         }
@@ -37,8 +41,12 @@ commands.clear_ground_item = Commands.new("clear-ground-item", { "exp-commands_s
 
 --- Clear all blueprint in a single surface
 commands.clear_blueprint_surface = Commands.new("clear-blueprint-surface", { "exp-commands_surface.description-blueprint-surface" })
+    :optional("surface", { "exp-commands_surface.arg-surface" }, Commands.types.surface)
+    :defaults{
+        surface = function(player) return player.surface end
+    }
     :register(function(player)
-        local entities = player.surface.find_entities_filtered{ type = "entity-ghost" }
+        local entities = surface.find_entities_filtered{ type = "entity-ghost" }
         for _, entity in ipairs(entities) do
             entity.destroy()
         end
