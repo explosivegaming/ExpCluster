@@ -166,6 +166,6 @@ export class InstancePlugin extends BaseInstancePlugin {
     }
 
     async luaSend(receiver: string, json: any) {
-        await this.instance.sendRcon(`/c exp_groups.${receiver}(helpers.json_to_table[=[${JSON.stringify(json)}]=])`, true)
+        await this.instance.sendRcon(`/sc exp_groups.${receiver}(helpers.json_to_table[=[${JSON.stringify(json)}]=])`, true)
     }
 }
