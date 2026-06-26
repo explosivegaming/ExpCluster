@@ -20,13 +20,14 @@ commands.repair = Commands.new("repair", { "exp-commands_repair.description" })
         end
         SelectArea:start(player)
         return Commands.status.success{ "exp-commands_repair.enter" }
+    end)
 
 --- When an area is selected to be converted to water
 SelectArea:on_selection(function(event)
+    local player = assert(game.get_player(event.player_index))
     local area = AABB.expand(event.area)
-    local player = game.players[event.player_index]
     local surface = event.surface
-    local force = player.force    
+    local force = player.force
     local response = { "" } --- @type LocalisedString
 
     if config.allow_ghost_revive then
