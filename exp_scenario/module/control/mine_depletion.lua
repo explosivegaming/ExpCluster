@@ -233,7 +233,7 @@ end
 local max_mining_radius = 0
 for _, proto in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "mining-drill" } }) do
     if proto.mining_drill_radius then
-        max_mining_radius = math.max(proto.get_mining_drill_radius(max_quality), max_mining_radius)
+        max_mining_radius = math.max(assert(proto.get_mining_drill_radius(max_quality)), max_mining_radius)
     end
 end
 
