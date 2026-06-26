@@ -14,7 +14,7 @@ Roles.define_flag_trigger("is_spectator", function(player, state)
 end)
 Roles.define_flag_trigger("is_jail", function(player, state)
     if player.character then
-        player.character.active = not state
+        player.character.disabled_by_script = not state
     end
 end)
 
