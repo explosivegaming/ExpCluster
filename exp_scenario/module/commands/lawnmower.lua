@@ -26,8 +26,8 @@ commands.lawnmower = Commands.new("lawnmower", { "exp-commands_lawnmower.descrip
 
 --- When an area is selected to be handled
 SelectArea:on_selection(function(event)
+    local player = assert(game.get_player(event.player_index))
     local area = AABB.expand(event.area)
-    local player = game.players[event.player_index]
     local surface = event.surface
     local area_size = (area.right_bottom.x - area.left_top.x) * (area.right_bottom.y - area.left_top.y)
 
