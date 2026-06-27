@@ -79,7 +79,7 @@ SelectArea:on_selection(function(event)
     local surface = event.surface
 
     if area_size > 1000 then
-        player.print({ "exp-commands_surface.area-too-large", 1000, area_size }, Commands.print_settings.error)
+        player.print({ "exp-commands_surface.area-too-large", 5000, area_size }, Commands.print_settings.error)
         return
     end
 
