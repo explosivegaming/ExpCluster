@@ -31,11 +31,6 @@ SelectArea:on_selection(function(event)
     local area_size = AABB.size(area)
     local surface = event.surface
 
-    if area_size > 1000 then
-        player.print({ "exp-commands_lawnmower.area-too-large", 1000, area_size }, Commands.print_settings.error)
-        return
-    end
-
     local entities = surface.find_entities_filtered{ area = area, type = "corpse" }
     for _, entity in pairs(entities) do
         if (entity.name ~= "transport-caution-corpse" and entity.name ~= "invisible-transport-caution-corpse") then

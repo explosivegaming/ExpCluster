@@ -78,11 +78,6 @@ SelectArea:on_selection(function(event)
     local area_size = AABB.size(area)
     local surface = event.surface
 
-    if area_size > 1000 then
-        player.print({ "exp-commands_surface.area-too-large", 5000, area_size }, Commands.print_settings.error)
-        return
-    end
-
     local entities = surface.find_entities_filtered{ type = "entity-ghost", area = area }
     for _, entity in ipairs(entities) do
         entity.destroy()
