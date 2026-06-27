@@ -41,6 +41,7 @@ commands.waterfill = Commands.new("waterfill", { "exp-commands_waterfill.descrip
 --- When an area is selected to be converted to water
 SelectArea:on_selection(function(event)
     local area = AABB.expand(event.area)
+    local area_size = AABB.size(area)
     local player = game.players[event.player_index]
     local surface = event.surface
 
@@ -50,8 +51,6 @@ SelectArea:on_selection(function(event)
         return
     end
     ]]
-
-    local area_size = (area.right_bottom.x - area.left_top.x) * (area.right_bottom.y - area.left_top.y)
 
     if area_size > 1000 then
         player.print({ "exp-commands_waterfill.area-too-large", 1000, area_size }, Commands.print_settings.error)
