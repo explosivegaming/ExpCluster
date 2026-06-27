@@ -17,6 +17,13 @@ function AABB.valid(aabb)
     return aabb.left_top.x < aabb.right_bottom.x and aabb.left_top.y < aabb.right_bottom.y
 end
 
+--- Returns the size of the area contained within an AABB
+--- @param aabb BoundingBox
+--- @return number
+function AABB.size(aabb)
+    return (aabb.right_bottom.x - aabb.left_top.x) * (aabb.right_bottom.y - aabb.left_top.y)
+end
+
 --- Clone an area, allows for safe mutation of an input value
 --- @param aabb BoundingBox
 --- @return BoundingBox
