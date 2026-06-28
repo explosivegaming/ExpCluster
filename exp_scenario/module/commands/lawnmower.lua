@@ -28,7 +28,6 @@ commands.lawnmower = Commands.new("lawnmower", { "exp-commands_lawnmower.descrip
 SelectArea:on_selection(function(event)
     local player = assert(game.get_player(event.player_index))
     local area = AABB.expand(event.area)
-    local area_size = AABB.size(area)
     local surface = event.surface
 
     local entities = surface.find_entities_filtered{ area = area, type = "corpse" }
