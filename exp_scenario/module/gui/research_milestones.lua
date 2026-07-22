@@ -328,7 +328,7 @@ function Elements.container.append_log_line(force)
         result_data[name] = force_data[research_index]
     end
 
-    write_file(config.file_name, table_to_json(result_data) .. "\n", true, 0)
+    write_file(config.file.name, table_to_json(result_data) .. "\n", true, 0)
 end
 
 --- Add the element to the left flow with a toolbar button
@@ -351,7 +351,7 @@ local function on_research_finished(event)
 
     -- Check if the log should be updated and print a message to chat
     if config.inf_res[config.mod_set][research_name] then
-        local log_requirement = config.bonus_inventory.log[config.mod_set]
+        local log_requirement = config.file.final_res[config.mod_set]
         if research_name == log_requirement.name and research_level == log_requirement.level + 1 then
             Elements.container.append_log_line(force)
         end
