@@ -23,7 +23,19 @@ return {
         rate = 5,
         limit = 20,
     },
-    file_name = "log/research.log",
+    file = {
+        name = "log/research.log",
+        final_res = {
+            ["base"] = {
+                ["name"] = "mining-productivity-4",
+                ["level"] = 4
+            },
+            ["space-age"] = {
+                ["name"] = "mining-productivity-3",
+                ["level"] = 3
+            }
+        }
+    },
     milestone = {
         ["base"] = {
             ["automation"] = 600,
