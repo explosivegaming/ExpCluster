@@ -17,7 +17,8 @@ jobs:
           node-version: lts/*
       - name: Install FMTK
         run: |
-          pnpm install factoriomod-debug
+          # Pinned: 2.1.4+ generates typedefs targeting EmmyLua that LuaLS misreads
+          pnpm install factoriomod-debug@2.1.3
           pnpm exec fmtk luals-addon
           jq '.["workspace.library"] += ["${{ github.workspace }}/factorio/library"] | .["runtime.plugin"] = "${{ github.workspace }}/factorio/plugin.lua"' .luarc.json > temp.luarc.json
           jq -s '.[0] * .[1].settings' temp.luarc.json ${{ github.workspace }}/factorio/config.json > check.luarc.json
