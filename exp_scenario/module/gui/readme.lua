@@ -8,6 +8,7 @@ local Roles = require("modules/exp_roles")
 local Commands = require("modules/exp_commands")
 local PlayerData = require("modules.exp_legacy.expcore.player_data")
 local External = require("modules.exp_legacy.expcore.external")
+local links = require("modules.exp_legacy.config.links")
 
 local format_number = require("util").format_number
 local format_time = ExpUtil.format_time_factory_locale{ format = "long", days = true, hours = true, minutes = true }
@@ -336,7 +337,7 @@ define_tab(
         local external_links = Elements.title_table(scroll_pane, 235, { "exp-gui_readme.servers-external" }, 2)
         for _, key in ipairs{ "discord", "website", "patreon", "status", "github" } do
             Gui.elements.centered_label(external_links, 110, key:gsub("^%l", string.upper))
-            Gui.elements.centered_label(external_links, 460, { "links." .. key }, { "exp-gui_readme.servers-open-in-browser" })
+            Gui.elements.centered_label(external_links, 460, links[key], { "exp-gui_readme.servers-open-in-browser" })
         end
 
         return container
