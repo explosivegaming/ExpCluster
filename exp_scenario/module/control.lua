@@ -65,6 +65,7 @@ add(require("modules/exp_scenario/control/report_jail"))
 add(require("modules/exp_scenario/control/research"))
 add(require("modules/exp_scenario/control/roles"))
 add(require("modules/exp_scenario/control/spawn_area"))
+add(require("modules/exp_scenario/control/spectate"))
 add(require("modules/exp_scenario/control/station_auto_name"))
 
 --- Guis
