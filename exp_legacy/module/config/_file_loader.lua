@@ -24,6 +24,4 @@ return {
     "modules.gui.vlayer",
 
     "modules.graftorio.require", -- graftorio
-    --- Config Files
-    "config.expcore.permission_groups", -- loads some predefined permission groups
 }

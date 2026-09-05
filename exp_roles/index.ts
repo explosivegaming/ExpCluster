@@ -27,7 +27,6 @@ export const plugin: lib.PluginDeclaration = {
 
 		messages.RoleListRequest,
 		messages.RoleMetaUpdateRequest,
-		messages.SeedRolesRequest,
 
 		messages.AssignmentListRequest,
 		messages.AssignmentUpdateRequest,
