@@ -4,7 +4,7 @@ When a player triggers protection multiple times they are automatically jailed
 
 local ExpUtil = require("modules/exp_util")
 local Storage = require("modules/exp_util/storage")
-local Jail = require("modules.exp_legacy.modules.control.jail")
+local Jail = require("modules/exp_scenario/control/jail")
 local Protection = require("modules/exp_scenario/control/protection")
 
 local format_player_name = ExpUtil.format_player_name_locale
