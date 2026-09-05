@@ -75,10 +75,13 @@ function Spectate.start_spectate(player)
     if spectating[player.index] or not player.character then return false end
     local character = player.character
     local opened = player.opened
+
     player.set_controller{ type = defines.controllers.spectator }
     player.associate_character(character)
     spectating[player.index] = character
+
     if opened then player.opened = opened end -- Changing controller closes the opened gui
+
     return true
 end
 
@@ -87,6 +90,7 @@ end
 function Spectate.stop_spectate(player)
     local character = spectating[player.index]
     spectating[player.index] = nil
+
     if character and character.valid then
         local opened = player.opened
         player.teleport(character.position, character.surface)
@@ -137,8 +141,12 @@ end
 local function update_following(data)
     local player, target = data.player, data.target
     local position = player.position
-    if data.stop or player.character or not target.valid
-    or position.x ~= data.position.x or position.y ~= data.position.y
+    if
+        data.stop
+        or player.character
+        or not target.valid
+        or position.x ~= data.position.x
+        or position.y ~= data.position.y
     then
         Spectate.stop_follow(player)
     else
