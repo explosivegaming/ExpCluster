@@ -4,8 +4,8 @@ When a player triggers protection multiple times they are automatically jailed
 
 local ExpUtil = require("modules/exp_util")
 local Storage = require("modules/exp_util/storage")
-local Jail = require("modules.exp_legacy.modules.control.jail")
-local Protection = require("modules.exp_legacy.modules.control.protection")
+local Jail = require("modules/exp_scenario/control/jail")
+local Protection = require("modules/exp_scenario/control/protection")
 
 local format_player_name = ExpUtil.format_player_name_locale
 
@@ -41,7 +41,7 @@ local e = defines.events
 
 return {
     events = {
-        [Protection.events.on_repeat_violation] = on_repeat_violation,
+        [Protection.on_repeat_violation] = on_repeat_violation,
         [e.on_player_left_game] = on_player_left_game,
     }
 }

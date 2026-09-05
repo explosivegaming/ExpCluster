@@ -59,11 +59,13 @@ add(require("modules/exp_scenario/control/inventory_clear"))
 add(require("modules/exp_scenario/control/mine_depletion"))
 add(require("modules/exp_scenario/control/nuke_protection"))
 add(require("modules/exp_scenario/control/pollution_grading"))
+add(require("modules/exp_scenario/control/protection"))
 add(require("modules/exp_scenario/control/protection_jail"))
 add(require("modules/exp_scenario/control/report_jail"))
 add(require("modules/exp_scenario/control/research"))
 add(require("modules/exp_scenario/control/roles"))
 add(require("modules/exp_scenario/control/spawn_area"))
+add(require("modules/exp_scenario/control/spectate"))
 add(require("modules/exp_scenario/control/station_auto_name"))
 
 --- Guis

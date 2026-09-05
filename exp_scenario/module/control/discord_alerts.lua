@@ -81,8 +81,8 @@ end
 
 --- Repeated protected entity mining
 if config.entity_protection then
-    local EntityProtection = require("modules.exp_legacy.modules.control.protection")
-    events[EntityProtection.events.on_repeat_violation] = function(event)
+    local EntityProtection = require("modules/exp_scenario/control/protection")
+    events[EntityProtection.on_repeat_violation] = function(event)
         local player_name = get_player_name(event)
         emit_event{
             title = "Entity Protection",
@@ -133,8 +133,8 @@ end
 
 --- When a player is jailed or unjailed
 if config.player_jail then
-    local Jail = require("modules.exp_legacy.modules.control.jail")
-    events[Jail.events.on_player_jailed] = function(event)
+    local Jail = require("modules/exp_scenario/control/jail")
+    events[Jail.on_player_jailed] = function(event)
         local player_name, by_player_name = get_player_name(event)
         emit_event{
             title = "Jail",
@@ -147,7 +147,7 @@ if config.player_jail then
             },
         }
     end
-    events[Jail.events.on_player_unjailed] = function(event)
+    events[Jail.on_player_unjailed] = function(event)
         local player_name, by_player_name = get_player_name(event)
         emit_event{
             title = "Unjail",

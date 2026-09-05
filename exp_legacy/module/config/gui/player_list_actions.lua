@@ -9,7 +9,7 @@ local ExpUtil = require("modules/exp_util")
 local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_roles")
 local Reports = require("modules.exp_legacy.modules.control.reports") --- @dep modules.control.reports
-local Jail = require("modules.exp_legacy.modules.control.jail") --- @dep modules.control.jail
+local Jail = require("modules/exp_scenario/control/jail")
 local Colors = require("modules/exp_util/include/color")
 local format_player_name = ExpUtil.format_player_name_locale
 
@@ -104,7 +104,7 @@ end
 local jail_player = new_button("utility/multiplayer_waiting_icon", { "exp-gui_player-list.jail-player" })
     :on_click(function(def, player, element)
         local selected_player, selected_player_color = get_action_player(player)
-        if Jail.is_jailed(selected_player.name) then
+        if Jail.is_jailed(selected_player) then
             player.print({ "exp-commands_jail.already-jailed", selected_player_color }, Colors.orange_red)
         else
             set_selected_action(player, "exp_scenario.command.jail")
@@ -115,7 +115,7 @@ local function jail_player_callback(player, reason)
     local selected_player, selected_player_color = get_action_player(player)
     local by_player_name_color = format_player_name(player)
     game.print{ "exp-commands_jail.jailed", selected_player_color, by_player_name_color, reason }
-    Jail.jail_player(selected_player.name, player.name, reason)
+    Jail.jail_player(selected_player, player.name, reason)
 end
 
 --- Kicks the action player, requires a reason

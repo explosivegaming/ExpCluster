@@ -3,7 +3,7 @@ Adds commands relating to spectate and follow
 ]]
 
 local Commands = require("modules/exp_commands")
-local Spectate = require("modules.exp_legacy.modules.control.spectate") --- @dep modules.control.spectate
+local Spectate = require("modules/exp_scenario/control/spectate")
 
 --- Toggles spectator mode for the caller
 Commands.new("spectate", { "exp-commands_spectate.description-spectate" })
