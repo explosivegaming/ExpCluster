@@ -6,6 +6,8 @@ local Gui = require("modules/exp_gui")
 local ElementsExtra = require("modules/exp_scenario/gui/elements")
 local Roles = require("modules/exp_roles")
 
+local format_string = string.format
+
 --- @class ExpGui_Surveillance.elements
 local Elements = {}
 
@@ -206,6 +208,60 @@ function Elements.camera.refresh_online()
     end
 end
 
+--- Label showing what the player a camera follows holds in their cursor
+--- @class ExpGui_Surveillance.elements.cursor_label: ExpElement
+--- @field data table<LuaGuiElement, LuaGuiElement> The camera the label belongs to
+--- @overload fun(parent: LuaGuiElement, camera: LuaGuiElement): LuaGuiElement
+Elements.cursor_label = Gui.define("surveillance/cursor_label")
+    :track_all_elements()
+    :draw{
+        type = "label",
+        caption = { "exp-gui_surveillance.caption-cursor-empty" },
+    }
+    :style{
+        width = 480,
+    }
+    :element_data(
+        Gui.from_argument(1)
+    ) --[[@as any]]
+
+--- Calculate the caption describing the cursor of a player
+--- @param player LuaPlayer
+--- @return LocalisedString
+function Elements.cursor_label.calculate_caption(player)
+    local cursor_stack = player.cursor_stack
+    if cursor_stack and cursor_stack.valid_for_read then
+        local item = format_string("[item=%s,quality=%s]", cursor_stack.name, cursor_stack.quality.name)
+        return { "exp-gui_surveillance.caption-cursor", item, cursor_stack.count }
+    end
+
+    local cursor_ghost = player.cursor_ghost --[[@as ItemIDAndQualityIDPair?]]
+    if cursor_ghost then
+        local prototype = cursor_ghost.name --[[@as LuaItemPrototype]]
+        return { "exp-gui_surveillance.caption-cursor-ghost", "[item=" .. prototype.name .. "]" }
+    end
+
+    return { "exp-gui_surveillance.caption-cursor-empty" }
+end
+
+--- Refresh a label, hidden when the camera is not following a player
+--- @param cursor_label LuaGuiElement
+--- @param target_player LuaPlayer?
+function Elements.cursor_label.refresh(cursor_label, target_player)
+    cursor_label.visible = target_player ~= nil
+    if target_player then
+        cursor_label.caption = Elements.cursor_label.calculate_caption(target_player)
+    end
+end
+
+--- Refresh the labels of all online cameras
+function Elements.cursor_label.refresh_online()
+    for _, cursor_label in Elements.cursor_label:online_elements() do
+        local camera = Elements.cursor_label.data[cursor_label]
+        Elements.cursor_label.refresh(cursor_label, Elements.camera.data[camera])
+    end
+end
+
 --- Container added to the screen
 Elements.container = Gui.define("surveillance/container")
     :draw(function(def, parent)
@@ -214,6 +270,7 @@ Elements.container = Gui.define("surveillance/container")
 
         local target_player = Gui.get_player(parent)
         local camera = Elements.camera(screen_frame, target_player)
+        Elements.cursor_label(screen_frame, camera)
 
         local type_dropdown_data = {
             camera = camera,
@@ -248,6 +305,7 @@ return {
         [e.on_tick] = Elements.camera.refresh_online,
     },
     on_nth_tick = {
+        [10] = Elements.cursor_label.refresh_online,
         [600] = Elements.type_dropdown.refresh_online,
     }
 }
