@@ -3,6 +3,7 @@ Log certain actions into a file when events are triggered
 ]]
 
 local ExpUtil = require("modules/exp_util")
+local Storage = require("modules/exp_util/storage")
 local Roles = require("modules/exp_roles")
 local config = require("modules.exp_legacy.config.deconlog")
 
@@ -130,29 +131,63 @@ local function on_player_mined_entity(event)
     add_log_line(player, "mined_entity", format_entity(event.entity))
 end
 
---- Log when rocket is fired
+--- Ammo which is logged when fired
+local logged_ammo = {
+    ["rocket"] = config.fired_rocket,
+    ["explosive-rocket"] = config.fired_explosive_rocket,
+    ["atomic-bomb"] = config.fired_nuke,
+}
+
+--- @class ExpScenario_DeconstructionLog.AmmoSlot
+--- @field name string
+--- @field count number
+
+--- The last seen contents of each ammo slot, keyed by player index then slot index
+local ammo_slots = {} --- @type table<uint, table<uint, ExpScenario_DeconstructionLog.AmmoSlot>>
+Storage.register(ammo_slots, function(tbl)
+    ammo_slots = tbl
+end)
+
+--- Log a shot, there is no fired event so a slot losing one of the same ammo is taken as a shot
 --- @param event EventData.on_player_ammo_inventory_changed
 local function on_player_ammo_inventory_changed(event)
     local player = get_log_player(event)
     if not player or not player.character then return end
 
+    local slots = ammo_slots[player.index]
+    if not slots then
+        slots = {}
+        ammo_slots[player.index] = slots
+    end
+
     local character_ammo = assert(player.get_inventory(defines.inventory.character_ammo))
-    local gun_index = player.character.selected_gun_index --[[@as uint]]
-    local item = character_ammo[gun_index]
-    if not item or not item.valid or not item.valid_for_read then
-        return
-    end
+    for index = 1, #character_ammo do
+        local stack = character_ammo[index --[[@as uint]]]
+        local previous = slots[index]
+        local fired = nil --- @type string?
 
-    local action_name = "shot-" .. item.name
-    if not config.fired_rocket and action_name == "shot-rocket" then
-        return
-    elseif not config.fired_explosive_rocket and action_name == "shot-explosive-rocket" then
-        return
-    elseif not config.fired_nuke and action_name == "shot-atomic-bomb" then
-        return
-    end
+        if stack.valid_for_read then
+            if previous and previous.name == stack.name and previous.count == stack.count + 1 then
+                fired = stack.name
+            end
+            slots[index] = { name = stack.name, count = stack.count }
+        else
+            if previous and previous.count == 1 then
+                fired = previous.name
+            end
+            slots[index] = nil
+        end
 
-    add_log_line(player, action_name, format_position(player.physical_position), format_position(player.shooting_state.position))
+        if fired and logged_ammo[fired] then
+            add_log_line(player, "shot-" .. fired, format_position(player.physical_position), format_position(player.shooting_state.position))
+        end
+    end
+end
+
+--- Forget the ammo of a player who left, their slots are read again on the next change
+--- @param event EventData.on_player_left_game
+local function on_player_left_game(event)
+    ammo_slots[event.player_index] = nil
 end
 
 
@@ -175,6 +210,7 @@ end
 
 if config.fired_rocket or config.fired_explosive_rocket or config.fired_nuke then
     events[e.on_player_ammo_inventory_changed] = on_player_ammo_inventory_changed
+    events[e.on_player_left_game] = on_player_left_game
 end
 
 return {
