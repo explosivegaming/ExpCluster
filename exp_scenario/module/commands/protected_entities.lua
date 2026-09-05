@@ -12,10 +12,9 @@ local Commands = require("modules/exp_commands")
 local format_player_name = Commands.format_player_name_locale
 
 local Roles = require("modules/exp_roles")
-local EntityProtection = require("modules.exp_legacy.modules.control.protection") --- @dep modules.control.protection
-
-local format_string = string.format
-local floor = math.floor
+local EntityProtection = require("modules/exp_scenario/control/protection")
+local get_entity_key = EntityProtection.get_entity_key
+local get_area_key = EntityProtection.get_area_key
 
 local Selection = require("modules/exp_util/selection")
 local SelectEntities = Selection.connect("ExpCommand_ProtectEntity")
@@ -27,21 +26,6 @@ Storage.register({
 }, function(tbl)
     renders = tbl.renders
 end)
-
---- Get the key used in protected_entities
---- @param entity LuaEntity
---- @return string
-local function get_entity_key(entity)
-    return format_string("%i,%i", floor(entity.position.x), floor(entity.position.y))
-end
-
---- Get the key used in protected_areas
---- TODO expose this from EntityProtection
---- @param area BoundingBox.struct
---- @return string
-local function get_area_key(area)
-    return format_string("%i,%i", floor(area.left_top.x), floor(area.left_top.y))
-end
 
 --- Show a protected entity to a player
 --- @param player LuaPlayer
@@ -232,6 +216,6 @@ end
 
 return {
     events = {
-        [EntityProtection.events.on_repeat_violation] = on_repeat_violation,
+        [EntityProtection.on_repeat_violation] = on_repeat_violation,
     }
 }

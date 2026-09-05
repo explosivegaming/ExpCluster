@@ -81,8 +81,8 @@ end
 
 --- Repeated protected entity mining
 if config.entity_protection then
-    local EntityProtection = require("modules.exp_legacy.modules.control.protection")
-    events[EntityProtection.events.on_repeat_violation] = function(event)
+    local EntityProtection = require("modules/exp_scenario/control/protection")
+    events[EntityProtection.on_repeat_violation] = function(event)
         local player_name = get_player_name(event)
         emit_event{
             title = "Entity Protection",
