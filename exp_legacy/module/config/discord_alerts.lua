@@ -5,7 +5,6 @@ return {
     show_playtime = true,
     entity_protection = true,
     player_reports = true,
-    player_warnings = true,
     player_bans = true,
     player_mutes = true,
     player_kicks = true,

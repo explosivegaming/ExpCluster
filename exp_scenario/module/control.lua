@@ -38,7 +38,6 @@ require("modules/exp_scenario/commands/surface")
 require("modules/exp_scenario/commands/teleport")
 require("modules/exp_scenario/commands/trains")
 require("modules/exp_scenario/commands/vlayer")
-require("modules/exp_scenario/commands/warnings")
 require("modules/exp_scenario/commands/waterfill")
 
 --- Control

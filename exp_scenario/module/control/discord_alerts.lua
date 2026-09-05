@@ -131,40 +131,6 @@ if config.player_reports then
     end
 end
 
---- Warnings added and removed
-if config.player_warnings then
-    local Warnings = require("modules.exp_legacy.modules.control.warnings")
-    events[Warnings.events.on_warning_added] = function(event)
-        local player_name, by_player_name = get_player_name(event)
-        local player = assert(game.get_player(player_name))
-        emit_event{
-            title = "Warning",
-            description = "A player has been given a warning",
-            color = Colors.yellow,
-            fields = {
-                { name = "Player", inline = true, value = append_playtime(player_name) },
-                { name = "By", inline = true, value = append_playtime(by_player_name) },
-                { name = "Report Count", inline = true, value = Warnings.count_warnings(player) },
-                { name = "Reason", value = event.reason },
-            },
-        }
-    end
-    events[Warnings.events.on_warning_removed] = function(event)
-        if event.batch ~= 1 then return end
-        local player_name = get_player_name(event)
-        emit_event{
-            title = "Warnings Removed",
-            description = "A player has a warning removed",
-            color = Colors.green,
-            fields = {
-                { name = "Player", inline = true, value = append_playtime(player_name) },
-                { name = "By", inline = true, value = append_playtime(event.removed_by_name) },
-                { name = "Report Count", inline = true, value = tostring(event.batch_count) },
-            },
-        }
-    end
-end
-
 --- When a player is jailed or unjailed
 if config.player_jail then
     local Jail = require("modules.exp_legacy.modules.control.jail")
