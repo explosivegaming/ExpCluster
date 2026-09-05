@@ -3,7 +3,7 @@ When a player is reported, the player is automatically jailed if the combined pl
 ]]
 
 local ExpUtil = require("modules/exp_util")
-local Jail = require("modules.exp_legacy.modules.control.jail")
+local Jail = require("modules/exp_scenario/control/jail")
 local Reports = require("modules.exp_legacy.modules.control.reports")
 
 local max = math.max
