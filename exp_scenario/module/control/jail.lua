@@ -25,7 +25,7 @@ local Jail = {
 
 --- The role given to jailed players, it has a higher priority than every other role
 --- @return ExpRoles.Role
-local function jail_role()
+local function get_jail_role()
     return (assert(Roles.get_role_by_name("Jail"), "The Jail role does not exist"))
 end
 
@@ -33,7 +33,7 @@ end
 --- @param player LuaPlayer
 --- @return boolean
 function Jail.is_jailed(player)
-    return jail_role():has_player(player)
+    return get_jail_role():has_player(player)
 end
 
 --- Put a player into jail, which suppresses all of their other roles
@@ -42,7 +42,7 @@ end
 --- @param reason string
 --- @return boolean # False when the player was already in jail
 function Jail.jail_player(player, by_player_name, reason)
-    local role = jail_role()
+    local role = get_jail_role()
     if role:has_player(player) then return false end
 
     -- Stop whatever the player is doing, the jail permission group stops them from starting again
@@ -56,8 +56,6 @@ function Jail.jail_player(player, by_player_name, reason)
     role:assign(player, { by_player_name = by_player_name, silent = true })
 
     script.raise_event(Jail.on_player_jailed, {
-        name = Jail.on_player_jailed,
-        tick = game.tick,
         player_index = player.index,
         by_player_name = by_player_name,
         reason = reason,
@@ -71,14 +69,12 @@ end
 --- @param by_player_name string
 --- @return boolean # False when the player was not in jail
 function Jail.unjail_player(player, by_player_name)
-    local role = jail_role()
+    local role = get_jail_role()
     if not role:has_player(player) then return false end
 
     role:unassign(player, { by_player_name = by_player_name, silent = true })
 
     script.raise_event(Jail.on_player_unjailed, {
-        name = Jail.on_player_unjailed,
-        tick = game.tick,
         player_index = player.index,
         by_player_name = by_player_name,
     })
