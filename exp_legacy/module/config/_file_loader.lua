@@ -20,7 +20,6 @@ return {
     --"modules.data.toolbar",
 
     --- GUI
-    "modules.gui.warp-list",
     "modules.gui.vlayer",
 
     "modules.graftorio.require", -- graftorio
