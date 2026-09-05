@@ -6,9 +6,6 @@
 return {
     "expcore.player_data", -- must be loaded first to register event handlers
 
-    -- Control
-    "modules.control.vlayer",
-
     --- Data
     "modules.data.statistics",
     "modules.data.player-colours",
@@ -21,7 +18,6 @@ return {
 
     --- GUI
     "modules.gui.warp-list",
-    "modules.gui.vlayer",
 
     "modules.graftorio.require", -- graftorio
     --- Config Files
