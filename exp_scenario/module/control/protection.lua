@@ -184,14 +184,12 @@ local function raise_violation(event, player)
     player_repeats.last = game.tick
     player_repeats.count = player_repeats.count + 1
 
-    event.name = Protection.on_player_mined_protected
     script.raise_event(Protection.on_player_mined_protected, event)
 
     local entity = event.entity
     local always_repeat = always_trigger_repeat_names[entity.name] or always_trigger_repeat_types[entity.type]
     if always_repeat or player_repeats.count >= config.repeat_count then
         player_repeats.count = 0
-        event.name = Protection.on_repeat_violation
         script.raise_event(Protection.on_repeat_violation, event)
     end
 end
@@ -201,8 +199,9 @@ end
 local function on_pre_player_mined_item(event)
     local entity = event.entity
     local player = game.players[event.player_index]
-    if not is_ignored(player, entity)
-    and (Protection.is_entity_protected(entity) or Protection.is_position_protected(entity.surface, entity.position))
+    if
+        not is_ignored(player, entity)
+        and (Protection.is_entity_protected(entity) or Protection.is_position_protected(entity.surface, entity.position))
     then
         raise_violation(event, player)
     end
