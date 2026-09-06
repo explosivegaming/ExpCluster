@@ -3,6 +3,7 @@ Log certain actions into a file when events are triggered
 ]]
 
 local ExpUtil = require("modules/exp_util")
+local Storage = require("modules/exp_util/storage")
 local Roles = require("modules/exp_roles")
 local config = require("modules.exp_legacy.config.deconlog")
 
@@ -130,31 +131,79 @@ local function on_player_mined_entity(event)
     add_log_line(player, "mined_entity", format_entity(event.entity))
 end
 
---- Log when rocket is fired
+--- Ammo which is logged when fired
+local logged_ammo = {
+    ["rocket"] = config.fired_rocket,
+    ["explosive-rocket"] = config.fired_explosive_rocket,
+    ["atomic-bomb"] = config.fired_nuke,
+}
+
+--- @class ExpScenario_DeconstructionLog.AmmoSlot
+--- @field name string
+--- @field count number
+
+--- The last seen contents of each ammo slot, keyed by player index then slot index
+local ammo_slots = {} --- @type table<uint, table<uint, ExpScenario_DeconstructionLog.AmmoSlot>>
+Storage.register(ammo_slots, function(tbl)
+    ammo_slots = tbl
+end)
+
+--- Read the ammo slots of a player, empty while they have no character
+--- @param player LuaPlayer
+--- @return table<uint, ExpScenario_DeconstructionLog.AmmoSlot>
+local function read_ammo_slots(player)
+    local slots = {}
+    if not player.character then return slots end
+
+    local character_ammo = assert(player.get_inventory(defines.inventory.character_ammo))
+    for index = 1, #character_ammo do
+        local stack = character_ammo[index --[[@as uint]]]
+        if stack.valid_for_read then
+            slots[index] = { name = stack.name, count = stack.count }
+        end
+    end
+    return slots
+end
+
+--- Log a shot, there is no fired event so a slot losing one of the same ammo is taken as a shot
 --- @param event EventData.on_player_ammo_inventory_changed
 local function on_player_ammo_inventory_changed(event)
     local player = get_log_player(event)
-    if not player or not player.character then return end
+    if not player then return end
 
-    local character_ammo = assert(player.get_inventory(defines.inventory.character_ammo))
-    local gun_index = player.character.selected_gun_index --[[@as uint]]
-    local item = character_ammo[gun_index]
-    if not item or not item.valid or not item.valid_for_read then
-        return
+    local previous_slots = ammo_slots[player.index] or {}
+    local slots = read_ammo_slots(player)
+    ammo_slots[player.index] = slots
+
+    for index, previous in pairs(previous_slots) do
+        local current = slots[index]
+        local fired = nil --- @type string?
+        if current then
+            if previous.name == current.name and previous.count == current.count + 1 then
+                fired = current.name
+            end
+        elseif previous.count == 1 then
+            fired = previous.name
+        end
+
+        if fired and logged_ammo[fired] then
+            add_log_line(player, "shot-" .. fired, format_position(player.physical_position), format_position(player.shooting_state.position))
+        end
     end
-
-    local action_name = "shot-" .. item.name
-    if not config.fired_rocket and action_name == "shot-rocket" then
-        return
-    elseif not config.fired_explosive_rocket and action_name == "shot-explosive-rocket" then
-        return
-    elseif not config.fired_nuke and action_name == "shot-atomic-bomb" then
-        return
-    end
-
-    add_log_line(player, action_name, format_position(player.physical_position), format_position(player.shooting_state.position))
 end
 
+--- Read the ammo of a player when they join or get a new character, so the first shot afterwards is seen
+--- @param event EventData.on_player_joined_game | EventData.on_player_respawned
+local function on_player_character_changed(event)
+    local player = assert(game.get_player(event.player_index))
+    ammo_slots[player.index] = read_ammo_slots(player)
+end
+
+--- Forget the ammo of a player who left
+--- @param event EventData.on_player_left_game
+local function on_player_left_game(event)
+    ammo_slots[event.player_index] = nil
+end
 
 local e = defines.events
 local events = {
@@ -175,6 +224,9 @@ end
 
 if config.fired_rocket or config.fired_explosive_rocket or config.fired_nuke then
     events[e.on_player_ammo_inventory_changed] = on_player_ammo_inventory_changed
+    events[e.on_player_joined_game] = on_player_character_changed
+    events[e.on_player_respawned] = on_player_character_changed
+    events[e.on_player_left_game] = on_player_left_game
 end
 
 return {

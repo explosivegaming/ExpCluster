@@ -9,8 +9,7 @@ local ExpUtil = require("modules/exp_util")
 local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_roles")
 local Reports = require("modules.exp_legacy.modules.control.reports") --- @dep modules.control.reports
-local Warnings = require("modules.exp_legacy.modules.control.warnings") --- @dep modules.control.warnings
-local Jail = require("modules.exp_legacy.modules.control.jail") --- @dep modules.control.jail
+local Jail = require("modules/exp_scenario/control/jail")
 local Colors = require("modules/exp_util/include/color")
 local format_player_name = ExpUtil.format_player_name_locale
 
@@ -100,26 +99,12 @@ local function report_player_callback(player, reason)
     Reports.report_player(selected_player.name, player.name, reason)
 end
 
---- Gives the action player a warning, requires a reason
--- @element warn_player
-local warn_player = new_button("utility/spawn_flag", { "exp-gui_player-list.warn-player" })
-    :on_click(function(def, player, element)
-        set_selected_action(player, "exp_scenario.command.create_warning")
-    end)
-
-local function warn_player_callback(player, reason)
-    local selected_player, selected_player_color = get_action_player(player)
-    local by_player_name_color = format_player_name(player)
-    game.print{ "exp-commands_warnings.create", selected_player_color, by_player_name_color, reason }
-    Warnings.add_warning(selected_player.name, player.name, reason)
-end
-
 --- Jails the action player, requires a reason
 -- @element jail_player
 local jail_player = new_button("utility/multiplayer_waiting_icon", { "exp-gui_player-list.jail-player" })
     :on_click(function(def, player, element)
         local selected_player, selected_player_color = get_action_player(player)
-        if Jail.is_jailed(selected_player.name) then
+        if Jail.is_jailed(selected_player) then
             player.print({ "exp-commands_jail.already-jailed", selected_player_color }, Colors.orange_red)
         else
             set_selected_action(player, "exp_scenario.command.jail")
@@ -130,7 +115,7 @@ local function jail_player_callback(player, reason)
     local selected_player, selected_player_color = get_action_player(player)
     local by_player_name_color = format_player_name(player)
     game.print{ "exp-commands_jail.jailed", selected_player_color, by_player_name_color, reason }
-    Jail.jail_player(selected_player.name, player.name, reason)
+    Jail.jail_player(selected_player, player.name, reason)
 end
 
 --- Kicks the action player, requires a reason
@@ -170,17 +155,10 @@ return {
         ["exp_scenario.command.create_report"] = {
             auth = function(player, selected_player)
                 if player == selected_player then return false end
-                if not Roles.player_has_permission(player, "exp_scenario.command.create_warning") then
-                    return not Roles.player_has_permission(selected_player, "exp_scenario.bypass.reports")
-                end
-            end, -- can report any player that isn't immune and you aren't able to give warnings
+                return not Roles.player_has_permission(selected_player, "exp_scenario.bypass.reports")
+            end, -- can report any player that isn't immune
             reason_callback = report_player_callback,
             report_player,
-        },
-        ["exp_scenario.command.create_warning"] = {
-            auth = Roles.player_outranks, -- warn a lower user, replaces report
-            reason_callback = warn_player_callback,
-            warn_player,
         },
         ["exp_scenario.command.jail"] = {
             auth = Roles.player_outranks,

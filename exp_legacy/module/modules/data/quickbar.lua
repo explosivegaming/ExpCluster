@@ -20,46 +20,38 @@ PlayerFilters:set_metadata{
     end,
 }
 
+--- Filters are stored by a single index across the ten pages of ten slots
+local total_page_count = 10
+local slots_per_page = 10
+
 --- Loads your quickbar preset
 PlayerFilters:on_load(function(player_name, filters)
     if not filters then filters = config[player_name] end
     if not filters then return end
     local player = game.players[player_name]
-    for i, item_name in pairs(filters) do
+    for index, item_name in pairs(filters) do
         if item_name ~= nil and item_name ~= "" then
-            player.set_quick_bar_slot(i, item_name)
+            local page = math.ceil(index / slots_per_page)
+            local slot = (index - 1) % slots_per_page + 1
+            player.set_quick_bar_slot(page, slot, item_name)
         end
     end
 end)
 
-local ignored_items = {
-    ["blueprint"] = true,
-    ["blueprint-book"] = true,
-    ["deconstruction-planner"] = true,
-    ["spidertron-remote"] = true,
-    ["upgrade-planner"] = true,
-}
-
---- Saves your quickbar preset to the script-output folder
+--- Saves your quickbar preset, only plain item filters can be saved
 Commands.new("save-quickbar", "Saves your Quickbar preset items to file")
     :add_aliases{ "save-toolbar" }
-    :add_flags{ "disabled" }
     :register(function(player)
         local filters = {}
 
-        error("2.1 changes to get_quick_bar_slot beak compatibility with 2.0; waiting for upstream")
-        -- Upstream may add method to compat, or change inventory sync to have a quickbar only mode
-        for i = 1, 100 do
-            --[[
-            local slot = player.get_quick_bar_slot(i)
-            -- Need to filter out blueprint and blueprint books because the slot is a LuaItemPrototype and does not contain a way to export blueprint data
-            if slot ~= nil then
-                local ignored = ignored_items[slot.name]
-                if ignored ~= true then
-                    filters[i] = slot.name
+        for page = 1, total_page_count do
+            for slot = 1, slots_per_page do
+                -- Records, remotes and specific item instances hold data which can not be saved by name
+                local quick_bar_slot = player.get_quick_bar_slot(page, slot)
+                if quick_bar_slot and quick_bar_slot.type == "filter" then
+                    filters[(page - 1) * slots_per_page + slot] = assert(quick_bar_slot.filter).name
                 end
             end
-            ]]
         end
 
         if next(filters) then
