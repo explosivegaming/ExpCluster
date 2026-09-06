@@ -17,11 +17,11 @@ local commands = {}
 commands.lawnmower = Commands.new("lawnmower", { "exp-commands_lawnmower.description" })
     :register(function(player)
         if SelectArea:stop(player) then
-            return Commands.status.success{ "exp-commands_lawnmower.exit" }
+            return Commands.status.success{ "exp_util.selection_exit", { "exp-commands_lawnmower.selection-name" } }
         end
 
         SelectArea:start(player)
-        return Commands.status.success{ "exp-commands_lawnmower.enter" }
+        return Commands.status.success{ "exp_util.selection_enter", { "exp-commands_lawnmower.selection-name" } }
     end) --[[@as any]]
 
 --- When an area is selected to be handled

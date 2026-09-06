@@ -395,7 +395,7 @@ function ExpUtil.format_time_locale(ticks, format, units)
         join = { "colon" }
     elseif format == "short" then
         -- Example '12d 34h 56m' or '--d --h --m'
-        if units.days then rtn[#rtn + 1] = { "?", { "time-symbol-days-short", times.days or "--" }, (times.days or "--") .. "d" } end
+        if units.days then rtn[#rtn + 1] = { "?", { "exp_util.time-symbol-days-short", times.days or "--" }, (times.days or "--") .. "d" } end
         if units.hours then rtn[#rtn + 1] = { "time-symbol-hours-short", times.hours or "--" } end
         if units.minutes then rtn[#rtn + 1] = { "time-symbol-minutes-short", times.minutes or "--" } end
         if units.seconds then rtn[#rtn + 1] = { "time-symbol-seconds-short", times.seconds or "--" } end
@@ -629,7 +629,7 @@ end
 --- @return LocalisedString
 function ExpUtil.format_rich_text_color_locale(message, color)
     return {
-        "rich-text-color-tag",
+        "exp_util.rich-text-color-tag",
         round(color.r or color[1] or 0, 3),
         round(color.g or color[2] or 0, 3),
         round(color.b or color[3] or 0, 3),

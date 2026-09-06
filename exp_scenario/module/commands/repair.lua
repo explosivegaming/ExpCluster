@@ -16,10 +16,10 @@ local commands = {}
 commands.repair = Commands.new("repair", { "exp-commands_repair.description" })
     :register(function(player)
         if SelectArea:stop(player) then
-            return Commands.status.success{ "exp-commands_repair.exit" }
+            return Commands.status.success{ "exp_util.selection_exit", { "exp-commands_repair.selection-name" } }
         end
         SelectArea:start(player)
-        return Commands.status.success{ "exp-commands_repair.enter" }
+        return Commands.status.success{ "exp_util.selection_enter", { "exp-commands_repair.selection-name" } }
     end)
 
 --- When an area is selected to be converted to water

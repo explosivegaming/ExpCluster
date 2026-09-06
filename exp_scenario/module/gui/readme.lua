@@ -8,6 +8,7 @@ local Roles = require("modules/exp_roles")
 local Commands = require("modules/exp_commands")
 local PlayerData = require("modules.exp_legacy.expcore.player_data")
 local External = require("modules.exp_legacy.expcore.external")
+local config_server_detail = require("modules.exp_legacy.config.server_detail") --- @dep config.server_detail
 
 local format_number = require("util").format_number
 local format_time = ExpUtil.format_time_factory_locale{ format = "long", days = true, hours = true, minutes = true }
@@ -182,7 +183,7 @@ end
 --- Welcome tab
 define_tab(
     { "exp-gui_readme.welcome-tab" },
-    { "exp-gui_readme.welcome-tooltip" },
+    { "exp-gui_readme.welcome-tooltip", config_server_detail["community_name"] },
     Gui.define("readme/welcome")
     :draw(function(_, parent)
         local player = Gui.get_player(parent)
@@ -223,8 +224,9 @@ define_tab(
             frame_width,
             {
                 "exp-gui_readme.welcome-general",
-                server_details.reset_time,
+                config_server_detail["community_name"],
                 format_time(game.tick),
+                server_details.reset_time,
             }
         )
 

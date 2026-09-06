@@ -64,11 +64,10 @@ commands.clear_blueprints_surface = Commands.new("clear-blueprints-surface", { "
 commands.clear_blueprints = Commands.new("clear-blueprints", { "exp-commands_surface.description-blueprints" })
     :register(function(player)
         if SelectArea:stop(player) then
-            return Commands.status.success{ "exp-commands_surface.exit" }
+            return Commands.status.success{ "exp_util.selection_exit", { "exp-commands_surface.selection-name" } }
         end
-
         SelectArea:start(player)
-        return Commands.status.success{ "exp-commands_surface.enter" }
+        return Commands.status.success{ "exp_util.selection_enter", { "exp-commands_surface.selection-name" } }
     end) --[[@as any]]
 
 --- When an area is selected

@@ -25,7 +25,7 @@ local commands = {}
 commands.waterfill = Commands.new("waterfill", { "exp-commands_waterfill.description" })
     :register(function(player)
         if SelectArea:stop(player) then
-            return Commands.status.success{ "exp-commands_waterfill.exit" }
+            return Commands.status.success{ "exp_util.selection_exit", { "exp-commands_lawnmower.selection-name" } }
         end
         local item_count_cliff = player.get_item_count("cliff-explosives")
         local item_count_craft = math.min(math.floor(player.get_item_count("explosives") / 10), player.get_item_count("barrel"), player.get_item_count("grenade"))
@@ -34,7 +34,7 @@ commands.waterfill = Commands.new("waterfill", { "exp-commands_waterfill.descrip
             return Commands.status.error{ "exp-commands_waterfill.requires-explosives" }
         else
             SelectArea:start(player)
-            return Commands.status.success{ "exp-commands_waterfill.enter" }
+            return Commands.status.success{ "exp_util.selection_enter", { "exp-commands_lawnmower.selection-name" } }
         end
     end) --[[@as any]]
 
