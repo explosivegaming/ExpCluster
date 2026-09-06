@@ -189,7 +189,7 @@ define_tab(
         local player = Gui.get_player(parent)
 
         local server_details = {
-            name = "ExpGaming S0 - Local",
+            name = config_server_detail["community_name"] .. " S0 - Local",
             welcome = "Failed to load description: disconnected from external api.",
             reset_time = "Not Set",
         }
