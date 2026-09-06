@@ -21,6 +21,7 @@ PlayerFilters:set_metadata{
 }
 
 --- Filters are stored by a single index across the ten pages of ten slots
+local total_page_count = 10
 local slots_per_page = 10
 
 --- Loads your quickbar preset
@@ -43,7 +44,7 @@ Commands.new("save-quickbar", "Saves your Quickbar preset items to file")
     :register(function(player)
         local filters = {}
 
-        for page = 1, slots_per_page do
+        for page = 1, total_page_count do
             for slot = 1, slots_per_page do
                 -- Records, remotes and specific item instances hold data which can not be saved by name
                 local quick_bar_slot = player.get_quick_bar_slot(page, slot)
