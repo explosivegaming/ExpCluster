@@ -218,9 +218,9 @@ Elements.cursor_slot = Gui.define("surveillance/cursor_slot")
         tooltip = { "exp-gui_surveillance.tooltip-cursor-empty" },
     }
     :style{
-        height = 24,
-        width = 24,
-        padding = 0,
+        height = 26,
+        width = 26,
+        margin = { -1, -1, -1, -2 },
     }
     :element_data(
         Gui.from_argument(1)
@@ -286,6 +286,7 @@ Elements.container = Gui.define("surveillance/container")
 
         local target_player = Gui.get_player(parent)
         local camera = Elements.camera(screen_frame, target_player)
+        Elements.cursor_slot(button_flow, camera)
 
         local type_dropdown_data = {
             camera = camera,
@@ -296,7 +297,6 @@ Elements.container = Gui.define("surveillance/container")
         Elements.type_dropdown(button_flow, type_dropdown_data)
         Elements.zoom_out_button(button_flow, camera)
         Elements.zoom_in_button(button_flow, camera)
-        Elements.cursor_slot(button_flow, camera)
 
         return Gui.elements.screen_frame.get_root_element(screen_frame)
     end)
