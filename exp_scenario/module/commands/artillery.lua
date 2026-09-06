@@ -39,10 +39,10 @@ end
 commands.artillery = Commands.new("artillery", { "exp-commands_artillery.description" })
     :register(function(player)
         if SelectArea:stop(player) then
-            return Commands.status.success{ "exp-commands_artillery.exit" }
+            return Commands.status.success{ "exp_util.selection_exit", { "exp-commands_artillery.selection-name" } }
         end
         SelectArea:start(player)
-        return Commands.status.success{ "exp-commands_artillery.enter" }
+        return Commands.status.success{ "exp_util.selection_enter", { "exp-commands_artillery.selection-name" } }
     end) --[[@as any]]
 
 --- when an area is selected to add protection to the area

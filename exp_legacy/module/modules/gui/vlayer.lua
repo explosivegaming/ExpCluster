@@ -405,10 +405,10 @@ local vlayer_gui_control_build = Gui.define("vlayer_gui_control_build")
         width = 200,
     }:on_click(function(def, player, element)
         if SelectArea:stop(player) then
-            player.print{ "vlayer.exit" }
+            player.print{ "exp_util.selection_exit", { "vlayer.main-tooltip" } }
         else
             SelectArea:start(player)
-            player.print{ "vlayer.enter" }
+            player.print{ "exp_util.selection_enter", { "vlayer.main-tooltip" } }
         end
 
         vlayer_gui_list_refresh(player)

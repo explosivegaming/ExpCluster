@@ -42,10 +42,19 @@ This module is currently not published and therefore can not be installed via `n
 
 See [Contributing](CONTRIBUTING.md) for how to make pull requests and issues.
 
+## Translation
+<a href="https://translate.aperx.org/engage/expcluster/"><img src="https://translate.aperx.org/widget/expcluster/multi-auto.svg" alt="translation status"></a>
+Contact for access.
+[translate]: https://translate.aperx.org
+
+## Wiki
+[wiki]: https://wiki.aperx.org/game/factorio/scenario
+
 ## Releases
 
 | Release* | Release Name | Factorio Version** |
 |---|---|---|
+| [7.0][s7.0] | Clusterio Plugin (Beta) | [2.1.7][f2.1.7] |
 | [6.4][s6.4] | Farewell Factorio 1.1 | [1.1.110][f1.1.110] |
 | [6.3][s6.3] | Feature Bundle 2: Electric Boogaloo | [1.1.101][f1.1.101] |
 | [6.2][s6.2] | Mega Feature Bundle | [1.1.32][f1.1.32] |
@@ -72,6 +81,7 @@ See [Contributing](CONTRIBUTING.md) for how to make pull requests and issues.
 
 \*\* Factorio versions show the version they were made for, often the minimum requirement to run the scenario.
 
+[s7.0]: https://github.com/explosivegaming/scenario/releases/tag/7.0.0
 [s6.4]: https://github.com/explosivegaming/scenario/releases/tag/6.4.0
 [s6.3]: https://github.com/explosivegaming/scenario/releases/tag/6.3.0
 [s6.2]: https://github.com/explosivegaming/scenario/releases/tag/6.2.0
@@ -94,6 +104,7 @@ See [Contributing](CONTRIBUTING.md) for how to make pull requests and issues.
 [s1.0]: https://github.com/explosivegaming/scenario/releases/tag/v1.0
 [s0.1]: https://github.com/explosivegaming/scenario/releases/tag/v0.1
 
+[f2.1.7]: https://wiki.factorio.com/Version_history/2.1.0#2.1.7
 [f1.1.110]: https://wiki.factorio.com/Version_history/1.1.0#1.1.110
 [f1.1.101]: https://wiki.factorio.com/Version_history/1.1.0#1.1.101
 [f1.1.32]: https://wiki.factorio.com/Version_history/1.1.0#1.1.32

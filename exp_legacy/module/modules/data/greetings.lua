@@ -2,6 +2,7 @@
 -- @data Greetings
 
 local config = require("modules.exp_legacy.config.join_messages") --- @dep config.join_messages
+local config_server_detail = require("modules.exp_legacy.config.server_detail") --- @dep config.server_detail
 local Commands = require("modules/exp_commands")
 
 --- Stores the join message that the player have
@@ -18,7 +19,11 @@ CustomMessages:on_load(function(player_name, player_message)
     if custom_message then
         game.print(custom_message, { color = player.color })
     else
-        player.print{ "join-message.greet", { "links.discord" } }
+        player.print{ 
+            "join-message.greet",
+            config_server_detail["community_name"],
+            config_server_detail["discord"]
+        }
     end
 end)
 

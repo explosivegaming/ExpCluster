@@ -3,6 +3,7 @@
 
 local ExpUtil = require("modules/exp_util")
 local Async = require("modules/exp_util/async")
+local config_server_detail = require("modules.exp_legacy.config.server_detail") --- @dep config.server_detail
 
 local floor = math.floor
 local random = math.random
@@ -26,13 +27,13 @@ local afk_time_units = {
 return {
     --- @type table<string, LocalisedString | fun(player: LuaPlayer, is_command: boolean): LocalisedString>
     messages = { --- @setting messages will trigger when ever the word is said
-        ["discord"] = { "info.discord" },
-        ["expgaming"] = { "info.website" },
-        ["website"] = { "info.website" },
-        ["status"] = { "info.status" },
-        ["github"] = { "info.github" },
-        ["patreon"] = { "info.patreon" },
-        ["donate"] = { "info.patreon" },
+        ["discord"] = { "info.discord", config_server_detail["discord"] },
+        ["expgaming"] = { "info.website", config_server_detail["website"] },
+        ["website"] = { "info.website", config_server_detail["website"] },
+        ["status"] = { "info.status", config_server_detail["status"] },
+        ["github"] = { "info.github", config_server_detail["github"] },
+        ["patreon"] = { "info.patreon", config_server_detail["patreon"] },
+        ["donate"] = { "info.patreon", config_server_detail["patreon"] },
         ["command"] = { "info.custom-commands" },
         ["commands"] = { "info.custom-commands" },
         ["softmod"] = { "info.softmod" },
