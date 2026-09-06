@@ -206,6 +206,78 @@ function Elements.camera.refresh_online()
     end
 end
 
+--- Slot in the header showing what the player a camera follows holds in their cursor
+--- @class ExpGui_Surveillance.elements.cursor_slot: ExpElement
+--- @field data table<LuaGuiElement, LuaGuiElement> The camera the slot belongs to
+--- @overload fun(parent: LuaGuiElement, camera: LuaGuiElement): LuaGuiElement
+Elements.cursor_slot = Gui.define("surveillance/cursor_slot")
+    :track_all_elements()
+    :draw{
+        type = "sprite-button",
+        style = "slot_button",
+        tooltip = { "exp-gui_surveillance.tooltip-cursor-empty" },
+    }
+    :style{
+        height = 26,
+        width = 26,
+        margin = { -1, -1, -1, -2 },
+    }
+    :element_data(
+        Gui.from_argument(1)
+    ) --[[@as any]]
+
+--- @class ExpGui_Surveillance.elements.cursor_slot.display_data
+--- @field sprite SpritePath? Nil when the cursor is empty
+--- @field number number? Nil for a ghost, which has no count
+--- @field tooltip LocalisedString
+
+--- Calculate what a slot shows for the cursor of a player
+--- @param player LuaPlayer
+--- @return ExpGui_Surveillance.elements.cursor_slot.display_data
+function Elements.cursor_slot.calculate_display_data(player)
+    local cursor_stack = player.cursor_stack
+    if cursor_stack and cursor_stack.valid_for_read then
+        return {
+            sprite = "item/" .. cursor_stack.name,
+            number = cursor_stack.count,
+            tooltip = { "exp-gui_surveillance.tooltip-cursor", cursor_stack.prototype.localised_name, cursor_stack.count },
+        }
+    end
+
+    local cursor_ghost = player.cursor_ghost --[[@as ItemIDAndQualityIDPair?]]
+    if cursor_ghost then
+        local prototype = cursor_ghost.name --[[@as LuaItemPrototype]]
+        return {
+            sprite = "item/" .. prototype.name,
+            tooltip = { "exp-gui_surveillance.tooltip-cursor-ghost", prototype.localised_name },
+        }
+    end
+
+    return { tooltip = { "exp-gui_surveillance.tooltip-cursor-empty" } }
+end
+
+--- Refresh a slot, a ghost is shown greyed out and the slot is hidden when the camera is not following a player
+--- @param cursor_slot LuaGuiElement
+--- @param target_player LuaPlayer?
+function Elements.cursor_slot.refresh(cursor_slot, target_player)
+    cursor_slot.visible = target_player ~= nil
+    if not target_player then return end
+
+    local display_data = Elements.cursor_slot.calculate_display_data(target_player)
+    cursor_slot.sprite = display_data.sprite or ""
+    cursor_slot.number = display_data.number
+    cursor_slot.tooltip = display_data.tooltip
+    cursor_slot.enabled = display_data.sprite == nil or display_data.number ~= nil
+end
+
+--- Refresh the slots of all online cameras
+function Elements.cursor_slot.refresh_online()
+    for _, cursor_slot in Elements.cursor_slot:online_elements() do
+        local camera = Elements.cursor_slot.data[cursor_slot]
+        Elements.cursor_slot.refresh(cursor_slot, Elements.camera.data[camera])
+    end
+end
+
 --- Container added to the screen
 Elements.container = Gui.define("surveillance/container")
     :draw(function(def, parent)
@@ -214,6 +286,7 @@ Elements.container = Gui.define("surveillance/container")
 
         local target_player = Gui.get_player(parent)
         local camera = Elements.camera(screen_frame, target_player)
+        Elements.cursor_slot(button_flow, camera)
 
         local type_dropdown_data = {
             camera = camera,
@@ -248,6 +321,7 @@ return {
         [e.on_tick] = Elements.camera.refresh_online,
     },
     on_nth_tick = {
+        [10] = Elements.cursor_slot.refresh_online,
         [600] = Elements.type_dropdown.refresh_online,
     }
 }

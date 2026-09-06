@@ -113,16 +113,47 @@ if config.MachinesRemoved or config.TreesDestroyed or config.OreMined then
     Event.add(defines.events.on_player_mined_entity, on_event)
 end
 
+--- Vehicles which credit their driver, or failing that their passenger, with what they hit
+local crewed_vehicles = { car = true, ["spider-vehicle"] = true, locomotive = true }
+
+--- Get the connected player behind the cause of damage or a death, nil for turrets, trains without a crew and the like
+--- @param cause LuaEntity?
+--- @return LuaPlayer?
+local function get_cause_player(cause)
+    if not cause or not cause.valid then return nil end
+
+    local occupant = cause --- @type LuaEntity | LuaPlayer
+    if crewed_vehicles[cause.type] then
+        local crew = cause.get_driver() or cause.get_passenger()
+        if not crew then return nil end
+        occupant = crew
+    end
+
+    local player --- @type LuaPlayer?
+    if occupant.object_name == "LuaPlayer" then
+        player = occupant --[[@as LuaPlayer]]
+    elseif occupant.type == "character" then
+        player = occupant.player
+    end
+
+    if not player or not player.valid or not player.connected then return nil end
+    return player
+end
+
+--- Check that damage or a death counts against an entity, it must be hostile to the player
+--- @param entity LuaEntity
+--- @param player LuaPlayer
+--- @return boolean
+local function is_hostile(entity, player)
+    return entity.valid and entity.force ~= player.force and entity.force.name ~= "neutral"
+end
+
 --- Add DamageDealt if it is enabled
 if config.DamageDealt then
     local stat = Statistics:combine("DamageDealt")
     Event.add(defines.events.on_entity_damaged, function(event)
-        local character = event.cause -- Check character is valid
-        if not character or not character.valid or character.type ~= "character" then return end
-        local player = character.player -- Check player is valid
-        if not player.valid or not player.connected then return end
-        local entity = event.entity -- Check entity is valid
-        if not entity.valid or entity.force == player.force or entity.force.name == "neutral" then return end
+        local player = get_cause_player(event.cause)
+        if not player or not is_hostile(event.entity, player) then return end
         stat:increment(player, floor(event.final_damage_amount))
     end)
 end
@@ -131,12 +162,8 @@ end
 if config.Kills then
     local stat = Statistics:combine("Kills")
     Event.add(defines.events.on_entity_died, function(event)
-        local character = event.cause -- Check character is valid
-        if not character or not character.valid or character.type ~= "character" then return end
-        local player = character.player -- Check player is valid
-        if not player or not player.valid or not player.connected then return end
-        local entity = event.entity -- Check entity is valid
-        if not entity.valid or entity.force == player.force or entity.force.name == "neutral" then return end
+        local player = get_cause_player(event.cause)
+        if not player or not is_hostile(event.entity, player) then return end
         stat:increment(player)
     end)
 end

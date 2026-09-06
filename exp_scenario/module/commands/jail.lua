@@ -5,7 +5,7 @@ Adds a commands that allow admins to jail and unjail
 local Commands = require("modules/exp_commands")
 local format_player_name = Commands.format_player_name_locale
 
-local Jail = require("modules.exp_legacy.modules.control.jail") --- @dep modules.control.jail
+local Jail = require("modules/exp_scenario/control/jail")
 
 --- Puts a player into jail and removes all other roles.
 Commands.new("jail", { "exp-commands_jail.description" })
