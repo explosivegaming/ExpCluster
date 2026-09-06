@@ -338,7 +338,7 @@ define_tab(
         local external_links = Elements.title_table(scroll_pane, 235, { "exp-gui_readme.servers-external" }, 2)
         for _, key in ipairs{ "discord", "website", "patreon", "status", "github" } do
             Gui.elements.centered_label(external_links, 110, key:gsub("^%l", string.upper))
-            Gui.elements.centered_label(external_links, 460, { "links." .. key }, { "exp-gui_readme.servers-open-in-browser" })
+            Gui.elements.centered_label(external_links, 460, config_server_detail[key], { "exp-gui_readme.servers-open-in-browser" })
         end
 
         return container
