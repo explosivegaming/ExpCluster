@@ -1,0 +1,53 @@
+{
+	"name": "@expcluster/reports",
+	"version": "7.0.1",
+	"description": "Clusterio plugin storing player reports on the controller",
+	"author": "Cooldude2606 <https://github.com/Cooldude2606>",
+	"license": "MIT",
+	"repository": "explosivegaming/ExpCluster",
+	"main": "dist/node/index.js",
+	"scripts": {
+		"prepare": "tsc --build && webpack-cli --env production",
+		"test": "tap --disable-coverage --allow-empty-coverage test/*.test.js",
+		"coverage": "tap --coverage-report=text test/*.test.js"
+	},
+	"engines": {
+		"node": ">=18"
+	},
+	"peerDependencies": {
+		"@clusterio/controller": "workspace:^",
+		"@clusterio/host": "workspace:^",
+		"@clusterio/lib": "workspace:^",
+		"@clusterio/web_ui": "workspace:^"
+	},
+	"devDependencies": {
+		"@ant-design/icons": "^6.2.3",
+		"@clusterio/controller": "workspace:^",
+		"@clusterio/host": "workspace:^",
+		"@clusterio/lib": "workspace:^",
+		"@clusterio/web_ui": "workspace:^",
+		"@types/node": "catalog:",
+		"@types/react": "catalog:",
+		"antd": "catalog:",
+		"react": "catalog:",
+		"react-dom": "catalog:",
+		"react-router-dom": "catalog:",
+		"typescript": "catalog:",
+		"webpack": "catalog:",
+		"fengari": "^0.1.5",
+		"tap": "^21.1.0",
+		"webpack-cli": "catalog:",
+		"webpack-merge": "catalog:"
+	},
+	"dependencies": {
+		"@sinclair/typebox": "catalog:"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"keywords": [
+		"clusterio",
+		"clusterio-plugin",
+		"factorio"
+	]
+}

@@ -8,7 +8,7 @@
 local ExpUtil = require("modules/exp_util")
 local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_roles")
-local Reports = require("modules.exp_legacy.modules.control.reports") --- @dep modules.control.reports
+local Reports = require("modules/exp_reports")
 local Jail = require("modules/exp_scenario/control/jail")
 local Colors = require("modules/exp_util/include/color")
 local format_player_name = ExpUtil.format_player_name_locale
@@ -80,23 +80,12 @@ local bring_player = new_button("utility/import", { "exp-gui_player-list.bring-p
 -- @element report_player
 local report_player = new_button("utility/spawn_flag", { "exp-gui_player-list.report-player" })
     :on_click(function(def, player, element)
-        local selected_player = get_action_player(player)
-        if Reports.is_reported(selected_player.name, player.name) then
-            player.print({ "exp-commands_report.already-reported" }, Colors.orange_red)
-        else
-            set_selected_action(player, "exp_scenario.command.create_report")
-        end
+        set_selected_action(player, "exp_scenario.command.create_report")
     end)
 
 local function report_player_callback(player, reason)
-    local selected_player, selected_player_color = get_action_player(player)
-    local by_player_name_color = format_player_name(player)
-    game.print{ "exp-commands_reports.response", selected_player_color, reason }
-    local trainee = Roles.get_role_by_name("Trainee")
-    for _, role in ipairs(trainee and Roles.get_higher_roles(trainee) or {}) do
-        role:print{ "exp-commands_reports.response-admin", selected_player_color, by_player_name_color, reason }
-    end
-    Reports.report_player(selected_player.name, player.name, reason)
+    local selected_player = get_action_player(player)
+    Reports.create_report(player, selected_player, reason)
 end
 
 --- Jails the action player, requires a reason
