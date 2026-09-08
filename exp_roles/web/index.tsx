@@ -5,7 +5,6 @@ import * as lib from "@clusterio/lib";
 import * as messages from "../messages";
 
 import RoleProperties from "./components/RoleProperties";
-import SeedRoles from "./components/SeedRoles";
 
 export class WebPlugin extends BaseWebPlugin {
 	roles = new lib.MapSubscriber(messages.RoleUpdatedEvent, this.control);
@@ -15,7 +14,6 @@ export class WebPlugin extends BaseWebPlugin {
 		// does not carry in its type
 		this.componentExtra = {
 			RoleViewPage: RoleProperties as React.ComponentType,
-			RolesPage: SeedRoles,
 		};
 	}
 

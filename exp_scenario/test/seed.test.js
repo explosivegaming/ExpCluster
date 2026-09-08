@@ -1,10 +1,10 @@
 "use strict";
 const t = require("tap");
 const lib = require("@clusterio/lib");
-const { seedRoles, flattenSeedPermissions } = require("../dist/node/seed");
+const { seedRoles, seedGroups, flattenSeedPermissions } = require("../dist/node/seed");
 
-// Importing this defines the exp_scenario permissions the seed grants
-require("@expcluster/scenario/dist/node/permissions");
+// Importing this defines the permissions the seed grants
+require("../dist/node/permissions");
 
 t.test("seedRoles[] grant only defined permissions", t2 => {
 	for (const role of seedRoles) {
@@ -20,6 +20,29 @@ t.test("seedRoles[] are unique with one default and one admin", t2 => {
 	t2.strictSame(names.length, new Set(names).size, "names are unique");
 	t2.strictSame(seedRoles.filter(role => role.isDefault).length, 1, "one default role");
 	t2.strictSame(seedRoles.filter(role => role.isAdmin).length, 1, "one admin role");
+	t2.end();
+});
+
+t.test("seedRoles[] are placed in defined groups", t2 => {
+	const groupNames = new Set(seedGroups.map(group => group.name));
+	for (const role of seedRoles) {
+		if (role.group !== undefined) {
+			t2.ok(groupNames.has(role.group), `${role.name} is placed in defined group ${role.group}`);
+		}
+	}
+	t2.end();
+});
+
+t.test("seedGroups[] are unique", t2 => {
+	const names = seedGroups.map(group => group.name);
+	t2.strictSame(names.length, new Set(names).size, "names are unique");
+	for (const group of seedGroups) {
+		t2.strictSame(
+			group.inputActions.length,
+			new Set(group.inputActions).size,
+			`${group.name} lists each input action once`,
+		);
+	}
 	t2.end();
 });
 

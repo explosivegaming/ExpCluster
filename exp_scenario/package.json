@@ -7,15 +7,19 @@
 	"repository": "explosivegaming/ExpCluster",
 	"main": "dist/node/index.js",
 	"scripts": {
-		"prepare": "tsc --build && webpack-cli --env production"
+		"prepare": "tsc --build && webpack-cli --env production",
+		"test": "tap --disable-coverage --allow-empty-coverage test/*.test.js",
+		"coverage": "tap --coverage-report=text test/*.test.js"
 	},
 	"engines": {
 		"node": ">=18"
 	},
 	"peerDependencies": {
+		"@clusterio/controller": "workspace:^",
 		"@clusterio/lib": "workspace:^"
 	},
 	"devDependencies": {
+		"@clusterio/controller": "workspace:^",
 		"@clusterio/lib": "workspace:^",
 		"@clusterio/web_ui": "workspace:^",
 		"@types/node": "catalog:",
@@ -23,6 +27,7 @@
 		"antd": "catalog:",
 		"react": "catalog:",
 		"react-dom": "catalog:",
+		"tap": "^21.1.0",
 		"typescript": "catalog:",
 		"webpack": "catalog:",
 		"webpack-cli": "catalog:",
@@ -32,6 +37,8 @@
 		"@expcluster/lib_commands": "workspace:^",
 		"@expcluster/lib_util": "workspace:^",
 		"@expcluster/lib_gui": "workspace:^",
+		"@expcluster/permission-groups": "workspace:^",
+		"@expcluster/roles": "workspace:^",
 		"@sinclair/typebox": "catalog:"
 	},
 	"publishConfig": {

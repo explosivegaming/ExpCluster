@@ -1,7 +1,6 @@
 import { BaseControllerPlugin, InstanceRecord } from "@clusterio/controller";
 import * as lib from "@clusterio/lib";
 import * as messages from "./messages";
-import { SeedRole, seedRoles, flattenSeedPermissions } from "./seed";
 import * as path from "node:path";
 
 export class ControllerPlugin extends BaseControllerPlugin {
@@ -35,7 +34,6 @@ export class ControllerPlugin extends BaseControllerPlugin {
 
 		this.controller.handle(messages.RoleListRequest, this.handleRoleListRequest.bind(this));
 		this.controller.handle(messages.RoleMetaUpdateRequest, this.handleRoleMetaUpdateRequest.bind(this));
-		this.controller.handle(messages.SeedRolesRequest, this.handleSeedRolesRequest.bind(this));
 
 		this.controller.handle(messages.AssignmentListRequest, this.handleAssignmentListRequest.bind(this));
 		this.controller.handle(messages.AssignmentUpdateRequest, this.handleAssignmentUpdateRequest.bind(this));
@@ -43,68 +41,6 @@ export class ControllerPlugin extends BaseControllerPlugin {
 
 	async onShutdown() {
 		await this.roleMeta.save();
-	}
-
-	/*
-		Seeding
-	*/
-
-	/**
-	 * Create the roles the scenario shipped with. Roles which already exist
-	 * by name are reused and only gain the seed permissions.
-	 */
-	async handleSeedRolesRequest() {
-		for (const [index, seedRole] of seedRoles.entries()) {
-			const role = this.seedRole(seedRole);
-			if (!role) {
-				continue;
-			}
-
-			this.roleMeta.set(new messages.RoleMetaRecord(
-				role.id,
-				index + 1,
-				seedRole.priority ?? 0,
-				seedRole.shortHand,
-				"",
-				seedRole.color,
-				seedRole.autoAssignHours === undefined ? null : seedRole.autoAssignHours * 3600000,
-				seedRole.blockAutoAssign ?? false,
-			));
-		}
-
-		this.logger.info(`Seeded ${seedRoles.length} roles`);
-	}
-
-	/** Find or create the clusterio role for a seed role, returns undefined if it has no role to use. */
-	seedRole(seedRole: SeedRole) {
-		const roles = this.controller.roles;
-		if (seedRole.isAdmin) {
-			return roles.get(lib.Role.DefaultAdminRoleId);
-		}
-		if (seedRole.isDefault) {
-			const defaultRoleId = this.controller.config.get("controller.default_role_id");
-			return defaultRoleId !== null ? roles.get(defaultRoleId) : undefined;
-		}
-
-		const permissions = flattenSeedPermissions(seedRole);
-		for (const permission of permissions) {
-			if (!lib.permissions.has(permission)) {
-				this.logger.warn(`Seed role ${seedRole.name} grants unknown permission ${permission}`);
-			}
-		}
-
-		let role = [...roles.valuesMutable()].find(other => other.name === seedRole.name);
-		if (role) {
-			for (const permission of permissions) {
-				role.permissions.add(permission);
-			}
-		} else {
-			const id = Math.max(5, ...[...roles.keys()].map(other => other + 1));
-			role = new lib.Role(id, seedRole.name, "", permissions);
-			this.logger.info(`Created role ${seedRole.name}`);
-		}
-		roles.set(role);
-		return role;
 	}
 
 	/*
