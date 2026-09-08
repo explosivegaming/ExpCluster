@@ -4,17 +4,12 @@ const lib = require("@clusterio/lib");
 const { Controller } = require("@clusterio/controller");
 const { ControllerPlugin } = require("../dist/node/controller");
 const messages = require("../dist/node/messages");
-const { seedRoles } = require("../dist/node/seed");
-
-// Importing this defines the exp_scenario permissions the seed grants
-require("@expcluster/scenario/dist/node/permissions");
 
 // The controller validates message classes against the link registry
 lib.Link.register(messages.RoleUpdatedEvent);
 lib.Link.register(messages.AssignmentUpdatedEvent);
 lib.Link.register(messages.RoleListRequest);
 lib.Link.register(messages.RoleMetaUpdateRequest);
-lib.Link.register(messages.SeedRolesRequest);
 lib.Link.register(messages.AssignmentListRequest);
 lib.Link.register(messages.AssignmentUpdateRequest);
 
@@ -227,23 +222,6 @@ t.test("class ControllerPlugin", t2 => {
 		t3.strictSame(all.updates.length, 1, "everything is replayed from the start");
 		const none = await plugin.handleAssignmentSubscription({ lastRequestTimeMs: updatedAtMs });
 		t3.strictSame(none, null, "nothing is replayed when up to date");
-	});
-
-	t2.test(".handleSeedRolesRequest() creates the roles and reuses them by name", async t3 => {
-		const { plugin, controller } = await startPlugin(t3, {
-			roles: [role(0, "Cluster Admin", ["core.admin"]), role(1, "Player")],
-		});
-
-		await plugin.handleSeedRolesRequest();
-		t3.strictSame(controller.roles.size, seedRoles.length, "every seed role exists");
-
-		const moderator = [...controller.roles.values()].find(other => other.name === "Moderator");
-		t3.ok(moderator.permissions.has("exp_scenario.command.jail"), "parent permissions are flattened in");
-		t3.ok(plugin.roleMeta.get(moderator.id), "the role properties are created");
-		t3.strictSame(plugin.roleMeta.get(moderator.id).shortHand, "Mod", "the properties match the seed");
-
-		await plugin.handleSeedRolesRequest();
-		t3.strictSame(controller.roles.size, seedRoles.length, "seeding again reuses the roles");
 	});
 
 	t2.end();
