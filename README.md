@@ -42,13 +42,11 @@ This module is currently not published and therefore can not be installed via `n
 
 See [Contributing](CONTRIBUTING.md) for how to make pull requests and issues.
 
-## Translation
-<a href="https://translate.aperx.org/engage/expcluster/"><img src="https://translate.aperx.org/widget/expcluster/multi-auto.svg" alt="translation status"></a>
-Contact for access.
-[translate]: https://translate.aperx.org
+Details of the scenario can also be seen on [Wiki](https://wiki.aperx.org/game/factorio/scenario).
 
-## Wiki
-[wiki]: https://wiki.aperx.org/game/factorio/scenario
+For the locale, access to [Translation](https://translate.aperx.org).
+
+<p align="center"><a href="https://translate.aperx.org/engage/expcluster/"><img src="https://translate.aperx.org/widget/expcluster/multi-auto.svg" alt="translation status"></a></p>
 
 ## Releases
 

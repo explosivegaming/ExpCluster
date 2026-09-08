@@ -26,7 +26,6 @@
 		"@clusterio/host": "workspace:^",
 		"@clusterio/lib": "workspace:^",
 		"@clusterio/web_ui": "workspace:^",
-		"@expcluster/scenario": "workspace:^",
 		"@types/node": "catalog:",
 		"@types/react": "catalog:",
 		"antd": "catalog:",

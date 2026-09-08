@@ -1,4 +1,4 @@
-import { RoleColor } from "./messages";
+import { RoleColor } from "@expcluster/roles/dist/node/messages";
 
 /**
  * A role created by the seed, as the scenario defined it before roles moved to
@@ -20,6 +20,22 @@ export interface SeedRole {
 	/** Name of the role whose permissions are also granted, applied recursively. */
 	parent?: string;
 	permissions: string[];
+	/**
+	 * Name of the seed group holders are placed in by their highest role.
+	 * Without one the holders stay in Factorio's Default group.
+	 */
+	group?: string;
+}
+
+/**
+ * A Factorio permission group created by the seed, as the scenario defined it
+ * before groups moved to the controller.
+ */
+export interface SeedGroup {
+	name: string;
+	/** When true the input actions are the only ones disallowed, otherwise the only ones allowed. */
+	isBlacklist: boolean;
+	inputActions: string[];
 }
 
 export const seedRoles: SeedRole[] = [
@@ -32,6 +48,7 @@ export const seedRoles: SeedRole[] = [
 	},
 	{
 		name: "Senior Administrator",
+		group: "Admin",
 		shortHand: "SAdmin",
 		color: new RoleColor(233, 63, 233),
 		parent: "Administrator",
@@ -44,6 +61,7 @@ export const seedRoles: SeedRole[] = [
 	},
 	{
 		name: "Administrator",
+		group: "Admin",
 		shortHand: "Admin",
 		color: new RoleColor(233, 63, 233),
 		parent: "Moderator",
@@ -55,6 +73,7 @@ export const seedRoles: SeedRole[] = [
 	},
 	{
 		name: "Moderator",
+		group: "Admin",
 		shortHand: "Mod",
 		color: new RoleColor(0, 170, 0),
 		parent: "Trainee",
@@ -89,6 +108,7 @@ export const seedRoles: SeedRole[] = [
 	},
 	{
 		name: "Trainee",
+		group: "Admin",
 		shortHand: "TrMod",
 		color: new RoleColor(0, 170, 0),
 		parent: "Veteran",
@@ -120,6 +140,7 @@ export const seedRoles: SeedRole[] = [
 	},
 	{
 		name: "Board Member",
+		group: "Trusted",
 		shortHand: "Board",
 		color: new RoleColor(247, 246, 54),
 		parent: "Sponsor",
@@ -133,6 +154,7 @@ export const seedRoles: SeedRole[] = [
 	},
 	{
 		name: "Senior Backer",
+		group: "Trusted",
 		shortHand: "Backer",
 		color: new RoleColor(238, 172, 44),
 		parent: "Sponsor",
@@ -140,6 +162,7 @@ export const seedRoles: SeedRole[] = [
 	},
 	{
 		name: "Sponsor",
+		group: "Trusted",
 		shortHand: "Spon",
 		color: new RoleColor(238, 172, 44),
 		parent: "Supporter",
@@ -158,6 +181,7 @@ export const seedRoles: SeedRole[] = [
 	},
 	{
 		name: "Supporter",
+		group: "Trusted",
 		shortHand: "Sup",
 		color: new RoleColor(230, 99, 34),
 		parent: "Veteran",
@@ -172,6 +196,7 @@ export const seedRoles: SeedRole[] = [
 	},
 	{
 		name: "Partner",
+		group: "Trusted",
 		shortHand: "Part",
 		color: new RoleColor(140, 120, 200),
 		parent: "Veteran",
@@ -183,6 +208,7 @@ export const seedRoles: SeedRole[] = [
 	},
 	{
 		name: "Veteran",
+		group: "Trusted",
 		shortHand: "Vet",
 		color: new RoleColor(140, 120, 200),
 		parent: "Member",
@@ -196,6 +222,7 @@ export const seedRoles: SeedRole[] = [
 	},
 	{
 		name: "Member",
+		group: "Standard",
 		shortHand: "Mem",
 		color: new RoleColor(24, 172, 188),
 		parent: "Regular",
@@ -217,6 +244,7 @@ export const seedRoles: SeedRole[] = [
 	},
 	{
 		name: "Regular",
+		group: "Standard",
 		shortHand: "Reg",
 		color: new RoleColor(79, 155, 163),
 		autoAssignHours: 3,
@@ -232,6 +260,7 @@ export const seedRoles: SeedRole[] = [
 	},
 	{
 		name: "Jail",
+		group: "Restricted",
 		shortHand: "Jail",
 		color: new RoleColor(50, 50, 50),
 		priority: 1,
@@ -240,11 +269,62 @@ export const seedRoles: SeedRole[] = [
 	},
 	{
 		name: "Guest",
+		group: "Guest",
 		shortHand: "",
 		color: new RoleColor(185, 187, 160),
 		isDefault: true,
 		permissions: [],
 	},
+];
+
+const adminDisallowed = [
+	"add_permission_group",
+	"delete_permission_group",
+	"edit_permission_group",
+	"import_permissions_string",
+	"map_editor_action",
+	"toggle_map_editor",
+	"change_multiplayer_config",
+	"set_heat_interface_mode",
+	"set_heat_interface_temperature",
+	"set_infinity_container_filter_item",
+	"set_infinity_container_remove_unfiltered_items",
+	"set_infinity_pipe_filter",
+];
+
+const trustedDisallowed = [
+	...adminDisallowed,
+	"admin_action",
+];
+
+const standardDisallowed = [
+	...trustedDisallowed,
+	"change_programmable_speaker_alert_parameters",
+	"drop_item",
+	"open_new_platform_button_from_rocket_silo",
+	"set_rocket_silo_send_to_orbit_automated_mode",
+];
+
+const guestDisallowed = [
+	...standardDisallowed,
+	"change_programmable_speaker_parameters",
+	"change_train_stop_station",
+	"remove_cables",
+	"remove_train_station",
+	"reset_assembling_machine",
+	"rotate_entity",
+	"launch_rocket",
+	"cancel_research",
+	"flush_opened_entity_fluid",
+	"flush_opened_entity_specific_fluid",
+];
+
+export const seedGroups: SeedGroup[] = [
+	{ name: "Admin", isBlacklist: true, inputActions: adminDisallowed },
+	{ name: "Trusted", isBlacklist: true, inputActions: trustedDisallowed },
+	{ name: "Standard", isBlacklist: true, inputActions: standardDisallowed },
+	{ name: "Guest", isBlacklist: true, inputActions: guestDisallowed },
+	{ name: "Restricted", isBlacklist: false, inputActions: ["write_to_console"] },
 ];
 
 /** The permissions a seed role grants, including those of its parents. */
