@@ -5,11 +5,11 @@ const { Controller } = require("@clusterio/controller");
 const { ControllerPlugin } = require("../dist/node/controller");
 const messages = require("../dist/node/messages");
 const { seedRoles, seedGroups } = require("../dist/node/seed");
-const roles = require("@expcluster/roles/dist/node");
-const groups = require("@expcluster/permission-groups/dist/node");
+const roles = require("@expcluster/roles");
+const groups = require("@expcluster/permission-groups");
 const { ControllerPlugin: RolesPlugin } = require("@expcluster/roles/dist/node/controller");
 const { ControllerPlugin: GroupsPlugin } = require("@expcluster/permission-groups/dist/node/controller");
-const { GroupRecord, GroupPermissions, RoleMappingRecord } = require("@expcluster/permission-groups/dist/node/messages");
+const { GroupRecord, GroupPermissions, RoleMappingRecord } = require("@expcluster/permission-groups");
 
 // Importing this defines the permissions the seed grants
 require("../dist/node/permissions");
