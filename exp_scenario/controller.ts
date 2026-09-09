@@ -1,9 +1,9 @@
 import * as lib from "@clusterio/lib";
 import { BaseControllerPlugin } from "@clusterio/controller";
-import type { ControllerPlugin as RolesPlugin } from "@expcluster/roles/dist/node/controller";
-import type { ControllerPlugin as GroupsPlugin } from "@expcluster/permission-groups/dist/node/controller";
-import { RoleMetaRecord } from "@expcluster/roles/dist/node/messages";
-import { GroupRecord, GroupPermissions, RoleMappingRecord } from "@expcluster/permission-groups/dist/node/messages";
+import { RoleMetaRecord, type ControllerPlugin as RolesPlugin } from "@expcluster/roles";
+import {
+	GroupRecord, GroupPermissions, RoleMappingRecord, type ControllerPlugin as GroupsPlugin,
+} from "@expcluster/permission-groups";
 import * as messages from "./messages";
 import { SeedRole, SeedGroup, seedRoles, seedGroups, flattenSeedPermissions } from "./seed";
 

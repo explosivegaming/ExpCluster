@@ -1,6 +1,9 @@
 import * as lib from "@clusterio/lib";
 import * as messages from "./messages";
 
+export * from "./messages";
+export type { ControllerPlugin } from "./controller";
+
 declare module "@clusterio/lib" {
 	export interface InstanceConfigFields {
 		"exp_roles.sync_mode": "disabled" | "enabled" | "bidirectional";

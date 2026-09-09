@@ -1,4 +1,4 @@
-import { RoleColor } from "@expcluster/roles/dist/node/messages";
+import { RoleColor } from "@expcluster/roles";
 
 /**
  * A role created by the seed, as the scenario defined it before roles moved to
