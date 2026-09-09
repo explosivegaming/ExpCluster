@@ -102,11 +102,11 @@ local function encode_group_permissions(group)
     local allows_action = group.allows_action
     for input_action_name, input_action in pairs(defines.input_action) do
         if allows_action(input_action) then
-            whitelist[whitelist_index] = input_action_name
             whitelist_index = whitelist_index + 1
+            whitelist[whitelist_index] = input_action_name
         else
-            blacklist[blacklist_index] = input_action_name
             blacklist_index = blacklist_index + 1
+            blacklist[blacklist_index] = input_action_name
         end
     end
 
