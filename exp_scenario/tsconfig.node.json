@@ -1,5 +1,9 @@
 {
 	"extends": "../tsconfig.node.json",
+	"references": [
+		{ "path": "../exp_groups/tsconfig.node.json" },
+		{ "path": "../exp_roles/tsconfig.node.json" },
+	],
 	"include": ["./**/*.ts"],
 	"exclude": ["test/*", "./dist/*"],
 }
