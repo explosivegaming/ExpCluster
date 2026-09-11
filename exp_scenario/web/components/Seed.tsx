@@ -3,7 +3,7 @@ import { Button, Popconfirm } from "antd";
 
 import { ControlContext, SectionHeader, useAccount, notifyErrorHandler } from "@clusterio/web_ui";
 
-import { SeedRequest } from "../../messages";
+import { SeedRequest } from "../../messages.js";
 
 /** Button on the roles page which creates the roles and permission groups the scenario shipped with. */
 export default function Seed() {

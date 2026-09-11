@@ -1,6 +1,6 @@
 import * as lib from "@clusterio/lib";
-import * as messages from "./messages";
-import { permissions as scenarioPermissions, type ScenarioPermissionName } from "./permissions";
+import * as messages from "./messages.js";
+import { permissions as scenarioPermissions, type ScenarioPermissionName } from "./permissions.js";
 
 declare module "@clusterio/lib" {
 	// Everything checked in game through exp_roles, plus the permissions checked on the controller
@@ -15,8 +15,8 @@ export const plugin: lib.PluginDeclaration = {
 	name: "exp_scenario",
 	title: "exp_scenario",
 	description: "Example Description. Plugin. Change me in index.ts",
-	controllerEntrypoint: "./dist/node/controller",
-	instanceEntrypoint: "./dist/node/instance",
+	controllerEntrypoint: "./dist/node/controller.js",
+	instanceEntrypoint: "./dist/node/instance.js",
 
 	messages: [
 		messages.SeedRequest,

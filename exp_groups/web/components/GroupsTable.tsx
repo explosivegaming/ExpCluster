@@ -3,7 +3,7 @@ import { Table } from "antd";
 import { useNavigate } from "react-router-dom";
 
 import { ControlContext } from "@clusterio/web_ui";
-import { GroupRecord } from "../../messages";
+import { GroupRecord } from "../../messages.js";
 import type { WebPlugin } from "..";
 
 import GroupForm from "./GroupForm";

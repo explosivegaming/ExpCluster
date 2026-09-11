@@ -2,7 +2,7 @@ import React, { useCallback, useSyncExternalStore } from "react";
 import { BaseWebPlugin } from "@clusterio/web_ui";
 
 import * as lib from "@clusterio/lib";
-import * as messages from "../messages";
+import * as messages from "../messages.js";
 
 import RoleProperties from "./components/RoleProperties";
 

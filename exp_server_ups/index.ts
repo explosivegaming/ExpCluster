@@ -12,7 +12,7 @@ export const plugin: lib.PluginDeclaration = {
 	title: "ExpGaming - Server UPS",
 	description: "Clusterio plugin providing in game server ups counter",
 
-	instanceEntrypoint: "./dist/node/instance",
+	instanceEntrypoint: "./dist/node/instance.js",
 	instanceConfigFields: {
 		"exp_server_ups.update_interval": {
 			title: "Update Interval",

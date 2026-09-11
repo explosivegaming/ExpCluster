@@ -4,8 +4,8 @@ import { RoleMetaRecord, type ControllerPlugin as RolesPlugin } from "@expcluste
 import {
 	GroupRecord, GroupPermissions, RoleMappingRecord, type ControllerPlugin as GroupsPlugin,
 } from "@expcluster/permission-groups";
-import * as messages from "./messages";
-import { SeedRole, SeedGroup, seedRoles, seedGroups, flattenSeedPermissions } from "./seed";
+import * as messages from "./messages.js";
+import { SeedRole, SeedGroup, seedRoles, seedGroups, flattenSeedPermissions } from "./seed.js";
 
 export class ControllerPlugin extends BaseControllerPlugin {
 	async init() {

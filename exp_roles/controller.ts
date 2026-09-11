@@ -1,6 +1,6 @@
 import { BaseControllerPlugin, InstanceRecord } from "@clusterio/controller";
 import * as lib from "@clusterio/lib";
-import * as messages from "./messages";
+import * as messages from "./messages.js";
 import * as path from "node:path";
 
 export class ControllerPlugin extends BaseControllerPlugin {
