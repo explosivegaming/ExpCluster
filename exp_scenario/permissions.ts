@@ -1,4 +1,4 @@
-import * as lib from "@clusterio/lib";
+import type * as lib from "@clusterio/lib";
 
 /**
  * Permissions checked by the scenario in game through exp_roles.
@@ -7,9 +7,9 @@ import * as lib from "@clusterio/lib";
  * underscores, see module/commands/_authorities.lua. Everything else is checked
  * by name at its call site.
  */
-type Definition = [name: string, title: string, description: string, grantByDefault?: boolean];
+type Definition<Name extends string = string> = readonly [name: Name, title: string, description: string, grantByDefault?: boolean];
 
-const definitions: Definition[] = [
+const definitions = [
 	["exp_scenario.bypass.deconstruction_log", "Deconstruction log bypass", "Be excluded from the deconstruction log."],
 	["exp_scenario.bypass.entity_protection", "Bypass entity protection", "Remove entities that the protection filter would block."],
 	["exp_scenario.bypass.nuke_protection", "Bypass nuke protection", "Use nukes without the nuke protection restrictions."],
@@ -118,8 +118,12 @@ const definitions: Definition[] = [
 	["exp_scenario.player.admin", "Factorio admin", "Be promoted to Factorio admin while holding a role with this permission."],
 	["exp_scenario.player.instant_respawn", "Instant respawn", "Respawn after two seconds instead of the default delay."],
 	["exp_scenario.player.spectator", "Spectator", "Remove the zoom to world noise effect, as Factorio does for spectators."],
-];
+] as const satisfies readonly Definition[];
 
-for (const [name, title, description, grantByDefault] of definitions) {
-	lib.definePermission({ name, title, description, grantByDefault });
-}
+/** Name of a permission defined by the scenario, added to lib.Permissions in index.ts. */
+export type ScenarioPermissionName = (typeof definitions)[number][0];
+
+export const permissions = definitions.map((definition: Definition<ScenarioPermissionName>): lib.PermissionDefinition => {
+	const [name, title, description, grantByDefault] = definition;
+	return { name, title, description, grantByDefault };
+});
