@@ -11,8 +11,10 @@ const { ControllerPlugin: RolesPlugin } = require("@expcluster/roles/dist/node/c
 const { ControllerPlugin: GroupsPlugin } = require("@expcluster/permission-groups/dist/node/controller");
 const { GroupRecord, GroupPermissions, RoleMappingRecord } = require("@expcluster/permission-groups");
 
-// Importing this defines the permissions the seed grants
-require("../dist/node/permissions");
+const { plugin } = require("../dist/node/index");
+
+// Registering the plugin defines the permissions the seed grants
+lib.registerPluginPermissions([plugin]);
 
 // The controller validates message classes against the link registry
 for (const Message of [messages.SeedRequest, ...roles.plugin.messages, ...groups.plugin.messages]) {

@@ -1,3 +1,4 @@
+import type * as lib from "@clusterio/lib";
 import { RoleColor } from "@expcluster/roles";
 
 /**
@@ -19,7 +20,7 @@ export interface SeedRole {
 	isAdmin?: boolean;
 	/** Name of the role whose permissions are also granted, applied recursively. */
 	parent?: string;
-	permissions: string[];
+	permissions: lib.PermissionName[];
 	/**
 	 * Name of the seed group holders are placed in by their highest role.
 	 * Without one the holders stay in Factorio's Default group.
@@ -329,7 +330,7 @@ export const seedGroups: SeedGroup[] = [
 
 /** The permissions a seed role grants, including those of its parents. */
 export function flattenSeedPermissions(role: SeedRole, roles = seedRoles) {
-	const permissions = new Set<string>();
+	const permissions = new Set<lib.PermissionName>();
 	const seen = new Set<string>();
 	let current: SeedRole | undefined = role;
 	while (current && !seen.has(current.name)) {
