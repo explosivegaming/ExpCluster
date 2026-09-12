@@ -1,8 +1,8 @@
 import * as lib from "@clusterio/lib";
-import * as messages from "./messages";
+import * as messages from "./messages.js";
 
-export * from "./messages";
-export type { ControllerPlugin } from "./controller";
+export * from "./messages.js";
+export type { ControllerPlugin } from "./controller.js";
 
 declare module "@clusterio/lib" {
 	export interface InstanceConfigFields {
@@ -35,7 +35,7 @@ export const plugin: lib.PluginDeclaration = {
 		messages.AssignmentUpdateRequest,
 	],
 
-	instanceEntrypoint: "./dist/node/instance",
+	instanceEntrypoint: "./dist/node/instance.js",
 	instanceConfigFields: {
 		"exp_roles.sync_mode": {
 			description: "Synchronize in game roles with the controller",
@@ -45,7 +45,7 @@ export const plugin: lib.PluginDeclaration = {
 		},
 	},
 
-	controllerEntrypoint: "./dist/node/controller",
+	controllerEntrypoint: "./dist/node/controller.js",
 	controllerConfigFields: {
 	},
 

@@ -1,6 +1,6 @@
 import { BaseInstancePlugin } from "@clusterio/host";
 import * as lib from "@clusterio/lib";
-import * as messages from "./messages";
+import * as messages from "./messages.js";
 
 /** Sent by the lua side when roles are changed in game. */
 export type IpcAssignmentUpdate = {

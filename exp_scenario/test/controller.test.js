@@ -1,17 +1,16 @@
-"use strict";
-const t = require("tap");
-const lib = require("@clusterio/lib");
-const { Controller } = require("@clusterio/controller");
-const { ControllerPlugin } = require("../dist/node/controller");
-const messages = require("../dist/node/messages");
-const { seedRoles, seedGroups } = require("../dist/node/seed");
-const roles = require("@expcluster/roles");
-const groups = require("@expcluster/permission-groups");
-const { ControllerPlugin: RolesPlugin } = require("@expcluster/roles/dist/node/controller");
-const { ControllerPlugin: GroupsPlugin } = require("@expcluster/permission-groups/dist/node/controller");
-const { GroupRecord, GroupPermissions, RoleMappingRecord } = require("@expcluster/permission-groups");
+import t from "tap";
+import * as lib from "@clusterio/lib";
+import { Controller } from "@clusterio/controller";
+import { ControllerPlugin } from "../dist/node/controller.js";
+import * as messages from "../dist/node/messages.js";
+import { seedRoles, seedGroups } from "../dist/node/seed.js";
+import * as roles from "@expcluster/roles";
+import * as groups from "@expcluster/permission-groups";
+import { ControllerPlugin as RolesPlugin } from "@expcluster/roles/dist/node/controller.js";
+import { ControllerPlugin as GroupsPlugin } from "@expcluster/permission-groups/dist/node/controller.js";
+import { GroupRecord, GroupPermissions, RoleMappingRecord } from "@expcluster/permission-groups";
 
-const { plugin } = require("../dist/node/index");
+import { plugin } from "../dist/node/index.js";
 
 // Registering the plugin defines the permissions the seed grants
 lib.registerPluginPermissions([plugin]);

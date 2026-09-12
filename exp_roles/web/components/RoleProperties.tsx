@@ -4,7 +4,7 @@ import { Button, Col, ColorPicker, Form, Input, InputNumber, Row, Switch, Toolti
 import * as lib from "@clusterio/lib";
 import { ControlContext, SectionHeader, useAccount, notifyErrorHandler } from "@clusterio/web_ui";
 
-import { RoleColor, RoleMetaRecord, RoleMetaUpdateRequest } from "../../messages";
+import { RoleColor, RoleMetaRecord, RoleMetaUpdateRequest } from "../../messages.js";
 import type { WebPlugin } from "..";
 
 const MS_PER_HOUR = 3600000;
