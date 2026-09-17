@@ -1,0 +1,37 @@
+{
+	"name": "@expcluster/auto-restart",
+	"version": "7.0.1",
+	"description": "Clusterio plugin restarting hosts and the controller once no players are online.",
+	"author": "Cooldude2606 <https://github.com/Cooldude2606>",
+	"license": "MIT",
+	"repository": "explosivegaming/ExpCluster",
+	"type": "module",
+	"main": "dist/node/index.js",
+	"scripts": {
+		"prepare": "tsc --build",
+		"test": "tap --type-strip-only --disable-coverage --allow-empty-coverage test/*.test.js",
+		"coverage": "tap --coverage-report=text test/*.test.js"
+	},
+	"engines": {
+		"node": ">=18"
+	},
+	"peerDependencies": {
+		"@clusterio/controller": "workspace:^",
+		"@clusterio/lib": "workspace:^"
+	},
+	"devDependencies": {
+		"@clusterio/controller": "workspace:^",
+		"@clusterio/lib": "workspace:^",
+		"@types/node": "catalog:",
+		"tap": "^21.1.0",
+		"typescript": "catalog:"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"keywords": [
+		"clusterio",
+		"clusterio-plugin",
+		"factorio"
+	]
+}

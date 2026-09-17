@@ -1,6 +1,7 @@
 {
 	"files": [],
 	"references": [
+		{ "path": "./exp_auto_restart/" },
 		{ "path": "./exp_commands/" },
 		{ "path": "./exp_groups/" },
 		{ "path": "./exp_gui/" },
