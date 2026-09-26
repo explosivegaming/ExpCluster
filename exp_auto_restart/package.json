@@ -8,7 +8,7 @@
 	"type": "module",
 	"main": "dist/node/index.js",
 	"scripts": {
-		"prepare": "tsc --build",
+		"prepare": "tsc --build && webpack-cli --env production",
 		"test": "tap --type-strip-only --disable-coverage --allow-empty-coverage test/*.test.js",
 		"coverage": "tap --coverage-report=text test/*.test.js"
 	},
@@ -24,7 +24,10 @@
 		"@clusterio/lib": "workspace:^",
 		"@types/node": "catalog:",
 		"tap": "^21.1.0",
-		"typescript": "catalog:"
+		"typescript": "catalog:",
+		"webpack": "catalog:",
+		"webpack-cli": "catalog:",
+		"webpack-merge": "catalog:"
 	},
 	"publishConfig": {
 		"access": "public"

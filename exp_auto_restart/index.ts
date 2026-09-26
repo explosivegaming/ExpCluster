@@ -47,4 +47,6 @@ export const plugin: lib.PluginDeclaration = {
 			initialValue: false,
 		},
 	},
+
+	webEntrypoint: "./web",
 };
