@@ -19,6 +19,8 @@ export class ControllerPlugin extends BaseControllerPlugin {
 	 * permissions, groups which already exist by name are reset to the seed.
 	 */
 	async handleSeedRequest() {
+		throw new lib.RequestError("Seeding is temporarily disabled, please contact the server administrator to seed the roles and groups");
+		/*
 		const rolesPlugin = this.controller.plugins.get("exp_roles") as RolesPlugin | undefined;
 		const groupsPlugin = this.controller.plugins.get("exp_groups") as GroupsPlugin | undefined;
 		if (!rolesPlugin || !groupsPlugin) {
@@ -52,6 +54,7 @@ export class ControllerPlugin extends BaseControllerPlugin {
 
 		this.seedRoleMappings(groupsPlugin, roleIds, groupIds);
 		this.logger.info(`Seeded ${roleIds.size} roles and ${groupIds.size} permission groups`);
+		*/
 	}
 
 	/** Find or create the clusterio role for a seed role, returns undefined if it has no role to use. */
