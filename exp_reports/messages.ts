@@ -1,16 +1,6 @@
 import * as lib from "@clusterio/lib";
 import { Type, Static } from "@sinclair/typebox";
 
-declare module "@clusterio/lib" {
-	export interface Permissions {
-		"exp_reports.report.get": never;
-		"exp_reports.report.list": never;
-		"exp_reports.report.subscribe": never;
-		"exp_reports.report.create": never;
-		"exp_reports.report.delete": never;
-	}
-}
-
 /*
 	Data records
 */

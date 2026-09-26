@@ -6,6 +6,13 @@ declare module "@clusterio/lib" {
 		"exp_reports.discord_webhook_url": string | null;
 		"exp_reports.json_webhook_url": string | null;
 	}
+	export interface Permissions {
+		"exp_reports.report.get": never;
+		"exp_reports.report.list": never;
+		"exp_reports.report.subscribe": never;
+		"exp_reports.report.create": never;
+		"exp_reports.report.delete": never;
+	}
 }
 
 export const plugin: lib.PluginDeclaration = {
