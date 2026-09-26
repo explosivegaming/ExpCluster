@@ -5,7 +5,7 @@ import * as lib from "@clusterio/lib";
 import { ControlContext, SectionHeader, useAccount, notifyErrorHandler } from "@clusterio/web_ui";
 
 import { RoleColor, RoleMetaRecord, RoleMetaUpdateRequest } from "../../messages.js";
-import type { WebPlugin } from "..";
+import { useRoles } from "..";
 
 const MS_PER_HOUR = 3600000;
 
@@ -25,13 +25,13 @@ type RoleFormValues = {
  * The name, description and permissions of a role are owned by clusterio, this
  * only covers the properties which only mean something in game.
  */
-export default function RoleProperties(props: { plugin: WebPlugin, role?: lib.Role }) {
+export default function RoleProperties(props: { role?: lib.Role }) {
 	const control = useContext(ControlContext);
 	const account = useAccount();
+	const [roles] = useRoles();
 	const [form] = Form.useForm<RoleFormValues>();
 	const [applying, setApplying] = useState(false);
 
-	const [roles] = props.plugin.useRoles();
 	const record = props.role ? roles.get(props.role.id) : undefined;
 	const meta = record?.meta;
 	const canUpdate = account.hasPermission("core.role.update");

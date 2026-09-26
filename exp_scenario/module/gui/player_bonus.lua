@@ -5,7 +5,7 @@ Adds a gui that allows players to apply various bonuses
 local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_roles")
 local config = require("modules/exp_legacy/config/bonus")
-local vlayer = require("modules/exp_legacy/modules/control/vlayer")
+local Vlayer = require("modules/exp_scenario/control/vlayer")
 local format_number = require("util").format_number
 
 --- @class ExpGui_PlayerBonus.elements
@@ -486,7 +486,7 @@ end
 --- Apply periodic bonus to a player
 --- @param player LuaPlayer
 local function apply_personal_battery_recharge(player)
-    local available_energy = vlayer.get_statistics()["energy_storage"]
+    local available_energy = Vlayer.get_statistics().energy_storage
     if available_energy <= 0 then
         return -- No power to give
     end
@@ -508,7 +508,7 @@ local function apply_personal_battery_recharge(player)
             local energy_to_give = math.min(math.floor(equipment.max_energy - equipment.energy), available_energy, recharge_amount)
             equipment.energy = equipment.energy + energy_to_give
             recharge_amount = recharge_amount - energy_to_give
-            available_energy = vlayer.energy_changed(-energy_to_give)
+            available_energy = Vlayer.energy_changed(-energy_to_give)
         end
     end
 end

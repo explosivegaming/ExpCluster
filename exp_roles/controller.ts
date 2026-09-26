@@ -1,12 +1,20 @@
-import { BaseControllerPlugin, InstanceRecord } from "@clusterio/controller";
+import { BaseControllerPlugin, InstanceRecord, type Controller } from "@clusterio/controller";
 import * as lib from "@clusterio/lib";
 import * as messages from "./messages.js";
 import * as path from "node:path";
 
+const loaded = new WeakMap<Controller, ControllerPlugin>();
+
 export class ControllerPlugin extends BaseControllerPlugin {
 	roleMeta!: lib.SubscribableDatastore<messages.RoleMetaRecord>;
 
+	/** The plugin loaded on a controller, for the exp_scenario seed. */
+	static get(controller: Controller) {
+		return loaded.get(controller);
+	}
+
 	async init() {
+		loaded.set(this.controller, this);
 		const databaseDirectory = this.controller.config.get("controller.database_directory");
 
 		this.roleMeta = new lib.SubscribableDatastore(
