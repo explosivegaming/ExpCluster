@@ -1,5 +1,5 @@
---[[-- Commands - Reports
-Adds a commands that allow players to report other players
+--[[-- ExpReports - Commands
+Commands which let players report each other and admins manage the reports
 ]]
 
 local Commands = require("modules/exp_commands")
@@ -19,19 +19,19 @@ local function reportable_player(input, player)
     if not success then return status, result end
     --- @cast result LuaPlayer
 
-    if player_has_permission(input, "exp_scenario.bypass.reports") then
-        return Commands.status.invalid_input{ "exp-commands_reports.player-immune" }
-    elseif player == input then
-        return Commands.status.invalid_input{ "exp-commands_reports.self-report" }
+    if player_has_permission(result, "exp_scenario.bypass.reports") then
+        return Commands.status.invalid_input{ "exp-reports_commands.player-immune" }
+    elseif player == result then
+        return Commands.status.invalid_input{ "exp-reports_commands.self-report" }
     else
         return Commands.status.success(result)
     end
 end
 
 --- Reports a player and notifies admins, the outcome is printed once the controller answers
-Commands.new("create-report", { "exp-commands_reports.description-create" })
-    :argument("player", { "exp-commands_reports.arg-player-create" }, reportable_player)
-    :argument("reason", { "exp-commands_reports.arg-reason" }, Commands.types.string)
+Commands.new("create-report", { "exp-reports_commands.description-create" })
+    :argument("player", { "exp-reports_commands.arg-player-create" }, reportable_player)
+    :argument("reason", { "exp-reports_commands.arg-reason" }, Commands.types.string)
     :enable_auto_concatenation()
     :add_aliases{ "report" }
     :register(function(player, other_player, reason)
@@ -41,8 +41,8 @@ Commands.new("create-report", { "exp-commands_reports.description-create" })
     end)
 
 --- Lists the reports against a player, or the number against every player, printed once the controller answers
-Commands.new("get-reports", { "exp-commands_reports.description-get" })
-    :optional("player", { "exp-commands_reports.arg-player-get" }, Commands.types.player)
+Commands.new("get-reports", { "exp-reports_commands.description-get" })
+    :optional("player", { "exp-reports_commands.arg-player-get" }, Commands.types.player)
     :add_aliases{ "reports" }
     :add_flags{ "admin_only" }
     :register(function(player, other_player)
@@ -51,9 +51,9 @@ Commands.new("get-reports", { "exp-commands_reports.description-get" })
     end)
 
 --- Clears all reports from a player or just the report from one player, printed once the controller answers
-Commands.new("clear-reports", { "exp-commands_reports.description-clear" })
-    :argument("player", { "exp-commands_reports.arg-player-clear" }, Commands.types.player)
-    :optional("from-player", { "exp-commands_reports.arg-from-player" }, Commands.types.player)
+Commands.new("clear-reports", { "exp-reports_commands.description-clear" })
+    :argument("player", { "exp-reports_commands.arg-player-clear" }, Commands.types.player)
+    :optional("from-player", { "exp-reports_commands.arg-from-player" }, Commands.types.player)
     :add_flags{ "admin_only" }
     :register(function(player, other_player, from_player)
         --- @cast other_player LuaPlayer

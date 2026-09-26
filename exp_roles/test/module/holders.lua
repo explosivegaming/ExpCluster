@@ -5,9 +5,9 @@ local test, check, eq = Suite.test, Suite.check, Suite.eq
 --- alice and dave are moderators with dave offline, zed has never joined
 local function setup(env)
     local players = {
-        alice = env.add_player("alice"),
-        bob = env.add_player("bob"),
-        dave = env.add_player("dave", false),
+        alice = env.add_player{ name = "alice" },
+        bob = env.add_player{ name = "bob" },
+        dave = env.add_player{ name = "dave", connected = false },
     }
     env.initialise{
         env.assignment("alice", { "Moderator" }),

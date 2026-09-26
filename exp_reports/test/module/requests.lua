@@ -1,8 +1,8 @@
 local Suite = ... --- @type Suite<ExpReports.TestEnv>
 
 Suite.test("create_report() sends the report to the controller", function(env)
-    local alice = env.add_player("alice")
-    local bob = env.add_player("bob")
+    local alice = env.add_player{ name = "alice" }
+    local bob = env.add_player{ name = "bob" }
     env.Reports.create_report(alice, bob, "griefing")
     Suite.eq(env.sent, {
         { channel = "exp_reports:create", data = { player_name = "bob", by_player_name = "alice", reason = "griefing" } },
@@ -10,8 +10,8 @@ Suite.test("create_report() sends the report to the controller", function(env)
 end)
 
 Suite.test("list_reports() sends the caller and the player", function(env)
-    local alice = env.add_player("alice")
-    local bob = env.add_player("bob")
+    local alice = env.add_player{ name = "alice" }
+    local bob = env.add_player{ name = "bob" }
     env.Reports.list_reports(alice, bob)
     env.Reports.list_reports(alice)
     Suite.eq(env.sent, {
@@ -21,8 +21,8 @@ Suite.test("list_reports() sends the caller and the player", function(env)
 end)
 
 Suite.test("delete_reports() sends the caller, the player and the reporter", function(env)
-    local alice = env.add_player("alice")
-    local bob = env.add_player("bob")
+    local alice = env.add_player{ name = "alice" }
+    local bob = env.add_player{ name = "bob" }
     env.Reports.delete_reports(alice, bob, "carol")
     env.Reports.delete_reports(alice, bob)
     Suite.eq(env.sent, {
