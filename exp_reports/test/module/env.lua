@@ -23,8 +23,12 @@ return Framework.suite(function(env)
     --- @cast env ExpReports.TestEnv
     env.extend_requires{
         ["modules/exp_util"] = {
-            format_player_name_locale = function(name) return name end,
-            color = { orange_red = "orange_red" },
+            format_player_name_locale = function(player)
+                assert(type(player) == "table", "format_player_name_locale takes a LuaPlayer")
+                return player.name
+            end,
+            format_rich_text_color_locale = function(message) return message end,
+            color = { orange_red = "orange_red", white = "white" },
         },
     }
     env.Reports = assert(loadfile(plugin_root .. "/module/control.lua"))() --- @type ExpReports

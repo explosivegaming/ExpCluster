@@ -9,7 +9,8 @@ player who asked once it arrives, if they are still online.
 local clusterio_api = require("modules/clusterio/api")
 local ExpUtil = require("modules/exp_util")
 
-local format_player_name = ExpUtil.format_player_name_locale
+local format_player_name_locale = ExpUtil.format_player_name_locale
+local format_rich_text_color_locale = ExpUtil.format_rich_text_color_locale
 
 --- @class ExpReports
 local ExpReports = {
@@ -86,6 +87,17 @@ local function get_online_player(name)
         return player
     end
     return nil
+end
+
+--- Names come from the controller, so the player may never have joined this server
+--- @param name string
+--- @return LocalisedString
+local function format_player_name(name)
+    local player = game.get_player(name)
+    if player then
+        return format_player_name_locale(player)
+    end
+    return format_rich_text_color_locale(name, ExpUtil.color.white)
 end
 
 --- The controller accepted a report
