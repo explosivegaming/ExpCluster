@@ -1,27 +1,27 @@
 import React, { useCallback, useSyncExternalStore } from "react";
-import { BaseWebPlugin } from "@clusterio/web_ui";
+import { WebPluginContext } from "@clusterio/web_ui";
 
 import * as lib from "@clusterio/lib";
-import * as messages from "../messages";
+import * as messages from "../messages.js";
 
 import ReportsPage from "./components/ReportsPage";
 
-export class WebPlugin extends BaseWebPlugin {
-	reports = new lib.MapSubscriber(messages.ReportUpdatedEvent, this.control);
+let reports: lib.MapSubscriber<messages.ReportUpdatedEvent> | undefined;
 
-	async init() {
-		this.pages = [
-			{
-				path: "/reports",
-				sidebarName: "Reports",
-				permission: "exp_reports.report.list",
-				content: <ReportsPage />,
-			},
-		];
-	}
+export function useReports() {
+	const subscribe = useCallback((cb: () => void) => reports!.subscribe(cb), []);
+	return useSyncExternalStore(subscribe, () => reports!.getSnapshot());
+}
 
-	useReports() {
-		const subscribe = useCallback((cb: () => void) => this.reports.subscribe(cb), []);
-		return useSyncExternalStore(subscribe, () => this.reports.getSnapshot());
-	}
+export default function registerPlugin(context: WebPluginContext) {
+	context.control.hooks.pages.attach("exp_reports", () => [
+		{
+			path: "/reports",
+			sidebarName: "Reports",
+			permission: "exp_reports.report.list",
+			content: <ReportsPage />,
+		},
+	]);
+
+	reports = new lib.MapSubscriber(messages.ReportUpdatedEvent, context.control);
 }

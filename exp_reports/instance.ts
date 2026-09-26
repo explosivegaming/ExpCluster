@@ -1,5 +1,5 @@
 import { BaseInstancePlugin } from "@clusterio/host";
-import * as messages from "./messages";
+import * as messages from "./messages.js";
 
 /** Sent by the lua side when a player reports another. */
 export type IpcReportCreate = {

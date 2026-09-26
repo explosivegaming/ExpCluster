@@ -1,5 +1,5 @@
 import * as lib from "@clusterio/lib";
-import * as messages from "./messages";
+import * as messages from "./messages.js";
 
 declare module "@clusterio/lib" {
 	export interface ControllerConfigFields {
@@ -7,37 +7,6 @@ declare module "@clusterio/lib" {
 		"exp_reports.json_webhook_url": string | null;
 	}
 }
-
-lib.definePermission({
-	name: "exp_reports.report.get",
-	title: "Get Reports",
-	description: "Retrieve a specific report by id.",
-	grantByDefault: true,
-});
-lib.definePermission({
-	name: "exp_reports.report.list",
-	title: "List Reports",
-	description: "List the reports against every player, or against one player.",
-	grantByDefault: true,
-});
-lib.definePermission({
-	name: "exp_reports.report.subscribe",
-	title: "Subscribe to Report Updates",
-	description: "Receive updates when reports are made or deleted.",
-	grantByDefault: true,
-});
-lib.definePermission({
-	name: "exp_reports.report.create",
-	title: "Create Reports",
-	description: "Report a player.",
-	grantByDefault: false,
-});
-lib.definePermission({
-	name: "exp_reports.report.delete",
-	title: "Delete Reports",
-	description: "Delete reports made against a player.",
-	grantByDefault: false,
-});
 
 export const plugin: lib.PluginDeclaration = {
 	name: "exp_reports",
@@ -58,9 +27,42 @@ export const plugin: lib.PluginDeclaration = {
 		messages.ReportDeleteRequest,
 	],
 
-	instanceEntrypoint: "./dist/node/instance",
+	permissions: [
+		{
+			name: "exp_reports.report.get",
+			title: "Get Reports",
+			description: "Retrieve a specific report by id.",
+			grantByDefault: true,
+		},
+		{
+			name: "exp_reports.report.list",
+			title: "List Reports",
+			description: "List the reports against every player, or against one player.",
+			grantByDefault: true,
+		},
+		{
+			name: "exp_reports.report.subscribe",
+			title: "Subscribe to Report Updates",
+			description: "Receive updates when reports are made or deleted.",
+			grantByDefault: true,
+		},
+		{
+			name: "exp_reports.report.create",
+			title: "Create Reports",
+			description: "Report a player.",
+			grantByDefault: false,
+		},
+		{
+			name: "exp_reports.report.delete",
+			title: "Delete Reports",
+			description: "Delete reports made against a player.",
+			grantByDefault: false,
+		},
+	],
 
-	controllerEntrypoint: "./dist/node/controller",
+	instanceEntrypoint: "./dist/node/instance.js",
+
+	controllerEntrypoint: "./dist/node/controller.js",
 	controllerConfigFields: {
 		"exp_reports.discord_webhook_url": {
 			title: "Discord Webhook URL",

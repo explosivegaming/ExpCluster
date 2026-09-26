@@ -1,10 +1,9 @@
-"use strict";
-const t = require("tap");
-const lib = require("@clusterio/lib");
-const { Controller, InstanceRecord } = require("@clusterio/controller");
-const { ControllerPlugin } = require("../dist/node/controller");
-const messages = require("../dist/node/messages");
-const { plugin: pluginDeclaration } = require("../dist/node/index");
+import t from "tap";
+import * as lib from "@clusterio/lib";
+import { Controller, InstanceRecord } from "@clusterio/controller";
+import { ControllerPlugin } from "../dist/node/controller.js";
+import * as messages from "../dist/node/messages.js";
+import { plugin as pluginDeclaration } from "../dist/node/index.js";
 
 // The controller validates message classes against the link registry, and the
 // plugin's config fields must be defined before a ControllerConfig can set them

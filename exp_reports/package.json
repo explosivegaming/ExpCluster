@@ -5,10 +5,11 @@
 	"author": "Cooldude2606 <https://github.com/Cooldude2606>",
 	"license": "MIT",
 	"repository": "explosivegaming/ExpCluster",
+	"type": "module",
 	"main": "dist/node/index.js",
 	"scripts": {
 		"prepare": "tsc --build && webpack-cli --env production",
-		"test": "tap --disable-coverage --allow-empty-coverage test/*.test.js",
+		"test": "tap --type-strip-only --disable-coverage --allow-empty-coverage test/*.test.js",
 		"coverage": "tap --coverage-report=text test/*.test.js"
 	},
 	"engines": {

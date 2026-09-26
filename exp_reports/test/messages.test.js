@@ -1,7 +1,6 @@
-"use strict";
-const t = require("tap");
-const messages = require("../dist/node/messages");
-const { testMatrix, testRoundTripJsonSerialisable } = require("../../test/common");
+import t from "tap";
+import * as messages from "../dist/node/messages.js";
+import { testMatrix, testRoundTripJsonSerialisable } from "../../test/common.js";
 
 const sampleReport = new messages.ReportRecord(7, "bob", "alice", "griefing", "EXP", 12345);
 

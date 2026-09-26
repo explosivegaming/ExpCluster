@@ -6,8 +6,8 @@ import {
 	useColumnSearch, useTableQueryState,
 } from "@clusterio/web_ui";
 
-import { ReportCreateRequest, ReportDeleteRequest, ReportRecord } from "../../messages";
-import type { WebPlugin } from "..";
+import { ReportCreateRequest, ReportDeleteRequest, ReportRecord } from "../../messages.js";
+import { useReports } from "..";
 
 const strcmp = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" }).compare;
 
@@ -50,8 +50,7 @@ function CreateReportButton() {
 function ReportsTable() {
 	const control = useContext(ControlContext);
 	const account = useAccount();
-	const plugin = control.plugins.get("exp_reports") as WebPlugin;
-	const [reports, synced] = plugin.useReports();
+	const [reports, synced] = useReports();
 
 	const tableState = useTableQueryState<ReportRecord>({
 		namespace: "report",
