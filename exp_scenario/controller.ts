@@ -1,9 +1,9 @@
 import * as lib from "@clusterio/lib";
 import { BaseControllerPlugin } from "@clusterio/controller";
-import { RoleMetaRecord, type ControllerPlugin as RolesPlugin } from "@expcluster/roles";
-import {
-	GroupRecord, GroupPermissions, RoleMappingRecord, type ControllerPlugin as GroupsPlugin,
-} from "@expcluster/permission-groups";
+import { RoleMetaRecord } from "@expcluster/roles";
+import { GroupRecord, GroupPermissions, RoleMappingRecord } from "@expcluster/permission-groups";
+import { ControllerPlugin as RolesPlugin } from "@expcluster/roles/dist/node/controller.js";
+import { ControllerPlugin as GroupsPlugin } from "@expcluster/permission-groups/dist/node/controller.js";
 import * as messages from "./messages.js";
 import { SeedRole, SeedGroup, seedRoles, seedGroups, flattenSeedPermissions } from "./seed.js";
 
@@ -19,10 +19,8 @@ export class ControllerPlugin extends BaseControllerPlugin {
 	 * permissions, groups which already exist by name are reset to the seed.
 	 */
 	async handleSeedRequest() {
-		throw new lib.RequestError("Seeding is temporarily disabled, please contact the server administrator to seed the roles and groups");
-		/*
-		const rolesPlugin = this.controller.plugins.get("exp_roles") as RolesPlugin | undefined;
-		const groupsPlugin = this.controller.plugins.get("exp_groups") as GroupsPlugin | undefined;
+		const rolesPlugin = RolesPlugin.get(this.controller);
+		const groupsPlugin = GroupsPlugin.get(this.controller);
 		if (!rolesPlugin || !groupsPlugin) {
 			throw new lib.RequestError("Seeding requires the exp_roles and exp_groups plugins");
 		}
@@ -54,7 +52,6 @@ export class ControllerPlugin extends BaseControllerPlugin {
 
 		this.seedRoleMappings(groupsPlugin, roleIds, groupIds);
 		this.logger.info(`Seeded ${roleIds.size} roles and ${groupIds.size} permission groups`);
-		*/
 	}
 
 	/** Find or create the clusterio role for a seed role, returns undefined if it has no role to use. */
