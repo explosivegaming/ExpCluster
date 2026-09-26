@@ -100,17 +100,23 @@ function Stubs.new()
         get_player = function(key) return players[key] end,
     }, { "player" })
 
+    --- @class Stubs.PlayerParams
+    --- @field name string
+    --- @field connected boolean? Defaults to true
+    --- @field admin boolean? Defaults to false
+
     --- Add a player to the stubbed game, indexes are assigned in join order
-    --- @param name string
-    --- @param is_connected boolean? Defaults to connected
+    --- @param params Stubs.PlayerParams
     --- @return Stubs.Player
-    function stubs.add_player(name, is_connected)
+    function stubs.add_player(params)
+        local name = params.name
         local index = #players_by_index + 1
         --- @class Stubs.Player
         local player = Stubs.strict("LuaPlayer " .. name, {
             name = name,
             index = index,
-            connected = is_connected ~= false,
+            connected = params.connected ~= false,
+            admin = params.admin == true,
             valid = true,
             play_sound = function(opts)
                 stubs.sounds[#stubs.sounds + 1] = name .. ":" .. opts.path

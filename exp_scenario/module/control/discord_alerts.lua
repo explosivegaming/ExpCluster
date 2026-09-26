@@ -97,40 +97,6 @@ if config.entity_protection then
     end
 end
 
---- Reports added and removed
-if config.player_reports then
-    local Reports = require("modules.exp_legacy.modules.control.reports")
-    events[Reports.events.on_player_reported] = function(event)
-        local player_name, by_player_name = get_player_name(event)
-        local player = assert(game.get_player(player_name))
-        emit_event{
-            title = "Report",
-            description = "A player was reported",
-            color = Colors.yellow,
-            fields = {
-                { name = "Player", inline = true, value = append_playtime(player_name) },
-                { name = "By", inline = true, value = append_playtime(by_player_name) },
-                { name = "Report Count", inline = true, value = Reports.count_reports(player) },
-                { name = "Reason", value = event.reason },
-            },
-        }
-    end
-    events[Reports.events.on_report_removed] = function(event)
-        if event.batch ~= 1 then return end
-        local player_name = get_player_name(event)
-        emit_event{
-            title = "Reports Removed",
-            description = "A player has a report removed",
-            color = Colors.green,
-            fields = {
-                { name = "Player", inline = true, value = append_playtime(player_name) },
-                { name = "By", inline = true, value = append_playtime(event.removed_by_name) },
-                { name = "Report Count", inline = true, value = tostring(event.batch_count) },
-            },
-        }
-    end
-end
-
 --- When a player is jailed or unjailed
 if config.player_jail then
     local Jail = require("modules/exp_scenario/control/jail")

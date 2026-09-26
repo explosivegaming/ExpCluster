@@ -5,8 +5,8 @@ local test, check, eq, empty = Suite.test, Suite.check, Suite.eq, Suite.empty
 --- alice is a moderator and bob a regular, with changes sent to the controller
 local function setup(env)
     local players = {
-        alice = env.add_player("alice"),
-        bob = env.add_player("bob"),
+        alice = env.add_player{ name = "alice" },
+        bob = env.add_player{ name = "bob" },
     }
     env.initialise{
         env.assignment("alice", { "Moderator" }),

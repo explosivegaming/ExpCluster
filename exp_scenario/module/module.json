@@ -9,6 +9,7 @@
 		"clusterio": "*",
 		"exp_util": "*",
 		"exp_roles": "*",
+		"exp_reports": "*",
 		"exp_gui": "*",
 		"exp_commands": "*"
 	}

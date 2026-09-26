@@ -5,9 +5,9 @@ local test, check, eq = Suite.test, Suite.check, Suite.eq
 --- alice is a moderator, bob is a regular, and carol has only the default role
 local function setup(env)
     local players = {
-        alice = env.add_player("alice"),
-        bob = env.add_player("bob"),
-        carol = env.add_player("carol"),
+        alice = env.add_player{ name = "alice" },
+        bob = env.add_player{ name = "bob" },
+        carol = env.add_player{ name = "carol" },
     }
     env.initialise{
         env.assignment("alice", { "Moderator" }),

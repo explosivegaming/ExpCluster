@@ -8,8 +8,8 @@ local admin_state = {} --- @type table<string, boolean>
 --- alice is a moderator and carol has only the default role, both connected
 local function setup(env)
     local players = {
-        alice = env.add_player("alice"),
-        carol = env.add_player("carol"),
+        alice = env.add_player{ name = "alice" },
+        carol = env.add_player{ name = "carol" },
     }
     admin_state = {}
     env.Roles.define_permission_trigger("exp_scenario.player.admin", function(player, state)
