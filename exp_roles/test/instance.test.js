@@ -1,10 +1,9 @@
-"use strict";
-const t = require("tap");
-const lib = require("@clusterio/lib");
-const { Instance } = require("@clusterio/host");
-const { InstancePlugin } = require("../dist/node/instance");
-const { plugin: pluginDeclaration } = require("../dist/node/index");
-const messages = require("../dist/node/messages");
+import t from "tap";
+import * as lib from "@clusterio/lib";
+import { Instance } from "@clusterio/host";
+import { InstancePlugin } from "../dist/node/instance.js";
+import { plugin as pluginDeclaration } from "../dist/node/index.js";
+import * as messages from "../dist/node/messages.js";
 
 // The instance validates message classes against the link registry, and the
 // plugin's config fields must be defined before an InstanceConfig can set them

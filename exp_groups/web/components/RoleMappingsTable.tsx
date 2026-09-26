@@ -3,7 +3,7 @@ import { Table, Button, Space, Tag } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 
 import { ControlContext, useAccount, useRoles } from "@clusterio/web_ui";
-import { RoleMappingRecord, RoleMappingDeleteRequest } from "../../messages";
+import { RoleMappingRecord, RoleMappingDeleteRequest } from "../../messages.js";
 import type { WebPlugin } from "..";
 
 import RoleMappingForm from "./RoleMappingForm";

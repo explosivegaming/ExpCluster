@@ -1,7 +1,9 @@
-import { BaseControllerPlugin } from "@clusterio/controller";
+import { BaseControllerPlugin, type Controller } from "@clusterio/controller";
 import * as lib from "@clusterio/lib";
-import * as messages from "./messages";
+import * as messages from "./messages.js";
 import * as path from "node:path";
+
+const loaded = new WeakMap<Controller, ControllerPlugin>();
 
 export class ControllerPlugin extends BaseControllerPlugin {
     groups!: lib.SubscribableDatastore<messages.GroupRecord>;
@@ -9,7 +11,13 @@ export class ControllerPlugin extends BaseControllerPlugin {
     manualAssignments!: lib.SubscribableDatastore<messages.AssignmentRecord>;
     resolvedAssignments!: lib.SubscribableDatastore<messages.AssignmentRecord>;
 
+    /** The plugin loaded on a controller, for the exp_scenario seed. */
+    static get(controller: Controller) {
+        return loaded.get(controller);
+    }
+
     async init() {
+        loaded.set(this.controller, this);
         const databaseDirectory = this.controller.config.get("controller.database_directory");
 
         this.groups = new lib.SubscribableDatastore(

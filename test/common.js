@@ -1,5 +1,4 @@
-"use strict";
-const { compile } = require("@clusterio/lib");
+import { compile } from "@clusterio/lib";
 
 /**
  * Generate a flat array of tests from a matrix of inputs.
@@ -49,7 +48,7 @@ function testRoundTripJsonSerialisable(t, Class, tests) {
 	}
 }
 
-module.exports = {
+export {
 	testMatrix,
 	testRoundTripJsonSerialisable,
 };

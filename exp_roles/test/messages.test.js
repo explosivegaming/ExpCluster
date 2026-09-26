@@ -1,7 +1,6 @@
-"use strict";
-const t = require("tap");
-const messages = require("../dist/node/messages");
-const { testMatrix, testRoundTripJsonSerialisable } = require("../../test/common");
+import t from "tap";
+import * as messages from "../dist/node/messages.js";
+import { testMatrix, testRoundTripJsonSerialisable } from "../../test/common.js";
 
 const fullMeta = new messages.RoleMetaRecord(
 	7, 3, 1, "Mod", "[Mod]", new messages.RoleColor(1, 2, 3), 3600000, true, 12345, false,

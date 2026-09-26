@@ -2,7 +2,7 @@ import React, { useState, useCallback, useSyncExternalStore } from "react";
 import { BaseWebPlugin, PageLayout, PageHeader, useAccount, SectionHeader } from "@clusterio/web_ui";
 import { Button } from "antd";
 
-import * as messages from "../messages";
+import * as messages from "../messages.js";
 import * as lib from "@clusterio/lib";
 
 import GroupsTable from "./components/GroupsTable";

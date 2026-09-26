@@ -2,7 +2,7 @@ import React, { useContext, useEffect } from "react";
 import { Modal, Form, Select, InputNumber, Switch, Alert } from "antd";
 
 import { ControlContext, useRoles } from "@clusterio/web_ui";
-import { RoleMappingRecord, RoleMappingCreateRequest, RoleMappingUpdateRequest } from "../../messages";
+import { RoleMappingRecord, RoleMappingCreateRequest, RoleMappingUpdateRequest } from "../../messages.js";
 import type { WebPlugin } from "..";
 
 export default function RoleMappingForm({ open, setOpen, initial }: {

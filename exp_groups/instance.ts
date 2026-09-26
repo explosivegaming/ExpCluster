@@ -1,6 +1,6 @@
 import { BaseInstancePlugin } from "@clusterio/host";
 import * as lib from "@clusterio/lib";
-import * as messages from "./messages";
+import * as messages from "./messages.js";
 
 export type IpcGroupUpdated = {
 	group_name: string,

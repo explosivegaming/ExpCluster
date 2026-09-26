@@ -1,26 +1,22 @@
 import React, { useCallback, useSyncExternalStore } from "react";
-import { BaseWebPlugin } from "@clusterio/web_ui";
+import { WebPluginContext } from "@clusterio/web_ui";
 
 import * as lib from "@clusterio/lib";
-import * as messages from "../messages";
+import * as messages from "../messages.js";
 
 import RoleProperties from "./components/RoleProperties";
-import SeedRoles from "./components/SeedRoles";
 
-export class WebPlugin extends BaseWebPlugin {
-	roles = new lib.MapSubscriber(messages.RoleUpdatedEvent, this.control);
+let roles: lib.MapSubscriber<messages.RoleUpdatedEvent> | undefined;
 
-	async init() {
-		// The core components pass a role and the plugin, which componentExtra
-		// does not carry in its type
-		this.componentExtra = {
-			RoleViewPage: RoleProperties as React.ComponentType,
-			RolesPage: SeedRoles,
-		};
-	}
+export function useRoles() {
+	const subscribe = useCallback((cb: () => void) => roles!.subscribe(cb), []);
+	return useSyncExternalStore(subscribe, () => roles!.getSnapshot());
+}
 
-	useRoles() {
-		const subscribe = useCallback((cb: () => void) => this.roles.subscribe(cb), []);
-		return useSyncExternalStore(subscribe, () => this.roles.getSnapshot());
-	}
+export default function registerPlugin(context: WebPluginContext) {
+	context.control.hooks.extensionComponents.attach("exp_roles", () => ({
+		RoleViewPage: RoleProperties,
+	}));
+
+	roles = new lib.MapSubscriber(messages.RoleUpdatedEvent, context.control);
 }

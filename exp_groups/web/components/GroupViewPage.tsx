@@ -5,7 +5,7 @@ import { Button, Checkbox, Input, Space, Spin, Alert } from "antd";
 import { ControlContext, useAccount, useDefaultModPack, PageLayout, PageHeader, notifyErrorHandler } from "@clusterio/web_ui";
 import DeletedConfirm from "./DeleteConfirm";
 
-import * as messages from "../../messages";
+import * as messages from "../../messages.js";
 import type { WebPlugin } from "..";
 
 const DOMAIN_MAPPING = {

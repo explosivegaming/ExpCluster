@@ -117,7 +117,7 @@ Elements.player_stats_table = Gui.define("player_stats/data_table")
                 width = 135,
             })
             labels[stat_name] = Elements.table_label(data_table, {
-                caption = { "readme.data-format", value, metadata.unit or "" },
+                caption = { "exp-gui_readme.data-format", value, metadata.unit or "" },
                 tooltip = metadata.value_tooltip or { "exp-statistics." .. stat_name .. "-tooltip" },
                 width = 105,
             })
@@ -131,7 +131,7 @@ Elements.player_stats_table = Gui.define("player_stats/data_table")
                 width = 135,
             })
             labels[stat_name] = Elements.table_label(data_table, {
-                caption = { "readme.data-format", data.default, "" },
+                caption = { "exp-gui_readme.data-format", data.default, "" },
                 tooltip = { "exp-statistics." .. stat_name .. "-tooltip" },
                 width = 105,
             })
