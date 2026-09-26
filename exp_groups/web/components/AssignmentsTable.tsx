@@ -3,7 +3,7 @@ import { Table, Button, Space, Input, InputRef } from "antd";
 import { EditOutlined, SearchOutlined } from "@ant-design/icons";
 
 import { ControlContext, useAccount } from "@clusterio/web_ui";
-import { AssignmentDeleteRequest, AssignmentRecord } from "../../messages";
+import { AssignmentDeleteRequest, AssignmentRecord } from "../../messages.js";
 import type { WebPlugin } from "..";
 
 import AssignmentForm from "./AssignmentForm";

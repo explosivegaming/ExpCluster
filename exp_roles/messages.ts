@@ -365,18 +365,6 @@ export class RoleMetaUpdateRequest {
 	}
 }
 
-/** Create the roles the scenario shipped with, see seed.ts. */
-export class SeedRolesRequest {
-	declare ["constructor"]: typeof SeedRolesRequest;
-	static plugin = "exp_roles" as const;
-	static type = "request" as const;
-	static src = "control" as const;
-	static dst = "controller" as const;
-	static permission = "core.role.create" as const;
-
-	constructor() {}
-}
-
 /*
 	Assignment requests
 */

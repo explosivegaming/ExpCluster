@@ -1,4 +1,4 @@
 {
 	"extends": "../tsconfig.browser.json",
-	"include": [ "web/**/*.tsx", "web/**/*.ts", "messages.ts", "package.json" ],
+	"include": [ "web/**/*.tsx", "web/**/*.ts", "index.ts", "messages.ts", "permissions.ts", "package.json" ],
 }

@@ -2,7 +2,7 @@ import React, { useContext, useEffect } from "react";
 import { Modal, Form, Select } from "antd";
 
 import { ControlContext, useUsers } from "@clusterio/web_ui";
-import * as messages from "../../messages";
+import * as messages from "../../messages.js";
 import type { WebPlugin } from "..";
 
 export default function AssignmentForm({ open, setOpen, initial }: {

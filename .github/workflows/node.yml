@@ -1,0 +1,51 @@
+name: Node.js CI
+
+on:
+  push:
+  pull_request:
+
+env:
+  # The packages use workspace:^ and catalog: versions, so they only resolve
+  # inside a clusterio checkout with this repository under external_plugins
+  CLUSTERIO_REPOSITORY: clusterio/clusterio
+  CLUSTERIO_REF: master
+  # Node version to use for the tests. This is used by the setup-node action
+  NODE_VERSION: lts/*
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: external_plugins/ExpCluster
+    steps:
+      - name: Checkout Clusterio
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.CLUSTERIO_REPOSITORY }}
+          ref: ${{ env.CLUSTERIO_REF }}
+      - name: Checkout ExpCluster
+        uses: actions/checkout@v4
+        with:
+          path: external_plugins/ExpCluster
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install and build
+        working-directory: .
+        run: pnpm install --no-frozen-lockfile
+      - name: Run tests
+        run: pnpm --filter "@expcluster/*" run test
+      - name: Run reference checks
+        run: |
+          # pnpm install runs prepare in dependency order, which hides missing
+          # project references. Building from an empty dist one package at a time
+          # will fail unless every cross package import is referenced correctly.
+          for pkg in exp_*/; do
+            rm -rf exp_*/dist
+            echo "::group::${pkg%/}"
+            (cd "$pkg" && pnpm exec tsc --build)
+            echo "::endgroup::"
+          done

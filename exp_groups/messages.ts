@@ -1,6 +1,30 @@
 import * as lib from "@clusterio/lib";
 import { Type, Static } from "@sinclair/typebox";
 
+// Declared here rather than in index.ts because the browser project cannot include index.ts, which re-exports controller.ts
+declare module "@clusterio/lib" {
+	export interface Permissions {
+		"exp_groups.group.get": never;
+		"exp_groups.group.list": never;
+		"exp_groups.group.subscribe": never;
+		"exp_groups.group.create": never;
+		"exp_groups.group.update": never;
+		"exp_groups.group.delete": never;
+		"exp_groups.assignment.get": never;
+		"exp_groups.assignment.list": never;
+		"exp_groups.assignment.subscribe": never;
+		"exp_groups.assignment.create": never;
+		"exp_groups.assignment.update": never;
+		"exp_groups.assignment.delete": never;
+		"exp_groups.role_mapping.get": never;
+		"exp_groups.role_mapping.list": never;
+		"exp_groups.role_mapping.subscribe": never;
+		"exp_groups.role_mapping.create": never;
+		"exp_groups.role_mapping.update": never;
+		"exp_groups.role_mapping.delete": never;
+	}
+}
+
 /*
     Data records
 */

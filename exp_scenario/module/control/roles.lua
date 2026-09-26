@@ -9,9 +9,6 @@ Roles.define_permission_trigger("exp_scenario.player.admin", function(player, st
     player.admin = state
 end)
 
-Roles.define_permission_trigger("exp_scenario.player.spectator", function(player, state)
-    player.spectator = state
-end)
 
 return {
     events = {

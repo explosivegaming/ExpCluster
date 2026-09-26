@@ -3,7 +3,7 @@ import { Modal, Form, Input, Switch } from "antd";
 import { useNavigate } from "react-router-dom";
 
 import { ControlContext } from "@clusterio/web_ui";
-import * as messages from "../../messages";
+import * as messages from "../../messages.js";
 
 export default function GroupForm({ open, setOpen }: {
 	open: boolean,

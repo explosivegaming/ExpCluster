@@ -1,7 +1,6 @@
-"use strict";
-const path = require("node:path");
-const fs = require("node:fs");
-const { lua, lauxlib, lualib, to_luastring, to_jsstring } = require("fengari");
+import path from "node:path";
+import fs from "node:fs";
+import { createRequire } from "node:module";
 
 /**
  * Run one lua test file in its own lua state and return its results.
@@ -21,6 +20,8 @@ const { lua, lauxlib, lualib, to_luastring, to_jsstring } = require("fengari");
  * @returns {{ name: string, ok: boolean, detail?: string }[]}
  */
 function runLuaTests(envFile, testFile) {
+	// fengari is a devDependency of the plugin whose tests run, so resolve it from there
+	const { lua, lauxlib, lualib, to_luastring, to_jsstring } = createRequire(testFile)("fengari");
 	const L = lauxlib.luaL_newstate();
 	lualib.luaL_openlibs(L);
 
@@ -38,7 +39,7 @@ function runLuaTests(envFile, testFile) {
 	};
 
 	load(envFile);
-	lua.lua_pushstring(L, to_luastring(__dirname));
+	lua.lua_pushstring(L, to_luastring(import.meta.dirname));
 	call();
 
 	// The environment stays on the stack and is passed to the test chunk
@@ -60,4 +61,4 @@ function reportLuaTests(t, envFile, testFile) {
 	t.end();
 }
 
-module.exports = { runLuaTests, reportLuaTests };
+export { runLuaTests, reportLuaTests };
