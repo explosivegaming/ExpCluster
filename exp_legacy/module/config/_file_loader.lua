@@ -14,5 +14,4 @@ return {
     "modules.data.alt-view",
     "modules.data.tag",
     "modules.data.language",
-    "modules.graftorio.require", -- graftorio
 }
