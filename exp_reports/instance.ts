@@ -1,4 +1,5 @@
-import { BaseInstancePlugin } from "@clusterio/host";
+import type { Instance, InstancePluginContext } from "@clusterio/host";
+import type * as lib from "@clusterio/lib";
 import * as messages from "./messages.js";
 
 /** Sent by the lua side when a player reports another. */
@@ -28,7 +29,17 @@ export type IpcReportDelete = {
  * the answer is handed back to lua once it arrives. The instance may have
  * stopped by then, in which case the answer is dropped.
  */
-export class InstancePlugin extends BaseInstancePlugin {
+export class InstancePlugin {
+	instance: Instance;
+	logger: lib.Logger;
+	name: string;
+
+	constructor(context: InstancePluginContext) {
+		this.instance = context.instance;
+		this.logger = context.logger;
+		this.name = context.plugin.name;
+	}
+
 	async init() {
 		this.instance.server.handle("exp_reports:create", this.handleCreateIPC.bind(this));
 		this.instance.server.handle("exp_reports:list", this.handleListIPC.bind(this));
@@ -92,4 +103,8 @@ export class InstancePlugin extends BaseInstancePlugin {
 			`/sc exp_reports.${receiver}(helpers.json_to_table[=[${JSON.stringify(json)}]=])`, true
 		);
 	}
+}
+
+export default async function (context: InstancePluginContext) {
+	await new InstancePlugin(context).init();
 }

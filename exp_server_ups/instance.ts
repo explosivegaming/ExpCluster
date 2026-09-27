@@ -1,9 +1,26 @@
 import * as lib from "@clusterio/lib";
-import { BaseInstancePlugin } from "@clusterio/host";
+import type { Instance, InstancePluginContext } from "@clusterio/host";
 
-export class InstancePlugin extends BaseInstancePlugin {
+export class InstancePlugin {
+	instance: Instance;
+	logger: lib.Logger;
+	name: string;
 	private updateInterval?: ReturnType<typeof setInterval>;
 	private gameTimes: number[] = [];
+
+	constructor(context: InstancePluginContext) {
+		this.instance = context.instance;
+		this.logger = context.logger;
+		this.name = context.plugin.name;
+	}
+
+	init() {
+		const hooks = this.instance.hooks;
+		hooks.start.attach(this.name, this.onStart.bind(this));
+		hooks.exit.attach(this.name, this.onExit.bind(this));
+		hooks.instanceConfigFieldChanged.attach(this.name, this.onInstanceConfigFieldChanged.bind(this));
+		hooks.playerEvent.attach(this.name, this.onPlayerEvent.bind(this));
+	}
 
 	async onStart() {
 		if (!this.instance.config.get("factorio.settings")["auto_pause"]) {
@@ -56,7 +73,7 @@ export class InstancePlugin extends BaseInstancePlugin {
 		}
 
 		try {
-			const newGameTime = await this.sendRcon(`/_rcon return exp_server_ups.refresh(${ups})`);
+			const newGameTime = await this.instance.sendRcon(`/_rcon return exp_server_ups.refresh(${ups})`, false, this.name);
 			this.gameTimes.push(Number(newGameTime));
 		} catch (error: any) {
 			this.logger.error(`Failed to receive new game time: ${error}`);
@@ -66,4 +83,8 @@ export class InstancePlugin extends BaseInstancePlugin {
 			this.gameTimes.shift();
 		}
 	}
+}
+
+export default async function (context: InstancePluginContext) {
+	new InstancePlugin(context).init();
 }

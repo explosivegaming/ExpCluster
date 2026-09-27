@@ -1,5 +1,5 @@
 import * as lib from "@clusterio/lib";
-import { BaseControllerPlugin } from "@clusterio/controller";
+import type { Controller, ControllerPluginContext } from "@clusterio/controller";
 import { RoleMetaRecord } from "@expcluster/roles";
 import { GroupRecord, GroupPermissions, RoleMappingRecord } from "@expcluster/permission-groups";
 import { ControllerPlugin as RolesPlugin } from "@expcluster/roles/dist/node/controller.js";
@@ -7,7 +7,15 @@ import { ControllerPlugin as GroupsPlugin } from "@expcluster/permission-groups/
 import * as messages from "./messages.js";
 import { SeedRole, SeedGroup, seedRoles, seedGroups, flattenSeedPermissions } from "./seed.js";
 
-export class ControllerPlugin extends BaseControllerPlugin {
+export class ControllerPlugin {
+	controller: Controller;
+	logger: lib.Logger;
+
+	constructor(context: ControllerPluginContext) {
+		this.controller = context.controller;
+		this.logger = context.logger;
+	}
+
 	async init() {
 		this.controller.handle(messages.SeedRequest, this.handleSeedRequest.bind(this));
 	}
@@ -146,6 +154,10 @@ export class ControllerPlugin extends BaseControllerPlugin {
 		groupsPlugin.roleMappings.setMany(mappings);
 		return mappings;
 	}
+}
+
+export default async function (context: ControllerPluginContext) {
+	await new ControllerPlugin(context).init();
 }
 
 function newId(datastore: { has(id: number): boolean }) {

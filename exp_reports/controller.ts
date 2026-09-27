@@ -1,10 +1,19 @@
-import { BaseControllerPlugin } from "@clusterio/controller";
+import type { Controller, ControllerPluginContext } from "@clusterio/controller";
 import * as lib from "@clusterio/lib";
 import * as messages from "./messages.js";
 import * as path from "node:path";
 
-export class ControllerPlugin extends BaseControllerPlugin {
+export class ControllerPlugin {
+	controller: Controller;
+	logger: lib.Logger;
+	name: string;
 	reports!: lib.SubscribableDatastore<messages.ReportRecord>;
+
+	constructor(context: ControllerPluginContext) {
+		this.controller = context.controller;
+		this.logger = context.logger;
+		this.name = context.plugin.name;
+	}
 
 	async init() {
 		const databaseDirectory = this.controller.config.get("controller.database_directory");
@@ -23,6 +32,8 @@ export class ControllerPlugin extends BaseControllerPlugin {
 		this.controller.handle(messages.ReportGetRequest, this.handleReportGetRequest.bind(this));
 		this.controller.handle(messages.ReportCreateRequest, this.handleReportCreateRequest.bind(this));
 		this.controller.handle(messages.ReportDeleteRequest, this.handleReportDeleteRequest.bind(this));
+
+		this.controller.hooks.shutdown.attach(this.name, this.onShutdown.bind(this));
 	}
 
 	async onShutdown() {
@@ -140,4 +151,8 @@ export class ControllerPlugin extends BaseControllerPlugin {
 			this.logger.warn(`Webhook ${url} failed: ${err.message}`);
 		}
 	}
+}
+
+export default async function (context: ControllerPluginContext) {
+	await new ControllerPlugin(context).init();
 }

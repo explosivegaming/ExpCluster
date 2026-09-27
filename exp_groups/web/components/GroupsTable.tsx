@@ -1,21 +1,18 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { Table } from "antd";
 import { useNavigate } from "react-router-dom";
 
-import { ControlContext } from "@clusterio/web_ui";
 import { GroupRecord } from "../../messages.js";
-import type { WebPlugin } from "..";
+import { useGroups } from "..";
 
 import GroupForm from "./GroupForm";
 
 const strcmp = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" }).compare;
 
 export default function GroupsTable() {
-	const control = useContext(ControlContext);
-	const plugin = control.plugins.get("exp_groups") as WebPlugin;
 	const navigate = useNavigate();
 
-	const [groups, synced] = plugin.useGroups();
+	const [groups, synced] = useGroups();
 
 	const [open, setOpen] = useState(false);
 

@@ -1,7 +1,7 @@
 import t from "tap";
 import * as lib from "@clusterio/lib";
 import { Controller, InstanceRecord } from "@clusterio/controller";
-import { ControllerPlugin } from "../dist/node/controller.js";
+import entrypoint, { ControllerPlugin } from "../dist/node/controller.js";
 import * as messages from "../dist/node/messages.js";
 import { plugin as pluginDeclaration } from "../dist/node/index.js";
 
@@ -46,12 +46,22 @@ async function startPlugin(t2, { config = {} } = {}) {
 		broadcast(event);
 	};
 
-	const plugin = new ControllerPlugin({ name: "exp_reports" }, controller, undefined, logger);
+	const plugin = new ControllerPlugin({ plugin: { name: "exp_reports" }, controller, logger });
 	plugin.logger = { ...logger, warn: message => state.warnings.push(message) };
 	plugin.postWebhook = async (url, body) => { state.posts.push({ url, body }); };
 	await plugin.init();
 	return { plugin, controller, state };
 }
+
+t.test("entrypoint", async t2 => {
+	const controllerConfig = new lib.ControllerConfig("controller", { "controller.database_directory": t2.testdir() });
+	const controller = new Controller(logger, [], controllerConfig);
+	await entrypoint({ controller, logger, plugin: { name: "exp_reports" }, metrics: undefined });
+	for (const hook of ["shutdown"]) {
+		t2.ok([...controller.hooks[hook].attached].includes("exp_reports"), `attached to ${hook}`);
+	}
+	await controller.hooks.shutdown.invoke();
+});
 
 t.test("class ControllerPlugin", t2 => {
 	t2.test(".handleReportCreateRequest() from an instance records the instance and the reporter", async t3 => {

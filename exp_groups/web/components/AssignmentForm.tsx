@@ -3,7 +3,7 @@ import { Modal, Form, Select } from "antd";
 
 import { ControlContext, useUsers } from "@clusterio/web_ui";
 import * as messages from "../../messages.js";
-import type { WebPlugin } from "..";
+import { useGroups } from "..";
 
 export default function AssignmentForm({ open, setOpen, initial }: {
 	open: boolean,
@@ -11,9 +11,8 @@ export default function AssignmentForm({ open, setOpen, initial }: {
 	initial?: messages.AssignmentRecord,
 }) {
 	const control = useContext(ControlContext);
-	const plugin = control.plugins.get("exp_groups") as WebPlugin;
 
-	const [groups] = plugin.useGroups();
+	const [groups] = useGroups();
 	const [users] = useUsers();
 
 	const [form] = Form.useForm();

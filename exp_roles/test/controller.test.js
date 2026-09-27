@@ -1,7 +1,7 @@
 import t from "tap";
 import * as lib from "@clusterio/lib";
 import { Controller } from "@clusterio/controller";
-import { ControllerPlugin } from "../dist/node/controller.js";
+import entrypoint, { ControllerPlugin } from "../dist/node/controller.js";
 import * as messages from "../dist/node/messages.js";
 
 // The controller validates message classes against the link registry
@@ -44,12 +44,22 @@ async function startPlugin(t2, { roles = [] } = {}) {
 		permissionsUpdated(user);
 	};
 
-	const plugin = new ControllerPlugin({ name: "exp_roles" }, controller, undefined, logger);
+	const plugin = new ControllerPlugin({ plugin: { name: "exp_roles" }, controller, logger });
 	await plugin.init();
 	return { plugin, controller, state };
 }
 
 const role = (id, name, permissions = []) => new lib.Role(id, name, "", new Set(permissions));
+
+t.test("entrypoint", async t2 => {
+	const controllerConfig = new lib.ControllerConfig("controller", { "controller.database_directory": t2.testdir() });
+	const controller = new Controller(logger, [], controllerConfig);
+	await entrypoint({ controller, logger, plugin: { name: "exp_roles" }, metrics: undefined });
+	for (const hook of ["shutdown", "controllerConfigFieldChanged", "playerEvent"]) {
+		t2.ok([...controller.hooks[hook].attached].includes("exp_roles"), `attached to ${hook}`);
+	}
+	await controller.hooks.shutdown.invoke();
+});
 
 t.test("class ControllerPlugin", t2 => {
 	t2.test(".init() and .sweepRoleMeta() manage the role properties", async t3 => {

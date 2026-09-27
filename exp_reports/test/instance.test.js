@@ -10,6 +10,8 @@ for (const Message of pluginDeclaration.messages) {
 	lib.Link.register(Message);
 }
 
+const logger = { child: () => logger, info: () => {}, warn: () => {}, error: () => {}, verbose: () => {} };
+
 class TestConnector extends lib.BaseConnector {
 	constructor() {
 		super(lib.Address.fromShorthand({ instanceId: 1 }), lib.Address.fromShorthand({ hostId: 1 }));
@@ -61,7 +63,7 @@ async function startPlugin(t2, { reports = [report(1, "bob", "alice"), report(2,
 	instance.notifyStatus("running");
 	state.sent.length = 0;
 
-	const plugin = new InstancePlugin({ name: "exp_reports" }, instance, {});
+	const plugin = new InstancePlugin({ plugin: { name: "exp_reports" }, instance, host: {}, logger });
 	await plugin.init();
 	return { plugin, instance, state };
 }

@@ -1,4 +1,4 @@
-import { BaseInstancePlugin } from "@clusterio/host";
+import type { Instance, InstancePluginContext } from "@clusterio/host";
 import * as lib from "@clusterio/lib";
 import * as messages from "./messages.js";
 
@@ -9,11 +9,25 @@ export type IpcAssignmentUpdate = {
 	unassign: number[] | undefined,
 };
 
-export class InstancePlugin extends BaseInstancePlugin {
+export class InstancePlugin {
+	instance: Instance;
+	logger: lib.Logger;
+	name: string;
+
+	constructor(context: InstancePluginContext) {
+		this.instance = context.instance;
+		this.logger = context.logger;
+		this.name = context.plugin.name;
+	}
+
 	async init() {
 		this.instance.handle(messages.RoleUpdatedEvent, this.handleRoleUpdatedEvent.bind(this));
 		this.instance.handle(messages.AssignmentUpdatedEvent, this.handleAssignmentUpdatedEvent.bind(this));
 		this.instance.server.handle("exp_roles:assignment_update", this.handleAssignmentUpdateIPC.bind(this));
+
+		const hooks = this.instance.hooks;
+		hooks.instanceConfigFieldChanged.attach(this.name, this.onInstanceConfigFieldChanged.bind(this));
+		hooks.start.attach(this.name, this.onStart.bind(this));
 	}
 
 	get syncMode() {
@@ -105,4 +119,8 @@ export class InstancePlugin extends BaseInstancePlugin {
 			`/sc exp_roles.${receiver}(helpers.json_to_table[=[${JSON.stringify(json)}]=])`, true
 		);
 	}
+}
+
+export default async function (context: InstancePluginContext) {
+	await new InstancePlugin(context).init();
 }
