@@ -1,10 +1,10 @@
 {
 	"name": "exp_reports",
 	"load": [
-		"commands.lua"
 	],
 	"require": [
-		"globals.lua"
+		"globals.lua",
+		"commands.lua"
 	],
 	"dependencies": {
 		"clusterio": "*",
