@@ -4,18 +4,17 @@ import { EditOutlined } from "@ant-design/icons";
 
 import { ControlContext, useAccount, useRoles } from "@clusterio/web_ui";
 import { RoleMappingRecord, RoleMappingDeleteRequest } from "../../messages.js";
-import type { WebPlugin } from "..";
+import { useGroups, useRoleMappings } from "..";
 
 import RoleMappingForm from "./RoleMappingForm";
 import DeletedConfirm from "./DeleteConfirm";
 
 export default function RoleMappingsTable() {
 	const control = useContext(ControlContext);
-	const plugin = control.plugins.get("exp_groups") as WebPlugin;
 	const account = useAccount();
 
-	const [roleMappings, roleMappingsSynced] = plugin.useRoleMappings();
-	const [groups, groupsSynced] = plugin.useGroups();
+	const [roleMappings, roleMappingsSynced] = useRoleMappings();
+	const [groups, groupsSynced] = useGroups();
 	const [roles, rolesSynced] = useRoles();
 
 	const [editing, setEditing] = useState<RoleMappingRecord | undefined>();

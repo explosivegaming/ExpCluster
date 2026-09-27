@@ -4,7 +4,7 @@ import { EditOutlined, SearchOutlined } from "@ant-design/icons";
 
 import { ControlContext, useAccount } from "@clusterio/web_ui";
 import { AssignmentDeleteRequest, AssignmentRecord } from "../../messages.js";
-import type { WebPlugin } from "..";
+import { useAssignments, useGroups } from "..";
 
 import AssignmentForm from "./AssignmentForm";
 import DeletedConfirm from "./DeleteConfirm";
@@ -13,13 +13,12 @@ const strcmp = new Intl.Collator(undefined, { numeric: true, sensitivity: "base"
 
 export default function AssignmentsTable() {
 	const control = useContext(ControlContext);
-	const plugin = control.plugins.get("exp_groups") as WebPlugin;
 	const account = useAccount();
 
 	const searchInput = useRef<InputRef>(null);
 
-	const [assignments, assignmentsSynced] = plugin.useAssignments();
-	const [groups, groupsSynced] = plugin.useGroups();
+	const [assignments, assignmentsSynced] = useAssignments();
+	const [groups, groupsSynced] = useGroups();
 
 	const [editing, setEditing] = useState<AssignmentRecord | undefined>();
 	const [open, setOpen] = useState(false);

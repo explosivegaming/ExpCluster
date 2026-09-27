@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useSyncExternalStore } from "react";
-import { BaseWebPlugin, PageLayout, PageHeader, useAccount, SectionHeader } from "@clusterio/web_ui";
+import { WebPluginContext, PageLayout, PageHeader, useAccount, SectionHeader } from "@clusterio/web_ui";
 import { Button } from "antd";
 
 import * as messages from "../messages.js";
@@ -65,44 +65,46 @@ function ExpGroupsPage() {
 	</PageLayout>;
 }
 
-export class WebPlugin extends BaseWebPlugin {
-	groups = new lib.MapSubscriber(messages.GroupUpdatedEvent, this.control);
-	assignments = new lib.MapSubscriber(messages.ManualAssignmentUpdatedEvent, this.control);
-	roleMappings = new lib.MapSubscriber(messages.RoleMappingUpdatedEvent, this.control);
+let groups: lib.MapSubscriber<messages.GroupUpdatedEvent> | undefined;
+let assignments: lib.MapSubscriber<messages.ManualAssignmentUpdatedEvent> | undefined;
+let roleMappings: lib.MapSubscriber<messages.RoleMappingUpdatedEvent> | undefined;
 
-	async init() {
-		this.pages = [
-			{
-				path: "/permission_groups",
-				sidebarName: "Permission Groups",
-				permission: (account => account.hasAnyPermission(
-                    "exp_groups.group.list",
-                    "exp_groups.assignment.list",
-                    "exp_groups.role_mapping.list",
-                )),
-				content: <ExpGroupsPage />,
-			},
-			{
-				path: "/permission_groups/:id/view",
-				sidebarPath: "/permission_groups",
-				permission: "exp_groups.group.get",
-				content: <GroupViewPage />,
-			},
-		];
-	}
+export function useGroups() {
+	const subscribe = useCallback((cb: () => void) => groups!.subscribe(cb), []);
+	return useSyncExternalStore(subscribe, () => groups!.getSnapshot());
+}
 
-	useGroups() {
-		const subscribe = useCallback((cb: () => void) => this.groups.subscribe(cb), []);
-		return useSyncExternalStore(subscribe, () => this.groups.getSnapshot());
-	}
+export function useAssignments() {
+	const subscribe = useCallback((cb: () => void) => assignments!.subscribe(cb), []);
+	return useSyncExternalStore(subscribe, () => assignments!.getSnapshot());
+}
 
-	useAssignments() {
-		const subscribe = useCallback((cb: () => void) => this.assignments.subscribe(cb), []);
-		return useSyncExternalStore(subscribe, () => this.assignments.getSnapshot());
-	}
+export function useRoleMappings() {
+	const subscribe = useCallback((cb: () => void) => roleMappings!.subscribe(cb), []);
+	return useSyncExternalStore(subscribe, () => roleMappings!.getSnapshot());
+}
 
-	useRoleMappings() {
-		const subscribe = useCallback((cb: () => void) => this.roleMappings.subscribe(cb), []);
-		return useSyncExternalStore(subscribe, () => this.roleMappings.getSnapshot());
-	}
+export default function registerPlugin(context: WebPluginContext) {
+	context.control.hooks.pages.attach("exp_groups", () => [
+		{
+			path: "/permission_groups",
+			sidebarName: "Permission Groups",
+			permission: (account => account.hasAnyPermission(
+                "exp_groups.group.list",
+                "exp_groups.assignment.list",
+                "exp_groups.role_mapping.list",
+            )),
+			content: <ExpGroupsPage />,
+		},
+		{
+			path: "/permission_groups/:id/view",
+			sidebarPath: "/permission_groups",
+			permission: "exp_groups.group.get",
+			content: <GroupViewPage />,
+		},
+	]);
+
+	groups = new lib.MapSubscriber(messages.GroupUpdatedEvent, context.control);
+	assignments = new lib.MapSubscriber(messages.ManualAssignmentUpdatedEvent, context.control);
+	roleMappings = new lib.MapSubscriber(messages.RoleMappingUpdatedEvent, context.control);
 }

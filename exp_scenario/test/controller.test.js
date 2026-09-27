@@ -40,12 +40,12 @@ async function startPlugin(t2, { withPlugins = true } = {}) {
 
 	if (withPlugins) {
 		for (const [name, Plugin] of [["exp_roles", RolesPlugin], ["exp_groups", GroupsPlugin]]) {
-			const plugin = new Plugin({ name }, controller, undefined, logger);
+			const plugin = new Plugin({ plugin: { name }, controller, logger });
 			await plugin.init();
 		}
 	}
 
-	const plugin = new ControllerPlugin({ name: "exp_scenario" }, controller, undefined, logger);
+	const plugin = new ControllerPlugin({ plugin: { name: "exp_scenario" }, controller, logger });
 	await plugin.init();
 	return { plugin, controller };
 }

@@ -6,7 +6,7 @@ import { ControlContext, useAccount, useDefaultModPack, PageLayout, PageHeader, 
 import DeletedConfirm from "./DeleteConfirm";
 
 import * as messages from "../../messages.js";
-import type { WebPlugin } from "..";
+import { useGroups } from "..";
 
 const DOMAIN_MAPPING = {
 	"Admin": ["admin", "cheat", "permission", "infinity", "editor", "spawn"],
@@ -34,14 +34,13 @@ function getDomain(name: string) {
 
 export default function GroupViewPage() {
 	const control = useContext(ControlContext);
-	const plugin = control.plugins.get("exp_groups") as WebPlugin;
 	const navigate = useNavigate();
 	const account = useAccount();
 
 	const { id } = useParams();
 	const groupId = Number(id);
 
-	const [groups, synced] = plugin.useGroups();
+	const [groups, synced] = useGroups();
 	const group = groups.get(groupId);
 
 	const [name, setName] = useState("");

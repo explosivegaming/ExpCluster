@@ -1,16 +1,25 @@
-import { BaseControllerPlugin, InstanceRecord, type Controller } from "@clusterio/controller";
+import type { Controller, ControllerPluginContext, InstanceRecord } from "@clusterio/controller";
 import * as lib from "@clusterio/lib";
 import * as messages from "./messages.js";
 import * as path from "node:path";
 
 const loaded = new WeakMap<Controller, ControllerPlugin>();
 
-export class ControllerPlugin extends BaseControllerPlugin {
+export class ControllerPlugin {
+	controller: Controller;
+	logger: lib.Logger;
+	name: string;
 	roleMeta!: lib.SubscribableDatastore<messages.RoleMetaRecord>;
 
 	/** The plugin loaded on a controller, for the exp_scenario seed. */
 	static get(controller: Controller) {
 		return loaded.get(controller);
+	}
+
+	constructor(context: ControllerPluginContext) {
+		this.controller = context.controller;
+		this.logger = context.logger;
+		this.name = context.plugin.name;
 	}
 
 	async init() {
@@ -45,6 +54,11 @@ export class ControllerPlugin extends BaseControllerPlugin {
 
 		this.controller.handle(messages.AssignmentListRequest, this.handleAssignmentListRequest.bind(this));
 		this.controller.handle(messages.AssignmentUpdateRequest, this.handleAssignmentUpdateRequest.bind(this));
+
+		const hooks = this.controller.hooks;
+		hooks.shutdown.attach(this.name, this.onShutdown.bind(this));
+		hooks.controllerConfigFieldChanged.attach(this.name, this.onControllerConfigFieldChanged.bind(this));
+		hooks.playerEvent.attach(this.name, this.onPlayerEvent.bind(this));
 	}
 
 	async onShutdown() {
@@ -318,4 +332,8 @@ export class ControllerPlugin extends BaseControllerPlugin {
 			this.applyAutoAssign([event.name]);
 		}
 	}
+}
+
+export default async function (context: ControllerPluginContext) {
+	await new ControllerPlugin(context).init();
 }

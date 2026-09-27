@@ -1,7 +1,7 @@
 import t from "tap";
 import * as lib from "@clusterio/lib";
 import { Instance } from "@clusterio/host";
-import { InstancePlugin } from "../dist/node/instance.js";
+import entrypoint, { InstancePlugin } from "../dist/node/instance.js";
 import { plugin as pluginDeclaration } from "../dist/node/index.js";
 import * as messages from "../dist/node/messages.js";
 
@@ -69,7 +69,7 @@ async function startPlugin(t2, { syncMode = "bidirectional", roles = sampleRoles
 		return undefined;
 	};
 
-	const plugin = new InstancePlugin({ name: "exp_roles" }, instance, {});
+	const plugin = new InstancePlugin({ plugin: { name: "exp_roles" }, instance, host: {}, logger });
 	plugin.logger = { ...logger, warn: message => state.warnings.push(message) };
 	await plugin.init();
 	return { plugin, state };
@@ -80,6 +80,20 @@ function decodeRcon(command) {
 	const match = command.match(/^\/sc exp_roles\.(\w+)\(helpers\.json_to_table\[=\[(.*)\]=\]\)$/s);
 	return { receiver: match[1], payload: JSON.parse(match[2]) };
 }
+
+t.test("entrypoint", async t2 => {
+	const instanceConfig = new lib.InstanceConfig("host");
+	instanceConfig.set("instance.id", 1);
+	instanceConfig.set("instance.name", "test");
+	const instance = new Instance(
+		{ assignGamePort: () => 1 }, new TestConnector(), t2.testdir(), "factorioDir", instanceConfig
+	);
+	instance.server = { handle: () => {} };
+	await entrypoint({ instance, host: {}, logger, plugin: { name: "exp_roles" } });
+	for (const hook of ["instanceConfigFieldChanged", "start"]) {
+		t2.ok([...instance.hooks[hook].attached].includes("exp_roles"), `attached to ${hook}`);
+	}
+});
 
 t.test("class InstancePlugin", t2 => {
 	t2.test(".onStart() subscribes and initialises the lua module", async t3 => {

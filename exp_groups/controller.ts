@@ -1,11 +1,14 @@
-import { BaseControllerPlugin, type Controller } from "@clusterio/controller";
+import type { Controller, ControllerPluginContext } from "@clusterio/controller";
 import * as lib from "@clusterio/lib";
 import * as messages from "./messages.js";
 import * as path from "node:path";
 
 const loaded = new WeakMap<Controller, ControllerPlugin>();
 
-export class ControllerPlugin extends BaseControllerPlugin {
+export class ControllerPlugin {
+    controller: Controller;
+    logger: lib.Logger;
+    name: string;
     groups!: lib.SubscribableDatastore<messages.GroupRecord>;
     roleMappings!: lib.SubscribableDatastore<messages.RoleMappingRecord>;
     manualAssignments!: lib.SubscribableDatastore<messages.AssignmentRecord>;
@@ -14,6 +17,12 @@ export class ControllerPlugin extends BaseControllerPlugin {
     /** The plugin loaded on a controller, for the exp_scenario seed. */
     static get(controller: Controller) {
         return loaded.get(controller);
+    }
+
+    constructor(context: ControllerPluginContext) {
+        this.controller = context.controller;
+        this.logger = context.logger;
+        this.name = context.plugin.name;
     }
 
     async init() {
@@ -70,6 +79,8 @@ export class ControllerPlugin extends BaseControllerPlugin {
         this.controller.handle(messages.RoleMappingDeleteRequest, this.handleRoleMappingDeleteRequest.bind(this));
         this.controller.handle(messages.RoleMappingGetRequest, this.handleRoleMappingGetRequest.bind(this));
         this.controller.handle(messages.RoleMappingListRequest, this.handleRoleMappingListRequest.bind(this));
+
+        this.controller.hooks.shutdown.attach(this.name, this.onShutdown.bind(this));
     }
 
     async onShutdown() {
@@ -439,4 +450,8 @@ export class ControllerPlugin extends BaseControllerPlugin {
     async computeResolvedAssignments(playerNames: string[]): Promise<messages.AssignmentRecord[]> {
         return Promise.all(playerNames.map(name => this.computeResolvedAssignment(name)));
     }
+}
+
+export default async function (context: ControllerPluginContext) {
+    await new ControllerPlugin(context).init();
 }

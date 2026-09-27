@@ -3,7 +3,7 @@ import { Modal, Form, Select, InputNumber, Switch, Alert } from "antd";
 
 import { ControlContext, useRoles } from "@clusterio/web_ui";
 import { RoleMappingRecord, RoleMappingCreateRequest, RoleMappingUpdateRequest } from "../../messages.js";
-import type { WebPlugin } from "..";
+import { useGroups } from "..";
 
 export default function RoleMappingForm({ open, setOpen, initial }: {
 	open: boolean,
@@ -11,9 +11,8 @@ export default function RoleMappingForm({ open, setOpen, initial }: {
 	initial?: RoleMappingRecord,
 }) {
 	const control = useContext(ControlContext);
-	const plugin = control.plugins.get("exp_groups") as WebPlugin;
 
-	const [groups] = plugin.useGroups();
+	const [groups] = useGroups();
 	const [roles] = useRoles();
 
 	const [form] = Form.useForm();
