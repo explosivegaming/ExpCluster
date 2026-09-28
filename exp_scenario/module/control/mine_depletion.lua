@@ -3,7 +3,8 @@ Marks mining drills for deconstruction when resources deplete
 ]]
 
 local Async = require("modules/exp_util/async")
-local config = require("modules.exp_legacy.config.miner")
+local Features = require("modules/exp_scenario/features")
+local config = require("modules/exp_scenario/config/mine_depletion")
 
 local floor = math.floor
 
@@ -270,8 +271,8 @@ end
 
 local e = defines.events
 
-return {
+return Features.guard(config, {
     events = {
         [e.on_resource_depleted] = on_resource_depleted,
     },
-}
+})

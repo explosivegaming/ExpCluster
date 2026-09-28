@@ -17,15 +17,18 @@
 	},
 	"peerDependencies": {
 		"@clusterio/controller": "workspace:^",
+		"@clusterio/host": "workspace:^",
 		"@clusterio/lib": "workspace:^"
 	},
 	"devDependencies": {
 		"@clusterio/controller": "workspace:^",
+		"@clusterio/host": "workspace:^",
 		"@clusterio/lib": "workspace:^",
 		"@clusterio/web_ui": "workspace:^",
 		"@types/node": "catalog:",
 		"@types/react": "catalog:",
 		"antd": "catalog:",
+		"fengari": "^0.1.5",
 		"react": "catalog:",
 		"react-dom": "catalog:",
 		"tap": "^21.1.0",

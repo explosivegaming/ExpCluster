@@ -1,23 +1,79 @@
 import * as lib from "@clusterio/lib";
+import * as path from "node:path";
 import type { Controller, ControllerPluginContext } from "@clusterio/controller";
 import { RoleMetaRecord } from "@expcluster/roles";
 import { GroupRecord, GroupPermissions, RoleMappingRecord } from "@expcluster/permission-groups";
 import { ControllerPlugin as RolesPlugin } from "@expcluster/roles/dist/node/controller.js";
 import { ControllerPlugin as GroupsPlugin } from "@expcluster/permission-groups/dist/node/controller.js";
 import * as messages from "./messages.js";
+import { features, validateFeatureValues } from "./features.js";
 import { SeedRole, SeedGroup, seedRoles, seedGroups, flattenSeedPermissions } from "./seed.js";
 
 export class ControllerPlugin {
 	controller: Controller;
 	logger: lib.Logger;
+	name: string;
+	features!: lib.SubscribableDatastore<messages.FeatureRecord>;
 
 	constructor(context: ControllerPluginContext) {
 		this.controller = context.controller;
 		this.logger = context.logger;
+		this.name = context.plugin.name;
 	}
 
 	async init() {
+		const databaseDirectory = this.controller.config.get("controller.database_directory");
+		this.features = new lib.SubscribableDatastore(
+			...await new lib.JsonIdDatastoreProvider(
+				path.join(databaseDirectory, "exp_scenario", "features.json"),
+				messages.FeatureRecord.fromJSON.bind(messages.FeatureRecord),
+			).bootstrap()
+		);
+
+		// Features added since the last start begin with their defaults
+		const missing = features.filter(feature => !this.features.has(feature.name));
+		if (missing.length) {
+			this.features.setMany(missing.map(feature => new messages.FeatureRecord(feature.name, true)));
+		}
+
+		this.controller.subscriptions.handle(messages.FeatureUpdatedEvent, this.handleFeatureSubscription.bind(this));
+		this.features.on("update", this.featuresUpdated.bind(this));
+
 		this.controller.handle(messages.SeedRequest, this.handleSeedRequest.bind(this));
+		this.controller.handle(messages.FeatureListRequest, this.handleFeatureListRequest.bind(this));
+		this.controller.handle(messages.FeatureUpdateRequest, this.handleFeatureUpdateRequest.bind(this));
+
+		this.controller.hooks.shutdown.attach(this.name, this.onShutdown.bind(this));
+	}
+
+	async onShutdown() {
+		await this.features.save();
+	}
+
+	featuresUpdated(updates: messages.FeatureRecord[]) {
+		this.controller.subscriptions.broadcast(new messages.FeatureUpdatedEvent(updates));
+	}
+
+	async handleFeatureSubscription(request: lib.SubscriptionRequest) {
+		const updates = [...this.features.values()].filter(feature => feature.updatedAtMs > request.lastRequestTimeMs);
+		return updates.length ? new messages.FeatureUpdatedEvent(updates) : null;
+	}
+
+	async handleFeatureListRequest() {
+		return [...this.features.values()];
+	}
+
+	async handleFeatureUpdateRequest(request: messages.FeatureUpdateRequest) {
+		let values;
+		try {
+			values = validateFeatureValues(request.id, request.values);
+		} catch (err: any) {
+			throw new lib.RequestError(err.message);
+		}
+
+		const feature = new messages.FeatureRecord(request.id, request.enabled, values);
+		this.features.set(feature);
+		return feature;
 	}
 
 	/**
