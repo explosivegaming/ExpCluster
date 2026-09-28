@@ -1,8 +1,9 @@
 /**
  * The scenario features which can be configured from the web interface.
  *
- * Defaults must match module/config/<name>.lua, test/features.test.js checks
- * this. Only list settings which the lua side reads at runtime.
+ * Defaults must match the Features.config call in the lua module,
+ * test/features.test.js checks this. Only list settings which the lua side
+ * reads at runtime.
  */
 
 export type FeatureValue = boolean | number | string;
@@ -71,7 +72,22 @@ export const features: Feature[] = [
 				min: 0,
 				unit: "minutes",
 			},
+			{
+				name: "update_seconds",
+				title: "Check every",
+				description: "How often to check for active players",
+				type: "number",
+				default: 1800,
+				min: 1,
+				unit: "seconds",
+			},
 		],
+	},
+	{
+		name: "autofill",
+		title: "Autofill",
+		description: "Fill ammo and fuel into entities when they are built, configured by each player from the toolbar",
+		fields: [],
 	},
 	{
 		name: "chat_auto_reply",
@@ -140,6 +156,29 @@ export const features: Feature[] = [
 				description: "Draw a line from a respawned player to their corpse",
 				type: "boolean",
 				default: true,
+			},
+			{
+				name: "check_map_tags_seconds",
+				title: "Check map markers every",
+				description: "How often to replace map markers which were removed",
+				type: "number",
+				default: 300,
+				min: 1,
+				unit: "seconds",
+			},
+		],
+	},
+	{
+		name: "lawnmower",
+		title: "Lawnmower",
+		description: "The /lawnmower command which clears corpses and nuclear ground",
+		fields: [
+			{
+				name: "destroy_decoratives",
+				title: "Clear decoratives when building",
+				description: "Remove decoratives under entities when they are built",
+				type: "boolean",
+				default: false,
 			},
 		],
 	},

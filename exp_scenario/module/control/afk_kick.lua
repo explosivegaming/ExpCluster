@@ -80,8 +80,8 @@ return Features.guard(config, {
     events = {
         [e.on_player_joined_game] = on_player_joined_game,
     },
-    on_nth_tick = {
-        [config.update_time] = check_afk_players,
+    intervals = {
+        update_seconds = check_afk_players,
     },
     has_active_player = has_active_player,
 })

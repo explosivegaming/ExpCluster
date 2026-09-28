@@ -4,7 +4,12 @@ Marks mining drills for deconstruction when resources deplete
 
 local Async = require("modules/exp_util/async")
 local Features = require("modules/exp_scenario/features")
-local config = require("modules/exp_scenario/config/mine_depletion")
+
+local config = Features.config("mine_depletion", {
+    fluid = true, --- @setting fluid When true, checks for for fluid pipes when removing miners
+    chest = true, --- @setting chest When true, checks for for chest when removing miners
+    beacon = true, --- @setting beacon When true, checks for for beacon when removing miners
+})
 
 local floor = math.floor
 

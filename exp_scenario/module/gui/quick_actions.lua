@@ -4,6 +4,7 @@ Adds a few buttons for common actions
 
 local Gui = require("modules/exp_gui")
 local Commands = require("modules/exp_commands")
+local Features = require("modules/exp_scenario/features")
 local Roles = require("modules/exp_roles")
 
 local addon_artillery = require("modules/exp_scenario/commands/artillery")
@@ -126,9 +127,17 @@ local function on_role_changed(event)
     Elements.container.refresh_player(player)
 end
 
+--- Actions for commands of a disabled feature are hidden
+local function on_feature_changed()
+    for _, player in pairs(game.connected_players) do
+        Elements.container.refresh_player(player)
+    end
+end
+
 return {
     elements = Elements,
     events = {
         [Roles.events.on_player_roles_changed] = on_role_changed,
+        [Features.events.on_feature_changed] = on_feature_changed,
     }
 }

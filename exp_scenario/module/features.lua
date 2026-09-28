@@ -1,32 +1,46 @@
 --[[-- ExpScenario - Features
-Feature config which the controller can change while the game is running
+Features which the controller can enable, disable, and configure while the game is running
 
-Each feature declares its defaults in config/<name>.lua by returning the table
-from Features.register. The controller sends overrides over rcon, these are kept
-in storage and copied onto that same table, so read values when they are used
-rather than copying them into locals when the file loads.
+A feature's config is the table returned by Features.config. The controller sends
+overrides over rcon, these are kept in storage and copied onto that same table,
+so read values when they are used rather than copying them into locals when the
+file loads. Only boolean, number, and string defaults can be overridden.
 
-Only boolean, number, and string defaults can be overridden. Values used while
-the file loads, such as on_nth_tick periods, can not change without a restart
-and should not be listed in features.ts.
+Values used while the file loads can not change without a restart. Periods can
+use intervals instead of on_nth_tick, everything else such as toolbar sprites
+stays as a plain value and is not listed in features.ts.
 
---- Declaring a feature:
+--- Declaring a feature with config, small configs live at the top of the file which uses them:
 local Features = require("modules/exp_scenario/features")
-return Features.register("my_feature", {
+local config = Features.config("my_feature", {
     show_message = true,
+    check_seconds = 60,
 })
 
---- Using it from a control file, handlers do nothing while it is disabled:
-local config = require("modules/exp_scenario/config/my_feature")
+--- Handlers do nothing while the feature is disabled, a feature without config can be guarded by name:
 return Features.guard(config, {
     events = { [defines.events.on_player_joined_game] = on_player_joined_game },
+    intervals = { check_seconds = check_players }, -- Runs every config.check_seconds seconds
 })
+
+--- Toolbar buttons are hidden while disabled, which also hides their left element:
+Gui.toolbar.create_button{
+    visible = function(player, element) return Features.is_enabled("my_feature") end,
+}
+
+--- Commands are denied and left out of help while disabled:
+Commands.new("my_command", { "..." }):add_flags{ feature = "my_feature" }
 ]]
 
 local Storage = require("modules/exp_util/storage")
 
 --- @class ExpScenario.Features
-local Features = {}
+local Features = {
+    events = {
+        --- Raised when the controller changes a feature, gui and commands are refreshed by control/features.lua
+        on_feature_changed = script.generate_event_name(),
+    },
+}
 
 local overridable = {
     boolean = true,
@@ -36,6 +50,8 @@ local overridable = {
 
 --- @class ExpScenario.FeatureConfig
 --- @field enabled boolean
+
+--- @alias ExpScenario.Feature string | ExpScenario.FeatureConfig
 
 --- The live config tables by feature name
 local features = {} --- @type table<string, ExpScenario.FeatureConfig>
@@ -70,13 +86,14 @@ Storage.register(overrides, function(tbl)
     end
 end)
 
---- Register a feature and its defaults, features are enabled unless the defaults say otherwise
+--- Declare a feature and its config, features are enabled unless the config says otherwise
 --- @generic T : table
 --- @param name string
---- @param config T
+--- @param config T?
 --- @return T
-function Features.register(name, config)
-    assert(features[name] == nil, "Feature already registered: " .. name)
+function Features.config(name, config)
+    assert(features[name] == nil, "Feature already declared: " .. name)
+    config = config or {} --[[@as T]]
     if config.enabled == nil then
         config.enabled = true
     end
@@ -91,12 +108,55 @@ function Features.register(name, config)
     return config
 end
 
---- Wrap the event and on_nth_tick handlers of an event handler lib so they do nothing while the feature is disabled
+--- Get the config of a feature from its name, or return the config given
+--- @param feature ExpScenario.Feature
+--- @return ExpScenario.FeatureConfig
+local function resolve(feature)
+    if type(feature) == "table" then
+        return feature
+    end
+    return features[feature] or error("Unknown feature: " .. tostring(feature), 3)
+end
+
+--- Check if a feature is enabled
+--- @param feature ExpScenario.Feature
+--- @return boolean
+function Features.is_enabled(feature)
+    return resolve(feature).enabled
+end
+
+--- Make the handlers of an event handler lib do nothing while the feature is disabled
+-- A name which has not been declared is declared without config. The intervals field
+-- maps config keys to handlers, each runs every config[key] seconds, checked once a second
 --- @generic T : table
---- @param config ExpScenario.FeatureConfig
+--- @param feature ExpScenario.Feature
 --- @param lib T
 --- @return T
-function Features.guard(config, lib)
+function Features.guard(feature, lib)
+    if type(feature) == "string" and features[feature] == nil then
+        Features.config(feature)
+    end
+    local config = resolve(feature)
+
+    local intervals = lib.intervals
+    if intervals then
+        lib.intervals = nil
+        lib.on_nth_tick = lib.on_nth_tick or {}
+        local every_second = lib.on_nth_tick[60]
+        lib.on_nth_tick[60] = function(event)
+            if every_second then
+                every_second(event)
+            end
+            -- Exactly one check each period lands within its first second
+            local tick = event.tick
+            for key, handler in pairs(intervals) do
+                if tick % (config[key] * 60) < 60 then
+                    handler(event)
+                end
+            end
+        end
+    end
+
     for _, handlers in pairs{ lib.events or {}, lib.on_nth_tick or {} } do
         for key, handler in pairs(handlers) do
             handlers[key] = function(event)
@@ -128,6 +188,7 @@ function Features.receive_update(updates)
 
             overrides[name] = override
             apply(name)
+            script.raise_event(Features.events.on_feature_changed, { feature_name = name })
         end
     end
 end

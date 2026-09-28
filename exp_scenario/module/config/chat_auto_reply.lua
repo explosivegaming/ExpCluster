@@ -25,7 +25,7 @@ local afk_time_units = {
     seconds = true,
 }
 
-return Features.register("chat_auto_reply", {
+return Features.config("chat_auto_reply", {
     --- @type table<string, LocalisedString | fun(player: LuaPlayer, is_command: boolean): LocalisedString>
     messages = { --- @setting messages will trigger when ever the word is said
         ["discord"] = { "info.discord", config_server_detail["discord"] },
