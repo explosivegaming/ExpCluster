@@ -3,8 +3,22 @@ Protects entities and areas from being mined by players other than the one who p
 ]]
 
 local Storage = require("modules/exp_util/storage")
+local Features = require("modules/exp_scenario/features")
 local Roles = require("modules/exp_roles")
-local config = require("modules.exp_legacy.config.protection")
+
+local config = Features.config("protection", {
+    ignore_admins = true, --- @setting ignore_admins If admins are ignored by the protection filter
+    repeat_count = 5, --- @setting repeat_count Number of protected entities that must be removed within repeat_minutes in order to trigger repeated removal protection
+    repeat_minutes = 20, --- @setting repeat_minutes The length of time, in minutes, that protected removals will be remembered for
+    always_protected_names = {}, --- @setting always_protected_names Names of entities which are always protected
+    always_protected_types = { --- @setting always_protected_types Types of entities which are always protected
+        "boiler", "generator", "offshore-pump", "reactor", "heat-exchanger", "heat-pipe", "fusion-reactor", "fusion-generator", "power-switch", "rocket-silo",
+    },
+    always_trigger_repeat_names = {}, --- @setting always_trigger_repeat_names Names of entities which always trigger repeated removal protection
+    always_trigger_repeat_types = { --- @setting always_trigger_repeat_types Types of entities which always trigger repeated removal protection
+        "reactor", "fusion-reactor", "rocket-silo",
+    },
+})
 
 local format_string = string.format
 local floor = math.floor
@@ -19,10 +33,10 @@ local Protection = {
     on_repeat_violation = script.generate_event_name(),
     --- Names of entities which are always protected
     --- @type string[]
-    protected_entity_names = config.always_protected_names,
+    protected_entity_names = {},
     --- Types of entities which are always protected
     --- @type string[]
-    protected_entity_types = config.always_protected_types,
+    protected_entity_types = {},
     --- @package
     events = {},
     --- @package
@@ -46,10 +60,18 @@ local function to_set(values)
     return set
 end
 
-local always_protected_names = to_set(config.always_protected_names)
-local always_protected_types = to_set(config.always_protected_types)
-local always_trigger_repeat_names = to_set(config.always_trigger_repeat_names)
-local always_trigger_repeat_types = to_set(config.always_trigger_repeat_types)
+local always_protected_names = {} --- @type table<string, true>
+local always_protected_types = {} --- @type table<string, true>
+local always_trigger_repeat_names = {} --- @type table<string, true>
+local always_trigger_repeat_types = {} --- @type table<string, true>
+Features.on_apply(config, function()
+    Protection.protected_entity_names = config.always_protected_names
+    Protection.protected_entity_types = config.always_protected_types
+    always_protected_names = to_set(config.always_protected_names)
+    always_protected_types = to_set(config.always_protected_types)
+    always_trigger_repeat_names = to_set(config.always_trigger_repeat_names)
+    always_trigger_repeat_types = to_set(config.always_trigger_repeat_types)
+end)
 
 local protected_entities = {} --- @type table<uint, table<string, LuaEntity>> Keyed by surface index then entity key
 local protected_areas = {} --- @type table<uint, table<string, BoundingBox>> Keyed by surface index then area key
@@ -168,7 +190,7 @@ end
 local function is_ignored(player, entity)
     if config.ignore_admins and player.admin then return true end
     if entity.last_user == nil or entity.last_user.index == player.index then return true end
-    if config.ignore_permission and Roles.player_has_permission(player, config.ignore_permission) then return true end
+    if Roles.player_has_permission(player, "exp_scenario.bypass.entity_protection") then return true end
     return false
 end
 
@@ -199,8 +221,10 @@ end
 local function on_pre_player_mined_item(event)
     local entity = event.entity
     local player = game.players[event.player_index]
+    -- Protected entities are still forgotten while disabled, only the violations stop
     if
-        not is_ignored(player, entity)
+        config.enabled
+        and not is_ignored(player, entity)
         and (Protection.is_entity_protected(entity) or Protection.is_position_protected(entity.surface, entity.position))
     then
         raise_violation(event, player)
@@ -217,7 +241,7 @@ end
 
 --- Forget protected removals older than the repeat lifetime
 local function clear_old_repeats()
-    local old = game.tick - config.repeat_lifetime
+    local old = game.tick - config.repeat_minutes * 3600
     for player_name, player_repeats in pairs(repeats) do
         if player_repeats.last <= old then
             repeats[player_name] = nil
@@ -232,6 +256,6 @@ Protection.events[e.on_space_platform_pre_mined] = on_entity_removed
 Protection.events[e.on_robot_pre_mined] = on_entity_removed
 Protection.events[e.on_entity_died] = on_entity_removed
 Protection.events[e.script_raised_destroy] = on_entity_removed
-Protection.on_nth_tick[config.refresh_rate] = clear_old_repeats
+Protection.on_nth_tick[3600 * 5] = clear_old_repeats
 
 return Protection

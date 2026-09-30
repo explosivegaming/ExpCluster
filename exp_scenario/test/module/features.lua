@@ -81,35 +81,57 @@ Suite.test("guard() declares features by name", function(env)
     Suite.eq(env.Features.is_enabled("test"), false, "and can be looked up")
 end)
 
-Suite.test("guard() runs intervals once per period of the config value in seconds", function(env)
-    local config = env.Features.config("test", { every = 5 })
-    local ticks, seconds = {}, {}
-    local lib = env.Features.guard(config, {
-        on_nth_tick = { [60] = function(event) seconds[#seconds + 1] = event.tick end },
-        intervals = { every = function(event) ticks[#ticks + 1] = event.tick end },
-    })
-    Suite.eq(lib.intervals, nil, "intervals are replaced by on_nth_tick")
+Suite.test("receive_update() logs invalid and unknown overrides", function(env)
+    local config = env.Features.config("test", { flag = true })
+    env.Features.receive_update{ { name = "test", enabled = true, values = { flag = 1, extra = 2 } } }
+    Suite.eq(config.flag, true, "the default is used")
+    Suite.eq(#env.logged, 2, "both are logged")
+end)
 
-    local function run_until(last)
-        for tick = 60, last, 60 do lib.on_nth_tick[60]{ tick = tick } end
-    end
+Suite.test("config() addresses nested values by path", function(env)
+    local offset = { 1, 2 }
+    local config = env.Features.config("test", { section = { flag = true, count = 1 }, offset = offset })
+    env.Features.receive_update{ { name = "test", enabled = true, values = { ["section.flag"] = false, offset = { "x" } } } }
+    Suite.eq(config.section, { flag = false, count = 1 }, "the nested value changes in place")
+    Suite.eq(config.offset, offset, "lists of other types can not be overridden")
 
-    run_until(1200)
-    Suite.eq(ticks, { 300, 600, 900, 1200 }, "every 5 seconds")
-    Suite.eq(#seconds, 20, "an existing handler every second still runs")
+    env.Features.receive_update{ { name = "test", enabled = true, values = {} } }
+    Suite.eq(config.section.flag, true, "and goes back to its default")
+end)
 
-    ticks = {}
-    env.Features.receive_update{ { name = "test", enabled = true, values = { every = 7 } } }
-    run_until(1260)
-    Suite.eq(ticks, { 420, 840, 1260 }, "the period can change at runtime")
+Suite.test("config() allows lists of strings to be overridden", function(env)
+    local config = env.Features.config("test", { names = { "a", "b" }, empty = {} })
+    env.Features.receive_update{ { name = "test", enabled = true, values = { names = { "c" }, empty = { "d" } } } }
+    Suite.eq(config.names, { "c" }, "a list is replaced")
+    Suite.eq(config.empty, { "d" }, "an empty default is a list")
+    env.Features.receive_update{ { name = "test", enabled = true, values = { names = { 1 } } } }
+    Suite.eq(config.names, { "a", "b" }, "a list with other types is invalid")
+end)
+
+Suite.test("optional() declares a value without a default", function(env)
+    local config = env.Features.config("test", { role_id = env.Features.optional("number") })
+    Suite.eq(config.role_id, nil, "nil until overridden")
+    env.Features.receive_update{ { name = "test", enabled = true, values = { role_id = 3 } } }
+    Suite.eq(config.role_id, 3, "overridden with the given type")
+    env.Features.receive_update{ { name = "test", enabled = true, values = {} } }
+    Suite.eq(config.role_id, nil, "and back to nil")
+end)
+
+Suite.test("on_apply() is called now and after every change", function(env)
+    local config = env.Features.config("test", { names = { "a" } })
+    local seen = {}
+    env.Features.on_apply("test", function(applied) seen[#seen + 1] = applied.names[1] end)
+    env.Features.receive_update{ { name = "test", enabled = true, values = { names = { "b" } } } }
+    env.on_load{ test = { enabled = true, names = { "c" } } }
+    Suite.eq(seen, { "a", "b", "c" }, "on register, update, and load")
+    Suite.eq(config.names, { "c" }, "after the config is applied")
 end)
 
 Suite.test("config files declare their feature", function(env)
-    env.extend_requires{ ["modules/exp_roles"] = {} }
-    local config = env.load_config("afk_kick")
-    env.Features.receive_update{ { name = "afk_kick", enabled = true, values = { afk_minutes = 3 } } }
-    Suite.eq(config.afk_minutes, 3, "afk_kick can be changed")
-    Suite.eq(config.kick_minutes, 30, "other values keep their default")
+    local config = env.load_config("popups")
+    env.Features.receive_update{ { name = "popups", enabled = true, values = { show_player_damage = false } } }
+    Suite.eq(config.show_player_damage, false, "popups can be changed")
+    Suite.eq(config.show_player_health, true, "other values keep their default")
 end)
 
 return Suite.run()

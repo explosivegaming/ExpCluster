@@ -4,23 +4,23 @@ Features which the controller can enable, disable, and configure while the game 
 A feature's config is the table returned by Features.config. The controller sends
 overrides over rcon, these are kept in storage and copied onto that same table,
 so read values when they are used rather than copying them into locals when the
-file loads. Only boolean, number, and string defaults can be overridden.
+file loads. Values derived from the config can be rebuilt with Features.on_apply.
 
-Values used while the file loads can not change without a restart. Periods can
-use intervals instead of on_nth_tick, everything else such as toolbar sprites
-stays as a plain value and is not listed in features.ts.
+Booleans, numbers, strings, and lists of strings can be overridden, including
+those in nested tables which are addressed as "section.key". Use Features.optional
+for a value which has no default. Values used while the file loads, such as
+on_nth_tick periods, stay as plain values and are not listed in features.ts.
 
 --- Declaring a feature with config, small configs live at the top of the file which uses them:
 local Features = require("modules/exp_scenario/features")
 local config = Features.config("my_feature", {
     show_message = true,
-    check_seconds = 60,
+    role_id = Features.optional("number"),
 })
 
 --- Handlers do nothing while the feature is disabled, a feature without config can be guarded by name:
 return Features.guard(config, {
     events = { [defines.events.on_player_joined_game] = on_player_joined_game },
-    intervals = { check_seconds = check_players }, -- Runs every config.check_seconds seconds
 })
 
 --- Toolbar buttons are hidden while disabled, which also hides their left element:
@@ -42,40 +42,78 @@ local Features = {
     },
 }
 
-local overridable = {
-    boolean = true,
-    number = true,
-    string = true,
-}
-
 --- @class ExpScenario.FeatureConfig
 --- @field enabled boolean
 
 --- @alias ExpScenario.Feature string | ExpScenario.FeatureConfig
 
+--- @class ExpScenario.FeatureField
+--- @field parent table The table holding the value within the config
+--- @field key string The key of the value within its parent
+--- @field default any
+--- @field type string "boolean", "number", "string", "list" of strings, or a type which can not be overridden
+
+--- @class ExpScenario.Optional
+--- @field __feature_optional string
+
 --- The live config tables by feature name
 local features = {} --- @type table<string, ExpScenario.FeatureConfig>
 
---- Copies of the defaults by feature name, used to undo overrides
-local defaults = {} --- @type table<string, table<string, any>>
+--- The values of each feature by feature name then path
+local fields = {} --- @type table<string, table<string, ExpScenario.FeatureField>>
 
---- Overrides received from the controller by feature name
-local overrides = {} --- @type table<string, table<string, boolean | number | string>>
+--- Called after a feature is applied by feature name
+local on_apply = {} --- @type table<string, fun(config: table)[]>
+
+--- Overrides received from the controller by feature name then path
+local overrides = {} --- @type table<string, table<string, boolean | number | string | string[]>>
+
+--- Check if a table is a list, empty tables count as lists
+--- @param tbl table
+--- @return boolean
+local function is_list(tbl)
+    return next(tbl) == nil or tbl[1] ~= nil
+end
+
+--- Check if a table is a list of strings, empty tables count as lists of strings
+--- @param tbl table
+--- @return boolean
+local function is_string_list(tbl)
+    if not is_list(tbl) then return false end
+    for _, item in pairs(tbl) do
+        if type(item) ~= "string" then return false end
+    end
+    return true
+end
+
+--- Check if an override can replace a field
+--- @param field ExpScenario.FeatureField
+--- @param value any
+--- @return boolean
+local function is_valid(field, value)
+    if field.type == "list" then
+        return type(value) == "table" and is_string_list(value)
+    end
+    return type(value) == field.type and (field.type == "boolean" or field.type == "number" or field.type == "string")
+end
 
 --- Reset a feature to its defaults and apply its overrides
 --- @param name string
 local function apply(name)
-    local config = features[name]
-    local feature_defaults = defaults[name]
-    for key, value in pairs(feature_defaults) do
-        config[key] = value
+    local feature_overrides = overrides[name] or {}
+    for path, field in pairs(fields[name]) do
+        local value = feature_overrides[path]
+        if value == nil then
+            value = field.default
+        elseif not is_valid(field, value) then
+            log("[WARNING] Invalid override for " .. name .. "." .. path .. ", using the default")
+            value = field.default
+        end
+        field.parent[field.key] = value
     end
 
-    for key, value in pairs(overrides[name] or {}) do
-        local default = feature_defaults[key]
-        if default ~= nil and type(value) == type(default) and overridable[type(value)] then
-            config[key] = value
-        end
+    for _, callback in ipairs(on_apply[name]) do
+        callback(features[name])
     end
 end
 
@@ -85,6 +123,42 @@ Storage.register(overrides, function(tbl)
         apply(name)
     end
 end)
+
+--- Mark a value as having no default, the argument is the type it can be overridden with
+--- @param value_type "boolean" | "number" | "string" | "list"
+--- @return any
+function Features.optional(value_type)
+    return { __feature_optional = value_type }
+end
+
+--- Collect the values of a config table, recursing into nested tables which are not lists
+--- @param feature_fields table<string, ExpScenario.FeatureField>
+--- @param tbl table
+--- @param prefix string
+local function collect_fields(feature_fields, tbl, prefix)
+    for key, value in pairs(tbl) do
+        if type(key) == "string" then
+            local field = { parent = tbl, key = key, default = value, type = type(value) }
+            if type(value) == "table" then
+                if value.__feature_optional then
+                    field.default = nil
+                    field.type = value.__feature_optional
+                    tbl[key] = nil
+                elseif is_string_list(value) then
+                    field.type = "list"
+                elseif is_list(value) then
+                    field.type = "table"
+                else
+                    collect_fields(feature_fields, value, prefix .. key .. ".")
+                    field = nil
+                end
+            end
+            if field then
+                feature_fields[prefix .. key] = field
+            end
+        end
+    end
+end
 
 --- Declare a feature and its config, features are enabled unless the config says otherwise
 --- @generic T : table
@@ -98,13 +172,12 @@ function Features.config(name, config)
         config.enabled = true
     end
 
-    local feature_defaults = {}
-    for key, value in pairs(config) do
-        feature_defaults[key] = value
-    end
+    local feature_fields = {}
+    collect_fields(feature_fields, config, "")
 
     features[name] = config
-    defaults[name] = feature_defaults
+    fields[name] = feature_fields
+    on_apply[name] = {}
     return config
 end
 
@@ -118,6 +191,21 @@ local function resolve(feature)
     return features[feature] or error("Unknown feature: " .. tostring(feature), 3)
 end
 
+--- Get the name of a feature from its config, or return the name given
+--- @param feature ExpScenario.Feature
+--- @return string
+local function resolve_name(feature)
+    if type(feature) == "string" then
+        return feature
+    end
+    for name, config in pairs(features) do
+        if config == feature then
+            return name
+        end
+    end
+    error("Unknown feature config", 3)
+end
+
 --- Check if a feature is enabled
 --- @param feature ExpScenario.Feature
 --- @return boolean
@@ -125,9 +213,18 @@ function Features.is_enabled(feature)
     return resolve(feature).enabled
 end
 
---- Make the handlers of an event handler lib do nothing while the feature is disabled
--- A name which has not been declared is declared without config. The intervals field
--- maps config keys to handlers, each runs every config[key] seconds, checked once a second
+--- Call a function now and whenever the config of a feature changes, used to rebuild values derived from it
+-- Also called during on_load, so it must only change locals and not the game state
+--- @param feature ExpScenario.Feature
+--- @param callback fun(config: any)
+function Features.on_apply(feature, callback)
+    local name = resolve_name(feature)
+    table.insert(on_apply[name], callback)
+    callback(features[name])
+end
+
+--- Make the event and on_nth_tick handlers of an event handler lib do nothing while the feature is disabled
+-- A name which has not been declared is declared without config
 --- @generic T : table
 --- @param feature ExpScenario.Feature
 --- @param lib T
@@ -137,25 +234,6 @@ function Features.guard(feature, lib)
         Features.config(feature)
     end
     local config = resolve(feature)
-
-    local intervals = lib.intervals
-    if intervals then
-        lib.intervals = nil
-        lib.on_nth_tick = lib.on_nth_tick or {}
-        local every_second = lib.on_nth_tick[60]
-        lib.on_nth_tick[60] = function(event)
-            if every_second then
-                every_second(event)
-            end
-            -- Exactly one check each period lands within its first second
-            local tick = event.tick
-            for key, handler in pairs(intervals) do
-                if tick % (config[key] * 60) < 60 then
-                    handler(event)
-                end
-            end
-        end
-    end
 
     for _, handlers in pairs{ lib.events or {}, lib.on_nth_tick or {} } do
         for key, handler in pairs(handlers) do
@@ -173,17 +251,21 @@ end
 --- @class ExpScenario.FeatureUpdate
 --- @field name string
 --- @field enabled boolean
---- @field values table<string, boolean | number | string>
+--- @field values table<string, boolean | number | string | string[]>
 
 --- Called over rcon by the instance plugin with the features which changed, unknown features are ignored
 --- @param updates ExpScenario.FeatureUpdate[]
 function Features.receive_update(updates)
     for _, update in ipairs(updates) do
         local name = update.name
-        if features[name] then
+        local feature_fields = fields[name]
+        if feature_fields then
             local override = { enabled = update.enabled }
-            for key, value in pairs(update.values) do
-                override[key] = value
+            for path, value in pairs(update.values) do
+                if feature_fields[path] == nil then
+                    log("[WARNING] Unknown override for " .. name .. "." .. path)
+                end
+                override[path] = value
             end
 
             overrides[name] = override

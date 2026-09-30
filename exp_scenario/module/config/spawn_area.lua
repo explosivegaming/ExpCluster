@@ -1,7 +1,9 @@
 --- Used to config the spawn generation settings yes there is alot here i know just ignore the long tables at the end (they were generated with a command)
 -- @config Spawn-Area
 
-return {
+local Features = require("modules/exp_scenario/features")
+
+return Features.config("spawn_area", {
     spawn_area = { --- @setting spawn_area Settings relating to the whole spawn area
         -- Enable predefined patches: 128, else: 32
         deconstruction_radius = 20, -- @setting deconstruction_radius All entities within this radius will be removed
@@ -12,7 +14,6 @@ return {
     turrets = { --- @setting turrets Settings relating to adding turrets to spawn
         enabled = true, --- @setting enabled Whether turrets will be added to spawn
         ammo_type = "uranium-rounds-magazine", --- @setting ammo_type The ammo type that will be used during refills
-        refill_time = 60 * 60 * 5, --- @setting refill_time The time in ticks between each refill of the turrets, only change if having lag issues
         offset = { x = 0, y = 0 }, --- @setting offset The position offset to apply to turrets
         locations = { --- @setting locations The locations of all turrets, this list can change during runtime
             { -3, -3 },
@@ -242,7 +243,6 @@ return {
     resource_refill_nearby = {
         enabled = false,
         range = 128,
-        refill_time = 36000,
         resources_name = {
             "iron-ore",
             "copper-ore",
@@ -252,4 +252,4 @@ return {
         },
         amount = { 2500, 4000 },
     },
-}
+})

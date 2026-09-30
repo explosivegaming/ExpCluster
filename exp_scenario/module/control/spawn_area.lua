@@ -2,7 +2,8 @@
 Adds a custom spawn area with chests and afk turrets
 ]]
 
-local config = require("modules.exp_legacy.config.spawn_area")
+local Features = require("modules/exp_scenario/features")
+local config = require("modules/exp_scenario/config/spawn_area")
 
 --- Apply an offset to a LuaPosition
 --- @param position MapPosition.struct
@@ -251,30 +252,26 @@ end
 
 local on_nth_tick = {}
 
-if config.turrets.enabled then
-    --- Refill the ammo in the spawn turrets
-    on_nth_tick[config.turrets.refill_time] = function()
-        if game.tick < 10 then return end
-        update_turrets()
-    end
+--- Refill the ammo in the spawn turrets
+on_nth_tick[60 * 60 * 5] = function()
+    if game.tick < 10 or not config.turrets.enabled then return end
+    update_turrets()
 end
 
-if config.resource_refill_nearby.enabled then
-    --- 
-    on_nth_tick[config.resource_refill_nearby.refill_time] = function()
-        if game.tick < 10 then return end
+--- Refill the resources near spawn
+on_nth_tick[60 * 60 * 10] = function()
+    if game.tick < 10 or not config.resource_refill_nearby.enabled then return end
 
-        local force = game.forces.player
-        local surface = assert(game.get_surface("nauvis"))
-        local entities = surface.find_entities_filtered{
-            position = force.get_spawn_position(surface),
-            radius = config.resource_refill_nearby.range,
-            name = config.resource_refill_nearby.resources_name
-        }
+    local force = game.forces.player
+    local surface = assert(game.get_surface("nauvis"))
+    local entities = surface.find_entities_filtered{
+        position = force.get_spawn_position(surface),
+        radius = config.resource_refill_nearby.range,
+        name = config.resource_refill_nearby.resources_name
+    }
 
-        for _, ore in ipairs(entities) do
-            ore.amount = ore.amount + math.random(config.resource_refill_nearby.amount[1], config.resource_refill_nearby.amount[2])
-        end
+    for _, ore in ipairs(entities) do
+        ore.amount = ore.amount + math.random(config.resource_refill_nearby.amount[1], config.resource_refill_nearby.amount[2])
     end
 end
 
@@ -302,9 +299,9 @@ end
 
 local e = defines.events
 
-return {
+return Features.guard(config, {
     on_nth_tick = on_nth_tick,
     events = {
         [e.on_player_created] = on_player_created,
-    }
-}
+    },
+})

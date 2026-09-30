@@ -67,7 +67,6 @@ return Features.config("chat_auto_reply", {
     },
     allow_command_prefix_for_messages = true, --- @setting allow_command_prefix_for_messages when true any message trigger will print to all player when prefixed
     command_admin_only = false, --- @setting command_admin_only when true will only allow chat commands for admins
-    command_permission = "exp_scenario.chat.commands", --- @setting command_permission the permission used to allow command prefixes
     command_prefix = "!", --- @setting command_prefix prefix used for commands below and to print to all players (if enabled above)
     --- @type table<string, LocalisedString | fun(player: LuaPlayer, is_command: boolean): LocalisedString>
     commands = { --- @setting commands will trigger only when command prefix is given

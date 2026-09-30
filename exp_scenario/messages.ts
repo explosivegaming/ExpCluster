@@ -1,5 +1,6 @@
 import * as lib from "@clusterio/lib";
 import { Type, Static } from "@sinclair/typebox";
+import type { FeatureValue } from "./features.js";
 
 /** Create the roles and permission groups the scenario shipped with, see seed.ts. */
 export class SeedRequest {
@@ -13,7 +14,7 @@ export class SeedRequest {
 	constructor() {}
 }
 
-const FeatureValueSchema = Type.Union([Type.Boolean(), Type.Number(), Type.String()]);
+const FeatureValueSchema = Type.Union([Type.Boolean(), Type.Number(), Type.String(), Type.Array(Type.String()), Type.Null()]);
 
 /**
  * The config of one scenario feature, see features.ts.
@@ -26,7 +27,7 @@ export class FeatureRecord {
 		/** Name of the feature in features.ts */
 		public id: string,
 		public enabled: boolean,
-		public values: Record<string, boolean | number | string> = {},
+		public values: Record<string, FeatureValue> = {},
 		public updatedAtMs: number = 0,
 		public isDeleted: boolean = false,
 	) {}
@@ -117,7 +118,7 @@ export class FeatureUpdateRequest {
 	constructor(
 		public id: string,
 		public enabled: boolean,
-		public values: Record<string, boolean | number | string>,
+		public values: Record<string, FeatureValue>,
 	) {}
 
 	static jsonSchema = Type.Object({

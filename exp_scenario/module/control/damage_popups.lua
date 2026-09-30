@@ -4,7 +4,8 @@ also shows player health when a player is attacked
 ]]
 
 local FlyingText = require("modules/exp_util/flying_text")
-local config = require("modules.exp_legacy.config.popup_messages")
+local Features = require("modules/exp_scenario/features")
+local config = require("modules/exp_scenario/config/popups")
 
 local random = math.random
 local floor = math.floor
@@ -44,8 +45,8 @@ end
 
 local e = defines.events
 
-return {
+return Features.guard(config, {
     events = {
         [e.on_entity_damaged] = on_entity_damaged,
     },
-}
+})

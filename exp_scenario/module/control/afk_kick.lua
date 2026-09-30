@@ -4,8 +4,16 @@ Kicks players when all players on the server are afk
 
 local Async = require("modules/exp_util/async")
 local Features = require("modules/exp_scenario/features")
+local Roles = require("modules/exp_roles")
 local Storage = require("modules/exp_util/storage")
-local config = require("modules/exp_scenario/config/afk_kick")
+local config = Features.config("afk_kick", {
+    admin_as_active = true, --- @setting admin_as_active When true admins will be treated as active regardless of afk time
+    trust_as_active = true, --- @setting trust_as_active When true trusted players (by playtime) will be treated as active regardless of afk time
+    active_role_id = Features.optional("number"), --- @setting active_role_id Players with this role or higher are treated as active regardless of afk time
+    afk_minutes = 10, --- @setting afk_minutes The time in minutes that must pass for a player to be considered afk
+    kick_minutes = 30, --- @setting kick_minutes The time in minutes that must pass without any active players for all players to be kicked
+    trust_minutes = 600, --- @setting trust_minutes The time in minutes that a player must be online for to count as trusted
+})
 
 local ticks_per_minute = 3600
 
@@ -22,13 +30,21 @@ local afk_kick_player_async =
         game.kick_player(player, "AFK while no active players on the server")
     end)
 
+--- Check if a player has a role which counts as active regardless of afk time
+--- @param player LuaPlayer
+--- @return boolean
+local function is_active_role(player)
+    local role = config.active_role_id and Roles.get_role(config.active_role_id)
+    return role ~= nil and not Roles.get_player_highest_role(player):is_lower_than(role)
+end
+
 --- Check if there is an active player
 local function has_active_player()
     for _, player in ipairs(game.connected_players) do
         if player.afk_time < config.afk_minutes * ticks_per_minute
         or config.admin_as_active and player.admin
         or config.trust_as_active and player.online_time > config.trust_minutes * ticks_per_minute
-        or config.custom_active_check and config.custom_active_check(player) then
+        or is_active_role(player) then
             script_data.last_active = game.tick
             return true
         end
@@ -80,8 +96,8 @@ return Features.guard(config, {
     events = {
         [e.on_player_joined_game] = on_player_joined_game,
     },
-    intervals = {
-        update_seconds = check_afk_players,
+    on_nth_tick = {
+        [60 * 60 * 30] = check_afk_players,
     },
     has_active_player = has_active_player,
 })

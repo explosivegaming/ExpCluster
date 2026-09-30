@@ -3,7 +3,8 @@ Creates flying text entities when a player sends a message in chat
 ]]
 
 local FlyingText = require("modules/exp_util/flying_text")
-local config = require("modules.exp_legacy.config.popup_messages")
+local Features = require("modules/exp_scenario/features")
+local config = require("modules/exp_scenario/config/popups")
 
 local lower = string.lower
 local find = string.find
@@ -41,8 +42,8 @@ end
 
 local e = defines.events
 
-return {
+return Features.guard(config, {
     events = {
         [e.on_console_chat] = on_console_chat,
-    }
-}
+    },
+})

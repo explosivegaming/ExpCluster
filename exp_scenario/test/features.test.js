@@ -16,10 +16,35 @@ function luaFiles(dir, prefix = "") {
 
 const moduleFiles = luaFiles(path.join(import.meta.dirname, "..", "module"));
 
-/** Read a literal default from a Features.config call, only covers single line booleans, numbers, and strings. */
-function luaDefault(source, key) {
-	const match = new RegExp(`^\\s*${key} = (true|false|-?[\\d.]+|"[^"]*"),`, "m").exec(source);
-	return match ? JSON.parse(match[1]) : undefined;
+/**
+ * Read a default from a Features.config call, a path of "a.b" looks for b after the table a starts.
+ * Only covers booleans, numbers, strings, lists of strings, and Features.optional.
+ */
+function luaDefault(source, path) {
+	const keys = path.split(".");
+	let start = 0;
+	for (const section of keys.slice(0, -1)) {
+		const match = new RegExp(`^\\s*${section} = \\{`, "m").exec(source.slice(start));
+		if (!match) {
+			return undefined;
+		}
+		start += match.index + match[0].length;
+	}
+
+	const key = keys.at(-1);
+	const match = new RegExp(`^\\s*${key} = (true|false|-?[\\d.]+|"[^"]*"|Features\\.optional\\("\\w+"\\)|\\{[^{}]*\\})`, "m")
+		.exec(source.slice(start));
+	if (!match) {
+		return undefined;
+	}
+	const literal = match[1];
+	if (literal.startsWith("Features.optional")) {
+		return null;
+	}
+	if (literal.startsWith("{")) {
+		return [...literal.matchAll(/"([^"]*)"/g)].map(item => item[1]);
+	}
+	return JSON.parse(literal);
 }
 
 t.test("features", t2 => {
@@ -31,7 +56,7 @@ t.test("features", t2 => {
 			t3.equal(declarations.length, 1, "one lua file declares the feature");
 			const source = declarations[0]?.[1] ?? "";
 			for (const field of feature.fields) {
-				t3.equal(luaDefault(source, field.name), field.default, `${field.name} default matches the lua side`);
+				t3.strictSame(luaDefault(source, field.name), field.default, `${field.name} default matches the lua side`);
 			}
 			t3.end();
 		});
@@ -62,5 +87,21 @@ t.test("validateFeatureValues()", t2 => {
 		() => validateFeatureValues("afk_kick", { afk_minutes: Infinity }),
 		{ message: "Setting afk_minutes of afk_kick must be a finite number" },
 	);
+	t2.throws(
+		() => validateFeatureValues("protection", { always_protected_types: ["boiler", 1] }),
+		{ message: "Setting always_protected_types of protection must be a list of strings" },
+	);
+	t2.throws(
+		() => validateFeatureValues("afk_kick", { active_role_id: 1.5 }),
+		{ message: "Setting active_role_id of afk_kick must be a role id or null" },
+	);
+	t2.same(
+		validateFeatureValues("protection", { always_protected_types: ["boiler"], always_trigger_repeat_types: ["reactor", "fusion-reactor", "rocket-silo"] }),
+		{ always_protected_types: ["boiler"] },
+		"lists equal to their default are dropped",
+	);
+	t2.same(validateFeatureValues("afk_kick", { active_role_id: null }), {}, "no role is the default");
+	t2.same(validateFeatureValues("afk_kick", { active_role_id: 3 }), { active_role_id: 3 });
+	t2.same(validateFeatureValues("spawn_area", { "turrets.enabled": false }), { "turrets.enabled": false }, "nested settings");
 	t2.end();
 });
