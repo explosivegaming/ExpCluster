@@ -78,15 +78,17 @@ function searchFields(feature: Feature, query: string) {
 function FieldInput(props: { field: FeatureField, value: FeatureValue, disabled: boolean, onChange: (value: FeatureValue) => void }) {
 	const { field, value, disabled, onChange } = props;
 	const control = useContext(ControlContext);
-	const CustomInput = field.inputComponent ? control.inputComponents.get(field.inputComponent) : undefined;
-	if (CustomInput) {
-		const fieldDefinition = {
-			type: field.type === "string_list" ? "object" : field.type,
+	const CustomInput = field.type !== "string_list" && field.inputComponent
+		? control.inputComponents.get(field.inputComponent)
+		: undefined;
+	if (CustomInput && field.type !== "string_list") {
+		const fieldDefinition: lib.FieldDefinition = {
+			type: field.type,
 			title: field.title,
 			description: field.description,
 			optional: field.optional,
 			inputComponent: field.inputComponent,
-		} as lib.FieldDefinition;
+		};
 		return <CustomInput
 			fieldDefinition={fieldDefinition}
 			value={value as Exclude<FeatureValue, string[]>}

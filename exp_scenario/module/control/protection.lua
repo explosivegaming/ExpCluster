@@ -10,12 +10,12 @@ local feature = Feature.register("protection", {
     ignore_admins = true, --- @setting ignore_admins If admins are ignored by the protection filter
     repeat_count = 5, --- @setting repeat_count Number of protected entities that must be removed within repeat_minutes in order to trigger repeated removal protection
     repeat_minutes = 20, --- @setting repeat_minutes The length of time, in minutes, that protected removals will be remembered for
-    always_protected_names = {}, --- @setting always_protected_names Names of entities which are always protected
-    always_protected_types = { --- @setting always_protected_types Types of entities which are always protected
+    always_protected_names = Feature.set{}, --- @setting always_protected_names Names of entities which are always protected
+    always_protected_types = Feature.set{ --- @setting always_protected_types Types of entities which are always protected
         "boiler", "generator", "offshore-pump", "reactor", "heat-exchanger", "heat-pipe", "fusion-reactor", "fusion-generator", "power-switch", "rocket-silo",
     },
-    always_trigger_repeat_names = {}, --- @setting always_trigger_repeat_names Names of entities which always trigger repeated removal protection
-    always_trigger_repeat_types = { --- @setting always_trigger_repeat_types Types of entities which always trigger repeated removal protection
+    always_trigger_repeat_names = Feature.set{}, --- @setting always_trigger_repeat_names Names of entities which always trigger repeated removal protection
+    always_trigger_repeat_types = Feature.set{ --- @setting always_trigger_repeat_types Types of entities which always trigger repeated removal protection
         "reactor", "fusion-reactor", "rocket-silo",
     },
 })
@@ -45,16 +45,27 @@ local Protection = {
 --- @field last uint Tick of the last protected removal
 --- @field count number Protected removals since the last repeat violation
 
+--- Get the keys of a set as a list, for the filters of find_entities_filtered
+--- @param set table<string, true>
+--- @return string[]
+local function set_to_list(set)
+    local list = {}
+    for item in pairs(set) do
+        list[#list + 1] = item
+    end
+    return list
+end
+
 --- Names of entities which are always protected
 --- @return string[]
 function Protection.get_protected_entity_names()
-    return config.always_protected_names
+    return set_to_list(config.always_protected_names)
 end
 
 --- Types of entities which are always protected
 --- @return string[]
 function Protection.get_protected_entity_types()
-    return config.always_protected_types
+    return set_to_list(config.always_protected_types)
 end
 
 local protected_entities = {} --- @type table<uint, table<string, LuaEntity>> Keyed by surface index then entity key
@@ -115,7 +126,7 @@ end
 --- @param entity LuaEntity
 --- @return boolean
 function Protection.is_entity_protected(entity)
-    if Feature.to_set(config.always_protected_names)[entity.name] or Feature.to_set(config.always_protected_types)[entity.type] then return true end
+    if config.always_protected_names[entity.name] or config.always_protected_types[entity.type] then return true end
     local entities = protected_entities[entity.surface.index]
     if not entities then return false end
     return entities[Protection.get_entity_key(entity)] == entity
@@ -193,7 +204,7 @@ local function raise_violation(event, player)
     script.raise_event(Protection.on_player_mined_protected, event)
 
     local entity = event.entity
-    local always_repeat = Feature.to_set(config.always_trigger_repeat_names)[entity.name] or Feature.to_set(config.always_trigger_repeat_types)[entity.type]
+    local always_repeat = config.always_trigger_repeat_names[entity.name] or config.always_trigger_repeat_types[entity.type]
     if always_repeat or player_repeats.count >= config.repeat_count then
         player_repeats.count = 0
         script.raise_event(Protection.on_repeat_violation, event)

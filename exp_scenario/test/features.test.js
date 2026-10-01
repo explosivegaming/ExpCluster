@@ -18,7 +18,7 @@ const moduleFiles = luaFiles(path.join(import.meta.dirname, "..", "module"));
 
 /**
  * Read a default from a Feature.register call, a path of "a.b" looks for b after the table a starts.
- * Only covers booleans, numbers, strings, lists of strings, and Feature.optional.
+ * Only covers booleans, numbers, strings, Feature.list, Feature.set, and Feature.optional.
  */
 function luaDefault(source, path) {
 	const keys = path.split(".");
@@ -32,7 +32,7 @@ function luaDefault(source, path) {
 	}
 
 	const key = keys.at(-1);
-	const match = new RegExp(`^\\s*${key} = (true|false|-?[\\d.]+|"[^"]*"|Feature\\.optional\\("\\w+"\\)|\\{[^{}]*\\})`, "m")
+	const match = new RegExp(`^\\s*${key} = (true|false|-?[\\d.]+|"[^"]*"|Feature\\.optional\\("\\w+"\\)|(?:Feature\\.(?:list|set))?\\{[^{}]*\\})`, "m")
 		.exec(source.slice(start));
 	if (!match) {
 		return undefined;
@@ -41,7 +41,7 @@ function luaDefault(source, path) {
 	if (literal.startsWith("Feature.optional")) {
 		return null;
 	}
-	if (literal.startsWith("{")) {
+	if (literal.includes("{")) {
 		return [...literal.matchAll(/"([^"]*)"/g)].map(item => item[1]);
 	}
 	return JSON.parse(literal);

@@ -3,9 +3,10 @@ Features which the controller can enable, disable, and configure while the game 
 
 A feature's config table is changed in place when the controller sends overrides,
 so read values when they are used rather than copying them into locals when the
-file loads. Booleans, numbers, strings, and lists of strings can be overridden,
-including those in nested tables which are addressed as "section.key". Use
-Feature.optional for a value which has no default. Values used while the file
+file loads. Booleans, numbers, and strings can be overridden, as can lists and
+sets of strings made with Feature.list and Feature.set, and values with no default
+made with Feature.optional. Tables with string keys are nested sections whose
+values are addressed as "section.key", other tables can not be overridden. Values used while the file
 loads, such as on_nth_tick periods, stay as plain values and are not listed in
 features.ts.
 
@@ -14,6 +15,8 @@ local Feature = require("modules/exp_scenario/features")
 local feature = Feature.register("my_feature", {
     show_message = true,
     role_id = Feature.optional("number"),
+    item_names = Feature.set{ "iron-plate" },
+    surface_names = Feature.list{ "nauvis" },
 })
 local config = feature.config
 
@@ -30,9 +33,11 @@ Gui.toolbar.create_button{
 --- Commands are denied and left out of help while disabled:
 Commands.new("my_command", { "..." }):add_flags{ feature = feature }
 
---- Changes are raised per value, values derived from a list can use Feature.to_set:
+--- Sets are kept as sets, the controller sends a list which is converted when it is applied:
+if config.item_names[item.name] then end
+
+--- Changes are raised per value:
 [Feature.events.on_config_updated] = function(event) end, -- { feature_name, path, old_value, new_value }
-if Feature.to_set(config.names)[name] then end
 ]]
 
 local Storage = require("modules/exp_util/storage")
@@ -41,7 +46,7 @@ local Storage = require("modules/exp_util/storage")
 --- @field parent table The table holding the value within the config
 --- @field key string The key of the value within its parent
 --- @field default any
---- @field type string "boolean", "number", "string", "list" of strings, or a type which can not be overridden
+--- @field type string "boolean", "number", "string", "list" or "set" of strings, or a type which can not be overridden
 
 --- @class ExpScenario.Feature
 --- @field name string
@@ -77,31 +82,48 @@ Storage.register(stored_overrides, function(tbl)
     end
 end)
 
---- Check if a table is a list of strings, empty tables count as lists of strings
---- @param tbl table
+--- Check if a value is a list of strings, as sent by the controller for lists and sets
+--- @param value any
 --- @return boolean
-local function is_string_list(tbl)
-    if next(tbl) ~= nil and tbl[1] == nil then return false end
-    for _, item in pairs(tbl) do
+local function is_string_list(value)
+    if type(value) ~= "table" then return false end
+    if next(value) ~= nil and value[1] == nil then return false end
+    for _, item in pairs(value) do
         if type(item) ~= "string" then return false end
     end
     return true
 end
 
---- Check if two values are equal, lists are compared by their items
+--- Check if two values are equal, lists and sets are compared by their contents
 --- @param a any
 --- @param b any
 --- @return boolean
 local function values_equal(a, b)
     if type(a) ~= "table" or type(b) ~= "table" then return a == b end
-    if #a ~= #b then return false end
-    for index, item in ipairs(a) do
-        if b[index] ~= item then return false end
+    for key, value in pairs(a) do
+        if b[key] ~= value then return false end
+    end
+    for key in pairs(b) do
+        if a[key] == nil then return false end
     end
     return true
 end
 
---- Collect the values of a config table, recursing into nested tables which are not lists
+--- Marks a default made by Feature.list, Feature.set, or Feature.optional with the type of the field
+local typed_mt = {}
+
+--- Convert a list of strings into a set
+--- @param list string[]
+--- @return table<string, true>
+local function list_to_set(list)
+    local set = {}
+    for _, item in ipairs(list) do
+        set[item] = true
+    end
+    return set
+end
+
+--- Collect the values of a config table, recursing into nested sections
 --- @param fields table<string, ExpScenario.FeatureField>
 --- @param tbl table
 --- @param prefix string
@@ -110,15 +132,12 @@ local function collect_fields(fields, tbl, prefix)
         if type(key) == "string" then
             local field = { parent = tbl, key = key, default = value, type = type(value) }
             if type(value) == "table" then
-                if value.__feature_optional then
-                    field.default = nil
-                    field.type = value.__feature_optional
-                    tbl[key] = nil
-                elseif is_string_list(value) then
-                    field.type = "list"
-                elseif value[1] ~= nil then
-                    field.type = "table"
-                else
+                local typed = getmetatable(value) == typed_mt and value
+                if typed then
+                    field.type = typed.type
+                    field.default = typed.default
+                    tbl[key] = typed.default
+                elseif type(next(value)) == "string" then
                     collect_fields(fields, value, prefix .. key .. ".")
                     field = nil
                 end
@@ -130,11 +149,25 @@ local function collect_fields(fields, tbl, prefix)
     end
 end
 
---- Mark a value as having no default, the argument is the type it can be overridden with
---- @param value_type "boolean" | "number" | "string" | "list"
+--- Declare a value with no default, the argument is the type it can be overridden with
+--- @param value_type "boolean" | "number" | "string"
 --- @return any
 function Feature.optional(value_type)
-    return { __feature_optional = value_type }
+    return setmetatable({ type = value_type }, typed_mt)
+end
+
+--- Declare a list of strings which can be overridden
+--- @param items string[]
+--- @return string[]
+function Feature.list(items)
+    return setmetatable({ type = "list", default = items }, typed_mt)
+end
+
+--- Declare a set of strings which can be overridden, the controller sends a list which is converted when applied
+--- @param items string[]
+--- @return table<string, true>
+function Feature.set(items)
+    return setmetatable({ type = "set", default = list_to_set(items) }, typed_mt)
 end
 
 --- Register a feature and its config, features are enabled unless the config says otherwise
@@ -174,8 +207,8 @@ end
 --- @param value any
 --- @return boolean
 local function is_valid(field, value)
-    if field.type == "list" then
-        return type(value) == "table" and is_string_list(value)
+    if field.type == "list" or field.type == "set" then
+        return is_string_list(value)
     end
     return type(value) == field.type and (field.type == "boolean" or field.type == "number" or field.type == "string")
 end
@@ -190,6 +223,8 @@ function Feature:_apply()
         elseif not is_valid(field, value) then
             log("[WARNING] Invalid override for " .. self.name .. "." .. path .. ", using the default")
             value = field.default
+        elseif field.type == "set" then
+            value = list_to_set(value)
         end
         field.parent[field.key] = value
     end
@@ -252,24 +287,6 @@ function Feature:update_config(enabled, values)
             })
         end
     end
-end
-
---- Sets made from lists in the config, keyed by the list so a replaced list gets a new set
-local sets = setmetatable({}, { __mode = "k" }) --- @type table<string[], table<string, true>>
-
---- Get a lookup set of the items in a list, cached until the list is replaced
---- @param list string[]
---- @return table<string, true>
-function Feature.to_set(list)
-    local set = sets[list]
-    if not set then
-        set = {}
-        for _, item in ipairs(list) do
-            set[item] = true
-        end
-        sets[list] = set
-    end
-    return set
 end
 
 --- @class ExpScenario.FeatureUpdate

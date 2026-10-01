@@ -243,7 +243,7 @@ return Feature.register("spawn_area", {
     resource_refill_nearby = {
         enabled = false,
         range = 128,
-        resources_name = {
+        resources_name = Feature.list{
             "iron-ore",
             "copper-ore",
             "stone",

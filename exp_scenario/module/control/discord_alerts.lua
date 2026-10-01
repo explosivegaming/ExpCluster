@@ -16,7 +16,7 @@ local feature = Feature.register("discord_alerts", {
     player_kicks = true, --- @setting player_kicks Alert when a player is kicked
     player_promotes = false, --- @setting player_promotes Alert when a player is promoted or demoted
     player_jail = true, --- @setting player_jail Alert when a player is jailed or unjailed
-    logged_commands = { --- @setting logged_commands Alert when a player uses one of these commands
+    logged_commands = Feature.set{ --- @setting logged_commands Alert when a player uses one of these commands
         "config", "purge", "c", "command", "silent-command", "measured-command", "banlist", "permissions", "editor", "cheat",
     },
 })
@@ -259,7 +259,7 @@ end)
 events[e.on_console_command] = function(event)
     if event.player_index then
         local player_name = get_player_name(event)
-        if Feature.to_set(config.logged_commands)[event.command] then
+        if config.logged_commands[event.command] then
             emit_event{
                 title = event.command:gsub("^%l", string.upper),
                 description = "/" .. event.command .. " was used",

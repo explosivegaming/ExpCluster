@@ -17,16 +17,20 @@ export type FeatureField = {
 	name: string,
 	title: string,
 	description: string,
+} & (
+	| ScalarField<{ type: "boolean", default: boolean }>
+	| ScalarField<{ type: "number", default: number | null, min?: number, unit?: string }>
+	| ScalarField<{ type: "string", default: string | null, enum?: string[] }>
+	/** Feature.list or Feature.set on the lua side, both are sent as a list */
+	| { type: "string_list", default: string[] }
+);
+
+type ScalarField<T> = T & {
 	/** Allows null, the lua side uses Feature.optional */
 	optional?: boolean,
 	/** Name of an input component registered with the web interface, such as "role" */
 	inputComponent?: string,
-} & (
-	| { type: "boolean", default: boolean }
-	| { type: "number", default: number | null, min?: number, unit?: string }
-	| { type: "string", default: string | null, enum?: string[] }
-	| { type: "string_list", default: string[] }
-);
+};
 
 export type Feature = {
 	name: string,
@@ -238,7 +242,7 @@ export function validateFeatureValues(name: string, values: Record<string, Featu
 
 function checkFieldValue(field: FeatureField, value: FeatureValue, label: string) {
 	if (value === null) {
-		if (!field.optional) {
+		if (field.type === "string_list" || !field.optional) {
 			throw new Error(`${label} can not be null`);
 		}
 		return;
