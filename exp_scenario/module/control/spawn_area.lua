@@ -2,8 +2,9 @@
 Adds a custom spawn area with chests and afk turrets
 ]]
 
-local Features = require("modules/exp_scenario/features")
-local config = require("modules/exp_scenario/config/spawn_area")
+local Feature = require("modules/exp_scenario/features")
+local feature = require("modules/exp_scenario/config/spawn_area")
+local config = feature.config
 
 --- Apply an offset to a LuaPosition
 --- @param position MapPosition.struct
@@ -299,9 +300,9 @@ end
 
 local e = defines.events
 
-return Features.guard(config, {
+return feature:guard{
     on_nth_tick = on_nth_tick,
     events = {
         [e.on_player_created] = on_player_created,
     },
-})
+}

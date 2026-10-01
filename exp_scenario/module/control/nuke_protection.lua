@@ -3,22 +3,14 @@ Disable new players from having certain items in their inventory, most commonly 
 ]]
 
 local ExpUtil = require("modules/exp_util")
-local Features = require("modules/exp_scenario/features")
+local Feature = require("modules/exp_scenario/features")
 local Roles = require("modules/exp_roles")
 
-local config = Features.config("nuke_protection", {
+local feature = Feature.register("nuke_protection", {
     ignore_admins = true, --- @setting ignore_admins Admins can hold banned items
     banned_items = { "atomic-bomb" }, --- @setting banned_items Items which are removed from the inventory of players without the bypass permission
 })
-
---- Set of the banned items, rebuilt when the config changes
-local banned_items = {} --- @type table<string, true>
-Features.on_apply(config, function()
-    banned_items = {}
-    for _, item_name in ipairs(config.banned_items) do
-        banned_items[item_name] = true
-    end
-end)
+local config = feature.config
 
 --- The inventories which are checked and the events which trigger the check
 local inventories = {
@@ -36,6 +28,7 @@ local function check_items(player, type)
     if Roles.player_has_permission(player, "exp_scenario.bypass.nuke_protection") then return end
     if config.ignore_admins and player.admin then return end
 
+    local banned_items = Feature.to_set(config.banned_items)
     local items = {} --- @type LuaItemStack[]
     local inventory = assert(player.get_inventory(type))
     -- Check what items the player has
@@ -68,6 +61,6 @@ for event_id, inventory in pairs(inventories) do
     end
 end
 
-return Features.guard(config, {
+return feature:guard{
     events = events,
-})
+}

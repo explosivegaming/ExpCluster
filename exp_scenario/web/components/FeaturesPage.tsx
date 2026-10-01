@@ -1,7 +1,8 @@
 import React, { useContext, useState } from "react";
-import { Button, Checkbox, Col, Divider, Input, InputNumber, Row, Select, Space, Switch } from "antd";
+import { Button, Checkbox, Col, ConfigProvider, Divider, Input, InputNumber, Row, Select, Space, Switch } from "antd";
 
-import { ControlContext, PageHeader, PageLayout, notifyErrorHandler, useAccount, useRoles } from "@clusterio/web_ui";
+import * as lib from "@clusterio/lib";
+import { ControlContext, PageHeader, PageLayout, notifyErrorHandler, useAccount } from "@clusterio/web_ui";
 
 import { Feature, FeatureField, FeatureValue, features, isDefaultValue } from "../../features.js";
 import { FeatureRecord, FeatureUpdateRequest } from "../../messages.js";
@@ -70,24 +71,30 @@ function searchFields(feature: Feature, query: string) {
 	));
 }
 
-function RoleSelect(props: { value: FeatureValue, disabled: boolean, onChange: (value: FeatureValue) => void }) {
-	const [roles, synced] = useRoles();
-	return <Select
-		showSearch
-		allowClear
-		placeholder="No role"
-		optionFilterProp="label"
-		style={{ minWidth: 200 }}
-		value={props.value ?? undefined}
-		onChange={value => props.onChange(value ?? null)}
-		options={[...roles.values()].map(role => ({ label: role.name, value: role.id }))}
-		disabled={props.disabled || !synced}
-		loading={!synced}
-	/>;
-}
-
+/**
+ * Render the input for a setting the same way the config pages do, input components registered
+ * with the web interface take priority so plugins can provide inputs for other types
+ */
 function FieldInput(props: { field: FeatureField, value: FeatureValue, disabled: boolean, onChange: (value: FeatureValue) => void }) {
 	const { field, value, disabled, onChange } = props;
+	const control = useContext(ControlContext);
+	const CustomInput = field.inputComponent ? control.inputComponents.get(field.inputComponent) : undefined;
+	if (CustomInput) {
+		const fieldDefinition = {
+			type: field.type === "string_list" ? "object" : field.type,
+			title: field.title,
+			description: field.description,
+			optional: field.optional,
+			inputComponent: field.inputComponent,
+		} as lib.FieldDefinition;
+		return <CustomInput
+			fieldDefinition={fieldDefinition}
+			value={value as Exclude<FeatureValue, string[]>}
+			onChange={onChange}
+			disabled={disabled}
+		/>;
+	}
+
 	switch (field.type) {
 		case "number":
 			return <InputNumber
@@ -95,10 +102,21 @@ function FieldInput(props: { field: FeatureField, value: FeatureValue, disabled:
 				min={field.min}
 				addonAfter={field.unit}
 				disabled={disabled}
-				onChange={next => onChange(next ?? field.default)}
+				onChange={next => onChange(next ?? (field.optional ? null : field.default))}
 			/>;
 		case "string":
-			return <Input value={value as string} disabled={disabled} onChange={e => onChange(e.target.value)} style={{ maxWidth: 400 }} />;
+			if (field.enum) {
+				return <Select
+					showSearch
+					style={{ minWidth: 175 }}
+					value={value as string}
+					options={field.enum.map(option => ({ label: option, value: option }))}
+					allowClear={field.optional}
+					disabled={disabled}
+					onChange={next => onChange(next ?? null)}
+				/>;
+			}
+			return <Input value={value as string} disabled={disabled} onChange={e => onChange(e.target.value)} style={{ width: 300 }} />;
 		case "string_list":
 			return <Select
 				mode="tags"
@@ -108,8 +126,6 @@ function FieldInput(props: { field: FeatureField, value: FeatureValue, disabled:
 				open={false}
 				style={{ width: "100%", maxWidth: 600 }}
 			/>;
-		case "role":
-			return <RoleSelect value={value} disabled={disabled} onChange={onChange} />;
 		default:
 			return null;
 	}
@@ -160,7 +176,7 @@ function FeatureSection(props: {
 				borderRadius: 4,
 				background: state.enabled !== stored.enabled ? modifiedColor : undefined,
 			}}>
-				<Switch checked={state.enabled} disabled={!canEdit} onChange={props.onEnabled} />
+				<Switch size="default" checked={state.enabled} disabled={!canEdit} onChange={props.onEnabled} />
 			</div>
 			<div style={{ flexGrow: 1 }}>
 				<strong>{feature.title}</strong>
@@ -301,23 +317,26 @@ export default function FeaturesPage() {
 				</div>
 			</Col>
 			<Col flex="auto" style={{ minWidth: 0 }}>
-				<Space direction="vertical" style={{ width: "100%" }}>
-					{shown.map(({ feature, fields }) => <FeatureSection
-						key={feature.name}
-						feature={feature}
-						fields={fields}
-						state={current(feature.name)}
-						stored={stored[feature.name]}
-						canEdit={canEdit}
-						onEnabled={enabled => change(feature.name, entry => { entry.enabled = enabled; })}
-						onValue={(key, value) => change(feature.name, entry => { entry.values[key] = value; })}
-						onReset={() => change(feature.name, entry => {
-							for (const field of feature.fields) {
-								entry.values[field.name] = field.default;
-							}
-						})}
-					/>)}
-				</Space>
+				{/* Small inputs match the line height of the text, same as the config pages */}
+				<ConfigProvider componentSize="small">
+					<Space direction="vertical" style={{ width: "100%" }}>
+						{shown.map(({ feature, fields }) => <FeatureSection
+							key={feature.name}
+							feature={feature}
+							fields={fields}
+							state={current(feature.name)}
+							stored={stored[feature.name]}
+							canEdit={canEdit}
+							onEnabled={enabled => change(feature.name, entry => { entry.enabled = enabled; })}
+							onValue={(key, value) => change(feature.name, entry => { entry.values[key] = value; })}
+							onReset={() => change(feature.name, entry => {
+								for (const field of feature.fields) {
+									entry.values[field.name] = field.default;
+								}
+							})}
+						/>)}
+					</Space>
+				</ConfigProvider>
 			</Col>
 		</Row>
 	</PageLayout>;

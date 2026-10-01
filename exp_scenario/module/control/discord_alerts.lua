@@ -4,11 +4,11 @@ Sends alert messages to our discord server when certain events are triggered
 
 local ExpUtil = require("modules/exp_util")
 local Colors = require("modules/exp_util/include/color")
-local Features = require("modules/exp_scenario/features")
+local Feature = require("modules/exp_scenario/features")
 local EntityProtection = require("modules/exp_scenario/control/protection")
 local Jail = require("modules/exp_scenario/control/jail")
 
-local config = Features.config("discord_alerts", {
+local feature = Feature.register("discord_alerts", {
     show_playtime = true, --- @setting show_playtime Add the playtime of players to alerts
     entity_protection = true, --- @setting entity_protection Alert when a player repeatedly removes protected entities
     player_bans = true, --- @setting player_bans Alert when a player is banned or unbanned
@@ -20,15 +20,7 @@ local config = Features.config("discord_alerts", {
         "config", "purge", "c", "command", "silent-command", "measured-command", "banlist", "permissions", "editor", "cheat",
     },
 })
-
---- Set of the logged commands, rebuilt when the config changes
-local logged_commands = {} --- @type table<string, true>
-Features.on_apply(config, function()
-    logged_commands = {}
-    for _, command in ipairs(config.logged_commands) do
-        logged_commands[command] = true
-    end
-end)
+local config = feature.config
 
 --- Wrap an event handler so it only runs while the alert is enabled
 --- @param setting string
@@ -267,7 +259,7 @@ end)
 events[e.on_console_command] = function(event)
     if event.player_index then
         local player_name = get_player_name(event)
-        if logged_commands[event.command] then
+        if Feature.to_set(config.logged_commands)[event.command] then
             emit_event{
                 title = event.command:gsub("^%l", string.upper),
                 description = "/" .. event.command .. " was used",
@@ -281,6 +273,6 @@ events[e.on_console_command] = function(event)
     end
 end
 
-return Features.guard(config, {
+return feature:guard{
     events = events,
-})
+}

@@ -8,17 +8,24 @@
 
 export type FeatureValue = boolean | number | string | string[] | null;
 
+/**
+ * A setting of a feature, shaped like a clusterio config field definition so
+ * the web interface can render it with the same inputs, including the input
+ * components registered by plugins.
+ */
 export type FeatureField = {
 	name: string,
 	title: string,
 	description: string,
+	/** Allows null, the lua side uses Feature.optional */
+	optional?: boolean,
+	/** Name of an input component registered with the web interface, such as "role" */
+	inputComponent?: string,
 } & (
 	| { type: "boolean", default: boolean }
-	| { type: "number", default: number, min?: number, unit?: string }
-	| { type: "string", default: string }
+	| { type: "number", default: number | null, min?: number, unit?: string }
+	| { type: "string", default: string | null, enum?: string[] }
 	| { type: "string_list", default: string[] }
-	/** Id of a clusterio role, null when no role is picked */
-	| { type: "role", default: null }
 );
 
 export type Feature = {
@@ -44,8 +51,9 @@ function list(name: string, title: string, description: string, value: string[])
 	return { name, title, description, type: "string_list", default: value };
 }
 
+/** Id of a clusterio role, null when no role is picked */
 function role(name: string, title: string, description: string): FeatureField {
-	return { name, title, description, type: "role", default: null };
+	return { name, title, description, type: "number", default: null, optional: true, inputComponent: "role" };
 }
 
 export const features: Feature[] = [
@@ -229,15 +237,16 @@ export function validateFeatureValues(name: string, values: Record<string, Featu
 }
 
 function checkFieldValue(field: FeatureField, value: FeatureValue, label: string) {
+	if (value === null) {
+		if (!field.optional) {
+			throw new Error(`${label} can not be null`);
+		}
+		return;
+	}
 	switch (field.type) {
 		case "string_list":
 			if (!Array.isArray(value) || value.some(item => typeof item !== "string")) {
 				throw new Error(`${label} must be a list of strings`);
-			}
-			return;
-		case "role":
-			if (value !== null && !Number.isInteger(value)) {
-				throw new Error(`${label} must be a role id or null`);
 			}
 			return;
 		case "number":
@@ -246,6 +255,14 @@ function checkFieldValue(field: FeatureField, value: FeatureValue, label: string
 			}
 			if (field.min !== undefined && value < field.min) {
 				throw new Error(`${label} must be at least ${field.min}`);
+			}
+			return;
+		case "string":
+			if (typeof value !== "string") {
+				throw new Error(`${label} must be a string`);
+			}
+			if (field.enum && !field.enum.includes(value)) {
+				throw new Error(`${label} must be one of ${field.enum.join(", ")}`);
 			}
 			return;
 		default:

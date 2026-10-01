@@ -2,7 +2,7 @@
 -- @config Chat-Auto-Reply
 
 local ExpUtil = require("modules/exp_util")
-local Features = require("modules/exp_scenario/features")
+local Feature = require("modules/exp_scenario/features")
 local Async = require("modules/exp_util/async")
 local config_server_detail = require("modules.exp_legacy.config.server_detail") --- @dep config.server_detail
 
@@ -25,7 +25,7 @@ local afk_time_units = {
     seconds = true,
 }
 
-return Features.config("chat_auto_reply", {
+return Feature.register("chat_auto_reply", {
     --- @type table<string, LocalisedString | fun(player: LuaPlayer, is_command: boolean): LocalisedString>
     messages = { --- @setting messages will trigger when ever the word is said
         ["discord"] = { "info.discord", config_server_detail["discord"] },

@@ -1,137 +1,140 @@
 local Suite = ... --- @type Suite<ExpScenario.TestEnv>
 
-Suite.test("config() enables features unless the defaults say otherwise", function(env)
-    Suite.eq(env.Features.config("on", { value = 1 }).enabled, true, "enabled by default")
-    Suite.eq(env.Features.config("off", { enabled = false }).enabled, false, "the defaults can disable it")
-    Suite.eq(env.Features.config("empty"), { enabled = true }, "config is optional")
-    Suite.throws(function() env.Features.config("on", {}) end, "Feature already declared: on", "names are unique")
+--- The values of on_config_updated events, ignoring the event name and tick
+local function updates(env)
+    local rtn = {}
+    for _, event in ipairs(env.events) do
+        rtn[#rtn + 1] = { event.feature_name, event.path, event.old_value, event.new_value }
+    end
+    return rtn
+end
+
+Suite.test("register() enables features unless the config says otherwise", function(env)
+    Suite.eq(env.Feature.register("on", { value = 1 }).config.enabled, true, "enabled by default")
+    Suite.eq(env.Feature.register("off", { enabled = false }):is_enabled(), false, "the config can disable it")
+    Suite.eq(env.Feature.register("empty").config, { enabled = true }, "config is optional")
+    Suite.throws(function() env.Feature.register("on", {}) end, "Feature already registered: on", "names are unique")
 end)
 
-Suite.test("is_enabled() takes a name or a config", function(env)
-    local config = env.Features.config("test", { enabled = false })
-    Suite.eq(env.Features.is_enabled("test"), false, "by name")
-    Suite.eq(env.Features.is_enabled(config), false, "by config")
-    Suite.throws(function() env.Features.is_enabled("unknown") end, "Unknown feature: unknown", "unknown names error")
+Suite.test("get() finds registered features", function(env)
+    local feature = env.Feature.register("test")
+    Suite.eq(env.Feature.get("test") == feature, true, "by name")
+    Suite.throws(function() env.Feature.get("unknown") end, "Unknown feature: unknown", "unknown names error")
 end)
 
-Suite.test("receive_update() changes the config in place", function(env)
-    local config = env.Features.config("test", { flag = true, count = 5, text = "a" })
-    env.Features.receive_update{ { name = "test", enabled = false, values = { flag = false, count = 7 } } }
+Suite.test("update_config() changes the config in place", function(env)
+    local feature = env.Feature.register("test", { flag = true, count = 5, text = "a" })
+    local config = feature.config
+    feature:update_config(false, { flag = false, count = 7 })
     Suite.eq(config, { enabled = false, flag = false, count = 7, text = "a" }, "given values replace the defaults")
 
-    env.Features.receive_update{ { name = "test", enabled = true, values = { text = "b" } } }
+    feature:update_config(true, { text = "b" })
     Suite.eq(config, { enabled = true, flag = true, count = 5, text = "b" }, "values left out go back to their default")
     Suite.eq(env.storage, { test = { enabled = true, text = "b" } }, "the overrides are kept in storage")
 end)
 
-Suite.test("receive_update() raises on_feature_changed for each known feature", function(env)
-    env.Features.config("test")
-    env.Features.receive_update{
-        { name = "test", enabled = false, values = {} },
-        { name = "unknown", enabled = false, values = {} },
-    }
-    Suite.eq(env.events, {
-        { name = env.Features.events.on_feature_changed, tick = game.tick, feature_name = "test" },
-    }, "raised once")
+Suite.test("update_config() raises on_config_updated for each changed value", function(env)
+    local feature = env.Feature.register("test", { flag = true, names = { "a" }, section = { count = 1 } })
+    feature:update_config(false, { names = { "a" }, ["section.count"] = 2 })
+    Suite.eq(#env.events, 2, "unchanged values raise nothing")
+    Suite.eq(env.Feature.events.on_config_updated, assert(env.events[1]).name, "the event is on_config_updated")
+
+    local seen = updates(env)
+    table.sort(seen, function(a, b) return a[2] < b[2] end)
+    Suite.eq(seen, {
+        { "test", "enabled", true, false },
+        { "test", "section.count", 1, 2 },
+    }, "with the path, old value, and new value")
 end)
 
-Suite.test("receive_update() ignores values which can not be overridden", function(env)
+Suite.test("update_config() ignores and logs values which can not be overridden", function(env)
     local function check() return true end
-    local config = env.Features.config("test", { flag = true, check = check, icon = nil })
-    env.Features.receive_update{
+    local feature = env.Feature.register("test", { flag = true, check = check, icon = nil })
+    feature:update_config(true, { flag = "yes", check = false, icon = "x" })
+    Suite.eq(feature.config, { enabled = true, flag = true, check = check }, "wrong types, functions, and unknown keys are skipped")
+    Suite.eq(#env.logged, 3, "each one is logged")
+end)
+
+Suite.test("receive_update() updates known features", function(env)
+    local feature = env.Feature.register("test", { flag = true })
+    env.Feature.receive_update{
+        { name = "test", enabled = true, values = { flag = false } },
         { name = "unknown", enabled = false, values = {} },
-        { name = "test", enabled = true, values = { flag = "yes", check = false, icon = "x", extra = 1 } },
     }
-    Suite.eq(config, { enabled = true, flag = true, check = check }, "wrong types, functions, and unknown keys are skipped")
+    Suite.eq(feature.config.flag, false, "the known feature changed")
     Suite.eq(env.storage.unknown, nil, "unknown features are not stored")
 end)
 
-Suite.test("on_load applies the overrides from storage", function(env)
-    local config = env.Features.config("test", { flag = true })
+Suite.test("on_load applies the overrides from storage without raising events", function(env)
+    local feature = env.Feature.register("test", { flag = true })
     env.on_load{ test = { enabled = false, flag = false } }
-    Suite.eq(config, { enabled = false, flag = false }, "the saved overrides apply")
+    Suite.eq(feature.config, { enabled = false, flag = false }, "the saved overrides apply")
+    Suite.empty(env.events, "nothing is raised")
 
-    env.Features.receive_update{ { name = "test", enabled = true, values = {} } }
+    feature:update_config(true, {})
     Suite.eq(env.storage, { test = { enabled = true } }, "later updates go to the loaded storage table")
 end)
 
 Suite.test("guard() skips handlers while the feature is disabled", function(env)
-    local config = env.Features.config("test")
+    local feature = env.Feature.register("test")
     local calls = {}
-    local lib = env.Features.guard(config, {
+    local lib = feature:guard{
         events = { on_event = function(event) calls[#calls + 1] = event end },
         on_nth_tick = { [60] = function(event) calls[#calls + 1] = event end },
         on_init = function() end,
-    })
+    }
 
     lib.events.on_event("a")
     lib.on_nth_tick[60]("b")
-    env.Features.receive_update{ { name = "test", enabled = false, values = {} } }
+    feature:update_config(false, {})
     lib.events.on_event("c")
     lib.on_nth_tick[60]("d")
     Suite.eq(calls, { "a", "b" }, "only called while enabled")
 end)
 
-Suite.test("guard() declares features by name", function(env)
-    local calls = 0
-    local lib = env.Features.guard("test", { events = { on_event = function() calls = calls + 1 end } })
-    env.Features.receive_update{ { name = "test", enabled = false, values = {} } }
-    lib.events.on_event()
-    Suite.eq(calls, 0, "the name is declared without config")
-    Suite.eq(env.Features.is_enabled("test"), false, "and can be looked up")
-end)
-
-Suite.test("receive_update() logs invalid and unknown overrides", function(env)
-    local config = env.Features.config("test", { flag = true })
-    env.Features.receive_update{ { name = "test", enabled = true, values = { flag = 1, extra = 2 } } }
-    Suite.eq(config.flag, true, "the default is used")
-    Suite.eq(#env.logged, 2, "both are logged")
-end)
-
-Suite.test("config() addresses nested values by path", function(env)
+Suite.test("register() addresses nested values by path", function(env)
     local offset = { 1, 2 }
-    local config = env.Features.config("test", { section = { flag = true, count = 1 }, offset = offset })
-    env.Features.receive_update{ { name = "test", enabled = true, values = { ["section.flag"] = false, offset = { "x" } } } }
-    Suite.eq(config.section, { flag = false, count = 1 }, "the nested value changes in place")
-    Suite.eq(config.offset, offset, "lists of other types can not be overridden")
+    local feature = env.Feature.register("test", { section = { flag = true, count = 1 }, offset = offset })
+    feature:update_config(true, { ["section.flag"] = false, offset = { "x" } })
+    Suite.eq(feature.config.section, { flag = false, count = 1 }, "the nested value changes in place")
+    Suite.eq(feature.config.offset, offset, "lists of other types can not be overridden")
 
-    env.Features.receive_update{ { name = "test", enabled = true, values = {} } }
-    Suite.eq(config.section.flag, true, "and goes back to its default")
+    feature:update_config(true, {})
+    Suite.eq(feature.config.section.flag, true, "and goes back to its default")
 end)
 
-Suite.test("config() allows lists of strings to be overridden", function(env)
-    local config = env.Features.config("test", { names = { "a", "b" }, empty = {} })
-    env.Features.receive_update{ { name = "test", enabled = true, values = { names = { "c" }, empty = { "d" } } } }
-    Suite.eq(config.names, { "c" }, "a list is replaced")
-    Suite.eq(config.empty, { "d" }, "an empty default is a list")
-    env.Features.receive_update{ { name = "test", enabled = true, values = { names = { 1 } } } }
-    Suite.eq(config.names, { "a", "b" }, "a list with other types is invalid")
+Suite.test("register() allows lists of strings to be overridden", function(env)
+    local feature = env.Feature.register("test", { names = { "a", "b" }, empty = {} })
+    feature:update_config(true, { names = { "c" }, empty = { "d" } })
+    Suite.eq(feature.config.names, { "c" }, "a list is replaced")
+    Suite.eq(feature.config.empty, { "d" }, "an empty default is a list")
+    feature:update_config(true, { names = { 1 } })
+    Suite.eq(feature.config.names, { "a", "b" }, "a list with other types is invalid")
 end)
 
 Suite.test("optional() declares a value without a default", function(env)
-    local config = env.Features.config("test", { role_id = env.Features.optional("number") })
-    Suite.eq(config.role_id, nil, "nil until overridden")
-    env.Features.receive_update{ { name = "test", enabled = true, values = { role_id = 3 } } }
-    Suite.eq(config.role_id, 3, "overridden with the given type")
-    env.Features.receive_update{ { name = "test", enabled = true, values = {} } }
-    Suite.eq(config.role_id, nil, "and back to nil")
+    local feature = env.Feature.register("test", { role_id = env.Feature.optional("number") })
+    Suite.eq(feature.config.role_id, nil, "nil until overridden")
+    feature:update_config(true, { role_id = 3 })
+    Suite.eq(feature.config.role_id, 3, "overridden with the given type")
+    feature:update_config(true, {})
+    Suite.eq(feature.config.role_id, nil, "and back to nil")
 end)
 
-Suite.test("on_apply() is called now and after every change", function(env)
-    local config = env.Features.config("test", { names = { "a" } })
-    local seen = {}
-    env.Features.on_apply("test", function(applied) seen[#seen + 1] = applied.names[1] end)
-    env.Features.receive_update{ { name = "test", enabled = true, values = { names = { "b" } } } }
-    env.on_load{ test = { enabled = true, names = { "c" } } }
-    Suite.eq(seen, { "a", "b", "c" }, "on register, update, and load")
-    Suite.eq(config.names, { "c" }, "after the config is applied")
+Suite.test("to_set() is cached until the list is replaced", function(env)
+    local feature = env.Feature.register("test", { names = { "a" } })
+    local set = env.Feature.to_set(feature.config.names)
+    Suite.eq(set, { a = true }, "a set of the items")
+    Suite.eq(env.Feature.to_set(feature.config.names) == set, true, "the same set while the list is unchanged")
+    env.on_load{ test = { enabled = true, names = { "b" } } }
+    Suite.eq(env.Feature.to_set(feature.config.names), { b = true }, "a new set after load replaces the list")
 end)
 
-Suite.test("config files declare their feature", function(env)
-    local config = env.load_config("popups")
-    env.Features.receive_update{ { name = "popups", enabled = true, values = { show_player_damage = false } } }
-    Suite.eq(config.show_player_damage, false, "popups can be changed")
-    Suite.eq(config.show_player_health, true, "other values keep their default")
+Suite.test("config files register their feature", function(env)
+    local feature = env.load_config("popups")
+    feature:update_config(true, { show_player_damage = false })
+    Suite.eq(feature.config.show_player_damage, false, "popups can be changed")
+    Suite.eq(feature.config.show_player_health, true, "other values keep their default")
 end)
 
 return Suite.run()

@@ -3,10 +3,10 @@ Protects entities and areas from being mined by players other than the one who p
 ]]
 
 local Storage = require("modules/exp_util/storage")
-local Features = require("modules/exp_scenario/features")
+local Feature = require("modules/exp_scenario/features")
 local Roles = require("modules/exp_roles")
 
-local config = Features.config("protection", {
+local feature = Feature.register("protection", {
     ignore_admins = true, --- @setting ignore_admins If admins are ignored by the protection filter
     repeat_count = 5, --- @setting repeat_count Number of protected entities that must be removed within repeat_minutes in order to trigger repeated removal protection
     repeat_minutes = 20, --- @setting repeat_minutes The length of time, in minutes, that protected removals will be remembered for
@@ -19,6 +19,7 @@ local config = Features.config("protection", {
         "reactor", "fusion-reactor", "rocket-silo",
     },
 })
+local config = feature.config
 
 local format_string = string.format
 local floor = math.floor
@@ -31,12 +32,6 @@ local Protection = {
     --- Raised when a player mines protected entities repeatedly, or one which always counts as repeated
     --- @type EventData.ExpScenario_Protection.on_repeat_violation
     on_repeat_violation = script.generate_event_name(),
-    --- Names of entities which are always protected
-    --- @type string[]
-    protected_entity_names = {},
-    --- Types of entities which are always protected
-    --- @type string[]
-    protected_entity_types = {},
     --- @package
     events = {},
     --- @package
@@ -50,28 +45,17 @@ local Protection = {
 --- @field last uint Tick of the last protected removal
 --- @field count number Protected removals since the last repeat violation
 
---- @param values string[]
---- @return table<string, true>
-local function to_set(values)
-    local set = {}
-    for _, value in ipairs(values) do
-        set[value] = true
-    end
-    return set
+--- Names of entities which are always protected
+--- @return string[]
+function Protection.get_protected_entity_names()
+    return config.always_protected_names
 end
 
-local always_protected_names = {} --- @type table<string, true>
-local always_protected_types = {} --- @type table<string, true>
-local always_trigger_repeat_names = {} --- @type table<string, true>
-local always_trigger_repeat_types = {} --- @type table<string, true>
-Features.on_apply(config, function()
-    Protection.protected_entity_names = config.always_protected_names
-    Protection.protected_entity_types = config.always_protected_types
-    always_protected_names = to_set(config.always_protected_names)
-    always_protected_types = to_set(config.always_protected_types)
-    always_trigger_repeat_names = to_set(config.always_trigger_repeat_names)
-    always_trigger_repeat_types = to_set(config.always_trigger_repeat_types)
-end)
+--- Types of entities which are always protected
+--- @return string[]
+function Protection.get_protected_entity_types()
+    return config.always_protected_types
+end
 
 local protected_entities = {} --- @type table<uint, table<string, LuaEntity>> Keyed by surface index then entity key
 local protected_areas = {} --- @type table<uint, table<string, BoundingBox>> Keyed by surface index then area key
@@ -131,7 +115,7 @@ end
 --- @param entity LuaEntity
 --- @return boolean
 function Protection.is_entity_protected(entity)
-    if always_protected_names[entity.name] or always_protected_types[entity.type] then return true end
+    if Feature.to_set(config.always_protected_names)[entity.name] or Feature.to_set(config.always_protected_types)[entity.type] then return true end
     local entities = protected_entities[entity.surface.index]
     if not entities then return false end
     return entities[Protection.get_entity_key(entity)] == entity
@@ -209,7 +193,7 @@ local function raise_violation(event, player)
     script.raise_event(Protection.on_player_mined_protected, event)
 
     local entity = event.entity
-    local always_repeat = always_trigger_repeat_names[entity.name] or always_trigger_repeat_types[entity.type]
+    local always_repeat = Feature.to_set(config.always_trigger_repeat_names)[entity.name] or Feature.to_set(config.always_trigger_repeat_types)[entity.type]
     if always_repeat or player_repeats.count >= config.repeat_count then
         player_repeats.count = 0
         script.raise_event(Protection.on_repeat_violation, event)

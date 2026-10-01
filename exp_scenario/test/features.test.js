@@ -17,8 +17,8 @@ function luaFiles(dir, prefix = "") {
 const moduleFiles = luaFiles(path.join(import.meta.dirname, "..", "module"));
 
 /**
- * Read a default from a Features.config call, a path of "a.b" looks for b after the table a starts.
- * Only covers booleans, numbers, strings, lists of strings, and Features.optional.
+ * Read a default from a Feature.register call, a path of "a.b" looks for b after the table a starts.
+ * Only covers booleans, numbers, strings, lists of strings, and Feature.optional.
  */
 function luaDefault(source, path) {
 	const keys = path.split(".");
@@ -32,13 +32,13 @@ function luaDefault(source, path) {
 	}
 
 	const key = keys.at(-1);
-	const match = new RegExp(`^\\s*${key} = (true|false|-?[\\d.]+|"[^"]*"|Features\\.optional\\("\\w+"\\)|\\{[^{}]*\\})`, "m")
+	const match = new RegExp(`^\\s*${key} = (true|false|-?[\\d.]+|"[^"]*"|Feature\\.optional\\("\\w+"\\)|\\{[^{}]*\\})`, "m")
 		.exec(source.slice(start));
 	if (!match) {
 		return undefined;
 	}
 	const literal = match[1];
-	if (literal.startsWith("Features.optional")) {
+	if (literal.startsWith("Feature.optional")) {
 		return null;
 	}
 	if (literal.startsWith("{")) {
@@ -51,7 +51,7 @@ t.test("features", t2 => {
 	for (const feature of features) {
 		t2.test(feature.name, t3 => {
 			const declarations = moduleFiles.filter(([, source]) => (
-				source.includes(`Features.config("${feature.name}"`) || source.includes(`Features.guard("${feature.name}"`)
+				source.includes(`Feature.register("${feature.name}"`)
 			));
 			t3.equal(declarations.length, 1, "one lua file declares the feature");
 			const source = declarations[0]?.[1] ?? "";
@@ -92,8 +92,8 @@ t.test("validateFeatureValues()", t2 => {
 		{ message: "Setting always_protected_types of protection must be a list of strings" },
 	);
 	t2.throws(
-		() => validateFeatureValues("afk_kick", { active_role_id: 1.5 }),
-		{ message: "Setting active_role_id of afk_kick must be a role id or null" },
+		() => validateFeatureValues("afk_kick", { afk_minutes: null }),
+		{ message: "Setting afk_minutes of afk_kick can not be null" },
 	);
 	t2.same(
 		validateFeatureValues("protection", { always_protected_types: ["boiler"], always_trigger_repeat_types: ["reactor", "fusion-reactor", "rocket-silo"] }),

@@ -2,9 +2,10 @@
 Adds auto replies to chat messages, as well as chat commands
 ]]
 
-local Features = require("modules/exp_scenario/features")
+local Feature = require("modules/exp_scenario/features")
 local Roles = require("modules/exp_roles")
-local config = require("modules/exp_scenario/config/chat_auto_reply")
+local feature = require("modules/exp_scenario/config/chat_auto_reply")
+local config = feature.config
 
 local find = string.find
 local sub = string.sub
@@ -57,8 +58,8 @@ end
 
 local e = defines.events
 
-return Features.guard(config, {
+return feature:guard{
     events = {
         [e.on_console_chat] = on_console_chat,
     },
-})
+}

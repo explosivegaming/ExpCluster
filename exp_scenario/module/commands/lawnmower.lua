@@ -4,13 +4,14 @@ Adds a command that clean up biter corpse and nuclear hole
 
 local AABB = require("modules/exp_util/aabb")
 local Commands = require("modules/exp_commands")
-local Features = require("modules/exp_scenario/features")
+local Feature = require("modules/exp_scenario/features")
 local Selection = require("modules/exp_util/selection")
 local SelectArea = Selection.connect("ExpCommand_Lawnmower")
 
-local config = Features.config("lawnmower", {
+local feature = Feature.register("lawnmower", {
     destroy_decoratives = false, --- @setting destroy_decoratives remove decoratives under entities when they are built
 })
+local config = feature.config
 
 --- @class ExpCommand_Lawnmower.commands
 local commands = {}
@@ -19,7 +20,7 @@ local commands = {}
 --- @class ExpCommands_Lawnmower.commands.lawnmower: ExpCommand
 --- @overload fun(player: LuaPlayer)
 commands.lawnmower = Commands.new("lawnmower", { "exp-commands_lawnmower.description" })
-    :add_flags{ feature = config }
+    :add_flags{ feature = feature }
     :register(function(player)
         if SelectArea:stop(player) then
             return Commands.status.success{ "exp_util.selection_exit", { "exp-commands_lawnmower.selection-name" } }
@@ -65,7 +66,7 @@ end
 
 local e = defines.events
 
-return Features.guard(config, {
+return feature:guard{
     events = {
         [e.on_built_entity] = destroy_decoratives,
         [e.on_robot_built_entity] = destroy_decoratives,
@@ -73,4 +74,4 @@ return Features.guard(config, {
         [e.script_raised_revive] = destroy_decoratives,
     },
     commands = commands,
-})
+}

@@ -3,10 +3,10 @@ Makes markers on the map where places have died and reclaims items if not recove
 ]]
 
 local ExpUtil = require("modules/exp_util")
-local Features = require("modules/exp_scenario/features")
+local Feature = require("modules/exp_scenario/features")
 local Storage = require("modules/exp_util/storage")
 
-local config = Features.config("death_markers", {
+local feature = Feature.register("death_markers", {
     collect_corpses = true, --- @setting collect_corpses enables items being returned to the spawn point in chests upon corpse expiring
     show_map_markers = true, --- @setting show_map_markers shows markers on the map where bodies are
     clean_map_markers = false, --- @setting clean_map_markers removes the map marker once the body is gone
@@ -15,6 +15,7 @@ local config = Features.config("death_markers", {
     show_light_at_corpse = true, --- @setting show_light_at_corpse if a light should be rendered at the corpse
     show_line_to_corpse = true, --- @setting show_line_to_corpse if a line should be rendered from you to your corpse
 })
+local config = feature.config
 
 local map_tag_time_format = ExpUtil.format_time_factory{ format = "short", hours = true, minutes = true }
 
@@ -147,7 +148,7 @@ end
 
 local e = defines.events
 
-return Features.guard(config, {
+return feature:guard{
     on_nth_tick = {
         [60 * 60 * 5] = check_map_tags,
     },
@@ -157,4 +158,4 @@ return Features.guard(config, {
         [e.on_player_respawned] = on_player_respawned,
         [e.on_character_corpse_expired] = on_character_corpse_expired,
     },
-})
+}

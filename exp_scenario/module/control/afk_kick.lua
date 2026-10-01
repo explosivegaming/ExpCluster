@@ -3,17 +3,18 @@ Kicks players when all players on the server are afk
 ]]
 
 local Async = require("modules/exp_util/async")
-local Features = require("modules/exp_scenario/features")
+local Feature = require("modules/exp_scenario/features")
 local Roles = require("modules/exp_roles")
 local Storage = require("modules/exp_util/storage")
-local config = Features.config("afk_kick", {
+local feature = Feature.register("afk_kick", {
     admin_as_active = true, --- @setting admin_as_active When true admins will be treated as active regardless of afk time
     trust_as_active = true, --- @setting trust_as_active When true trusted players (by playtime) will be treated as active regardless of afk time
-    active_role_id = Features.optional("number"), --- @setting active_role_id Players with this role or higher are treated as active regardless of afk time
+    active_role_id = Feature.optional("number"), --- @setting active_role_id Players with this role or higher are treated as active regardless of afk time
     afk_minutes = 10, --- @setting afk_minutes The time in minutes that must pass for a player to be considered afk
     kick_minutes = 30, --- @setting kick_minutes The time in minutes that must pass without any active players for all players to be kicked
     trust_minutes = 600, --- @setting trust_minutes The time in minutes that a player must be online for to count as trusted
 })
+local config = feature.config
 
 local ticks_per_minute = 3600
 
@@ -92,7 +93,7 @@ end
 
 local e = defines.events
 
-return Features.guard(config, {
+return feature:guard{
     events = {
         [e.on_player_joined_game] = on_player_joined_game,
     },
@@ -100,4 +101,4 @@ return Features.guard(config, {
         [60 * 60 * 30] = check_afk_players,
     },
     has_active_player = has_active_player,
-})
+}

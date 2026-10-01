@@ -166,15 +166,17 @@ local function on_player_selection_start(event)
     end
 
     -- Show always protected entities by name
-    if #EntityProtection.protected_entity_names > 0 then
-        for _, entity in pairs(surface.find_entities_filtered{ name = EntityProtection.protected_entity_names, force = player.force }) do
+    local protected_entity_names = EntityProtection.get_protected_entity_names()
+    if #protected_entity_names > 0 then
+        for _, entity in pairs(surface.find_entities_filtered{ name = protected_entity_names, force = player.force }) do
             show_protected_entity(player, entity)
         end
     end
 
     -- Show always protected entities by type
-    if #EntityProtection.protected_entity_types > 0 then
-        for _, entity in pairs(surface.find_entities_filtered{ type = EntityProtection.protected_entity_types, force = player.force }) do
+    local protected_entity_types = EntityProtection.get_protected_entity_types()
+    if #protected_entity_types > 0 then
+        for _, entity in pairs(surface.find_entities_filtered{ type = protected_entity_types, force = player.force }) do
             show_protected_entity(player, entity)
         end
     end

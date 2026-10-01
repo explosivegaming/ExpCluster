@@ -13,10 +13,10 @@ local plugin_root = assert(source:match("^@(.*)/test/module/env%.lua$"))
 local Framework = assert(loadfile(shared_root .. "/framework.lua"))() --- @type Framework
 
 --- @class ExpScenario.TestEnv : Stubs
---- @field Features ExpScenario.Features A fresh copy of the features module
+--- @field Feature ExpScenario.Feature A fresh copy of the features module
 --- @field storage table The table registered with storage, as on_init would store it
 --- @field on_load fun(tbl: table) Act out on_load with the given storage table
---- @field load_config fun(name: string): table Load module/config/<name>.lua
+--- @field load_config fun(name: string): ExpScenario.Feature Load module/config/<name>.lua
 --- @field logged string[] Messages passed to log
 
 return Framework.suite(function(env)
@@ -33,8 +33,8 @@ return Framework.suite(function(env)
         },
     }
 
-    env.Features = assert(loadfile(plugin_root .. "/module/features.lua"))()
-    env.extend_requires{ ["modules/exp_scenario/features"] = env.Features }
+    env.Feature = assert(loadfile(plugin_root .. "/module/features.lua"))()
+    env.extend_requires{ ["modules/exp_scenario/features"] = env.Feature }
 
     function env.on_load(tbl)
         env.storage = tbl

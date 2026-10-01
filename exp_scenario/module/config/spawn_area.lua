@@ -1,9 +1,9 @@
 --- Used to config the spawn generation settings yes there is alot here i know just ignore the long tables at the end (they were generated with a command)
 -- @config Spawn-Area
 
-local Features = require("modules/exp_scenario/features")
+local Feature = require("modules/exp_scenario/features")
 
-return Features.config("spawn_area", {
+return Feature.register("spawn_area", {
     spawn_area = { --- @setting spawn_area Settings relating to the whole spawn area
         -- Enable predefined patches: 128, else: 32
         deconstruction_radius = 20, -- @setting deconstruction_radius All entities within this radius will be removed
