@@ -30,7 +30,8 @@ local function check_items(player, type)
 
     local banned_items = config.banned_items
     local items = {} --- @type LuaItemStack[]
-    local inventory = assert(player.get_inventory(type))
+    local inventory = player.get_inventory(type)
+    if not inventory then return end
     -- Check what items the player has
     for i = 1, #inventory do
         local item = inventory[i --[[@as uint]]]

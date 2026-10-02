@@ -276,10 +276,38 @@ function checkFieldValue(field: FeatureField, value: FeatureValue, label: string
 	}
 }
 
-/** Check if a value equals the default of its field, lists are compared by content. */
-export function isDefaultValue(field: FeatureField, value: FeatureValue) {
-	if (Array.isArray(value) && Array.isArray(field.default)) {
-		return value.length === field.default.length && value.every((item, index) => item === (field.default as string[])[index]);
+/** Check if two values are equal, lists are compared by content. */
+export function sameValue(a: FeatureValue | undefined, b: FeatureValue | undefined) {
+	if (Array.isArray(a) && Array.isArray(b)) {
+		return a.length === b.length && a.every((item, index) => item === b[index]);
 	}
-	return value === field.default;
+	return a === b;
+}
+
+export function isDefaultValue(field: FeatureField, value: FeatureValue) {
+	return sameValue(value, field.default);
+}
+
+/**
+ * Drop stored values which no longer match the fields of a feature, after a
+ * setting was renamed, removed, or changed type.
+ *
+ * @returns the values which are still valid, and the names of those dropped
+ */
+export function pruneFeatureValues(feature: Feature, values: Record<string, FeatureValue>) {
+	const kept: Record<string, FeatureValue> = {};
+	const dropped: string[] = [];
+	for (const [key, value] of Object.entries(values)) {
+		const field = feature.fields.find(f => f.name === key);
+		try {
+			if (!field) {
+				throw new Error("removed");
+			}
+			checkFieldValue(field, value, key);
+			kept[key] = value;
+		} catch {
+			dropped.push(key);
+		}
+	}
+	return { kept, dropped };
 }

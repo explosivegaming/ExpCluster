@@ -1,10 +1,10 @@
 import React, { useContext, useState } from "react";
-import { Button, Checkbox, Col, ConfigProvider, Divider, Input, InputNumber, Row, Select, Space, Switch } from "antd";
+import { Button, Checkbox, Col, ConfigProvider, Divider, Input, InputNumber, Row, Select, Space, Spin, Switch } from "antd";
 
 import * as lib from "@clusterio/lib";
 import { ControlContext, PageHeader, PageLayout, notifyErrorHandler, useAccount } from "@clusterio/web_ui";
 
-import { Feature, FeatureField, FeatureValue, features, isDefaultValue } from "../../features.js";
+import { Feature, FeatureField, FeatureValue, features, isDefaultValue, sameValue } from "../../features.js";
 import { FeatureRecord, FeatureUpdateRequest } from "../../messages.js";
 import { useFeatures } from "../index";
 
@@ -14,13 +14,6 @@ type PendingChanges = Record<string, { enabled?: boolean, values: Record<string,
 // Same colours as the role and permission group pages
 const borderColor = "#424242";
 const modifiedColor = "#2a1912";
-
-function sameValue(a: FeatureValue | undefined, b: FeatureValue | undefined) {
-	if (Array.isArray(a) && Array.isArray(b)) {
-		return a.length === b.length && a.every((item, index) => item === b[index]);
-	}
-	return a === b;
-}
 
 /** The stored state of a feature, with defaults for values which were not set. */
 function storedState(feature: Feature, record: FeatureRecord | undefined): FeatureState {
@@ -78,23 +71,23 @@ function searchFields(feature: Feature, query: string) {
 function FieldInput(props: { field: FeatureField, value: FeatureValue, disabled: boolean, onChange: (value: FeatureValue) => void }) {
 	const { field, value, disabled, onChange } = props;
 	const control = useContext(ControlContext);
-	const CustomInput = field.type !== "string_list" && field.inputComponent
-		? control.inputComponents.get(field.inputComponent)
-		: undefined;
-	if (CustomInput && field.type !== "string_list") {
-		const fieldDefinition: lib.FieldDefinition = {
-			type: field.type,
-			title: field.title,
-			description: field.description,
-			optional: field.optional,
-			inputComponent: field.inputComponent,
-		};
-		return <CustomInput
-			fieldDefinition={fieldDefinition}
-			value={value as Exclude<FeatureValue, string[]>}
-			onChange={onChange}
-			disabled={disabled}
-		/>;
+	if (field.type !== "string_list" && field.inputComponent) {
+		const CustomInput = control.inputComponents.get(field.inputComponent);
+		if (CustomInput) {
+			const fieldDefinition: lib.FieldDefinition = {
+				type: field.type,
+				title: field.title,
+				description: field.description,
+				optional: field.optional,
+				inputComponent: field.inputComponent,
+			};
+			return <CustomInput
+				fieldDefinition={fieldDefinition}
+				value={value as Exclude<FeatureValue, string[]>}
+				onChange={onChange}
+				disabled={disabled}
+			/>;
+		}
 	}
 
 	switch (field.type) {
@@ -228,10 +221,18 @@ function FeatureNav(props: { feature: Feature, enabled: boolean }) {
 export default function FeaturesPage() {
 	const control = useContext(ControlContext);
 	const account = useAccount();
-	const [records] = useFeatures();
+	const [records, synced] = useFeatures();
 	const [pending, setPending] = useState<PendingChanges>({});
 	const [search, setSearch] = useState("");
 	const canEdit = Boolean(account.hasPermission("exp_scenario.config.edit"));
+
+	// Until the subscription delivers the records every feature would look enabled with its defaults
+	if (!synced) {
+		return <PageLayout nav={[{ name: "Scenario Features" }]}>
+			<PageHeader title="Scenario Features" />
+			<Spin size="large" />
+		</PageLayout>;
+	}
 
 	const stored = Object.fromEntries(features.map(feature => [feature.name, storedState(feature, records.get(feature.name))]));
 	const current = (name: string): FeatureState => ({

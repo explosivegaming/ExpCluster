@@ -53,6 +53,7 @@ Suite.test("update_config() ignores and logs values which can not be overridden"
     feature:update_config(true, { flag = "yes", check = false, icon = "x" })
     Suite.eq(feature.config, { enabled = true, flag = true, check = check }, "wrong types, functions, and unknown keys are skipped")
     Suite.eq(#env.logged, 3, "each one is logged")
+    Suite.eq(env.storage.test, { enabled = true, flag = "yes", check = false }, "unknown keys are not stored")
 end)
 
 Suite.test("receive_update() updates known features", function(env)

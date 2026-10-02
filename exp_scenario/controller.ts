@@ -6,7 +6,7 @@ import { GroupRecord, GroupPermissions, RoleMappingRecord } from "@expcluster/pe
 import { ControllerPlugin as RolesPlugin } from "@expcluster/roles/dist/node/controller.js";
 import { ControllerPlugin as GroupsPlugin } from "@expcluster/permission-groups/dist/node/controller.js";
 import * as messages from "./messages.js";
-import { features, validateFeatureValues } from "./features.js";
+import { features, pruneFeatureValues, validateFeatureValues } from "./features.js";
 import { SeedRole, SeedGroup, seedRoles, seedGroups, flattenSeedPermissions } from "./seed.js";
 
 export class ControllerPlugin {
@@ -30,11 +30,7 @@ export class ControllerPlugin {
 			).bootstrap()
 		);
 
-		// Features added since the last start begin with their defaults
-		const missing = features.filter(feature => !this.features.has(feature.name));
-		if (missing.length) {
-			this.features.setMany(missing.map(feature => new messages.FeatureRecord(feature.name, true)));
-		}
+		this.reconcileFeatures();
 
 		this.controller.subscriptions.handle(messages.FeatureUpdatedEvent, this.handleFeatureSubscription.bind(this));
 		this.features.on("update", this.featuresUpdated.bind(this));
@@ -48,6 +44,36 @@ export class ControllerPlugin {
 
 	async onShutdown() {
 		await this.features.save();
+	}
+
+	/**
+	 * Bring the stored records in line with the features declared in features.ts.
+	 *
+	 * New features begin with their defaults, records of removed features are
+	 * deleted, and values which no longer match a field are dropped so the
+	 * feature can still be saved from the web interface.
+	 */
+	reconcileFeatures() {
+		const declared = new Map(features.map(feature => [feature.name, feature]));
+		for (const record of [...this.features.values()]) {
+			const feature = declared.get(record.id);
+			if (!feature) {
+				this.logger.warn(`Dropping stored config of removed feature ${record.id}`);
+				this.features.delete(record);
+				continue;
+			}
+
+			const { kept, dropped } = pruneFeatureValues(feature, record.values);
+			if (dropped.length) {
+				this.logger.warn(`Dropping stored values of ${record.id} which no longer match a setting: ${dropped.join(", ")}`);
+				this.features.set(new messages.FeatureRecord(record.id, record.enabled, kept));
+			}
+		}
+
+		const missing = features.filter(feature => !this.features.has(feature.name));
+		if (missing.length) {
+			this.features.setMany(missing.map(feature => new messages.FeatureRecord(feature.name, true)));
+		}
 	}
 
 	featuresUpdated(updates: messages.FeatureRecord[]) {

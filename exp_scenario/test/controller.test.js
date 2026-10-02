@@ -143,6 +143,20 @@ t.test("class ControllerPlugin", t2 => {
 		t3.ok(records.every(record => record.enabled && !Object.keys(record.values).length), "enabled with no overrides");
 	});
 
+	t2.test(".reconcileFeatures() drops stored values and features which no longer exist", async t3 => {
+		const databaseDirectory = t3.testdir();
+		const { plugin } = await startPlugin(t3, { withPlugins: false, databaseDirectory });
+		plugin.features.set(new messages.FeatureRecord("afk_kick", false, { afk_minutes: 5, trust_time: 600 }));
+		plugin.features.set(new messages.FeatureRecord("gone", true, {}));
+		await plugin.onShutdown();
+
+		const { plugin: restarted } = await startPlugin(t3, { withPlugins: false, databaseDirectory });
+		const record = restarted.features.get("afk_kick");
+		t3.strictSame([record.enabled, record.values], [false, { afk_minutes: 5 }], "the stale value is dropped, the rest kept");
+		t3.notOk(restarted.features.has("gone"), "the removed feature is deleted");
+		t3.ok(features.every(feature => restarted.features.has(feature.name)), "every declared feature still has a record");
+	});
+
 	t2.test(".handleFeatureUpdateRequest() stores the values which differ from the default", async t3 => {
 		const { plugin } = await startPlugin(t3, { withPlugins: false });
 		const broadcasts = [];

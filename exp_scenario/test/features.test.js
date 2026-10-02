@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import t from "tap";
-import { features, validateFeatureValues } from "../dist/node/features.js";
+import { features, pruneFeatureValues, validateFeatureValues } from "../dist/node/features.js";
 
 /** Every lua file in the module, by path relative to it. */
 function luaFiles(dir, prefix = "") {
@@ -103,5 +103,15 @@ t.test("validateFeatureValues()", t2 => {
 	t2.same(validateFeatureValues("afk_kick", { active_role_id: null }), {}, "no role is the default");
 	t2.same(validateFeatureValues("afk_kick", { active_role_id: 3 }), { active_role_id: 3 });
 	t2.same(validateFeatureValues("spawn_area", { "turrets.enabled": false }), { "turrets.enabled": false }, "nested settings");
+	t2.end();
+});
+
+t.test("pruneFeatureValues()", t2 => {
+	const afkKick = features.find(feature => feature.name === "afk_kick");
+	t2.same(
+		pruneFeatureValues(afkKick, { afk_minutes: 5, trust_time: 600, kick_minutes: "soon", active_role_id: null }),
+		{ kept: { afk_minutes: 5, active_role_id: null }, dropped: ["trust_time", "kick_minutes"] },
+		"removed settings and wrong types are dropped, valid values and optional nulls stay",
+	);
 	t2.end();
 });

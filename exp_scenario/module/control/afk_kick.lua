@@ -98,7 +98,7 @@ return feature:guard{
         [e.on_player_joined_game] = on_player_joined_game,
     },
     on_nth_tick = {
-        [60 * 60 * 30] = check_afk_players,
+        [60 * 60] = check_afk_players,
     },
     has_active_player = has_active_player,
 }

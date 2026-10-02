@@ -263,8 +263,9 @@ function Feature:update_config(enabled, values)
     for path, value in pairs(values) do
         if self.fields[path] == nil then
             log("[WARNING] Unknown override for " .. self.name .. "." .. path)
+        else
+            overrides[path] = value
         end
-        overrides[path] = value
     end
 
     local old_values = {}
