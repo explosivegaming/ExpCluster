@@ -4,7 +4,34 @@ Sends alert messages to our discord server when certain events are triggered
 
 local ExpUtil = require("modules/exp_util")
 local Colors = require("modules/exp_util/include/color")
-local config = require("modules.exp_legacy.config.discord_alerts")
+local Feature = require("modules/exp_scenario/features")
+local EntityProtection = require("modules/exp_scenario/control/protection")
+local Jail = require("modules/exp_scenario/control/jail")
+
+local feature, config = Feature.register("discord_alerts", {
+    show_playtime = true, -- Add the playtime of players to alerts
+    entity_protection = true, -- Alert when a player repeatedly removes protected entities
+    player_bans = true, -- Alert when a player is banned or unbanned
+    player_mutes = true, -- Alert when a player is muted or unmuted
+    player_kicks = true, -- Alert when a player is kicked
+    player_promotes = false, -- Alert when a player is promoted or demoted
+    player_jail = true, -- Alert when a player is jailed or unjailed
+    logged_commands = Feature.set{ -- Alert when a player uses one of these commands
+        "config", "purge", "c", "command", "silent-command", "measured-command", "banlist", "permissions", "editor", "cheat",
+    },
+})
+
+--- Wrap an event handler so it only runs while the alert is enabled
+--- @param setting string
+--- @param handler fun(event: table)
+--- @return fun(event: table)
+local function when(setting, handler)
+    return function(event)
+        if config[setting] then
+            return handler(event)
+        end
+    end
+end
 
 local format_string = string.format
 local write_json = ExpUtil.write_json
@@ -80,172 +107,158 @@ local function emit_event(opts)
 end
 
 --- Repeated protected entity mining
-if config.entity_protection then
-    local EntityProtection = require("modules/exp_scenario/control/protection")
-    events[EntityProtection.on_repeat_violation] = function(event)
-        local player_name = get_player_name(event)
-        emit_event{
-            title = "Entity Protection",
-            description = "A player removed protected entities",
-            color = Colors.yellow,
-            fields = {
-                { name = "Player", inline = true, value = append_playtime(player_name) },
-                { name = "Entity", inline = true, value = event.entity.name },
-                { name = "Location", value = format_string("X %.1f Y %.1f", event.entity.position.x, event.entity.position.y) },
-            },
-        }
-    end
-end
+events[EntityProtection.on_repeat_violation] = when("entity_protection", function(event)
+    local player_name = get_player_name(event)
+    emit_event{
+        title = "Entity Protection",
+        description = "A player removed protected entities",
+        color = Colors.yellow,
+        fields = {
+            { name = "Player", inline = true, value = append_playtime(player_name) },
+            { name = "Entity", inline = true, value = event.entity.name },
+            { name = "Location", value = format_string("X %.1f Y %.1f", event.entity.position.x, event.entity.position.y) },
+        },
+    }
+end)
 
 --- When a player is jailed or unjailed
-if config.player_jail then
-    local Jail = require("modules/exp_scenario/control/jail")
-    events[Jail.on_player_jailed] = function(event)
-        local player_name, by_player_name = get_player_name(event)
+events[Jail.on_player_jailed] = when("player_jail", function(event)
+    local player_name, by_player_name = get_player_name(event)
+    emit_event{
+        title = "Jail",
+        description = "A player has been jailed",
+        color = Colors.yellow,
+        fields = {
+            { name = "Player", inline = true, value = append_playtime(player_name) },
+            { name = "By", inline = true, value = append_playtime(by_player_name) },
+            { name = "Reason", value = event.reason },
+        },
+    }
+end)
+events[Jail.on_player_unjailed] = when("player_jail", function(event)
+    local player_name, by_player_name = get_player_name(event)
+    emit_event{
+        title = "Unjail",
+        description = "A player has been unjailed",
+        color = Colors.green,
+        fields = {
+            { name = "Player", inline = true, value = append_playtime(player_name) },
+            { name = "By", inline = true, value = append_playtime(by_player_name) },
+        },
+    }
+end)
+
+--- Ban and unban
+--- @param event EventData.on_player_banned
+events[e.on_player_banned] = when("player_bans", function(event)
+    if event.by_player then
+        local by_player = game.players[event.by_player]
         emit_event{
-            title = "Jail",
-            description = "A player has been jailed",
-            color = Colors.yellow,
+            title = "Banned",
+            description = "A player has been banned",
+            color = Colors.red,
             fields = {
-                { name = "Player", inline = true, value = append_playtime(player_name) },
-                { name = "By", inline = true, value = append_playtime(by_player_name) },
+                { name = "Player", inline = true, value = append_playtime(event.player_name) },
+                { name = "By", inline = true, value = append_playtime(by_player.name) },
                 { name = "Reason", value = event.reason },
             },
         }
     end
-    events[Jail.on_player_unjailed] = function(event)
-        local player_name, by_player_name = get_player_name(event)
+end)
+--- @param event EventData.on_player_unbanned
+events[e.on_player_unbanned] = when("player_bans", function(event)
+    if event.by_player then
+        local by_player = game.players[event.by_player]
         emit_event{
-            title = "Unjail",
-            description = "A player has been unjailed",
+            title = "Un-Banned",
+            description = "A player has been un-banned",
             color = Colors.green,
             fields = {
-                { name = "Player", inline = true, value = append_playtime(player_name) },
-                { name = "By", inline = true, value = append_playtime(by_player_name) },
+                { name = "Player", inline = true, value = append_playtime(event.player_name) },
+                { name = "By", inline = true, value = append_playtime(by_player.name) },
+                { name = "Reason", value = event.reason },
             },
         }
     end
-end
-
---- Ban and unban
-if config.player_bans then
-    --- @param event EventData.on_player_banned
-    events[e.on_player_banned] = function(event)
-        if event.by_player then
-            local by_player = game.players[event.by_player]
-            emit_event{
-                title = "Banned",
-                description = "A player has been banned",
-                color = Colors.red,
-                fields = {
-                    { name = "Player", inline = true, value = append_playtime(event.player_name) },
-                    { name = "By", inline = true, value = append_playtime(by_player.name) },
-                    { name = "Reason", value = event.reason },
-                },
-            }
-        end
-    end
-    --- @param event EventData.on_player_unbanned
-    events[e.on_player_unbanned] = function(event)
-        if event.by_player then
-            local by_player = game.players[event.by_player]
-            emit_event{
-                title = "Un-Banned",
-                description = "A player has been un-banned",
-                color = Colors.green,
-                fields = {
-                    { name = "Player", inline = true, value = append_playtime(event.player_name) },
-                    { name = "By", inline = true, value = append_playtime(by_player.name) },
-                    { name = "Reason", value = event.reason },
-                },
-            }
-        end
-    end
-end
+end)
 
 --- Mute and unmute
-if config.player_mutes then
-    --- @param event EventData.on_player_muted
-    events[e.on_player_muted] = function(event)
-        local player_name = get_player_name(event)
-        emit_event{
-            title = "Muted",
-            description = "A player has been muted",
-            color = Colors.yellow,
-            fields = {
-                { name = "Player", inline = true, value = append_playtime(player_name) },
-            },
-        }
-    end
-    --- @param event EventData.on_player_unmuted
-    events[e.on_player_unmuted] = function(event)
-        local player_name = get_player_name(event)
-        emit_event{
-            title = "Un-Muted",
-            description = "A player has been un-muted",
-            color = Colors.green,
-            fields = {
-                { name = "Player", inline = true, value = append_playtime(player_name) },
-            },
-        }
-    end
-end
+--- @param event EventData.on_player_muted
+events[e.on_player_muted] = when("player_mutes", function(event)
+    local player_name = get_player_name(event)
+    emit_event{
+        title = "Muted",
+        description = "A player has been muted",
+        color = Colors.yellow,
+        fields = {
+            { name = "Player", inline = true, value = append_playtime(player_name) },
+        },
+    }
+end)
+--- @param event EventData.on_player_unmuted
+events[e.on_player_unmuted] = when("player_mutes", function(event)
+    local player_name = get_player_name(event)
+    emit_event{
+        title = "Un-Muted",
+        description = "A player has been un-muted",
+        color = Colors.green,
+        fields = {
+            { name = "Player", inline = true, value = append_playtime(player_name) },
+        },
+    }
+end)
 
 --- Kick
-if config.player_kicks then
-    --- @param event EventData.on_player_kicked
-    events[e.on_player_kicked] = function(event)
-        if event.by_player then
-            local player_name = get_player_name(event)
-            local by_player = game.players[event.by_player]
-            emit_event{
-                title = "Kick",
-                description = "A player has been kicked",
-                color = Colors.orange,
-                fields = {
-                    { name = "Player", inline = true, value = append_playtime(player_name) },
-                    { name = "By", inline = true, value = append_playtime(by_player.name) },
-                    { name = "Reason", value = event.reason },
-                },
-            }
-        end
+--- @param event EventData.on_player_kicked
+events[e.on_player_kicked] = when("player_kicks", function(event)
+    if event.by_player then
+        local player_name = get_player_name(event)
+        local by_player = game.players[event.by_player]
+        emit_event{
+            title = "Kick",
+            description = "A player has been kicked",
+            color = Colors.orange,
+            fields = {
+                { name = "Player", inline = true, value = append_playtime(player_name) },
+                { name = "By", inline = true, value = append_playtime(by_player.name) },
+                { name = "Reason", value = event.reason },
+            },
+        }
     end
-end
+end)
 
 --- Promote and demote
-if config.player_promotes then
-    --- @param event EventData.on_player_promoted
-    events[e.on_player_promoted] = function(event)
-        local player_name = get_player_name(event)
-        emit_event{
-            title = "Promote",
-            description = "A player has been promoted",
-            color = Colors.green,
-            fields = {
-                { name = "Player", inline = true, value = append_playtime(player_name) },
-            },
-        }
-    end
-    --- @param event EventData.on_player_demoted
-    events[e.on_player_demoted] = function(event)
-        local player_name = get_player_name(event)
-        emit_event{
-            title = "Demote",
-            description = "A player has been demoted",
-            color = Colors.yellow,
-            fields = {
-                { name = "Player", inline = true, value = append_playtime(player_name) },
-            },
-        }
-    end
-end
+--- @param event EventData.on_player_promoted
+events[e.on_player_promoted] = when("player_promotes", function(event)
+    local player_name = get_player_name(event)
+    emit_event{
+        title = "Promote",
+        description = "A player has been promoted",
+        color = Colors.green,
+        fields = {
+            { name = "Player", inline = true, value = append_playtime(player_name) },
+        },
+    }
+end)
+--- @param event EventData.on_player_demoted
+events[e.on_player_demoted] = when("player_promotes", function(event)
+    local player_name = get_player_name(event)
+    emit_event{
+        title = "Demote",
+        description = "A player has been demoted",
+        color = Colors.yellow,
+        fields = {
+            { name = "Player", inline = true, value = append_playtime(player_name) },
+        },
+    }
+end)
 
 
 --- @param event EventData.on_console_command
 events[e.on_console_command] = function(event)
     if event.player_index then
         local player_name = get_player_name(event)
-        if config[event.command] then
+        if config.logged_commands[event.command] then
             emit_event{
                 title = event.command:gsub("^%l", string.upper),
                 description = "/" .. event.command .. " was used",
@@ -259,6 +272,6 @@ events[e.on_console_command] = function(event)
     end
 end
 
-return {
+return feature:guard{
     events = events,
 }

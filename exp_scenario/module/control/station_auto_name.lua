@@ -2,7 +2,13 @@
 Automatically name stations when they are placed based on closest resource and direction from spawn
 ]]
 
-local config = require("modules.exp_legacy.config.station_auto_name")
+local Feature = require("modules/exp_scenario/features")
+
+local feature, config = Feature.register("station_auto_name", {
+    -- the name given to new stations, placeholders:
+    -- __icon__ __item_name__ __backer_name__ __direction__ __x__ __y__
+    station_name = "[L] __icon__",
+})
 
 local get_direction do
     local directions = {
@@ -98,9 +104,9 @@ end
 
 local e = defines.events
 
-return {
+return feature:guard{
     events = {
         [e.on_built_entity] = rename_station,
         [e.on_robot_built_entity] = rename_station,
-    }
+    },
 }

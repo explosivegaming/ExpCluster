@@ -3,6 +3,7 @@
 	"load": [
 	],
 	"require": [
+		"globals.lua",
 		"control.lua"
 	],
 	"dependencies": {

@@ -20,6 +20,9 @@ export const plugin: lib.PluginDeclaration = {
 
 	messages: [
 		messages.SeedRequest,
+		messages.FeatureUpdatedEvent,
+		messages.FeatureListRequest,
+		messages.FeatureUpdateRequest,
 	],
 
 	permissions: [
@@ -42,4 +45,7 @@ export const plugin: lib.PluginDeclaration = {
 	],
 
 	webEntrypoint: "./web",
+	routes: [
+		"/scenario_features",
+	],
 };

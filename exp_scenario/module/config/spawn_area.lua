@@ -1,41 +1,42 @@
 --- Used to config the spawn generation settings yes there is alot here i know just ignore the long tables at the end (they were generated with a command)
 -- @config Spawn-Area
 
-return {
-    spawn_area = { --- @setting spawn_area Settings relating to the whole spawn area
+local Feature = require("modules/exp_scenario/features")
+
+return Feature.register("spawn_area", {
+    spawn_area = { -- Settings relating to the whole spawn area
         -- Enable predefined patches: 128, else: 32
-        deconstruction_radius = 20, -- @setting deconstruction_radius All entities within this radius will be removed
+        deconstruction_radius = 20, -- All entities within this radius will be removed
         tile_radius = 20,
-        deconstruction_tile = "concrete", --- @setting deconstruction_tile Tile to be placed in the deconstruction radius, use nil for map gen
-        landfill_radius = 50, --- @setting pattern_radius All water within this radius will be land filled
+        deconstruction_tile = "concrete", -- Tile to be placed in the deconstruction radius, use nil for map gen
+        landfill_radius = 50, -- All water within this radius will be land filled
     },
-    turrets = { --- @setting turrets Settings relating to adding turrets to spawn
-        enabled = true, --- @setting enabled Whether turrets will be added to spawn
-        ammo_type = "uranium-rounds-magazine", --- @setting ammo_type The ammo type that will be used during refills
-        refill_time = 60 * 60 * 5, --- @setting refill_time The time in ticks between each refill of the turrets, only change if having lag issues
-        offset = { x = 0, y = 0 }, --- @setting offset The position offset to apply to turrets
-        locations = { --- @setting locations The locations of all turrets, this list can change during runtime
+    turrets = { -- Settings relating to adding turrets to spawn
+        enabled = true, -- Whether turrets will be added to spawn
+        ammo_type = "uranium-rounds-magazine", -- The ammo type that will be used during refills
+        offset = { x = 0, y = 0 }, -- The position offset to apply to turrets
+        locations = { -- The locations of all turrets, this list can change during runtime
             { -3, -3 },
             { 3, -3 },
             { -3, 3 },
             { 3, 3 },
         },
     },
-    afk_belts = { --- @setting afk_belts Settings relating to adding afk belts to spawn
-        enabled = true, --- @setting enabled Whether afk belts will be added to spawn
-        belt_type = "transport-belt", --- @setting belt_type The belt to be used as afk belts
-        protected = true, --- @setting protected Whether belts will be protected from player interaction
-        offset = { x = 0, y = 0 }, --- @setting offset The position offset to apply to afk belts
-        locations = { --- @setting locations The locations to spawn afk belts at, given as the top left position
+    afk_belts = { -- Settings relating to adding afk belts to spawn
+        enabled = true, -- Whether afk belts will be added to spawn
+        belt_type = "transport-belt", -- The belt to be used as afk belts
+        protected = true, -- Whether belts will be protected from player interaction
+        offset = { x = 0, y = 0 }, -- The position offset to apply to afk belts
+        locations = { -- The locations to spawn afk belts at, given as the top left position
             { -5, -5 }, { 5, -5 },
             { -5, 5 }, { 5, 5 },
         },
     },
-    water = { --- @setting water Settings relating to adding water to spawn
-        enabled = true, --- @setting enabled Whether water tiles will be added to spawn
-        water_tile = "water-mud", --- @setting water_tile The tile to be used as the water tile
-        offset = { x = 0, y = 0 }, --- @setting offset The position offset to apply to water tiles
-        locations = { --- @setting locations The location of the water tiles {x,y}
+    water = { -- Settings relating to adding water to spawn
+        enabled = true, -- Whether water tiles will be added to spawn
+        water_tile = "water-mud", -- The tile to be used as the water tile
+        offset = { x = 0, y = 0 }, -- The position offset to apply to water tiles
+        locations = { -- The location of the water tiles {x,y}
             -- Each is a 3x3 with the closest tile to 0,0 removed
             { 7, 8 }, { 7, 9 }, { 8, 7 }, { 8, 8 }, { 8, 9 }, { 9, 7 }, { 9, 8 }, { 9, 9 }, -- Bottom Right
             { 7, -9 }, { 7, -10 }, { 8, -8 }, { 8, -9 }, { 8, -10 }, { 9, -8 }, { 9, -9 }, { 9, -10 }, -- Top Right
@@ -43,12 +44,12 @@ return {
             { -8, 8 }, { -8, 9 }, { -9, 7 }, { -9, 8 }, { -9, 9 }, { -10, 7 }, { -10, 8 }, { -10, 9 }, -- Bottom Left
         },
     },
-    entities = { --- @setting entities Settings relating to adding entities to spawn
-        enabled = true, --- @setting enabled Whether entities will be added to spawn
-        protected = true, --- @setting protected Whether entities will be protected from player interaction
-        operable = true, --- @setting operable Whether entities can be opened by players, must be true if chests are used
-        offset = { x = 0, y = -2 }, --- @setting offset The position offset to apply to entities
-        locations = { --- @setting locations The location and names of entities {name,x,y}
+    entities = { -- Settings relating to adding entities to spawn
+        enabled = true, -- Whether entities will be added to spawn
+        protected = true, -- Whether entities will be protected from player interaction
+        operable = true, -- Whether entities can be opened by players, must be true if chests are used
+        offset = { x = 0, y = -2 }, -- The position offset to apply to entities
+        locations = { -- The location and names of entities {name,x,y}
             { "stone-wall", -10, -5 }, { "stone-wall", -10, -4 }, { "stone-wall", -10, -3 }, { "stone-wall", -10, -2 }, { "stone-wall", -10, -1 }, { "stone-wall", -10, 0 }, { "stone-wall", -10, 3 }, { "stone-wall", -10, 4 }, { "stone-wall", -10, 5 },
             { "stone-wall", -10, 6 }, { "stone-wall", -10, 7 }, { "stone-wall", -10, 8 }, { "small-lamp", -8, -4 }, { "small-lamp", -8, -1 }, { "iron-chest", -8, 0 }, { "iron-chest", -8, 3 }, { "small-lamp", -8, 4 },
             { "small-lamp", -8, 7 }, { "stone-wall", -7, -8 }, { "small-electric-pole", -7, -2 }, { "iron-chest", -7, 0 }, { "iron-chest", -7, 3 }, { "small-electric-pole", -7, 5 }, { "stone-wall", -7, 11 }, { "stone-wall", -6, -8 }, { "small-lamp", -6, -6 },
@@ -66,10 +67,10 @@ return {
         },
     },
     pattern = {
-        enabled = true, --- @setting enabled Whether pattern tiles will be added to spawn
-        pattern_tile = "stone-path", --- @setting pattern_tile The tile to be used for the pattern
-        offset = { x = 0, y = -2 }, --- @setting offset The position offset to apply to pattern tiles
-        locations = { --- @setting locations The location of the pattern tiles {x,y}
+        enabled = true, -- Whether pattern tiles will be added to spawn
+        pattern_tile = "stone-path", -- The tile to be used for the pattern
+        offset = { x = 0, y = -2 }, -- The position offset to apply to pattern tiles
+        locations = { -- The location of the pattern tiles {x,y}
             { -49, -3 }, { -49, -2 }, { -49, 1 }, { -49, 2 }, { -49, 5 }, { -49, 6 }, { -48, -4 }, { -48, -3 }, { -48, -2 }, { -48, 1 }, { -48, 2 }, { -48, 5 }, { -48, 6 }, { -48, 7 }, { -47, -7 }, { -47, -6 }, { -47, -5 }, { -47, -4 }, { -47, -3 }, { -47, -2 }, { -47, 5 }, { -47, 6 }, { -47, 7 }, { -47, 8 }, { -47, 9 }, { -47, 10 }, { -46, -8 }, { -46, -7 }, { -46, -6 }, { -46, -5 },
             { -46, -4 }, { -46, -3 }, { -46, -2 }, { -46, -1 }, { -46, 4 }, { -46, 5 }, { -46, 6 }, { -46, 7 }, { -46, 8 }, { -46, 9 }, { -46, 10 }, { -46, 11 }, { -45, -17 }, { -45, -16 }, { -45, -15 }, { -45, -14 }, { -45, -13 }, { -45, -12 }, { -45, -9 }, { -45, -8 }, { -45, -7 }, { -45, -2 }, { -45, -1 }, { -45, 0 }, { -45, 1 }, { -45, 2 }, { -45, 3 }, { -45, 4 }, { -45, 5 }, { -45, 10 },
             { -45, 11 }, { -45, 12 }, { -45, 15 }, { -45, 16 }, { -45, 17 }, { -45, 18 }, { -45, 19 }, { -45, 20 }, { -44, -18 }, { -44, -17 }, { -44, -16 }, { -44, -15 }, { -44, -14 }, { -44, -13 }, { -44, -12 }, { -44, -9 }, { -44, -8 }, { -44, -1 }, { -44, 0 }, { -44, 1 }, { -44, 2 }, { -44, 3 }, { -44, 4 }, { -44, 11 }, { -44, 12 }, { -44, 15 }, { -44, 16 }, { -44, 17 }, { -44, 18 }, { -44, 19 },
@@ -242,8 +243,7 @@ return {
     resource_refill_nearby = {
         enabled = false,
         range = 128,
-        refill_time = 36000,
-        resources_name = {
+        resources_name = Feature.list{
             "iron-ore",
             "copper-ore",
             "stone",
@@ -252,4 +252,4 @@ return {
         },
         amount = { 2500, 4000 },
     },
-}
+})

@@ -1,7 +1,8 @@
 --- This file defines the different triggers for the chat bot
--- @config Chat-Reply
+-- @config Chat-Auto-Reply
 
 local ExpUtil = require("modules/exp_util")
+local Feature = require("modules/exp_scenario/features")
 local Async = require("modules/exp_util/async")
 local config_server_detail = require("modules.exp_legacy.config.server_detail") --- @dep config.server_detail
 
@@ -24,9 +25,9 @@ local afk_time_units = {
     seconds = true,
 }
 
-return {
+return Feature.register("chat_auto_reply", {
     --- @type table<string, LocalisedString | fun(player: LuaPlayer, is_command: boolean): LocalisedString>
-    messages = { --- @setting messages will trigger when ever the word is said
+    messages = { -- will trigger when ever the word is said
         ["discord"] = { "info.discord", config_server_detail["discord"] },
         ["expgaming"] = { "info.website", config_server_detail["website"] },
         ["website"] = { "info.website", config_server_detail["website"] },
@@ -64,12 +65,10 @@ return {
             return { "exp_chat-auto-reply.reply-afk", max.name, ExpUtil.format_time_locale(max.afk_time, "long", afk_time_units) }
         end,
     },
-    allow_command_prefix_for_messages = true, --- @setting allow_command_prefix_for_messages when true any message trigger will print to all player when prefixed
-    command_admin_only = false, --- @setting command_admin_only when true will only allow chat commands for admins
-    command_permission = "exp_scenario.chat.commands", --- @setting command_permission the permission used to allow command prefixes
-    command_prefix = "!", --- @setting command_prefix prefix used for commands below and to print to all players (if enabled above)
+    allow_command_prefix_for_messages = true, -- when true any message trigger will print to all player when prefixed
+    command_prefix = "!", -- prefix used for commands below and to print to all players (if enabled above)
     --- @type table<string, LocalisedString | fun(player: LuaPlayer, is_command: boolean): LocalisedString>
-    commands = { --- @setting commands will trigger only when command prefix is given
+    commands = { -- will trigger only when command prefix is given
         ["dev"] = { "exp_chat-auto-reply.reply-dev" },
         ["magic"] = { "exp_chat-auto-reply.reply-magic" },
         ["aids"] = { "exp_chat-auto-reply.reply-aids" },
@@ -134,4 +133,4 @@ return {
             return { locale_reply, { "exp_chat-auto-reply.reply-beer-1" } }
         end,
     },
-}
+})

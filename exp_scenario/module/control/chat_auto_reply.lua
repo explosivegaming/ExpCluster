@@ -2,10 +2,10 @@
 Adds auto replies to chat messages, as well as chat commands
 ]]
 
+local Feature = require("modules/exp_scenario/features")
 local Roles = require("modules/exp_roles")
-local config = require("modules.exp_legacy.config.chat_reply")
-local prefix = config.command_prefix
-local prefix_len = string.len(prefix)
+local feature = require("modules/exp_scenario/config/chat_auto_reply")
+local config = feature.config
 
 local find = string.find
 local sub = string.sub
@@ -16,11 +16,12 @@ local function on_console_chat(event)
     if not event.player_index then return end
     local player = assert(game.get_player(event.player_index))
     local message = event.message:lower():gsub("%s+", "")
+    local prefix = config.command_prefix
+    local prefix_len = string.len(prefix)
 
     -- Check if the player can chat commands
     local commands_allowed = true
-    if config.command_admin_only and not player.admin then commands_allowed = false end
-    if config.command_permission and not Roles.player_has_permission(player, config.command_permission) then commands_allowed = false end
+    if not Roles.player_has_permission(player, "exp_scenario.chat.commands") then commands_allowed = false end
 
     -- Check if a key word appears in the message
     for key_word, reply in pairs(config.messages) do
@@ -56,8 +57,8 @@ end
 
 local e = defines.events
 
-return {
+return feature:guard{
     events = {
         [e.on_console_chat] = on_console_chat,
-    }
+    },
 }

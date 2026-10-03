@@ -2,9 +2,12 @@
 Adds a config menu for setting autofill of placed entities
 ]]
 
+local Feature = require("modules/exp_scenario/features")
 local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_roles")
 local config = require("modules.exp_legacy.config.gui.autofill")
+
+local feature = Feature.register("autofill")
 local FlyingText = require("modules/exp_util/flying_text")
 
 local min = math.min
@@ -330,7 +333,7 @@ Gui.toolbar.create_button{
     sprite = config.icon,
     tooltip = { "exp-gui_autofill.tooltip-main" },
     visible = function(player, element)
-        return Roles.player_has_permission(player, "exp_scenario.gui.autofill")
+        return feature:is_enabled() and Roles.player_has_permission(player, "exp_scenario.gui.autofill")
     end
 }
 
@@ -396,9 +399,9 @@ end
 
 local e = defines.events
 
-return {
+return feature:guard{
     elements = Elements,
     events = {
         [e.on_built_entity] = on_built_entity,
-    }
+    },
 }

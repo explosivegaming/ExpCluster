@@ -4,9 +4,13 @@ Adds a command that clean up biter corpse and nuclear hole
 
 local AABB = require("modules/exp_util/aabb")
 local Commands = require("modules/exp_commands")
+local Feature = require("modules/exp_scenario/features")
 local Selection = require("modules/exp_util/selection")
 local SelectArea = Selection.connect("ExpCommand_Lawnmower")
-local config = require("modules.exp_legacy.config.lawnmower")
+
+local feature, config = Feature.register("lawnmower", {
+    destroy_decoratives = false, -- remove decoratives under entities when they are built
+})
 
 --- @class ExpCommand_Lawnmower.commands
 local commands = {}
@@ -15,6 +19,7 @@ local commands = {}
 --- @class ExpCommands_Lawnmower.commands.lawnmower: ExpCommand
 --- @overload fun(player: LuaPlayer)
 commands.lawnmower = Commands.new("lawnmower", { "exp-commands_lawnmower.description" })
+    :add_flags{ feature = feature }
     :register(function(player)
         if SelectArea:stop(player) then
             return Commands.status.success{ "exp_util.selection_exit", { "exp-commands_lawnmower.selection-name" } }
@@ -51,6 +56,7 @@ end)
 
 --- @param event EventData.on_built_entity | EventData.on_robot_built_entity | EventData.script_raised_built | EventData.script_raised_revive
 local function destroy_decoratives(event)
+    if not config.destroy_decoratives then return end
     local entity = event.entity
     if entity.type ~= "entity-ghost" and entity.type ~= "tile-ghost" and entity.prototype.selectable_in_game then
         entity.surface.destroy_decoratives{ area = entity.selection_box }
@@ -58,16 +64,13 @@ local function destroy_decoratives(event)
 end
 
 local e = defines.events
-local events = {}
 
-if config.destroy_decoratives then
-    events[e.on_built_entity] = destroy_decoratives
-    events[e.on_robot_built_entity] = destroy_decoratives
-    events[e.script_raised_built] = destroy_decoratives
-    events[e.script_raised_revive] = destroy_decoratives
-end
-
-return {
-    events = events,
+return feature:guard{
+    events = {
+        [e.on_built_entity] = destroy_decoratives,
+        [e.on_robot_built_entity] = destroy_decoratives,
+        [e.script_raised_built] = destroy_decoratives,
+        [e.script_raised_revive] = destroy_decoratives,
+    },
     commands = commands,
 }
