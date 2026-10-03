@@ -21,7 +21,6 @@ local function on_console_chat(event)
 
     -- Check if the player can chat commands
     local commands_allowed = true
-    if config.command_admin_only and not player.admin then commands_allowed = false end
     if not Roles.player_has_permission(player, "exp_scenario.chat.commands") then commands_allowed = false end
 
     -- Check if a key word appears in the message

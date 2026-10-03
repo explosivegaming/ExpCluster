@@ -86,7 +86,6 @@ export const features: Feature[] = [
 		description: "Reply to key words in chat and run chat commands",
 		fields: [
 			str("command_prefix", "Command prefix", "Prefix for chat commands, and for key words to reply to everyone", "!"),
-			bool("command_admin_only", "Commands for admins only", "Only admins can use chat commands", false),
 		],
 	},
 	{
@@ -142,7 +141,6 @@ export const features: Feature[] = [
 		title: "Nuke Protection",
 		description: "Remove banned items from players without the nuke protection bypass permission",
 		fields: [
-			bool("ignore_admins", "Ignore admins", "Admins can hold banned items", true),
 			list("banned_items", "Banned items", "Items which are moved to a chest at spawn", ["atomic-bomb"]),
 		],
 	},
@@ -163,7 +161,6 @@ export const features: Feature[] = [
 		title: "Entity Protection",
 		description: "Stop players removing protected entities placed by others, players with the bypass permission are ignored",
 		fields: [
-			bool("ignore_admins", "Ignore admins", "Admins can remove protected entities", true),
 			num("repeat_count", "Repeat count", "Protected entities removed within the repeat time which count as a repeat violation", 5, 1),
 			num("repeat_minutes", "Repeat time", "How long removed protected entities are remembered", 20, 1, "minutes"),
 			list("always_protected_names", "Protected entity names", "Entities which are always protected", []),

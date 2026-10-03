@@ -6,20 +6,18 @@ local Storage = require("modules/exp_util/storage")
 local Feature = require("modules/exp_scenario/features")
 local Roles = require("modules/exp_roles")
 
-local feature = Feature.register("protection", {
-    ignore_admins = true, --- @setting ignore_admins If admins are ignored by the protection filter
-    repeat_count = 5, --- @setting repeat_count Number of protected entities that must be removed within repeat_minutes in order to trigger repeated removal protection
-    repeat_minutes = 20, --- @setting repeat_minutes The length of time, in minutes, that protected removals will be remembered for
-    always_protected_names = Feature.set{}, --- @setting always_protected_names Names of entities which are always protected
-    always_protected_types = Feature.set{ --- @setting always_protected_types Types of entities which are always protected
+local feature, config = Feature.register("protection", {
+    repeat_count = 5, -- Number of protected entities that must be removed within repeat_minutes in order to trigger repeated removal protection
+    repeat_minutes = 20, -- The length of time, in minutes, that protected removals will be remembered for
+    always_protected_names = Feature.set{}, -- Names of entities which are always protected
+    always_protected_types = Feature.set{ -- Types of entities which are always protected
         "boiler", "generator", "offshore-pump", "reactor", "heat-exchanger", "heat-pipe", "fusion-reactor", "fusion-generator", "power-switch", "rocket-silo",
     },
-    always_trigger_repeat_names = Feature.set{}, --- @setting always_trigger_repeat_names Names of entities which always trigger repeated removal protection
-    always_trigger_repeat_types = Feature.set{ --- @setting always_trigger_repeat_types Types of entities which always trigger repeated removal protection
+    always_trigger_repeat_names = Feature.set{}, -- Names of entities which always trigger repeated removal protection
+    always_trigger_repeat_types = Feature.set{ -- Types of entities which always trigger repeated removal protection
         "reactor", "fusion-reactor", "rocket-silo",
     },
 })
-local config = feature.config
 
 local format_string = string.format
 local floor = math.floor
@@ -32,6 +30,8 @@ local Protection = {
     --- Raised when a player mines protected entities repeatedly, or one which always counts as repeated
     --- @type EventData.ExpScenario_Protection.on_repeat_violation
     on_repeat_violation = script.generate_event_name(),
+    --- The config of the feature, read only
+    config = config,
     --- @package
     events = {},
     --- @package
@@ -44,29 +44,6 @@ local Protection = {
 --- @class ExpScenario_Protection.Repeat
 --- @field last uint Tick of the last protected removal
 --- @field count number Protected removals since the last repeat violation
-
---- Get the keys of a set as a list, for the filters of find_entities_filtered
---- @param set table<string, true>
---- @return string[]
-local function set_to_list(set)
-    local list = {}
-    for item in pairs(set) do
-        list[#list + 1] = item
-    end
-    return list
-end
-
---- Names of entities which are always protected
---- @return string[]
-function Protection.get_protected_entity_names()
-    return set_to_list(config.always_protected_names)
-end
-
---- Types of entities which are always protected
---- @return string[]
-function Protection.get_protected_entity_types()
-    return set_to_list(config.always_protected_types)
-end
 
 local protected_entities = {} --- @type table<uint, table<string, LuaEntity>> Keyed by surface index then entity key
 local protected_areas = {} --- @type table<uint, table<string, BoundingBox>> Keyed by surface index then area key
@@ -116,10 +93,17 @@ function Protection.remove_entity(entity)
 end
 
 --- Get the protected entities on a surface, always protected entities are not included
+-- Entities removed while the feature was disabled, or without an event, are forgotten here
 --- @param surface LuaSurface
 --- @return table<string, LuaEntity>
 function Protection.get_entities(surface)
-    return protected_entities[surface.index] or {}
+    local entities = protected_entities[surface.index] or {}
+    for key, entity in pairs(entities) do
+        if not entity.valid then
+            entities[key] = nil
+        end
+    end
+    return entities
 end
 
 --- Check if an entity is protected, either directly or by its name or type
@@ -129,7 +113,13 @@ function Protection.is_entity_protected(entity)
     if config.always_protected_names[entity.name] or config.always_protected_types[entity.type] then return true end
     local entities = protected_entities[entity.surface.index]
     if not entities then return false end
-    return entities[Protection.get_entity_key(entity)] == entity
+    local key = Protection.get_entity_key(entity)
+    local protected = entities[key]
+    if protected and not protected.valid then
+        entities[key] = nil
+        return false
+    end
+    return protected == entity
 end
 
 --- Protect every position within an area
@@ -178,12 +168,11 @@ function Protection.is_position_protected(surface, position)
     return false
 end
 
---- Players are never checked against their own entities, and can be excluded by permission or admin status
+--- Players are never checked against their own entities, and can be excluded by permission
 --- @param player LuaPlayer
 --- @param entity LuaEntity
 --- @return boolean
 local function is_ignored(player, entity)
-    if config.ignore_admins and player.admin then return true end
     if entity.last_user == nil or entity.last_user.index == player.index then return true end
     if Roles.player_has_permission(player, "exp_scenario.bypass.entity_protection") then return true end
     return false
@@ -216,10 +205,8 @@ end
 local function on_pre_player_mined_item(event)
     local entity = event.entity
     local player = game.players[event.player_index]
-    -- Protected entities are still forgotten while disabled, only the violations stop
     if
-        config.enabled
-        and not is_ignored(player, entity)
+        not is_ignored(player, entity)
         and (Protection.is_entity_protected(entity) or Protection.is_position_protected(entity.surface, entity.position))
     then
         raise_violation(event, player)
@@ -253,4 +240,4 @@ Protection.events[e.on_entity_died] = on_entity_removed
 Protection.events[e.script_raised_destroy] = on_entity_removed
 Protection.on_nth_tick[3600 * 5] = clear_old_repeats
 
-return Protection
+return feature:guard(Protection)

@@ -6,11 +6,9 @@ local ExpUtil = require("modules/exp_util")
 local Feature = require("modules/exp_scenario/features")
 local Roles = require("modules/exp_roles")
 
-local feature = Feature.register("nuke_protection", {
-    ignore_admins = true, --- @setting ignore_admins Admins can hold banned items
-    banned_items = Feature.set{ "atomic-bomb" }, --- @setting banned_items Items which are removed from the inventory of players without the bypass permission
+local feature, config = Feature.register("nuke_protection", {
+    banned_items = Feature.set{ "atomic-bomb" }, -- Items which are removed from the inventory of players without the bypass permission
 })
-local config = feature.config
 
 --- The inventories which are checked and the events which trigger the check
 local inventories = {
@@ -26,7 +24,6 @@ local inventories = {
 local function check_items(player, type)
     -- If the player has perms to be ignored, then they should be
     if Roles.player_has_permission(player, "exp_scenario.bypass.nuke_protection") then return end
-    if config.ignore_admins and player.admin then return end
 
     local banned_items = config.banned_items
     local items = {} --- @type LuaItemStack[]

@@ -27,7 +27,7 @@ local afk_time_units = {
 
 return Feature.register("chat_auto_reply", {
     --- @type table<string, LocalisedString | fun(player: LuaPlayer, is_command: boolean): LocalisedString>
-    messages = { --- @setting messages will trigger when ever the word is said
+    messages = { -- will trigger when ever the word is said
         ["discord"] = { "info.discord", config_server_detail["discord"] },
         ["expgaming"] = { "info.website", config_server_detail["website"] },
         ["website"] = { "info.website", config_server_detail["website"] },
@@ -65,11 +65,10 @@ return Feature.register("chat_auto_reply", {
             return { "exp_chat-auto-reply.reply-afk", max.name, ExpUtil.format_time_locale(max.afk_time, "long", afk_time_units) }
         end,
     },
-    allow_command_prefix_for_messages = true, --- @setting allow_command_prefix_for_messages when true any message trigger will print to all player when prefixed
-    command_admin_only = false, --- @setting command_admin_only when true will only allow chat commands for admins
-    command_prefix = "!", --- @setting command_prefix prefix used for commands below and to print to all players (if enabled above)
+    allow_command_prefix_for_messages = true, -- when true any message trigger will print to all player when prefixed
+    command_prefix = "!", -- prefix used for commands below and to print to all players (if enabled above)
     --- @type table<string, LocalisedString | fun(player: LuaPlayer, is_command: boolean): LocalisedString>
-    commands = { --- @setting commands will trigger only when command prefix is given
+    commands = { -- will trigger only when command prefix is given
         ["dev"] = { "exp_chat-auto-reply.reply-dev" },
         ["magic"] = { "exp_chat-auto-reply.reply-magic" },
         ["aids"] = { "exp_chat-auto-reply.reply-aids" },

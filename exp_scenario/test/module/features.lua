@@ -135,11 +135,32 @@ Suite.test("optional() declares a value without a default", function(env)
 end)
 
 
+Suite.test("register() returns the config as well", function(env)
+    local feature, config = env.Feature.register("test", { flag = true })
+    Suite.eq(config == feature.config, true, "the same table")
+end)
+
+Suite.test("update_config() raises when an override is removed", function(env)
+    local feature = env.Feature.register("test", { flag = true, count = 1 })
+    feature:update_config(true, { flag = false })
+    env.events = {}
+    feature:update_config(true, {})
+    Suite.eq(updates(env), { { "test", "flag", false, true } }, "the value goes back to its default")
+end)
+
+Suite.test("update_config() skips stored overrides for settings which no longer exist", function(env)
+    local feature = env.Feature.register("test", { flag = true })
+    env.on_load{ test = { enabled = true, gone = 1 } }
+    feature:update_config(true, { flag = false })
+    Suite.eq(updates(env), { { "test", "flag", true, false } }, "only the known value is compared")
+    Suite.eq(env.storage.test, { enabled = true, flag = false }, "and the stale key is not kept")
+end)
+
 Suite.test("config files register their feature", function(env)
-    local feature = env.load_config("popups")
-    feature:update_config(true, { show_player_damage = false })
-    Suite.eq(feature.config.show_player_damage, false, "popups can be changed")
-    Suite.eq(feature.config.show_player_health, true, "other values keep their default")
+    local feature = env.load_config("spawn_area")
+    feature:update_config(true, { ["turrets.enabled"] = false })
+    Suite.eq(feature.config.turrets.enabled, false, "spawn_area can be changed")
+    Suite.eq(feature.config.turrets.ammo_type, "uranium-rounds-magazine", "other values keep their default")
 end)
 
 return Suite.run()

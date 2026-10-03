@@ -4,12 +4,11 @@ Automatically name stations when they are placed based on closest resource and d
 
 local Feature = require("modules/exp_scenario/features")
 
-local feature = Feature.register("station_auto_name", {
-    --- @setting station_name the name given to new stations, placeholders:
+local feature, config = Feature.register("station_auto_name", {
+    -- the name given to new stations, placeholders:
     -- __icon__ __item_name__ __backer_name__ __direction__ __x__ __y__
     station_name = "[L] __icon__",
 })
-local config = feature.config
 
 local get_direction do
     local directions = {

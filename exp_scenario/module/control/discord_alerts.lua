@@ -8,19 +8,18 @@ local Feature = require("modules/exp_scenario/features")
 local EntityProtection = require("modules/exp_scenario/control/protection")
 local Jail = require("modules/exp_scenario/control/jail")
 
-local feature = Feature.register("discord_alerts", {
-    show_playtime = true, --- @setting show_playtime Add the playtime of players to alerts
-    entity_protection = true, --- @setting entity_protection Alert when a player repeatedly removes protected entities
-    player_bans = true, --- @setting player_bans Alert when a player is banned or unbanned
-    player_mutes = true, --- @setting player_mutes Alert when a player is muted or unmuted
-    player_kicks = true, --- @setting player_kicks Alert when a player is kicked
-    player_promotes = false, --- @setting player_promotes Alert when a player is promoted or demoted
-    player_jail = true, --- @setting player_jail Alert when a player is jailed or unjailed
-    logged_commands = Feature.set{ --- @setting logged_commands Alert when a player uses one of these commands
+local feature, config = Feature.register("discord_alerts", {
+    show_playtime = true, -- Add the playtime of players to alerts
+    entity_protection = true, -- Alert when a player repeatedly removes protected entities
+    player_bans = true, -- Alert when a player is banned or unbanned
+    player_mutes = true, -- Alert when a player is muted or unmuted
+    player_kicks = true, -- Alert when a player is kicked
+    player_promotes = false, -- Alert when a player is promoted or demoted
+    player_jail = true, -- Alert when a player is jailed or unjailed
+    logged_commands = Feature.set{ -- Alert when a player uses one of these commands
         "config", "purge", "c", "command", "silent-command", "measured-command", "banlist", "permissions", "editor", "cheat",
     },
 })
-local config = feature.config
 
 --- Wrap an event handler so it only runs while the alert is enabled
 --- @param setting string

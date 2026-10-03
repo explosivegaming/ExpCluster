@@ -12,13 +12,12 @@ features.ts.
 
 --- Registering a feature, small configs live at the top of the file which uses them:
 local Feature = require("modules/exp_scenario/features")
-local feature = Feature.register("my_feature", {
+local feature, config = Feature.register("my_feature", {
     show_message = true,
     role_id = Feature.optional("number"),
     item_names = Feature.set{ "iron-plate" },
     surface_names = Feature.list{ "nauvis" },
 })
-local config = feature.config
 
 --- Handlers do nothing while the feature is disabled:
 return feature:guard{
@@ -48,11 +47,7 @@ local Storage = require("modules/exp_util/storage")
 --- @field default any
 --- @field type string "boolean", "number", "string", "list" or "set" of strings, or a type which can not be overridden
 
---- @class ExpScenario.Feature
---- @field name string
---- @field config table Changed in place when the config is updated
---- @field fields table<string, ExpScenario.FeatureField> The values in the config by path
---- @field overrides table<string, any> The overrides from the controller by path, restored from storage on load
+--- @class ExpScenario.Features
 local Feature = {
     _registered = {}, --- @type table<string, ExpScenario.Feature>
     events = {
@@ -62,6 +57,14 @@ local Feature = {
     },
 }
 
+--- The methods of every feature, kept apart from the lib so they are not called on it by mistake
+--- @class ExpScenario.Feature
+--- @field name string
+--- @field config table Changed in place when the config is updated
+--- @field fields table<string, ExpScenario.FeatureField> The values in the config by path
+--- @field overrides table<string, any> The overrides from the controller by path, restored from storage on load
+Feature._prototype = {}
+
 --- @class EventData.ExpScenario.on_config_updated : EventData
 --- @field feature_name string
 --- @field path string The path of the value within the config, "enabled" when the feature is enabled or disabled
@@ -69,7 +72,7 @@ local Feature = {
 --- @field new_value any
 
 local Feature_mt = {
-    __index = Feature,
+    __index = Feature._prototype,
 }
 
 --- The overrides of each feature by name, only these are stored because the rest is rebuilt when the file loads
@@ -173,7 +176,8 @@ end
 --- Register a feature and its config, features are enabled unless the config says otherwise
 --- @param name string
 --- @param config table?
---- @return ExpScenario.Feature
+--- @return ExpScenario.Feature feature
+--- @return table config The same table as feature.config
 function Feature.register(name, config)
     assert(Feature._registered[name] == nil, "Feature already registered: " .. name)
     config = config or {}
@@ -192,7 +196,7 @@ function Feature.register(name, config)
     }, Feature_mt) --[[@as ExpScenario.Feature]]
 
     Feature._registered[name] = feature
-    return feature
+    return feature, config
 end
 
 --- Get a registered feature by name
@@ -213,26 +217,36 @@ local function is_valid(field, value)
     return type(value) == field.type and (field.type == "boolean" or field.type == "number" or field.type == "string")
 end
 
+--- Set a value to its override, or its default when there is no valid override
+--- @package
+--- @param path string
+--- @param field ExpScenario.FeatureField
+--- @return any # The value which was set
+function Feature._prototype:_apply_field(path, field)
+    local value = self.overrides[path]
+    if value == nil then
+        value = field.default
+    elseif not is_valid(field, value) then
+        log("[WARNING] Invalid override for " .. self.name .. "." .. path .. ", using the default")
+        value = field.default
+    elseif field.type == "set" then
+        value = list_to_set(value)
+    end
+    field.parent[field.key] = value
+    return value
+end
+
 --- Set every value to its override, or its default when there is no valid override
 --- @package
-function Feature:_apply()
+function Feature._prototype:_apply()
     for path, field in pairs(self.fields) do
-        local value = self.overrides[path]
-        if value == nil then
-            value = field.default
-        elseif not is_valid(field, value) then
-            log("[WARNING] Invalid override for " .. self.name .. "." .. path .. ", using the default")
-            value = field.default
-        elseif field.type == "set" then
-            value = list_to_set(value)
-        end
-        field.parent[field.key] = value
+        self:_apply_field(path, field)
     end
 end
 
 --- Check if the feature is enabled
 --- @return boolean
-function Feature:is_enabled()
+function Feature._prototype:is_enabled()
     return self.config.enabled
 end
 
@@ -240,7 +254,7 @@ end
 --- @generic T : table
 --- @param lib T
 --- @return T
-function Feature:guard(lib)
+function Feature._prototype:guard(lib)
     local config = self.config
     for _, handlers in pairs{ lib.events or {}, lib.on_nth_tick or {} } do
         for key, handler in pairs(handlers) do
@@ -258,7 +272,8 @@ end
 --- Replace the overrides of the feature, then raise on_config_updated for each value which changed
 --- @param enabled boolean
 --- @param values table<string, boolean | number | string | string[]>
-function Feature:update_config(enabled, values)
+function Feature._prototype:update_config(enabled, values)
+    local old_overrides = self.overrides
     local overrides = { enabled = enabled }
     for path, value in pairs(values) do
         if self.fields[path] == nil then
@@ -267,26 +282,33 @@ function Feature:update_config(enabled, values)
             overrides[path] = value
         end
     end
-
-    local old_values = {}
-    for path, field in pairs(self.fields) do
-        old_values[path] = field.parent[field.key]
-    end
-
     self.overrides = overrides
     stored_overrides[self.name] = overrides
-    self:_apply()
 
-    for path, field in pairs(self.fields) do
-        local new_value = field.parent[field.key]
-        if not values_equal(old_values[path], new_value) then
-            script.raise_event(Feature.events.on_config_updated, {
-                feature_name = self.name,
-                path = path,
-                old_value = old_values[path],
-                new_value = new_value,
-            })
+    -- Only a value whose override was added, removed, or replaced can change
+    local paths = {}
+    for path in pairs(overrides) do
+        paths[path] = true
+    end
+    for path in pairs(old_overrides) do
+        -- A save can hold overrides for settings which no longer exist
+        if self.fields[path] then
+            paths[path] = true
         end
+    end
+
+    local updates = {}
+    for path in pairs(paths) do
+        local field = self.fields[path]
+        local old_value = field.parent[field.key]
+        local new_value = self:_apply_field(path, field)
+        if not values_equal(old_value, new_value) then
+            updates[#updates + 1] = { feature_name = self.name, path = path, old_value = old_value, new_value = new_value }
+        end
+    end
+
+    for _, update in ipairs(updates) do
+        script.raise_event(Feature.events.on_config_updated, update)
     end
 end
 

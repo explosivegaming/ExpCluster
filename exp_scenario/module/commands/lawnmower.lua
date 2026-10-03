@@ -8,10 +8,9 @@ local Feature = require("modules/exp_scenario/features")
 local Selection = require("modules/exp_util/selection")
 local SelectArea = Selection.connect("ExpCommand_Lawnmower")
 
-local feature = Feature.register("lawnmower", {
-    destroy_decoratives = false, --- @setting destroy_decoratives remove decoratives under entities when they are built
+local feature, config = Feature.register("lawnmower", {
+    destroy_decoratives = false, -- remove decoratives under entities when they are built
 })
-local config = feature.config
 
 --- @class ExpCommand_Lawnmower.commands
 local commands = {}

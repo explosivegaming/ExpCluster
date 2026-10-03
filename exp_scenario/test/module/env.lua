@@ -13,7 +13,7 @@ local plugin_root = assert(source:match("^@(.*)/test/module/env%.lua$"))
 local Framework = assert(loadfile(shared_root .. "/framework.lua"))() --- @type Framework
 
 --- @class ExpScenario.TestEnv : Stubs
---- @field Feature ExpScenario.Feature A fresh copy of the features module
+--- @field Feature ExpScenario.Features A fresh copy of the features module
 --- @field storage table The table registered with storage, as on_init would store it
 --- @field on_load fun(tbl: table) Act out on_load with the given storage table
 --- @field load_config fun(name: string): ExpScenario.Feature Load module/config/<name>.lua

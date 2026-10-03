@@ -6,16 +6,15 @@ local ExpUtil = require("modules/exp_util")
 local Feature = require("modules/exp_scenario/features")
 local Storage = require("modules/exp_util/storage")
 
-local feature = Feature.register("death_markers", {
-    collect_corpses = true, --- @setting collect_corpses enables items being returned to the spawn point in chests upon corpse expiring
-    show_map_markers = true, --- @setting show_map_markers shows markers on the map where bodies are
-    clean_map_markers = false, --- @setting clean_map_markers removes the map marker once the body is gone
-    include_time_of_death = true, --- @setting include_time_of_death weather to include the time of death on the map marker
-    map_icon = nil, --- @setting map_icon the icon that the map marker shows; nil means no icon; format as a SingleID
-    show_light_at_corpse = true, --- @setting show_light_at_corpse if a light should be rendered at the corpse
-    show_line_to_corpse = true, --- @setting show_line_to_corpse if a line should be rendered from you to your corpse
+local feature, config = Feature.register("death_markers", {
+    collect_corpses = true, -- enables items being returned to the spawn point in chests upon corpse expiring
+    show_map_markers = true, -- shows markers on the map where bodies are
+    clean_map_markers = false, -- removes the map marker once the body is gone
+    include_time_of_death = true, -- weather to include the time of death on the map marker
+    map_icon = nil, -- the icon that the map marker shows; nil means no icon; format as a SingleID
+    show_light_at_corpse = true, -- if a light should be rendered at the corpse
+    show_line_to_corpse = true, -- if a line should be rendered from you to your corpse
 })
-local config = feature.config
 
 local map_tag_time_format = ExpUtil.format_time_factory{ format = "short", hours = true, minutes = true }
 
