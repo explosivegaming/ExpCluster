@@ -49,7 +49,7 @@ export class ControllerPlugin {
 	/** Add new features, delete removed ones, and drop stored values which no longer fit a field */
 	reconcileFeatures() {
 		const declared = new Map(features.map(feature => [feature.name, feature]));
-		for (const record of [...this.features.values()]) {
+		for (const record of this.features.values()) {
 			const feature = declared.get(record.id);
 			if (!feature) {
 				this.logger.warn(`Dropping stored config of removed feature ${record.id}`);
