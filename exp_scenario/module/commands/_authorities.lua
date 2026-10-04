@@ -5,6 +5,7 @@ Adds a permission authority which checks the clusterio permission for a command
 local Commands = require("modules/exp_commands")
 local add, allow, deny = Commands.add_permission_authority, Commands.status.success, Commands.status.unauthorised
 
+local Feature = require("modules/exp_scenario/features")
 local Roles = require("modules/exp_roles")
 local player_has_permission = Roles.player_has_permission
 
@@ -17,6 +18,17 @@ authorities.exp_permission =
         local permission = "exp_scenario.command." .. command.name:gsub("%-", "_")
         if not player_has_permission(player, permission) then
             return deny{ "exp-commands-authorities_role.deny" }
+        else
+            return allow()
+        end
+    end)
+
+--- Commands flagged with a feature are denied while it is disabled, see features.lua
+authorities.feature_enabled =
+    add(function(player, command)
+        local feature = command.flags.feature
+        if feature and not feature:is_enabled() then
+            return deny{ "exp-commands-authorities_feature.deny" }
         else
             return allow()
         end

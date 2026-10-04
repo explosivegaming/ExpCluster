@@ -3,20 +3,32 @@ Disable new players from having certain items in their inventory, most commonly 
 ]]
 
 local ExpUtil = require("modules/exp_util")
+local Feature = require("modules/exp_scenario/features")
 local Roles = require("modules/exp_roles")
-local config = require("modules.exp_legacy.config.nukeprotect")
+
+local feature, config = Feature.register("nuke_protection", {
+    banned_items = Feature.set{ "atomic-bomb" }, -- Items which are removed from the inventory of players without the bypass permission
+})
+
+--- The inventories which are checked and the events which trigger the check
+local inventories = {
+    [defines.events.on_player_ammo_inventory_changed] = defines.inventory.character_ammo,
+    [defines.events.on_player_armor_inventory_changed] = defines.inventory.character_armor,
+    [defines.events.on_player_gun_inventory_changed] = defines.inventory.character_guns,
+    [defines.events.on_player_main_inventory_changed] = defines.inventory.character_main,
+}
 
 --- Check all items in the given inventory
 --- @param player LuaPlayer
 --- @param type defines.inventory
---- @param banned_items string[]
-local function check_items(player, type, banned_items)
+local function check_items(player, type)
     -- If the player has perms to be ignored, then they should be
-    if config.ignore_permission and Roles.player_has_permission(player, config.ignore_permission) then return end
-    if config.ignore_admins and player.admin then return end
+    if Roles.player_has_permission(player, "exp_scenario.bypass.nuke_protection") then return end
 
+    local banned_items = config.banned_items
     local items = {} --- @type LuaItemStack[]
-    local inventory = assert(player.get_inventory(type))
+    local inventory = player.get_inventory(type)
+    if not inventory then return end
     -- Check what items the player has
     for i = 1, #inventory do
         local item = inventory[i --[[@as uint]]]
@@ -37,20 +49,16 @@ end
 
 --- Add event handlers for the different inventories
 local events = {}
-for index, inventory in ipairs(config.inventories) do
-    if next(inventory.items) then
-        local assert_msg = "invalid event, no player index, index: " .. index
-        --- @param event { player_index: number }
-        events[inventory.event] = function(event)
-            local player_index = assert(event.player_index, assert_msg)
-            local player = assert(game.get_player(player_index))
-            if player and player.valid then
-                check_items(player, inventory.inventory, inventory.items)
-            end
+for event_id, inventory in pairs(inventories) do
+    --- @param event { player_index: number }
+    events[event_id] = function(event)
+        local player = assert(game.get_player(event.player_index))
+        if player.valid then
+            check_items(player, inventory)
         end
     end
 end
 
-return {
+return feature:guard{
     events = events,
 }

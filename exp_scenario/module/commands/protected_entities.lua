@@ -153,6 +153,17 @@ SelectArea:on_alt_selection(function(event)
     end
 end)
 
+--- The keys of a set as a list, find_entities_filtered takes a list of names
+--- @param set table<string, true>
+--- @return string[]
+local function set_keys(set)
+    local keys = {}
+    for key in pairs(set) do
+        keys[#keys + 1] = key
+    end
+    return keys
+end
+
 --- When selection starts show all protected entities and protected areas
 local function on_player_selection_start(event)
     local player = game.players[event.player_index]
@@ -166,15 +177,17 @@ local function on_player_selection_start(event)
     end
 
     -- Show always protected entities by name
-    if #EntityProtection.protected_entity_names > 0 then
-        for _, entity in pairs(surface.find_entities_filtered{ name = EntityProtection.protected_entity_names, force = player.force }) do
+    local protected_entity_names = set_keys(EntityProtection.config.always_protected_names)
+    if #protected_entity_names > 0 then
+        for _, entity in pairs(surface.find_entities_filtered{ name = protected_entity_names, force = player.force }) do
             show_protected_entity(player, entity)
         end
     end
 
     -- Show always protected entities by type
-    if #EntityProtection.protected_entity_types > 0 then
-        for _, entity in pairs(surface.find_entities_filtered{ type = EntityProtection.protected_entity_types, force = player.force }) do
+    local protected_entity_types = set_keys(EntityProtection.config.always_protected_types)
+    if #protected_entity_types > 0 then
+        for _, entity in pairs(surface.find_entities_filtered{ type = protected_entity_types, force = player.force }) do
             show_protected_entity(player, entity)
         end
     end

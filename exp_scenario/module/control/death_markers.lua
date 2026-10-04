@@ -3,8 +3,18 @@ Makes markers on the map where places have died and reclaims items if not recove
 ]]
 
 local ExpUtil = require("modules/exp_util")
+local Feature = require("modules/exp_scenario/features")
 local Storage = require("modules/exp_util/storage")
-local config = require("modules.exp_legacy.config.death_logger")
+
+local feature, config = Feature.register("death_markers", {
+    collect_corpses = true, -- enables items being returned to the spawn point in chests upon corpse expiring
+    show_map_markers = true, -- shows markers on the map where bodies are
+    clean_map_markers = false, -- removes the map marker once the body is gone
+    include_time_of_death = true, -- weather to include the time of death on the map marker
+    map_icon = nil, -- the icon that the map marker shows; nil means no icon; format as a SingleID
+    show_light_at_corpse = true, -- if a light should be rendered at the corpse
+    show_line_to_corpse = true, -- if a line should be rendered from you to your corpse
+})
 
 local map_tag_time_format = ExpUtil.format_time_factory{ format = "short", hours = true, minutes = true }
 
@@ -40,6 +50,7 @@ end
 
 --- Checks that all map tags are present and valid, creating any that are missing
 local function check_map_tags()
+    if not config.show_map_markers then return end
     for _, corpse_data in pairs(character_corpses) do
         if not corpse_data.tag or not corpse_data.tag.valid then
             create_map_tag(corpse_data)
@@ -98,6 +109,7 @@ end
 --- Draw lines to the player corpse
 --- @param event EventData.on_player_respawned
 local function on_player_respawned(event)
+    if not config.show_line_to_corpse then return end
     local index = event.player_index
     local player = assert(game.get_player(index))
     for _, corpse_data in pairs(character_corpses) do
@@ -122,6 +134,7 @@ end
 --- Collect all items from expired character corpses
 --- @param event EventData.on_character_corpse_expired
 local function on_character_corpse_expired(event)
+    if not config.collect_corpses then return end
     local corpse = event.corpse
     local inventory = assert(corpse.get_inventory(defines.inventory.character_corpse))
     ExpUtil.transfer_inventory_to_surface{
@@ -132,26 +145,16 @@ local function on_character_corpse_expired(event)
     }
 end
 
-local on_nth_tick = {}
-if config.show_map_markers then
-    on_nth_tick[config.period_check_map_tags] = check_map_tags
-end
-
 local e = defines.events
-local events = {
-    [e.on_player_died] = on_player_died,
-    [e.on_object_destroyed] = on_object_destroyed,
-}
 
-if config.show_line_to_corpse then
-    events[e.on_player_respawned] = on_player_respawned
-end
-
-if config.collect_corpses then
-    events[e.on_character_corpse_expired] = on_character_corpse_expired
-end
-
-return {
-    on_nth_tick = on_nth_tick,
-    events = events,
+return feature:guard{
+    on_nth_tick = {
+        [60 * 60 * 5] = check_map_tags,
+    },
+    events = {
+        [e.on_player_died] = on_player_died,
+        [e.on_object_destroyed] = on_object_destroyed,
+        [e.on_player_respawned] = on_player_respawned,
+        [e.on_character_corpse_expired] = on_character_corpse_expired,
+    },
 }

@@ -4,6 +4,7 @@ import { Controller } from "@clusterio/controller";
 import { ControllerPlugin } from "../dist/node/controller.js";
 import * as messages from "../dist/node/messages.js";
 import { seedRoles, seedGroups } from "../dist/node/seed.js";
+import { features } from "../dist/node/features.js";
 import * as roles from "@expcluster/roles";
 import * as groups from "@expcluster/permission-groups";
 import { ControllerPlugin as RolesPlugin } from "@expcluster/roles/dist/node/controller.js";
@@ -16,7 +17,7 @@ import { plugin } from "../dist/node/index.js";
 lib.registerPluginPermissions([plugin]);
 
 // The controller validates message classes against the link registry
-for (const Message of [messages.SeedRequest, ...roles.plugin.messages, ...groups.plugin.messages]) {
+for (const Message of [...plugin.messages, ...roles.plugin.messages, ...groups.plugin.messages]) {
 	lib.Link.register(Message);
 }
 
@@ -29,9 +30,9 @@ t.after(() => {
 });
 
 /** Build the plugin around a real controller, which is side effect free while not started. */
-async function startPlugin(t2, { withPlugins = true } = {}) {
+async function startPlugin(t2, { withPlugins = true, databaseDirectory = t2.testdir() } = {}) {
 	const controllerConfig = new lib.ControllerConfig("controller", {
-		"controller.database_directory": t2.testdir(),
+		"controller.database_directory": databaseDirectory,
 		"controller.default_role_id": lib.Role.DefaultPlayerRoleId,
 	});
 	const controller = new Controller(logger, [], controllerConfig);
@@ -133,6 +134,62 @@ t.test("class ControllerPlugin", t2 => {
 		t3.strictSame(second, first, "seeding again reuses the mappings");
 		t3.strictSame(groupsPlugin.roleMappings.get(99).priority, 2, "other mappings are left alone");
 		t3.notOk([...first.values()].filter(priority => priority === 2).length > 1, "seed priorities skip taken ones");
+	});
+
+	t2.test(".init() adds every feature with its defaults", async t3 => {
+		const { plugin } = await startPlugin(t3, { withPlugins: false });
+		const records = await plugin.handleFeatureListRequest();
+		t3.strictSame(records.map(record => record.id), features.map(feature => feature.name), "one record per feature");
+		t3.ok(records.every(record => record.enabled && !Object.keys(record.values).length), "enabled with no overrides");
+	});
+
+	t2.test(".reconcileFeatures() drops stored values and features which no longer exist", async t3 => {
+		const databaseDirectory = t3.testdir();
+		const { plugin } = await startPlugin(t3, { withPlugins: false, databaseDirectory });
+		plugin.features.set(new messages.FeatureRecord("afk_kick", false, { afk_minutes: 5, trust_time: 600 }));
+		plugin.features.set(new messages.FeatureRecord("gone", true, {}));
+		await plugin.onShutdown();
+
+		const { plugin: restarted } = await startPlugin(t3, { withPlugins: false, databaseDirectory });
+		const record = restarted.features.get("afk_kick");
+		t3.strictSame([record.enabled, record.values], [false, { afk_minutes: 5 }], "the stale value is dropped, the rest kept");
+		t3.notOk(restarted.features.has("gone"), "the removed feature is deleted");
+		t3.ok(features.every(feature => restarted.features.has(feature.name)), "every declared feature still has a record");
+	});
+
+	t2.test(".handleFeatureUpdateRequest() stores the values which differ from the default", async t3 => {
+		const { plugin } = await startPlugin(t3, { withPlugins: false });
+		const broadcasts = [];
+		plugin.controller.subscriptions.broadcast = event => broadcasts.push(event);
+
+		const record = await plugin.handleFeatureUpdateRequest(new messages.FeatureUpdateRequest(
+			"death_markers", false, { show_map_markers: false, collect_corpses: true },
+		));
+		t3.strictSame(record.values, { show_map_markers: false }, "the default value is dropped");
+		t3.equal(plugin.features.get("death_markers").enabled, false, "the feature is disabled");
+		t3.strictSame(broadcasts.map(event => event.updates.map(update => update.id)), [["death_markers"]], "the update is broadcast");
+
+		const subscription = await plugin.handleFeatureSubscription({ lastRequestTimeMs: record.updatedAtMs - 1 });
+		t3.strictSame(subscription.updates.map(update => update.id), ["death_markers"], "subscribers catch up on the change");
+	});
+
+	t2.test(".handleFeatureUpdateRequest() rejects invalid values", async t3 => {
+		const { plugin } = await startPlugin(t3, { withPlugins: false });
+		await t3.rejects(
+			plugin.handleFeatureUpdateRequest(new messages.FeatureUpdateRequest("death_markers", true, { unknown: 1 })),
+			{ message: "Feature death_markers has no setting unknown" },
+		);
+	});
+
+	t2.test(".init() keeps stored features across restarts", async t3 => {
+		const databaseDirectory = t3.testdir();
+		const { plugin } = await startPlugin(t3, { withPlugins: false, databaseDirectory });
+		await plugin.handleFeatureUpdateRequest(new messages.FeatureUpdateRequest("afk_kick", false, { afk_minutes: 5 }));
+		await plugin.onShutdown();
+
+		const { plugin: restarted } = await startPlugin(t3, { withPlugins: false, databaseDirectory });
+		const record = restarted.features.get("afk_kick");
+		t3.strictSame([record.enabled, record.values], [false, { afk_minutes: 5 }], "the stored record is loaded");
 	});
 
 	t2.end();
