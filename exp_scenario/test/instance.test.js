@@ -47,8 +47,7 @@ async function startPlugin(t2, features = [new messages.FeatureRecord("death_mar
 		return request instanceof messages.FeatureListRequest ? features : undefined;
 	};
 
-	const plugin = new InstancePlugin({ plugin: { name: "exp_scenario" }, instance, host: {}, logger });
-	await plugin.init();
+	const plugin = await InstancePlugin.fromContext({ plugin: { name: "exp_scenario" }, instance, host: {}, logger });
 	return { plugin, instance, state };
 }
 

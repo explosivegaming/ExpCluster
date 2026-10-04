@@ -16,10 +16,6 @@ export interface PendingRestart {
 }
 
 export class AutoRestart {
-	controller: Controller;
-	logger: lib.Logger;
-	name: string;
-
 	/** When each host, and the cluster as a whole, last became empty of players. Absent while players are online. */
 	idleSince = new Map<number | "cluster", number>();
 	/** Hosts that were told to restart and are waiting for their instances to come back */
@@ -31,32 +27,36 @@ export class AutoRestart {
 	controllerRestarting = false;
 	private checkInterval?: ReturnType<typeof setInterval>;
 
-	constructor(context: ControllerPluginContext) {
-		this.controller = context.controller;
-		this.logger = context.logger;
-		this.name = context.plugin.name;
-	}
+	private constructor(
+		public controller: Controller,
+		public logger: lib.Logger,
+		public name: string,
+	) {}
 
-	/** Attach to the controller hooks and start checking for restarts. */
-	start() {
-		const hooks = this.controller.hooks;
-		hooks.shutdown.attach(this.name, () => this.stop());
-		hooks.playerEvent.attach(this.name, (instance, event) => this.onPlayerEvent(instance, event));
-		hooks.instanceStatusChanged.attach(this.name, (instance, prev) => this.onInstanceStatusChanged(instance, prev));
-		hooks.hostConnectionEvent.attach(this.name, (connection, event) => this.onHostConnectionEvent(connection, event));
+	/** Create the plugin, attach to the controller hooks and start checking for restarts. */
+	static async fromContext(context: ControllerPluginContext) {
+		const controller = context.controller;
+		const plugin = new AutoRestart(controller, context.logger, context.plugin.name);
 
-		if (this.controller.config.get("controller.system_metrics_interval") <= 0) {
-			this.logger.warn(
+		const hooks = controller.hooks;
+		hooks.shutdown.attach(plugin.name, () => plugin.stop());
+		hooks.playerEvent.attach(plugin.name, (instance, event) => plugin.onPlayerEvent(instance, event));
+		hooks.instanceStatusChanged.attach(plugin.name, (instance, prev) => plugin.onInstanceStatusChanged(instance, prev));
+		hooks.hostConnectionEvent.attach(plugin.name, (connection, event) => plugin.onHostConnectionEvent(connection, event));
+
+		if (controller.config.get("controller.system_metrics_interval") <= 0) {
+			plugin.logger.warn(
 				"controller.system_metrics_interval is 0, so the controller never learns which hosts need a restart"
 			);
 		}
-		this.refreshIdle();
-		this.checkInterval = setInterval(() => {
-			this.check().catch((err: any) => {
-				this.logger.error(`Unexpected error checking for restarts:\n${err.stack ?? err.message}`);
+		plugin.refreshIdle();
+		plugin.checkInterval = setInterval(() => {
+			plugin.check().catch((err: any) => {
+				plugin.logger.error(`Unexpected error checking for restarts:\n${err.stack ?? err.message}`);
 			});
 		}, CHECK_INTERVAL_MS);
-		this.checkInterval.unref();
+		plugin.checkInterval.unref();
+		return plugin;
 	}
 
 	stop() {
@@ -291,5 +291,5 @@ export class AutoRestart {
 }
 
 export default async function (context: ControllerPluginContext) {
-	new AutoRestart(context).start();
+	await AutoRestart.fromContext(context);
 }

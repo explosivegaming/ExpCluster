@@ -69,9 +69,8 @@ async function startPlugin(t2, { syncMode = "bidirectional", roles = sampleRoles
 		return undefined;
 	};
 
-	const plugin = new InstancePlugin({ plugin: { name: "exp_roles" }, instance, host: {}, logger });
-	plugin.logger = { ...logger, warn: message => state.warnings.push(message) };
-	await plugin.init();
+	const pluginLogger = { ...logger, warn: message => state.warnings.push(message) };
+	const plugin = await InstancePlugin.fromContext({ plugin: { name: "exp_roles" }, instance, host: {}, logger: pluginLogger });
 	return { plugin, state };
 }
 

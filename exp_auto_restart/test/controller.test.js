@@ -35,8 +35,7 @@ async function startPlugin(t2, { config = {}, canRestart = false } = {}) {
 		sent.push({ address, message });
 	};
 
-	const plugin = new AutoRestart({ controller, logger, plugin: pluginDeclaration, metrics: undefined });
-	plugin.start();
+	const plugin = await AutoRestart.fromContext({ controller, logger, plugin: pluginDeclaration, metrics: undefined });
 	t2.teardown(() => plugin.stop());
 	return { plugin, controller, sent, logs };
 }
@@ -344,7 +343,7 @@ t.test("class AutoRestart", t2 => {
 		t3.ok(logs.some(([level, message]) => level === "warn" && message.includes("--can-restart")));
 	});
 
-	t2.test(".start() warns when system metrics are disabled", async t3 => {
+	t2.test(".fromContext() warns when system metrics are disabled", async t3 => {
 		const { logs } = await startPlugin(t3, { config: { "controller.system_metrics_interval": 0 } });
 		t3.ok(logs.some(([level, message]) => level === "warn" && message.includes("system_metrics_interval")));
 	});

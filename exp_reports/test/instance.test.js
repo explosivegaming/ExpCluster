@@ -63,8 +63,7 @@ async function startPlugin(t2, { reports = [report(1, "bob", "alice"), report(2,
 	instance.notifyStatus("running");
 	state.sent.length = 0;
 
-	const plugin = new InstancePlugin({ plugin: { name: "exp_reports" }, instance, host: {}, logger });
-	await plugin.init();
+	const plugin = await InstancePlugin.fromContext({ plugin: { name: "exp_reports" }, instance, host: {}, logger });
 	return { plugin, instance, state };
 }
 

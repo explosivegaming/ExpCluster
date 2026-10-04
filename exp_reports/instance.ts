@@ -30,20 +30,20 @@ export type IpcReportDelete = {
  * stopped by then, in which case the answer is dropped.
  */
 export class InstancePlugin {
-	instance: Instance;
-	logger: lib.Logger;
-	name: string;
+	private constructor(
+		public instance: Instance,
+		public logger: lib.Logger,
+		public name: string,
+	) {}
 
-	constructor(context: InstancePluginContext) {
-		this.instance = context.instance;
-		this.logger = context.logger;
-		this.name = context.plugin.name;
-	}
+	static async fromContext(context: InstancePluginContext) {
+		const instance = context.instance;
+		const plugin = new InstancePlugin(instance, context.logger, context.plugin.name);
 
-	async init() {
-		this.instance.server.handle("exp_reports:create", this.handleCreateIPC.bind(this));
-		this.instance.server.handle("exp_reports:list", this.handleListIPC.bind(this));
-		this.instance.server.handle("exp_reports:delete", this.handleDeleteIPC.bind(this));
+		instance.server.handle("exp_reports:create", plugin.handleCreateIPC.bind(plugin));
+		instance.server.handle("exp_reports:list", plugin.handleListIPC.bind(plugin));
+		instance.server.handle("exp_reports:delete", plugin.handleDeleteIPC.bind(plugin));
+		return plugin;
 	}
 
 	async handleCreateIPC(event: IpcReportCreate) {
@@ -106,5 +106,5 @@ export class InstancePlugin {
 }
 
 export default async function (context: InstancePluginContext) {
-	await new InstancePlugin(context).init();
+	await InstancePlugin.fromContext(context);
 }

@@ -10,24 +10,24 @@ export type IpcAssignmentUpdate = {
 };
 
 export class InstancePlugin {
-	instance: Instance;
-	logger: lib.Logger;
-	name: string;
+	private constructor(
+		public instance: Instance,
+		public logger: lib.Logger,
+		public name: string,
+	) {}
 
-	constructor(context: InstancePluginContext) {
-		this.instance = context.instance;
-		this.logger = context.logger;
-		this.name = context.plugin.name;
-	}
+	static async fromContext(context: InstancePluginContext) {
+		const instance = context.instance;
+		const plugin = new InstancePlugin(instance, context.logger, context.plugin.name);
 
-	async init() {
-		this.instance.handle(messages.RoleUpdatedEvent, this.handleRoleUpdatedEvent.bind(this));
-		this.instance.handle(messages.AssignmentUpdatedEvent, this.handleAssignmentUpdatedEvent.bind(this));
-		this.instance.server.handle("exp_roles:assignment_update", this.handleAssignmentUpdateIPC.bind(this));
+		instance.handle(messages.RoleUpdatedEvent, plugin.handleRoleUpdatedEvent.bind(plugin));
+		instance.handle(messages.AssignmentUpdatedEvent, plugin.handleAssignmentUpdatedEvent.bind(plugin));
+		instance.server.handle("exp_roles:assignment_update", plugin.handleAssignmentUpdateIPC.bind(plugin));
 
-		const hooks = this.instance.hooks;
-		hooks.instanceConfigFieldChanged.attach(this.name, this.onInstanceConfigFieldChanged.bind(this));
-		hooks.start.attach(this.name, this.onStart.bind(this));
+		const hooks = instance.hooks;
+		hooks.instanceConfigFieldChanged.attach(plugin.name, plugin.onInstanceConfigFieldChanged.bind(plugin));
+		hooks.start.attach(plugin.name, plugin.onStart.bind(plugin));
+		return plugin;
 	}
 
 	get syncMode() {
@@ -122,5 +122,5 @@ export class InstancePlugin {
 }
 
 export default async function (context: InstancePluginContext) {
-	await new InstancePlugin(context).init();
+	await InstancePlugin.fromContext(context);
 }

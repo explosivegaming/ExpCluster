@@ -6,81 +6,82 @@ import * as path from "node:path";
 const loaded = new WeakMap<Controller, ControllerPlugin>();
 
 export class ControllerPlugin {
-    controller: Controller;
-    logger: lib.Logger;
-    name: string;
-    groups!: lib.SubscribableDatastore<messages.GroupRecord>;
-    roleMappings!: lib.SubscribableDatastore<messages.RoleMappingRecord>;
-    manualAssignments!: lib.SubscribableDatastore<messages.AssignmentRecord>;
-    resolvedAssignments!: lib.SubscribableDatastore<messages.AssignmentRecord>;
+    resolvedAssignments = new lib.SubscribableDatastore<messages.AssignmentRecord>();
 
     /** The plugin loaded on a controller, for the exp_scenario seed. */
     static get(controller: Controller) {
         return loaded.get(controller);
     }
 
-    constructor(context: ControllerPluginContext) {
-        this.controller = context.controller;
-        this.logger = context.logger;
-        this.name = context.plugin.name;
-    }
+    private constructor(
+        public controller: Controller,
+        public logger: lib.Logger,
+        public name: string,
+        public groups: lib.SubscribableDatastore<messages.GroupRecord>,
+        public roleMappings: lib.SubscribableDatastore<messages.RoleMappingRecord>,
+        public manualAssignments: lib.SubscribableDatastore<messages.AssignmentRecord>,
+    ) {}
 
-    async init() {
-        loaded.set(this.controller, this);
-        const databaseDirectory = this.controller.config.get("controller.database_directory");
+    static async fromContext(context: ControllerPluginContext) {
+        const controller = context.controller;
+        const databaseDirectory = controller.config.get("controller.database_directory");
 
-        this.groups = new lib.SubscribableDatastore(
+        const groups = new lib.SubscribableDatastore(
             ...await new lib.JsonIdDatastoreProvider(
                 path.join(databaseDirectory, "exp_groups", "groups.json"),
                 messages.GroupRecord.fromJSON.bind(messages.GroupRecord),
             ).bootstrap()
         );
 
-        this.roleMappings = new lib.SubscribableDatastore(
+        const roleMappings = new lib.SubscribableDatastore(
             ...await new lib.JsonIdDatastoreProvider(
                 path.join(databaseDirectory, "exp_groups", "role_mappings.json"),
                 messages.RoleMappingRecord.fromJSON.bind(messages.RoleMappingRecord),
             ).bootstrap()
         );
 
-        this.manualAssignments = new lib.SubscribableDatastore(
+        const manualAssignments = new lib.SubscribableDatastore(
             ...await new lib.JsonIdDatastoreProvider(
                 path.join(databaseDirectory, "exp_groups", "assignments.json"),
                 messages.AssignmentRecord.fromJSON.bind(messages.AssignmentRecord),
             ).bootstrap()
         );
 
-        this.resolvedAssignments = new lib.SubscribableDatastore();
+        const plugin = new ControllerPlugin(
+            controller, context.logger, context.plugin.name, groups, roleMappings, manualAssignments,
+        );
+        loaded.set(controller, plugin);
 
-        this.controller.subscriptions.handle(messages.GroupUpdatedEvent, this.handleGroupSubscription.bind(this));
-        this.controller.subscriptions.handle(messages.RoleMappingUpdatedEvent, this.handleRoleMappingSubscription.bind(this));
-        this.controller.subscriptions.handle(messages.ManualAssignmentUpdatedEvent, this.handleManualAssignmentSubscription.bind(this));
-        this.controller.subscriptions.handle(messages.ResolvedAssignmentUpdatedEvent, this.handleResolvedAssignmentSubscription.bind(this));
+        controller.subscriptions.handle(messages.GroupUpdatedEvent, plugin.handleGroupSubscription.bind(plugin));
+        controller.subscriptions.handle(messages.RoleMappingUpdatedEvent, plugin.handleRoleMappingSubscription.bind(plugin));
+        controller.subscriptions.handle(messages.ManualAssignmentUpdatedEvent, plugin.handleManualAssignmentSubscription.bind(plugin));
+        controller.subscriptions.handle(messages.ResolvedAssignmentUpdatedEvent, plugin.handleResolvedAssignmentSubscription.bind(plugin));
 
-        this.groups.on("update", this.groupsUpdated.bind(this));
-        this.roleMappings.on("update", this.roleMappingsUpdated.bind(this));
-        this.manualAssignments.on("update", this.manualAssignmentsUpdated.bind(this));
-        this.resolvedAssignments.on("update", this.resolvedAssignmentsUpdated.bind(this));
+        groups.on("update", plugin.groupsUpdated.bind(plugin));
+        roleMappings.on("update", plugin.roleMappingsUpdated.bind(plugin));
+        manualAssignments.on("update", plugin.manualAssignmentsUpdated.bind(plugin));
+        plugin.resolvedAssignments.on("update", plugin.resolvedAssignmentsUpdated.bind(plugin));
 
-        this.controller.handle(messages.GroupCreateRequest, this.handleGroupCreateRequest.bind(this));
-        this.controller.handle(messages.GroupUpdateRequest, this.handleGroupUpdateRequest.bind(this));
-        this.controller.handle(messages.GroupDeleteRequest, this.handleGroupDeleteRequest.bind(this));
-        this.controller.handle(messages.GroupGetRequest, this.handleGroupGetRequest.bind(this));
-        this.controller.handle(messages.GroupListRequest, this.handleGroupListRequest.bind(this));
+        controller.handle(messages.GroupCreateRequest, plugin.handleGroupCreateRequest.bind(plugin));
+        controller.handle(messages.GroupUpdateRequest, plugin.handleGroupUpdateRequest.bind(plugin));
+        controller.handle(messages.GroupDeleteRequest, plugin.handleGroupDeleteRequest.bind(plugin));
+        controller.handle(messages.GroupGetRequest, plugin.handleGroupGetRequest.bind(plugin));
+        controller.handle(messages.GroupListRequest, plugin.handleGroupListRequest.bind(plugin));
 
-        this.controller.handle(messages.AssignmentCreateRequest, this.handleAssignmentCreateRequest.bind(this));
-        this.controller.handle(messages.AssignmentUpdateRequest, this.handleAssignmentUpdateRequest.bind(this));
-        this.controller.handle(messages.AssignmentDeleteRequest, this.handleAssignmentDeleteRequest.bind(this));
-        this.controller.handle(messages.AssignmentGetRequest, this.handleAssignmentGetRequest.bind(this));
-        this.controller.handle(messages.AssignmentListRequest, this.handleAssignmentListRequest.bind(this));
+        controller.handle(messages.AssignmentCreateRequest, plugin.handleAssignmentCreateRequest.bind(plugin));
+        controller.handle(messages.AssignmentUpdateRequest, plugin.handleAssignmentUpdateRequest.bind(plugin));
+        controller.handle(messages.AssignmentDeleteRequest, plugin.handleAssignmentDeleteRequest.bind(plugin));
+        controller.handle(messages.AssignmentGetRequest, plugin.handleAssignmentGetRequest.bind(plugin));
+        controller.handle(messages.AssignmentListRequest, plugin.handleAssignmentListRequest.bind(plugin));
 
-        this.controller.handle(messages.RoleMappingCreateRequest, this.handleRoleMappingCreateRequest.bind(this));
-        this.controller.handle(messages.RoleMappingUpdateRequest, this.handleRoleMappingUpdateRequest.bind(this));
-        this.controller.handle(messages.RoleMappingDeleteRequest, this.handleRoleMappingDeleteRequest.bind(this));
-        this.controller.handle(messages.RoleMappingGetRequest, this.handleRoleMappingGetRequest.bind(this));
-        this.controller.handle(messages.RoleMappingListRequest, this.handleRoleMappingListRequest.bind(this));
+        controller.handle(messages.RoleMappingCreateRequest, plugin.handleRoleMappingCreateRequest.bind(plugin));
+        controller.handle(messages.RoleMappingUpdateRequest, plugin.handleRoleMappingUpdateRequest.bind(plugin));
+        controller.handle(messages.RoleMappingDeleteRequest, plugin.handleRoleMappingDeleteRequest.bind(plugin));
+        controller.handle(messages.RoleMappingGetRequest, plugin.handleRoleMappingGetRequest.bind(plugin));
+        controller.handle(messages.RoleMappingListRequest, plugin.handleRoleMappingListRequest.bind(plugin));
 
-        this.controller.hooks.shutdown.attach(this.name, this.onShutdown.bind(this));
+        controller.hooks.shutdown.attach(plugin.name, plugin.onShutdown.bind(plugin));
+        return plugin;
     }
 
     async onShutdown() {
@@ -453,5 +454,5 @@ export class ControllerPlugin {
 }
 
 export default async function (context: ControllerPluginContext) {
-    await new ControllerPlugin(context).init();
+    await ControllerPlugin.fromContext(context);
 }
