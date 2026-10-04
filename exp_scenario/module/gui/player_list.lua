@@ -5,7 +5,7 @@ Adds a player list to show names and play time; also includes action buttons whi
 local ExpUtil = require("modules/exp_util")
 local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_roles")
-local config = require("modules/exp_legacy/config/gui/player_list_actions")
+local actions = require("modules/exp_scenario/gui/player_list_actions")
 
 --- @class ExpGui_PlayerList.elements
 local Elements = {}
@@ -100,7 +100,7 @@ Elements.reason_confirm = Gui.define("player_list/reason_confirm")
     }
     :on_click(function(_, player, element)
         local action_name = Elements.container.get_selected_action(player)
-        local button_data = action_name and config.buttons[action_name]
+        local button_data = action_name and actions.buttons[action_name]
         if button_data and button_data.reason_callback then
             local reason = assert(element.parent).entry.text --[[@as string?]]
             if reason == nil or not reason:find("%S") then reason = "no reason given" end
@@ -330,7 +330,7 @@ Elements.action_bar = Gui.define("player_list/action_bar")
         action_bar.visible = false
 
         Elements.close_action_bar(action_bar)
-        for action_name, button_data in pairs(config.buttons) do
+        for action_name, button_data in pairs(actions.buttons) do
             local permission_flow = action_bar.add{ type = "flow", name = action_name }
             permission_flow.visible = false
             for _, button in ipairs(button_data) do
@@ -356,7 +356,7 @@ function Elements.action_bar.refresh(action_bar, player, selected_player)
     end
 
     action_bar.visible = true
-    for action_name, buttons in pairs(config.buttons) do
+    for action_name, buttons in pairs(actions.buttons) do
         local flow = action_bar[action_name]
         if buttons.auth and not buttons.auth(player, selected_player) then
             flow.visible = false
@@ -483,7 +483,7 @@ local function select_action(player, selected_action)
     Elements.container.set_selected_action(player, selected_action)
     Elements.player_table.refresh_player(player)
 end
-config.set_accessors(Elements.container.get_selected_player, select_action)
+actions.set_accessors(Elements.container.get_selected_player, select_action)
 
 --- Add the element to the left flow with a toolbar button
 Gui.add_left_element(Elements.container, true)

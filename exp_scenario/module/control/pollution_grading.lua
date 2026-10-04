@@ -2,7 +2,16 @@
 Makes pollution look much nice of the map, ie not one big red mess
 ]]
 
-local config = require("modules.exp_legacy.config.pollution_grading")
+local Feature = require("modules/exp_scenario/features")
+
+local feature, config = Feature.register("pollution_grading", {
+    reference_point = { -- where pollution is read from
+        x = 0,
+        y = 0,
+    },
+    max_scalar = 0.5, -- the scale between true max and max
+    min_scalar = 0.17, -- the scale between the lowest max and min
+})
 
 local function check_surfaces()
     local max_reference = 0
@@ -20,8 +29,8 @@ local function check_surfaces()
     settings.min_to_show_per_chunk = min
 end
 
-return {
+return feature:guard{
     on_nth_tick = {
-        [config.update_delay * 3600] = check_surfaces,
-    }
+        [15 * 3600] = check_surfaces,
+    },
 }

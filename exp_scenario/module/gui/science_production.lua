@@ -6,7 +6,28 @@ local ExpUtil = require("modules/exp_util")
 local Gui = require("modules/exp_gui")
 local Colors = require("modules/exp_util/include/color")
 local Roles = require("modules/exp_roles")
-local config = require("modules/exp_legacy/config/gui/science")
+local Feature = require("modules/exp_scenario/features")
+
+local feature, config = Feature.register("science_production", {
+    show_eta = true, -- the eta for research completion
+    color_flux = 0.1, -- the fluctuation allowed in production before the icon changes color
+})
+
+--- The science packs shown, those not in the game are removed below
+local science_packs = {
+    "automation-science-pack",
+    "logistic-science-pack",
+    "military-science-pack",
+    "chemical-science-pack",
+    "production-science-pack",
+    "utility-science-pack",
+    "space-science-pack",
+    "metallurgic-science-pack",
+    "agricultural-science-pack",
+    "electromagnetic-science-pack",
+    "cryogenic-science-pack",
+    "promethium-science-pack",
+}
 local _format_number = require("util").format_number
 
 local clock_time_format = ExpUtil.format_time_factory_locale{ format = "clock", hours = true, minutes = true, seconds = true }
@@ -16,9 +37,9 @@ local clock_time_format_nil = { "exp-gui_science-production.caption-eta-time", c
 local long_time_format_nil = long_time_format(nil)
 
 --- Remove invalid science packs, this can result from a certain mod not being loaded
-for i = #config, 1, -1 do
-    if not prototypes.item[config[i]] then
-        table.remove(config, i)
+for i = #science_packs, 1, -1 do
+    if not prototypes.item[science_packs[i]] then
+        table.remove(science_packs, i)
     end
 end
 
@@ -337,7 +358,7 @@ do local _row_data = {} --- @type table<string, table<number, ExpGui_ScienceProd
             if next(force.connected_players) then
                 local row_data = _row_data[force.name] or {}
                 _row_data[force.name] = row_data
-                for i, science_pack in ipairs(config) do
+                for i, science_pack in ipairs(science_packs) do
                     --- @cast science_pack any
                     row_data[i] = Elements.science_table.calculate_row_data(force, science_pack, row_data[i])
                 end
@@ -448,7 +469,7 @@ Elements.container = Gui.define("science_production/container")
 
         local force = Gui.get_player(parent).force --[[@as LuaForce]]
         local science_table = Elements.science_table(container)
-        for _, science_pack in ipairs(config) do
+        for _, science_pack in ipairs(science_packs) do
             --- @cast science_pack any
             local row_data = Elements.science_table.calculate_row_data(force, science_pack)
             Elements.science_table.add_row(science_table, row_data)
@@ -522,7 +543,7 @@ do local _production_data = {} --- @type table<string, { [string]: ExpGui_Scienc
         end
 
         -- Calculate the production data for each science pack
-        for _, science_pack in ipairs(config) do
+        for _, science_pack in ipairs(science_packs) do
             --- @cast science_pack any
             local made, used = 0, 0
             for _, stats in pairs(production_stats) do
@@ -571,7 +592,7 @@ Gui.toolbar.create_button{
     sprite = "entity/lab",
     tooltip = { "exp-gui_science-production.tooltip-main" },
     visible = function(player, element)
-        return Roles.player_has_permission(player, "exp_scenario.gui.science_info")
+        return feature:is_enabled() and Roles.player_has_permission(player, "exp_scenario.gui.science_info")
     end
 }
 
@@ -583,7 +604,7 @@ local function update_gui()
     Elements.no_production_label.refresh_online()
 end
 
-return {
+return feature:guard{
     elements = Elements,
     on_nth_tick = {
         [60] = update_gui,

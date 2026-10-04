@@ -9,17 +9,29 @@ local Roles = require("modules/exp_roles")
 local Selection = require("modules/exp_util/selection")
 local SelectArea = Selection.connect("ModuleArea")
 
-local config = require("modules/exp_legacy/config/module")
+local Feature = require("modules/exp_scenario/features")
+local machine_sets = require("modules/exp_scenario/config/module_inserter_machines")
+
+local feature, config = Feature.register("module_inserter", {
+    copy_paste_module = true, -- copying a machine also copies its modules
+    copy_paste_rotation = false, -- copying a machine also copies its rotation
+})
+
+local module_slots_per_row = 4
+local module_slot_max = 8
+
+--- The machines of the active mod sets
+local machines = {}
 
 --- @class ExpGui_ModuleInserter.elements
 local Elements = {}
 
 --- Load all the valid machines from the config file
 local machine_names = {}
-for mod_name, machine_set in pairs(config.machine_sets) do
+for mod_name, machine_set in pairs(machine_sets) do
     if script.active_mods[mod_name] then
         for machine_name, v in pairs(machine_set) do
-            config.machines[machine_name] = v
+            machines[machine_name] = v
             table.insert(machine_names, machine_name)
         end
     end
@@ -137,7 +149,7 @@ Elements.module_selector = Gui.define("module_inserter/module_selector")
 Elements.module_table = Gui.define("module_inserter/module_table")
     :draw(function(def, parent)
         --- @cast def ExpGui_ModuleInserter.elements.module_table
-        local slots_per_row = config.module_slots_per_row + 1
+        local slots_per_row = module_slots_per_row + 1
         return Gui.elements.scroll_table(parent, 280, slots_per_row)
     end)
     :element_data{} --[[@as any]]
@@ -163,12 +175,12 @@ function Elements.module_table.add_row(module_table)
     }
 
     -- Add the module selectors and row separators
-    local slots_per_row = config.module_slots_per_row + 1
-    for i = 1, config.module_slot_max do
+    local slots_per_row = module_slots_per_row + 1
+    for i = 1, module_slot_max do
         if i % slots_per_row == 0 then
             row_separators[#row_separators + 1] = module_table.add{ type = "flow", visible = false }
         end
-        module_selectors[i] = Elements.module_selector(module_table, i <= config.module_slots_per_row)
+        module_selectors[i] = Elements.module_selector(module_table, i <= module_slots_per_row)
     end
 end
 
@@ -199,7 +211,7 @@ function Elements.module_table.reset_row(module_table, machine_selector)
         separator.visible = false
     end
     for i, selector in pairs(row.module_selectors) do
-        selector.visible = i <= config.module_slots_per_row
+        selector.visible = i <= module_slots_per_row
         selector.enabled = false
         selector.elem_value = nil
     end
@@ -214,16 +226,16 @@ function Elements.module_table.refresh_row(module_table, machine_selector, machi
     local row = assert(rows[machine_selector.index])
 
     local active_module_count = assert(prototypes.entity[machine_name].module_inventory_size)
-    local visible_row_count = math.ceil(active_module_count / config.module_slots_per_row)
-    local visible_module_count = visible_row_count * config.module_slots_per_row
-    local module_elem_value = { name = config.machines[machine_name].module }
+    local visible_row_count = math.ceil(active_module_count / module_slots_per_row)
+    local visible_module_count = visible_row_count * module_slots_per_row
+    local module_elem_value = { name = machines[machine_name].module }
 
     for i, separator in pairs(row.row_separators) do
         separator.visible = i < visible_row_count
     end
     for i, selector in pairs(row.module_selectors) do
         if i <= active_module_count then
-            if config.machines[machine_name].prod then
+            if machines[machine_name].prod then
                 selector.elem_filters = elem_filter.with_prod
             else
                 selector.elem_filters = elem_filter.no_prod
@@ -259,7 +271,7 @@ Gui.toolbar.create_button{
     sprite = "item/productivity-module-3",
     tooltip = { "exp-gui_module-inserter.tooltip-main" },
     visible = function(player, element)
-        return Roles.player_has_permission(player, "exp_scenario.gui.module")
+        return feature:is_enabled() and Roles.player_has_permission(player, "exp_scenario.gui.module")
     end
 }
 
@@ -499,7 +511,7 @@ end
 
 local e = defines.events
 
-return {
+return feature:guard{
     elements = Elements,
     events = {
         [e.on_entity_settings_pasted] = on_entity_settings_pasted,

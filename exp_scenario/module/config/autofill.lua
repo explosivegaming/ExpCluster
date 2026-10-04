@@ -3,7 +3,7 @@
 
 local config = {
     -- General config
-    icon = "item/piercing-rounds-magazine", -- @setting icon that will be used for the toolbar
+    icon = "item/piercing-rounds-magazine", -- that will be used for the toolbar
     categories = {
         ammo = "ammo",
         fuel = "fuel",

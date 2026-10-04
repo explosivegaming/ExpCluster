@@ -4,7 +4,18 @@ Adds a gui that allows players to apply various bonuses
 
 local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_roles")
-local config = require("modules/exp_legacy/config/bonus")
+local Feature = require("modules/exp_scenario/features")
+
+local feature, config = Feature.register("player_bonus", {
+    points = { -- how many points a player can spend on bonuses
+        base = 174, -- the points of the points role, the standard value of each bonus adds up to this
+        increase_percentage_per_role_level = 0.03, -- extra points as a fraction of the base for each role above the points role
+        role_id = Feature.optional("number"), -- the role the base points apply to, without one every player gets the base
+    },
+})
+
+--- Ticks between applications of the periodic bonuses
+local periodic_bonus_rate = 300
 local Vlayer = require("modules/exp_scenario/control/vlayer")
 local format_number = require("util").format_number
 
@@ -19,11 +30,12 @@ local Elements = {}
 --- @field is_percentage boolean
 --- @field is_special boolean
 --- @field value_step number
+--- @field combined_bonus string[]? Bonuses applied together with this one
 --- @field _cost_scale number
 
 --- For perf calculate the division of scale against cost ahead of time
---- @type table<string, ExpGui_PlayerBonus.bonus_data>
-local player_bonus = config.player_bonus
+--- @type ExpGui_PlayerBonus.bonus_data[]
+local player_bonus = require("modules/exp_scenario/config/player_bonus")
 
 for _, bonus_data in pairs(player_bonus) do
     bonus_data._cost_scale = bonus_data.cost / bonus_data.scale
@@ -71,8 +83,8 @@ do local _points_limit = {} --- @type table<number, number>
         local roles = Roles.get_roles()
         local positions = {}
         for index, role in ipairs(roles) do positions[role.id] = index end
-        local role = assert(Roles.get_role_by_name(config.points.role_name), "Bonus points role does not exist")
-        local role_diff = positions[role.id] - positions[Roles.get_player_highest_role(player).id]
+        local role = config.points.role_id and Roles.get_role(config.points.role_id)
+        local role_diff = role and positions[role.id] - positions[Roles.get_player_highest_role(player).id] or 0
         local points_limit = math.floor(config.points.base * (1 + config.points.increase_percentage_per_role_level * role_diff))
         _points_limit[player.index] = points_limit
         return points_limit
@@ -375,7 +387,7 @@ Elements.container = Gui.define("player_bonus/container")
         Elements.reset_button.link_apply_button(elements.reset_button, elements.apply_button)
         Elements.apply_button.link_reset_button(elements.apply_button, elements.reset_button)
 
-        for _, bonus_data in pairs(config.player_bonus) do
+        for _, bonus_data in pairs(player_bonus) do
             --- @cast bonus_data ExpGui_PlayerBonus.bonus_data
             Elements.bonus_table.add_row(bonus_table, bonus_data, elements)
         end
@@ -409,7 +421,7 @@ function Elements.container.clear_player_bonus(player)
     if not player.character then
         return
     end
-    for _, bonus_data in pairs(config.player_bonus) do
+    for _, bonus_data in pairs(player_bonus) do
         if not bonus_data.is_special then
             player[bonus_data.name] = 0
             if bonus_data.combined_bonus then
@@ -429,7 +441,7 @@ function Elements.container.apply_player_bonus(player)
     end
 
     local player_data = Elements.container.data[player]
-    for _, bonus_data in pairs(config.player_bonus) do
+    for _, bonus_data in pairs(player_bonus) do
         if not bonus_data.is_special then
             local value = player_data[bonus_data.name] or 0
             player[bonus_data.name] = value
@@ -462,25 +474,43 @@ Gui.toolbar.create_button{
     sprite = "item/exoskeleton-equipment",
     tooltip = { "exp-gui_player-bonus.tooltip-main" },
     visible = function(player, element)
-        return Roles.player_has_permission(player, "exp_scenario.gui.bonus")
+        return feature:is_enabled() and Roles.player_has_permission(player, "exp_scenario.gui.bonus")
     end
 }
 
 --- Recalculate and apply the bonus for a player
+--- Recalculate the limit of a player, their bonus is removed when it is exceeded
+--- @param player LuaPlayer
+--- @return boolean # False when the bonus was removed
+local function refresh_points_limit(player)
+    Elements.bonus_used._clear_points_limit_cache(player)
+    local bonus_cost = Elements.container.calculate_cost(player)
+    local within_limit = Elements.bonus_used.refresh_player(player, bonus_cost)
+    if not within_limit or not Roles.player_has_permission(player, "exp_scenario.gui.bonus") then
+        Elements.container.clear_player_bonus(player)
+        return false
+    end
+    return true
+end
+
 local function recalculate_bonus(event)
     local player = Gui.get_player(event)
-    if event.name == Roles.events.on_player_roles_changed then
-        -- If the player's roles changed then we will need to recalculate their limit
-        Elements.bonus_used._clear_points_limit_cache(player)
-        local bonus_cost = Elements.container.calculate_cost(player)
-        local within_limit = Elements.bonus_used.refresh_player(player, bonus_cost)
-        if not within_limit or not Roles.player_has_permission(player, "exp_scenario.gui.bonus") then
-            Elements.container.clear_player_bonus(player)
-            return
-        end
+    if event.name == Roles.events.on_player_roles_changed and not refresh_points_limit(player) then
+        return
     end
 
     Elements.container.apply_player_bonus(player)
+end
+
+--- The points of every player change with the points settings
+--- @param event EventData.ExpScenario.on_config_updated
+local function on_config_updated(event)
+    if event.feature_name ~= feature.name then return end
+    for _, player in pairs(game.connected_players) do
+        if refresh_points_limit(player) then
+            Elements.container.apply_player_bonus(player)
+        end
+    end
 end
 
 --- Apply periodic bonus to a player
@@ -501,7 +531,7 @@ local function apply_personal_battery_recharge(player)
         return -- No grid or already full
     end
 
-    local recharge_amount = Elements.container.get_player_bonus(player, "personal_battery_recharge") * 100000 * config.periodic_bonus_rate / 6
+    local recharge_amount = Elements.container.get_player_bonus(player, "personal_battery_recharge") * 100000 * periodic_bonus_rate / 6
 
     for _, equipment in pairs(grid.equipment) do
         if equipment.energy < equipment.max_energy then
@@ -524,13 +554,14 @@ end
 
 local e = defines.events
 
-return {
+return feature:guard{
     elements = Elements,
     events = {
         [e.on_player_respawned] = recalculate_bonus,
         [Roles.events.on_player_roles_changed] = recalculate_bonus,
+        [Feature.events.on_config_updated] = on_config_updated,
     },
     on_nth_tick = {
-        [config.periodic_bonus_rate] = apply_periodic_bonus_online,
+        [periodic_bonus_rate] = apply_periodic_bonus_online,
     }
 }

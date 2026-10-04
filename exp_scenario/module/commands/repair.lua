@@ -4,9 +4,15 @@ Adds a command that allows an admin to repair and revive a large area
 
 local AABB = require("modules/exp_util/aabb")
 local Commands = require("modules/exp_commands")
-local config = require("modules.exp_legacy.config.repair") --- @dep config.repair
+local Feature = require("modules/exp_scenario/features")
 local Selection = require("modules/exp_util/selection")
-local SelectArea = Selection.connect("ExpCommand_Waterfill")
+local SelectArea = Selection.connect("ExpCommand_Repair")
+
+local feature, config = Feature.register("repair", {
+    allow_blueprint_repair = false, -- revive ghosts which were never built, not only those left by destroyed entities
+    allow_ghost_revive = true, -- revive ghosts in the area
+    allow_heal_entities = true, -- heal entities in the area to full health
+})
 
 --- @class ExpCommands_Repair.commands
 local commands = {}
@@ -14,6 +20,7 @@ local commands = {}
 --- Toggle player selection mode
 --- @class ExpCommands_Repair.commands.repair: ExpCommand
 commands.repair = Commands.new("repair", { "exp-commands_repair.description" })
+    :add_flags{ feature = feature }
     :register(function(player)
         if SelectArea:stop(player) then
             return Commands.status.success{ "exp_util.selection_exit", { "exp-commands_repair.selection-name" } }
@@ -22,7 +29,7 @@ commands.repair = Commands.new("repair", { "exp-commands_repair.description" })
         return Commands.status.success{ "exp_util.selection_enter", { "exp-commands_repair.selection-name" } }
     end)
 
---- When an area is selected to be converted to water
+--- When an area is selected to be repaired
 SelectArea:on_selection(function(event)
     local player = assert(game.get_player(event.player_index))
     local area = AABB.expand(event.area)

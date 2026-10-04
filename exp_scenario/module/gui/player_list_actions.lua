@@ -1,9 +1,7 @@
---- Config for the different action buttons that show on the player list;
--- each button has the button define(s) given along side an auth function, and optional reason callback;
--- if a reason callback is used then Store.set(action_name_store,player.name,'BUTTON_NAME') should be called during on_click;
--- buttons can be removed from the gui by commenting them out of the config at the bottom of this file;
--- the key used for the name of the button is the permission name used by the role system;
--- @config Player-List
+--[[-- Gui - Player List Actions
+The action buttons shown on the player list, each with its auth function and optional reason callback.
+The key of each button is the permission name used by the role system.
+]]
 
 local ExpUtil = require("modules/exp_util")
 local Gui = require("modules/exp_gui")

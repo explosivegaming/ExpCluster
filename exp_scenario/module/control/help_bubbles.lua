@@ -4,7 +4,34 @@ Adds friendly biters that walk around and give helpful messages
 
 local Async = require("modules/exp_util/async")
 local Storage = require("modules/exp_util/storage")
-local config = require("modules.exp_legacy.config.compilatron")
+local Feature = require("modules/exp_scenario/features")
+local config_server_detail = require("modules.exp_legacy.config.server_detail")
+
+local feature = Feature.register("help_bubbles")
+
+--- Ticks between message changes
+local message_cycle = 60 * 15
+
+local locations = {
+    ["Spawn"] = {
+        spawn_position = { x = 0, y = 0 },
+        spawn_surface = "nauvis",
+        entity_name = "small-biter",
+        messages = {
+            { "info.website", config_server_detail["website"] },
+            { "info.read-readme" },
+            { "info.discord", config_server_detail["discord"] },
+            { "info.softmod" },
+            { "info.redmew" },
+            { "info.custom-commands" },
+            { "info.status", config_server_detail["status"] },
+            { "info.lhd" },
+            { "info.github", config_server_detail["github"] },
+            { "info.patreon", config_server_detail["patreon"] },
+        },
+    }
+
+}
 
 --- @type table<string, Async.AsyncReturn<any>>
 local persistent_locations = {}
@@ -48,7 +75,7 @@ local speech_bubble_task =
         task.previous_message = entity.surface.create_entity(speech_bubble_param)
 
         task.current_message_index = index + 1
-        return Async.status.delay(config.message_cycle, task)
+        return Async.status.delay(message_cycle, task)
     end)
 
 --- Register an entity to start spawning speech bubbles
@@ -66,7 +93,7 @@ end
 
 --- Check all persistent locations from the config are active
 local function check_persistent_locations()
-    for name, location in pairs(config.locations) do
+    for name, location in pairs(locations) do
         local task = persistent_locations[name]
         if task and not task.completed then
             goto continue
@@ -92,9 +119,9 @@ local function check_persistent_locations()
     end
 end
 
-return {
+return feature:guard{
     on_nth_tick = {
-        [config.message_cycle] = check_persistent_locations,
+        [message_cycle] = check_persistent_locations,
     },
     register_entity = register_entity,
 }

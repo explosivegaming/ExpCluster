@@ -82,6 +82,47 @@ export const features: Feature[] = [
 		],
 	},
 	{
+		name: "custom_start",
+		title: "Custom Start",
+		description: "Map settings applied when the map is created, and the items new players start with",
+		fields: [
+			bool("skip_intro", "Skip intro", "Skip the freeplay intro", true),
+			bool("skip_victory", "Skip victory", "Skip the victory screen when a rocket is launched", true),
+			bool("friendly_fire", "Friendly fire", "Players can damage each other", false),
+			bool("disable_crashsite", "No crash site", "Do not create the crash site", true),
+			bool("enemy_expansion", "Enemy expansion", "Biters expand, in case the map settings file fails to load", false),
+			num("chart_radius", "Chart radius", "Tiles charted around spawn when the map starts", 320, 0, "tiles"),
+		],
+	},
+	{
+		name: "deconstruction_log",
+		title: "Deconstruction Log",
+		description: "Write actions of players without the bypass permission to log/deconstruction.log",
+		fields: [
+			bool("decon_area", "Deconstructed areas", "Log when an area is deconstructed", true),
+			bool("built_entity", "Built entities", "Log when an entity is built", true),
+			bool("mined_entity", "Mined entities", "Log when an entity is mined", true),
+			bool("fired_rocket", "Rockets", "Log when a rocket is fired", true),
+			bool("fired_explosive_rocket", "Explosive rockets", "Log when an explosive rocket is fired", true),
+			bool("fired_nuke", "Nukes", "Log when a nuke is fired", true),
+		],
+	},
+	{
+		name: "degrading_tiles",
+		title: "Degrading Tiles",
+		description: "Tiles wear down as players walk on them and build on them",
+		fields: [
+			num("weakness_value", "Weakness", "Lower values make tiles degrade sooner", 70, 1),
+			list("entities", "Degrading entities", "Entities which degrade the tiles under them when built", [
+				"stone-furnace", "steel-furnace", "electric-furnace", "assembling-machine-1", "assembling-machine-2", "assembling-machine-3",
+				"beacon", "centrifuge", "chemical-plant", "oil-refinery", "storage-tank", "nuclear-reactor",
+				"steam-engine", "steam-turbine", "boiler", "heat-exchanger", "stone-wall", "gate",
+				"gun-turret", "laser-turret", "flamethrower-turret", "radar", "lab", "big-electric-pole",
+				"substation", "rocket-silo", "pumpjack", "electric-mining-drill", "roboport", "accumulator",
+			]),
+		],
+	},
+	{
 		name: "death_markers",
 		title: "Death Markers",
 		description: "What happens when players die",
@@ -112,6 +153,27 @@ export const features: Feature[] = [
 		],
 	},
 	{
+		name: "extra_logging",
+		title: "Extra Logging",
+		description: "Write rockets, deaths, research, joins, and leaves to a log file",
+		fields: [
+			str("file_name", "File name", "Path of the log file within script-output", "log/logging.log"),
+			num("rocket_launch_display_rate", "Rocket log interval", "After the first few launches, log every this many rockets", 500, 1, "rockets"),
+		],
+	},
+	{
+		name: "help_bubbles",
+		title: "Help Bubbles",
+		description: "A compilatron at spawn which cycles through tips and the community links",
+		fields: [],
+	},
+	{
+		name: "inventory_clear",
+		title: "Inventory Clear",
+		description: "Move the items of banned and kicked players to a chest at spawn",
+		fields: [],
+	},
+	{
 		name: "lawnmower",
 		title: "Lawnmower",
 		description: "The /lawnmower command which clears corpses and nuclear ground",
@@ -130,11 +192,41 @@ export const features: Feature[] = [
 		],
 	},
 	{
+		name: "module_inserter",
+		title: "Module Inserter",
+		description: "A tool to fill machines with modules by selecting an area",
+		fields: [
+			bool("copy_paste_module", "Copy modules", "Copying a machine also copies its modules", true),
+			bool("copy_paste_rotation", "Copy rotation", "Copying a machine also copies its rotation", false),
+		],
+	},
+	{
 		name: "nuke_protection",
 		title: "Nuke Protection",
 		description: "Remove banned items from players without the nuke protection bypass permission",
 		fields: [
 			list("banned_items", "Banned items", "Items which are moved to a chest at spawn", ["atomic-bomb"]),
+		],
+	},
+	{
+		name: "player_bonus",
+		title: "Player Bonus",
+		description: "Points players spend on personal bonuses, the bonuses live in config/player_bonus.lua",
+		fields: [
+			num("points.base", "Base points", "The points of the points role, the standard value of each bonus adds up to this", 174, 0, "points"),
+			num("points.increase_percentage_per_role_level", "Points per role level", "Extra points as a fraction of the base for each role above the points role", 0.03, 0),
+			role("points.role_id", "Points role", "The role the base points apply to, without one every player gets the base"),
+		],
+	},
+	{
+		name: "pollution_grading",
+		title: "Pollution Grading",
+		description: "Scale the pollution overlay so it is not one red mess",
+		fields: [
+			num("reference_point.x", "Reference X", "Where pollution is read from", 0),
+			num("reference_point.y", "Reference Y", "Where pollution is read from", 0),
+			num("max_scalar", "Max scale", "The scale between the true max and the shown max", 0.5, 0),
+			num("min_scalar", "Min scale", "The scale between the shown max and the shown min", 0.17, 0),
 		],
 	},
 	{
@@ -164,6 +256,63 @@ export const features: Feature[] = [
 			list("always_trigger_repeat_types", "Repeat entity types", "Entity types which count as a repeat violation straight away", [
 				"reactor", "fusion-reactor", "rocket-silo",
 			]),
+		],
+	},
+	{
+		name: "research",
+		title: "Research",
+		description: "Research effects, the per level limits live in config/research_data.lua",
+		fields: [
+			bool("pollution_ageing_by_research", "Pollution ageing", "Pollution ages faster with each level of the bonus inventory researches", false),
+			bool("bonus_inventory.enabled", "Bonus inventory", "Extra inventory slots for each level of the researches below", true),
+			list("bonus_inventory.res", "Bonus researches", "Researches which grant the extra slots", [
+				"mining-productivity", "mining-productivity-2", "mining-productivity-3", "mining-productivity-4",
+			]),
+			num("bonus_inventory.rate", "Slots per level", "Extra slots for each research level", 5, 0, "slots"),
+			num("bonus_inventory.limit", "Slot limit", "The most extra slots a force can have", 20, 0, "slots"),
+		],
+	},
+	{
+		name: "research_milestones",
+		title: "Research Milestones",
+		description: "A GUI tracking research against target times, the targets live in config/research_data.lua",
+		fields: [
+			str("log_file", "Log file", "Where the milestone times are written within script-output", "log/research.log"),
+		],
+	},
+	{
+		name: "rocket_info",
+		title: "Rocket Info",
+		description: "A GUI with rocket launch statistics, milestones, and build progress",
+		fields: [
+			bool("show_stats", "Statistics section", "Show the statistics section", true),
+			bool("show_first_rocket", "First rocket", "Show when the first rocket was launched", true),
+			bool("show_last_rocket", "Last rocket", "Show when the last rocket was launched", true),
+			bool("show_fastest_rocket", "Fastest rocket", "Show the time taken for the fastest rocket", true),
+			bool("show_total_rockets", "Total rockets", "Show the total number of rockets launched", true),
+			bool("show_game_avg", "Game average", "Show the average across the entire map time", true),
+			bool("show_milestones", "Milestones section", "Show when each milestone rocket was launched", true),
+			bool("show_progress", "Progress section", "Show the build progress of each silo", true),
+			bool("allow_zoom_to_map", "Zoom to map", "Clicking a silo zooms the map to it", true),
+		],
+	},
+	{
+		name: "science_production",
+		title: "Science Production",
+		description: "A GUI with the production of each science pack",
+		fields: [
+			bool("show_eta", "Show ETA", "Show the estimated time until the current research completes", true),
+			num("color_flux", "Colour threshold", "How much production may fluctuate before the icon changes colour", 0.1, 0),
+		],
+	},
+	{
+		name: "repair",
+		title: "Repair",
+		description: "The /repair command which revives ghosts and heals entities in an area",
+		fields: [
+			bool("allow_ghost_revive", "Revive ghosts", "Build ghosts in the area instantly", true),
+			bool("allow_blueprint_repair", "Revive blueprints", "Also revive ghosts which were never built, not only those left by destroyed entities", false),
+			bool("allow_heal_entities", "Heal entities", "Heal entities in the area to full health", true),
 		],
 	},
 	{
@@ -200,6 +349,44 @@ export const features: Feature[] = [
 		description: "Name train stops when they are built",
 		fields: [
 			str("station_name", "Station name", "Placeholders: __icon__ __item_name__ __backer_name__ __direction__ __x__ __y__", "[L] __icon__"),
+		],
+	},
+	{
+		name: "task_list",
+		title: "Task List",
+		description: "A shared list of tasks, adding and editing need the task list permissions",
+		fields: [
+			bool("user_can_edit_own_tasks", "Own tasks editable", "The player who made a task can edit it without the edit permission", true),
+		],
+	},
+	{
+		name: "warp_list",
+		title: "Warp List",
+		description: "Warp points players can travel between, adding, editing, and bypassing limits need the warp list permissions",
+		fields: [
+			num("minimum_distance", "Minimum distance", "Warps of a force can not be closer together than this", 100, 1, "tiles"),
+			num("cooldown_duration", "Cooldown", "Wait between warps", 60, 0, "seconds"),
+			num("standard_proximity_radius", "Warp radius", "How close a player must stand to a warp to use it", 4, 1, "tiles"),
+			num("spawn_proximity_radius", "Spawn radius", "How close a player must stand to spawn to use it as a warp", 20, 1, "tiles"),
+			bool("user_can_edit_own_warps", "Own warps editable", "The player who made a warp can edit it without the edit permission", false),
+		],
+	},
+	{
+		name: "vlayer",
+		title: "Virtual Layer",
+		description: "A shared virtual surface for solar panels, accumulators, and storage, the items live in config/vlayer_items.lua",
+		fields: [
+			bool("unlimited_capacity", "Unlimited capacity", "Energy storage without accumulators", false),
+			bool("unlimited_surface_area", "Unlimited area", "Place items without landfill", false),
+			bool("modded_auto_downgrade", "Downgrade modded items", "Convert modded items to their base game equivalent, the originals can not be recovered", false),
+			bool("power_on_space", "Power on platforms", "Energy interfaces can be built on space platforms", false),
+			str("power_on_space_research.name", "Platform research", "The research needed to build energy interfaces on platforms", "research-productivity"),
+			num("power_on_space_research.level", "Platform research level", "The level of that research", 10, 0),
+			str("mimic_surface", "Mimic surface", "The surface the day cycle is copied from, empty for a fixed cycle", "nauvis"),
+			num("interface_limit.energy", "Energy interfaces", "More than one lets disconnected power networks receive power", 1, 0),
+			num("interface_limit.circuit", "Circuit interfaces", "How many circuit interfaces can exist", 20, 0),
+			num("interface_limit.storage_input", "Input interfaces", "How many storage input interfaces can exist", 20, 0),
+			num("interface_limit.storage_output", "Output interfaces", "More than zero allows item teleportation of the allowed items", 1, 0),
 		],
 	},
 ];

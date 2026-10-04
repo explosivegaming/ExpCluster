@@ -1,40 +1,20 @@
---- Res Settings
--- @config Research
+--- Research data by mod set, the first set in mod_set_lookup whose mod is active is used
+-- @config Research-Data
 
-return {
-    enabled = true,
-    pollution_ageing_by_research = false,
-    queue_amount = 3,
-    mod_set = "base",
+local data = {
     mod_set_lookup = {
         "space-age",
     },
-    -- this enable 20 more inventory for each mining productivity level up to 4
-    bonus_inventory = {
-        enabled = true,
-        res = {
-            -- Mining Productivity
-            ["mining-productivity"] = true,
-            ["mining-productivity-2"] = true,
-            ["mining-productivity-3"] = true,
-            ["mining-productivity-4"] = true,
+    final_res = {
+        ["base"] = {
+            ["name"] = "mining-productivity-4",
+            ["level"] = 4
         },
-        name = "character_inventory_slots_bonus",
-        rate = 5,
-        limit = 20,
-    },
-    file = {
-        name = "log/research.log",
-        final_res = {
-            ["base"] = {
-                ["name"] = "mining-productivity-4",
-                ["level"] = 4
-            },
-            ["space-age"] = {
-                ["name"] = "mining-productivity-3",
-                ["level"] = 3
-            }
+        ["space-age"] = {
+            ["name"] = "mining-productivity-3",
+            ["level"] = 3
         }
+    
     },
     milestone = {
         ["base"] = {
@@ -177,3 +157,13 @@ return {
         -- ["atomic-bomb"] = 1
     },
 }
+
+data.mod_set = "base"
+for _, mod_name in ipairs(data.mod_set_lookup) do
+    if script.active_mods[mod_name] then
+        data.mod_set = mod_name
+        break
+    end
+end
+
+return data

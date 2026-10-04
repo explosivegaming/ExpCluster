@@ -5,8 +5,8 @@ Shows what the virtual layer holds and lets players build and remove its interfa
 local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_roles")
 local Colors = require("modules/exp_util/include/color")
-local config = require("modules.exp_legacy.config.vlayer")
 local Vlayer = require("modules/exp_scenario/control/vlayer")
+local feature, config = Vlayer.feature, Vlayer.config
 local format_number = require("util").format_number
 
 local Selection = require("modules/exp_util/selection")
@@ -444,7 +444,7 @@ Gui.toolbar.create_button{
     sprite = "entity/solar-panel",
     tooltip = { "exp-gui_vlayer.tooltip-main" },
     visible = function(player, element)
-        return Roles.player_has_permission(player, "exp_scenario.gui.vlayer")
+        return feature:is_enabled() and Roles.player_has_permission(player, "exp_scenario.gui.vlayer")
     end
 }
 
@@ -520,12 +520,12 @@ local function refresh_player_permissions(event)
     Elements.controls.refresh_permissions(Gui.get_player(event))
 end
 
-return {
+return feature:guard{
     elements = Elements,
     events = {
         [Roles.events.on_player_roles_changed] = refresh_player_permissions,
     },
     on_nth_tick = {
-        [config.update_tick_gui] = Elements.stats_table.refresh_online,
+        [60] = Elements.stats_table.refresh_online,
     }
 }
