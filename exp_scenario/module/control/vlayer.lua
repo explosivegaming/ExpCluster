@@ -4,7 +4,43 @@ Stores solar panels, accumulators and landfill in a virtual layer which produces
 
 local ExpUtil = require("modules/exp_util")
 local Storage = require("modules/exp_util/storage")
-local config = require("modules.exp_legacy.config.vlayer")
+local Feature = require("modules/exp_scenario/features")
+local items = require("modules/exp_scenario/config/vlayer_items")
+
+local feature, config = Feature.register("vlayer", {
+    unlimited_capacity = false, -- an unlimited energy capacity, accumulators are not required
+    unlimited_surface_area = false, -- an unlimited surface area, landfill is not required
+    modded_auto_downgrade = false, -- modded items are converted into their base game equivalent, the originals can not be recovered
+    power_on_space = false, -- energy interfaces can be built on platforms
+    power_on_space_research = { -- the research level needed to build them there
+        name = "research-productivity",
+        level = 10,
+    },
+    mimic_surface = "nauvis", -- the surface the day cycle is copied from, empty to use the fixed cycle below
+    interface_limit = { -- how many of each interface can exist
+        energy = 1, -- >1 allows for disconnected power networks to receive power
+        circuit = 20,
+        storage_input = 20,
+        storage_output = 1, -- >0 allows for item teleportation of the allowed items
+    },
+})
+
+local update_tick_storage = 60
+local update_tick_energy = 10
+
+--- The day cycle used when there is no mimic surface, see LuaSurface for details
+local surface_settings = {
+    always_day = false,
+    solar_power_multiplier = 1,
+    min_brightness = 0.15,
+    ticks_per_day = 25200,
+    daytime = 0,
+    dusk = 0.25,
+    evening = 0.45,
+    morning = 0.55,
+    dawn = 0.75,
+
+}
 
 local floor = math.floor
 local min = math.min
@@ -58,6 +94,9 @@ local mega = 1000000
 
 --- @class ExpScenario_Vlayer
 local Vlayer = {
+    --- The config of the feature, read only
+    config = config,
+    feature = feature,
     --- @package
     events = {},
     --- @package
@@ -66,11 +105,11 @@ local Vlayer = {
 
 --- The properties of every allowed item, modded items are derived from their base game equivalent
 local allowed_items = {} --- @type table<string, Vlayer.ItemProperties>
-for name, properties in pairs(config.allowed_items) do
+for name, properties in pairs(items.allowed_items) do
     allowed_items[name] = properties
 end
-for name, properties in pairs(config.modded_items) do
-    local base = config.allowed_items[properties.base_game_equivalent]
+for name, properties in pairs(items.modded_items) do
+    local base = items.allowed_items[properties.base_game_equivalent]
     local multiplier = properties.multiplier
     allowed_items[name] = {
         starting_value = properties.starting_value or 0,
@@ -103,7 +142,7 @@ local vlayer_data = {
         power_items = {},
         energy = 0,
     },
-    surface = table.deep_copy(config.surface),
+    surface = table.deep_copy(surface_settings),
 }
 
 Storage.register(vlayer_data, function(tbl)
@@ -490,7 +529,7 @@ local function handle_input_interfaces()
                 end
 
                 if removed > 0 then
-                    local modded = config.modded_items[name]
+                    local modded = items.modded_items[name]
                     if modded and config.modded_auto_downgrade then
                         Vlayer.insert_item(modded.base_game_equivalent, stored * modded.multiplier)
                     elseif vlayer_data.storage.power_items[name] then
@@ -595,7 +634,7 @@ end
 local function handle_energy_interfaces()
     local storage = vlayer_data.storage
     local properties = vlayer_data.properties
-    local production = properties.production * mega * (config.update_tick_energy / 60)
+    local production = properties.production * mega * (update_tick_energy / 60)
     storage.energy = storage.energy + floor(production * get_production_multiplier())
 
     local interfaces = vlayer_data.interfaces.energy
@@ -634,7 +673,7 @@ end
 
 --- Take the day cycle from the mimic surface when it exists, otherwise from the config
 local function update_surface()
-    if config.mimic_surface then
+    if config.mimic_surface ~= "" then
         local surface = game.get_surface(config.mimic_surface)
         if surface then
             vlayer_data.surface = surface
@@ -644,7 +683,7 @@ local function update_surface()
 
     -- The config copy never has an index, so this avoids replacing it every time a surface changes
     if not vlayer_data.surface.index then
-        vlayer_data.surface = table.deep_copy(config.surface)
+        vlayer_data.surface = table.deep_copy(surface_settings)
     end
 end
 
@@ -667,7 +706,12 @@ Vlayer.on_init = update_surface -- The default surface exists before on_surface_
 Vlayer.events[e.on_surface_created] = update_surface
 Vlayer.events[e.on_surface_renamed] = update_surface
 Vlayer.events[e.on_surface_imported] = update_surface
-Vlayer.on_nth_tick[config.update_tick_storage] = update_storage
-Vlayer.on_nth_tick[config.update_tick_energy] = update_energy
+Vlayer.events[Feature.events.on_config_updated] = function(event)
+    if event.feature_name == feature.name and event.path == "mimic_surface" then
+        update_surface()
+    end
+end
+Vlayer.on_nth_tick[update_tick_storage] = update_storage
+Vlayer.on_nth_tick[update_tick_energy] = update_energy
 
-return Vlayer
+return feature:guard(Vlayer)

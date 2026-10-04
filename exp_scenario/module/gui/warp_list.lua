@@ -5,7 +5,7 @@ Adds a list of warp points which players can travel between, add, and edit
 local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_roles")
 local Colors = require("modules/exp_util/include/color")
-local config = require("modules.exp_legacy.config.gui.warps")
+local Feature = require("modules/exp_scenario/features")
 
 local ExpUtil = require("modules/exp_util")
 local format_time = ExpUtil.format_time_factory_locale{ format = "short", hours = true, minutes = true }
@@ -31,17 +31,60 @@ local status_icons = {
     different = "[img=utility/warning_white]",
 }
 
-local update_interval = floor(60 / config.update_smoothing)
-local cooldown_ticks = config.cooldown_duration * 60
-local proximity_radius_sq = config.standard_proximity_radius ^ 2
-local spawn_radius_sq = config.spawn_proximity_radius ^ 2
-local minimum_distance_sq = config.minimum_distance ^ 2
+local feature, config = Feature.register("warp_list", {
+    minimum_distance = 100, -- the minimum distance that is allowed between warps on the same force
+    cooldown_duration = 60, -- the duration of the warp cooldown in seconds
+    standard_proximity_radius = 4, -- the minimum distance a player is allowed to be to a warp in order to use it
+    spawn_proximity_radius = 20, -- the minimum distance a player is allowed to be from their spawn point to use warps
+    user_can_edit_own_warps = false, -- the player who made a warp can edit it without the edit permission
+})
+
+--- Ticks between updates of the cooldown timers
+local update_interval = 6
+
+--- The default icon of new warps
+local default_icon = { type = "item", name = "discharge-defense-equipment" }
+
+--- The entities which are created for warp areas { name, x, y }
+local area_entities = {
+    { "small-lamp", -4, -2 }, { "small-lamp", -2, -4 }, { "medium-electric-pole", -3, -3 }, -- Top left corner
+    { "small-lamp", 3, -2 }, { "small-lamp", 1, -4 }, { "medium-electric-pole", 2, -3 }, -- Top right corner
+    { "small-lamp", 3, 1 }, { "small-lamp", 1, 3 }, { "medium-electric-pole", 2, 2 }, -- Bottom right corner
+    { "small-lamp", -4, 1 }, { "small-lamp", -2, 3 }, { "medium-electric-pole", -3, 2 }, -- Bottom left corner
+
+}
+
+--- The tiles which are created for warp areas { name, x, y }
+local area_tiles = {
+    { "black-refined-concrete", -4, -2 }, { "black-refined-concrete", -4, -1 }, { "black-refined-concrete", -4, 0 }, { "black-refined-concrete", -4, 1 },
+    { "black-refined-concrete", -3, -3 }, { "purple-refined-concrete", -3, -2 }, { "purple-refined-concrete", -3, -1 }, { "purple-refined-concrete", -3, 0 },
+    { "purple-refined-concrete", -3, 1 }, { "black-refined-concrete", -3, 2 }, { "black-refined-concrete", -2, -4 }, { "purple-refined-concrete", -2, -3 },
+    { "purple-refined-concrete", -2, -2 }, { "purple-refined-concrete", -2, -1 }, { "purple-refined-concrete", -2, 0 }, { "purple-refined-concrete", -2, 1 },
+    { "purple-refined-concrete", -2, 2 }, { "black-refined-concrete", -2, 3 }, { "black-refined-concrete", -1, -4 }, { "purple-refined-concrete", -1, -3 },
+    { "purple-refined-concrete", -1, -2 }, { "purple-refined-concrete", -1, -1 }, { "purple-refined-concrete", -1, 0 }, { "purple-refined-concrete", -1, 1 },
+    { "purple-refined-concrete", -1, 2 }, { "black-refined-concrete", -1, 3 }, { "black-refined-concrete", 0, -4 }, { "purple-refined-concrete", 0, -3 },
+    { "purple-refined-concrete", 0, -2 }, { "purple-refined-concrete", 0, -1 }, { "purple-refined-concrete", 0, 0 }, { "purple-refined-concrete", 0, 1 },
+    { "purple-refined-concrete", 0, 2 }, { "black-refined-concrete", 0, 3 }, { "black-refined-concrete", 1, -4 }, { "purple-refined-concrete", 1, -3 },
+    { "purple-refined-concrete", 1, -2 }, { "purple-refined-concrete", 1, -1 }, { "purple-refined-concrete", 1, 0 }, { "purple-refined-concrete", 1, 1 },
+    { "purple-refined-concrete", 1, 2 }, { "black-refined-concrete", 1, 3 }, { "black-refined-concrete", 2, -3 }, { "purple-refined-concrete", 2, -2 },
+    { "purple-refined-concrete", 2, -1 }, { "purple-refined-concrete", 2, 0 }, { "purple-refined-concrete", 2, 1 }, { "black-refined-concrete", 2, 2 },
+    { "black-refined-concrete", 3, -2 }, { "black-refined-concrete", 3, -1 }, { "black-refined-concrete", 3, 0 }, { "black-refined-concrete", 3, 1 },
+
+}
 
 --- Names of the entities which make up a warp area, used to find them when the area is removed
 local area_entity_names = {} --- @type string[]
-for _, entity in ipairs(config.entities) do
+for _, entity in ipairs(area_entities) do
     area_entity_names[#area_entity_names + 1] = entity[1]
 end
+
+--- The role permission each action needs
+local permissions = {
+    bypass_warp_cooldown = "exp_scenario.gui.warp_list.bypass_cooldown",
+    bypass_warp_proximity = "exp_scenario.gui.warp_list.bypass_proximity",
+    allow_add_warp = "exp_scenario.gui.warp_list.add",
+    allow_edit_warp = "exp_scenario.gui.warp_list.edit",
+}
 
 --- @class ExpGui_WarpList.Warp
 --- @field id number
@@ -63,21 +106,11 @@ end
 --- @field on_cooldown boolean
 --- @field bypass_proximity boolean
 
---- Check a permission from the config, which says who an action applies to
 --- @param player LuaPlayer
 --- @param action "bypass_warp_cooldown" | "bypass_warp_proximity" | "allow_add_warp" | "allow_edit_warp"
 --- @return boolean
 local function has_config_permission(player, action)
-    local setting = config[action]
-    if setting == "all" then
-        return true
-    elseif setting == "admin" then
-        return player.admin
-    elseif setting == "exp_roles" then
-        return Roles.player_has_permission(player, config["exp_roles_" .. action])
-    end
-
-    return false
+    return Roles.player_has_permission(player, permissions[action])
 end
 
 --- Check if a player can edit a warp, the spawn warp can never be edited
@@ -694,7 +727,7 @@ Elements.cooldown_bar = Gui.define("warp_list/cooldown_bar")
 --- @param cooldown number
 function Elements.cooldown_bar.refresh(cooldown_bar, cooldown)
     if cooldown > 0 then
-        cooldown_bar.value = 1 - cooldown / cooldown_ticks
+        cooldown_bar.value = 1 - cooldown / (config.cooldown_duration * 60)
         cooldown_bar.tooltip = { "exp-gui_warp-list.tooltip-cooldown", ceil(cooldown / 60) }
     else
         cooldown_bar.value = 1
@@ -877,12 +910,12 @@ function Elements.container._make_area(warp)
     warp.old_tile = surface.get_tile(position.x, position.y).name
 
     local tiles = {}
-    for index, tile in ipairs(config.tiles) do
+    for index, tile in ipairs(area_tiles) do
         tiles[index] = { name = tile[1], position = { x = tile[2] + position.x, y = tile[3] + position.y } }
     end
     surface.set_tiles(tiles)
 
-    for _, entity_config in ipairs(config.entities) do
+    for _, entity_config in ipairs(area_entities) do
         local entity = assert(surface.create_entity{
             name = entity_config[1],
             position = { x = entity_config[2] + position.x, y = entity_config[3] + position.y },
@@ -908,7 +941,7 @@ function Elements.container._remove_area(warp)
     local surface = warp.surface
     local position = warp.position
     local tiles = {}
-    for index, tile in ipairs(config.tiles) do
+    for index, tile in ipairs(area_tiles) do
         tiles[index] = { name = old_tile, position = { x = tile[2] + position.x, y = tile[3] + position.y } }
     end
     surface.set_tiles(tiles)
@@ -947,7 +980,7 @@ function Elements.container.add_warp(force, surface, position, player, name)
         id = id,
         force = force,
         name = name or "New warp",
-        icon = { type = config.default_icon.type, name = config.default_icon.name },
+        icon = { type = default_icon.type, name = default_icon.name },
         surface = surface,
         position = { x = floor(position.x), y = floor(position.y) },
         last_user = player,
@@ -1054,8 +1087,8 @@ function Elements.container.teleport_player(player, warp)
 
     local player_data = Elements.container._get_player_data(player)
     if not has_config_permission(player, "bypass_warp_cooldown") then
-        player_data.cooldown = cooldown_ticks
-        Elements.cooldown_bar.refresh_player(player, cooldown_ticks)
+        player_data.cooldown = config.cooldown_duration * 60
+        Elements.cooldown_bar.refresh_player(player, player_data.cooldown)
     end
     player_data.in_range = warp
     Elements.warp_table.refresh_status_player(player)
@@ -1109,7 +1142,7 @@ function Elements.container._update_proximity(player, player_data)
     end
 
     local in_range = nil --- @type ExpGui_WarpList.Warp?
-    if closest and closest_distance < (closest == force_data.spawn and spawn_radius_sq or proximity_radius_sq) then
+    if closest and closest_distance < (closest == force_data.spawn and config.spawn_proximity_radius or config.standard_proximity_radius) ^ 2 then
         in_range = closest
     end
     if in_range ~= player_data.in_range then
@@ -1121,7 +1154,7 @@ function Elements.container._update_proximity(player, player_data)
     end
 
     local blocking = nil --- @type ExpGui_WarpList.Warp?
-    if closest and closest_distance <= minimum_distance_sq then
+    if closest and closest_distance <= config.minimum_distance ^ 2 then
         blocking = closest
     end
     if blocking ~= player_data.blocking then
@@ -1135,10 +1168,10 @@ Gui.add_left_element(Elements.container, false)
 Gui.toolbar.create_button{
     name = "toggle_warp_list",
     left_element = Elements.container,
-    sprite = config.default_icon.type .. "/" .. config.default_icon.name,
+    sprite = default_icon.type .. "/" .. default_icon.name,
     tooltip = { "exp-gui_warp-list.tooltip-main" },
     visible = function(player, element)
-        return Roles.player_has_permission(player, "exp_scenario.gui.warp_list")
+        return feature:is_enabled() and Roles.player_has_permission(player, "exp_scenario.gui.warp_list")
     end
 }:on_click(function(def, player)
     -- A list the player opened themselves stays open when they leave a warp
@@ -1202,7 +1235,7 @@ end
 
 local e = defines.events
 
-return {
+return feature:guard{
     elements = Elements,
     events = {
         [e.on_player_created] = on_player_created,

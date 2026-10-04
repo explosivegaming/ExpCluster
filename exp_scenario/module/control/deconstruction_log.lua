@@ -5,7 +5,16 @@ Log certain actions into a file when events are triggered
 local ExpUtil = require("modules/exp_util")
 local Storage = require("modules/exp_util/storage")
 local Roles = require("modules/exp_roles")
-local config = require("modules.exp_legacy.config.deconlog")
+local Feature = require("modules/exp_scenario/features")
+
+local feature, config = Feature.register("deconstruction_log", {
+    decon_area = true, -- log when an area is deconstructed
+    built_entity = true, -- log when an entity is built
+    mined_entity = true, -- log when an entity is mined
+    fired_rocket = true, -- log when a rocket is fired
+    fired_explosive_rocket = true, -- log when an explosive rocket is fired
+    fired_nuke = true, -- log when a nuke is fired
+})
 
 local seconds_time_format = ExpUtil.format_time_factory{ format = "short", hours = true, minutes = true, seconds = true }
 local format_number = require("util").format_number
@@ -90,6 +99,7 @@ end
 --- Log when an area is deconstructed
 --- @param event EventData.on_player_deconstructed_area
 local function on_player_deconstructed_area(event)
+    if not config.decon_area then return end
     local player = get_log_player(event)
     if not player then return end
 
@@ -118,6 +128,7 @@ end
 --- Log when an entity is built
 --- @param event EventData.on_built_entity
 local function on_built_entity(event)
+    if not config.built_entity then return end
     local player = get_log_player(event)
     if not player then return end
     add_log_line(player, "built_entity", format_entity(event.entity))
@@ -126,16 +137,17 @@ end
 --- Log when an entity is mined
 --- @param event EventData.on_player_mined_entity
 local function on_player_mined_entity(event)
+    if not config.mined_entity then return end
     local player = get_log_player(event)
     if not player then return end
     add_log_line(player, "mined_entity", format_entity(event.entity))
 end
 
---- Ammo which is logged when fired
-local logged_ammo = {
-    ["rocket"] = config.fired_rocket,
-    ["explosive-rocket"] = config.fired_explosive_rocket,
-    ["atomic-bomb"] = config.fired_nuke,
+--- The setting which decides if a shot of an ammo is logged
+local ammo_settings = {
+    ["rocket"] = "fired_rocket",
+    ["explosive-rocket"] = "fired_explosive_rocket",
+    ["atomic-bomb"] = "fired_nuke",
 }
 
 --- @class ExpScenario_DeconstructionLog.AmmoSlot
@@ -186,7 +198,7 @@ local function on_player_ammo_inventory_changed(event)
             fired = previous.name
         end
 
-        if fired and logged_ammo[fired] then
+        if fired and config[ammo_settings[fired]] then
             add_log_line(player, "shot-" .. fired, format_position(player.physical_position), format_position(player.shooting_state.position))
         end
     end
@@ -206,29 +218,16 @@ local function on_player_left_game(event)
 end
 
 local e = defines.events
-local events = {
-    [e.on_multiplayer_init] = clear_log,
-}
 
-if config.decon_area then
-    events[e.on_player_deconstructed_area] = on_player_deconstructed_area
-end
-
-if config.built_entity then
-    events[e.on_built_entity] = on_built_entity
-end
-
-if config.mined_entity then
-    events[e.on_player_mined_entity] = on_player_mined_entity
-end
-
-if config.fired_rocket or config.fired_explosive_rocket or config.fired_nuke then
-    events[e.on_player_ammo_inventory_changed] = on_player_ammo_inventory_changed
-    events[e.on_player_joined_game] = on_player_character_changed
-    events[e.on_player_respawned] = on_player_character_changed
-    events[e.on_player_left_game] = on_player_left_game
-end
-
-return {
-    events = events,
+return feature:guard{
+    events = {
+        [e.on_multiplayer_init] = clear_log,
+        [e.on_player_deconstructed_area] = on_player_deconstructed_area,
+        [e.on_built_entity] = on_built_entity,
+        [e.on_player_mined_entity] = on_player_mined_entity,
+        [e.on_player_ammo_inventory_changed] = on_player_ammo_inventory_changed,
+        [e.on_player_joined_game] = on_player_character_changed,
+        [e.on_player_respawned] = on_player_character_changed,
+        [e.on_player_left_game] = on_player_left_game,
+    },
 }

@@ -5,7 +5,7 @@ Adds a config menu for setting autofill of placed entities
 local Feature = require("modules/exp_scenario/features")
 local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_roles")
-local config = require("modules.exp_legacy.config.gui.autofill")
+local config = require("modules/exp_scenario/config/autofill")
 
 local feature = Feature.register("autofill")
 local FlyingText = require("modules/exp_util/flying_text")

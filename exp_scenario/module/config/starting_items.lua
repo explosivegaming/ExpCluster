@@ -1,14 +1,12 @@
---- This file is used to setup the map starting settings and the items players will start with
--- @config Advanced-Start
+--- The items players start with, and how many depending on what the factory has made
+-- @config Starting-Items
 
 --- These are called factories because they return another function
 -- use these as a simple methods of adding new items
 -- they will do most of the work for you
 -- ['item-name'] = factory(params)
--- luacheck:ignore 212/amount_made 212/items_made 212/player
 
 -- Use these to adjust for ticks ie game.tick < 5*minutes
--- luacheck:ignore 211/seconds 211/minutes 211/hours
 local seconds, minutes, hours = 60, 3600, 216000
 
 --- Use to make a split point for the number of items given based on time
@@ -72,41 +70,34 @@ end
     hours, minutes, seconds are the number of ticks in each unit of time
 ]]
 
+--- @type table<string, number | fun(amount_made: number, items_made: fun(name: string): number, player: LuaPlayer): number>
 return {
-    skip_intro = true, --- @setting skip_intro skips the intro given in the default factorio free play scenario
-    skip_victory = true, --- @setting skip_victory will skip the victory screen when a rocket is launched
-    friendly_fire = false, --- @setting friendly_fire weather players will be able to attack each other on the same force
-    disable_crashsite = true, --- @setting disable_crashsite weather to disable creation of the crashsite
-    enemy_expansion = false, --- @setting enemy_expansion a catch all for in case the map settings file fails to load
-    chart_radius = 10 * 32, --- @setting chart_radius the number of tiles that will be charted when the map starts
-    items = { --- @setting items items and there condition for being given
-        -- ['item-name'] = function(amount_made, production_stats, player) return <Number> end -- 0 means no items given
-        -- Plates
-        ["iron-plate"] = scale_amount_made(100, 10, 10),
-        ["copper-plate"] = scale_amount_made(100, 0, 8),
-        ["steel-plate"] = scale_amount_made(100, 0, 4),
-        -- Secondary Items
-        ["electronic-circuit"] = scale_amount_made(1000, 0, 6),
-        ["iron-gear-wheel"] = scale_amount_made(1000, 0, 6),
-        -- Starting Items
-        ["burner-mining-drill"] = cutoff_time(10 * minutes, 4, 0),
-        ["stone-furnace"] = cutoff_time(10 * minutes, 4, 0),
-        -- Armor
-        ["light-armor"] = cutoff_amount_made_unless(5, 0, 1, "heavy-armor", 5),
-        ["heavy-armor"] = cutoff_amount_made(5, 0, 1),
-        -- Weapon
-        ["pistol"] = cutoff_amount_made_unless(0, 1, 1, "submachine-gun", 5),
-        ["submachine-gun"] = cutoff_amount_made(5, 0, 1),
-        -- Ammo
-        ["firearm-magazine"] = cutoff_amount_made_unless(100, 10, 0, "piercing-rounds-magazine", 100),
-        ["piercing-rounds-magazine"] = cutoff_amount_made(100, 0, 10),
-        --[[
-        ['construction-robot'] = 10,
-        ['modular-armor'] = 1,
-        ['solar-panel-equipment'] = 16,
-        ['belt-immunity-equipment'] = 1,
-        ['battery-equipment'] = 2,
-        ['personal-roboport-equipment'] = 1
-        ]]
-    }
+    -- ['item-name'] = function(amount_made, production_stats, player) return <Number> end -- 0 means no items given
+    -- Plates
+    ["iron-plate"] = scale_amount_made(100, 10, 10),
+    ["copper-plate"] = scale_amount_made(100, 0, 8),
+    ["steel-plate"] = scale_amount_made(100, 0, 4),
+    -- Secondary Items
+    ["electronic-circuit"] = scale_amount_made(1000, 0, 6),
+    ["iron-gear-wheel"] = scale_amount_made(1000, 0, 6),
+    -- Starting Items
+    ["burner-mining-drill"] = cutoff_time(10 * minutes, 4, 0),
+    ["stone-furnace"] = cutoff_time(10 * minutes, 4, 0),
+    -- Armor
+    ["light-armor"] = cutoff_amount_made_unless(5, 0, 1, "heavy-armor", 5),
+    ["heavy-armor"] = cutoff_amount_made(5, 0, 1),
+    -- Weapon
+    ["pistol"] = cutoff_amount_made_unless(0, 1, 1, "submachine-gun", 5),
+    ["submachine-gun"] = cutoff_amount_made(5, 0, 1),
+    -- Ammo
+    ["firearm-magazine"] = cutoff_amount_made_unless(100, 10, 0, "piercing-rounds-magazine", 100),
+    ["piercing-rounds-magazine"] = cutoff_amount_made(100, 0, 10),
+    --[[
+    ['construction-robot'] = 10,
+    ['modular-armor'] = 1,
+    ['solar-panel-equipment'] = 16,
+    ['belt-immunity-equipment'] = 1,
+    ['battery-equipment'] = 2,
+    ['personal-roboport-equipment'] = 1
+    ]]
 }

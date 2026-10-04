@@ -5,7 +5,12 @@ Adds a gui for tracking research milestones
 local ExpUtil = require("modules/exp_util")
 local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_roles")
-local config = require("modules/exp_legacy/config/research")
+local Feature = require("modules/exp_scenario/features")
+local research_data = require("modules/exp_scenario/config/research_data")
+
+local feature, config = Feature.register("research_milestones", {
+    log_file = "log/research.log", -- where the milestone times are written
+})
 
 local table_to_json = helpers.table_to_json
 local write_file = helpers.write_file
@@ -34,18 +39,10 @@ local research_targets = {
     length = 0,
 }
 
---- Select the mod set to be used for milestones
-for _, mod_name in ipairs(config.mod_set_lookup) do
-    if script.active_mods[mod_name] then
-        config.mod_set = mod_name
-        break
-    end
-end
-
 do --- Calculate the research targets
     local research_index = 1
     local total_time = 0
-    for name, time in pairs(config.milestone[config.mod_set]) do
+    for name, time in pairs(research_data.milestone[research_data.mod_set]) do
         if prototypes.technology[name] and (not prototypes.technology[name].hidden) then
             research_targets.index_lookup[name] = research_index
             total_time = total_time + time * 60
@@ -328,7 +325,7 @@ function Elements.container.append_log_line(force)
         result_data[name] = force_data[research_index]
     end
 
-    write_file(config.file.name, table_to_json(result_data) .. "\n", true, 0)
+    write_file(config.log_file, table_to_json(result_data) .. "\n", true, 0)
 end
 
 --- Add the element to the left flow with a toolbar button
@@ -339,7 +336,7 @@ Gui.toolbar.create_button{
     sprite = "item/space-science-pack",
     tooltip = { "exp-gui_research-milestones.tooltip-main" },
     visible = function(player, element)
-        return Roles.player_has_permission(player, "exp_scenario.gui.research")
+        return feature:is_enabled() and Roles.player_has_permission(player, "exp_scenario.gui.research")
     end
 }
 
@@ -350,8 +347,8 @@ local function on_research_finished(event)
     local force = event.research.force
 
     -- Check if the log should be updated and print a message to chat
-    if config.inf_res[config.mod_set][research_name] then
-        local log_requirement = config.file.final_res[config.mod_set]
+    if research_data.inf_res[research_data.mod_set][research_name] then
+        local log_requirement = research_data.final_res[research_data.mod_set]
         if research_name == log_requirement.name and research_level == log_requirement.level + 1 then
             Elements.container.append_log_line(force)
         end
@@ -394,7 +391,7 @@ end
 
 local e = defines.events
 
-return {
+return feature:guard{
     elements = Elements,
     events = {
         [e.on_research_finished] = on_research_finished,

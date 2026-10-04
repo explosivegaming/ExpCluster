@@ -2,8 +2,19 @@
 Changes the starting script and the items given on first join depending on factory production levels
 ]]
 
-local config = require("modules.exp_legacy.config.advanced_start")
+local Feature = require("modules/exp_scenario/features")
+local starting_items = require("modules/exp_scenario/config/starting_items")
 local floor = math.floor
+
+--- Applied when the map is created
+local feature, config = Feature.register("custom_start", {
+    skip_intro = true, -- skips the intro given in the default factorio free play scenario
+    skip_victory = true, -- will skip the victory screen when a rocket is launched
+    friendly_fire = false, -- weather players will be able to attack each other on the same force
+    disable_crashsite = true, -- weather to disable creation of the crashsite
+    enemy_expansion = false, -- a catch all for in case the map settings file fails to load
+    chart_radius = 320, -- the number of tiles that will be charted when the map starts
+})
 
 --- Give a player their starting items
 --- @param player LuaPlayer
@@ -12,7 +23,7 @@ local function give_starting_items(player)
     local get_input_count = get_prod_stats.get_input_count
     local insert_param = { name = "", count = 0 }
     local insert = player.insert
-    for item_name, insert_amount in pairs(config.items) do
+    for item_name, insert_amount in pairs(starting_items) do
         insert_param.name = item_name
         if type(insert_amount) == "function" then
             local count = insert_amount(get_input_count(item_name), get_input_count, player)
@@ -55,7 +66,7 @@ end
 
 local e = defines.events
 
-return {
+return feature:guard{
     on_init = on_init,
     events = {
         [e.on_player_created] = on_player_created,

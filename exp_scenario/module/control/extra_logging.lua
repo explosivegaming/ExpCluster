@@ -2,8 +2,39 @@
 Log some extra events to a separate file
 ]]
 
-local config = require("modules.exp_legacy.config.logging")
-local config_res = require("modules.exp_legacy.config.research")
+local Feature = require("modules/exp_scenario/features")
+local research_data = require("modules/exp_scenario/config/research_data")
+
+local feature, config = Feature.register("extra_logging", {
+    file_name = "log/logging.log", -- the file the lines are written to
+    rocket_launch_display_rate = 500, -- after the counts below, log every this many rockets
+})
+
+--- Rocket counts which are always logged
+local rocket_launch_display = {
+    [1] = true,
+    [2] = true,
+    [5] = true,
+    [10] = true,
+    [20] = true,
+    [50] = true,
+    [100] = true,
+    [200] = true,
+}
+
+local disconnect_reason = {
+    [defines.disconnect_reason.quit] = "left the game",
+    [defines.disconnect_reason.dropped] = "was dropped from the game",
+    [defines.disconnect_reason.reconnect] = "is reconnecting",
+    [defines.disconnect_reason.wrong_input] = "was having a wrong input",
+    [defines.disconnect_reason.desync_limit_reached] = "had desync limit reached",
+    [defines.disconnect_reason.cannot_keep_up] = "cannot keep up",
+    [defines.disconnect_reason.afk] = "was afk",
+    [defines.disconnect_reason.kicked] = "was kicked",
+    [defines.disconnect_reason.kicked_and_deleted] = "was kicked and deleted",
+    [defines.disconnect_reason.banned] = "was banned",
+    [defines.disconnect_reason.switching_servers] = "is switching servers",
+}
 
 local concat = table.concat
 local write_file = helpers.write_file
@@ -26,7 +57,7 @@ local function on_cargo_pod_finished_ascending(event)
         local force = event.cargo_pod.force --[[@as LuaForce]]
         if force.rockets_launched >= config.rocket_launch_display_rate and force.rockets_launched % config.rocket_launch_display_rate == 0 then
             add_log_line("[ROCKET]", force.rockets_launched, "rockets launched")
-        elseif config.rocket_launch_display[force.rockets_launched] then
+        elseif rocket_launch_display[force.rockets_launched] then
             add_log_line("[ROCKET]", force.rockets_launched, "rockets launched")
         end
     end
@@ -53,7 +84,7 @@ local function on_research_finished(event)
         return
     end
 
-    local inf_research_level = config_res.inf_res[config_res.mod_set][event.research.name]
+    local inf_research_level = research_data.inf_res[research_data.mod_set][event.research.name]
     if inf_research_level and event.research.level >= inf_research_level then
         add_log_line_locale{ "", "[RES]", event.research.prototype.localised_name, " at level ", event.research.level - 1, " has been researched\n" }
     else
@@ -70,17 +101,17 @@ end
 --- @param event EventData.on_player_left_game
 local function on_player_left_game(event)
     local player = assert(game.get_player(event.player_index))
-    add_log_line("[LEAVE]", player.name, config.disconnect_reason[event.reason])
+    add_log_line("[LEAVE]", player.name, disconnect_reason[event.reason])
 end
 
 local e = defines.events
 
-return {
+return feature:guard{
     events = {
         [e.on_cargo_pod_finished_ascending] = on_cargo_pod_finished_ascending,
         [e.on_pre_player_died] = on_pre_player_died,
         [e.on_research_finished] = on_research_finished,
         [e.on_player_joined_game] = on_player_joined_game,
         [e.on_player_left_game] = on_player_left_game,
-    }
+    },
 }

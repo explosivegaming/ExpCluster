@@ -5,7 +5,25 @@ Adds a rocket information gui which shows general stats, milestones and build pr
 local ExpUtil = require("modules/exp_util")
 local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_roles")
-local config = require("modules/exp_legacy/config/gui/rockets")
+local Feature = require("modules/exp_scenario/features")
+
+local feature, config = Feature.register("rocket_info", {
+    show_stats = true, -- the stats section
+    show_first_rocket = true, -- when the first rocket was launched
+    show_last_rocket = true, -- when the last rocket was launched
+    show_fastest_rocket = true, -- the time taken for the fastest rocket
+    show_total_rockets = true, -- the total number of rockets launched
+    show_game_avg = true, -- the average across the entire map time
+    show_milestones = true, -- the milestones section
+    show_progress = true, -- the build progress section
+    allow_zoom_to_map = true, -- the zoom to map button
+})
+
+--- Each number is one statistic, 5 means the average time taken for the last 5 rockets
+local rolling_avg = { 5, 10, 25 }
+
+--- Each number is one statistic, 5 means the time that the 5th rocket was launched
+local milestones = { 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000 }
 
 --- @class ExpGui_RocketInfo.elements
 local Elements = {}
@@ -26,7 +44,7 @@ local font_color = {
 
 -- The largest rolling average is used to know when an old launch time can be discarded
 local largest_rolling_avg = 0
-for _, avg_over in pairs(config.stats.rolling_avg) do
+for _, avg_over in pairs(rolling_avg) do
     if avg_over > largest_rolling_avg then
         largest_rolling_avg = avg_over
     end
@@ -110,7 +128,7 @@ Elements.position_label = Gui.define("rocket_info/position_label")
     )
     :on_click(function(def, player, element)
         --- @cast def ExpGui_RocketInfo.elements.position_label
-        if not config.progress.allow_zoom_to_map then return end
+        if not config.allow_zoom_to_map then return end
         local entity = def.data[element]
         if not entity or not entity.valid then return end
         player.set_controller{ type = defines.controllers.remote, position = entity.position, surface = entity.surface }
@@ -142,34 +160,34 @@ function Elements.stats_table.calculate_row_data(force)
     local force_rockets = force.rockets_launched
     local rows = {}
 
-    if config.stats.show_first_rocket then
+    if config.show_first_rocket then
         local value = stats.first_launch or 0
         rows[#rows + 1] = { key = "first-launch", name = "first-launch", value = time_formats.caption_hours(value), tooltip = time_formats.tooltip_hours(value) }
     end
 
-    if config.stats.show_last_rocket then
+    if config.show_last_rocket then
         local value = stats.last_launch or 0
         rows[#rows + 1] = { key = "last-launch", name = "last-launch", value = time_formats.caption_hours(value), tooltip = time_formats.tooltip_hours(value) }
     end
 
-    if config.stats.show_fastest_rocket then
+    if config.show_fastest_rocket then
         local value = stats.fastest_launch or 0
         rows[#rows + 1] = { key = "fastest-launch", name = "fastest-launch", value = time_formats.caption_hours(value), tooltip = time_formats.tooltip_hours(value) }
     end
 
-    if config.stats.show_total_rockets then
+    if config.show_total_rockets then
         local total_rockets = get_game_rocket_count()
         if total_rockets == 0 then total_rockets = 1 end
         local percentage = math.floor(force_rockets / total_rockets * 1000) / 10
         rows[#rows + 1] = { key = "total-rockets", name = "total-rockets", value = tostring(force_rockets), tooltip = { "exp-gui_rocket-info.value-tooltip-total-rockets", percentage } }
     end
 
-    if config.stats.show_game_avg then
+    if config.show_game_avg then
         local avg = force_rockets > 0 and math.floor(game.tick / force_rockets) or 0
         rows[#rows + 1] = { key = "avg-launch", name = "avg-launch", value = time_formats.caption(avg), tooltip = time_formats.tooltip(avg) }
     end
 
-    for _, avg_over in pairs(config.stats.rolling_avg) do
+    for _, avg_over in pairs(rolling_avg) do
         local avg = get_rolling_average(force, avg_over)
         rows[#rows + 1] = { key = "avg-launch-n-" .. avg_over, name = "avg-launch-n", subname = avg_over, value = time_formats.caption(avg), tooltip = time_formats.tooltip(avg) }
     end
@@ -258,7 +276,7 @@ function Elements.milestones_table.calculate_row_data(force)
     local force_rockets = force.rockets_launched
     local rows = {}
 
-    for _, milestone in ipairs(config.milestones) do
+    for _, milestone in ipairs(milestones) do
         -- The milestones config mixes the show_milestones flag with the milestone numbers
         if type(milestone) == "number" then
             if milestone <= force_rockets then
@@ -421,7 +439,7 @@ end
 --- @param row_data ExpGui_RocketInfo.elements.progress_table.row_data
 function Elements.progress_table.add_row(progress_table, row_data)
     local rows = Elements.progress_table.data[progress_table].rows
-    local zoom_tooltip = config.progress.allow_zoom_to_map and { "exp-gui_rocket-info.progress-label-tooltip" } or nil
+    local zoom_tooltip = config.allow_zoom_to_map and { "exp-gui_rocket-info.progress-label-tooltip" } or nil
 
     local x = Elements.position_label(progress_table, { caption = row_data.x, tooltip = zoom_tooltip, entity = row_data.entity })
     local y = Elements.position_label(progress_table, { caption = row_data.y, tooltip = zoom_tooltip, entity = row_data.entity })
@@ -544,17 +562,17 @@ Elements.container = Gui.define("rocket_info/container")
         local force = player.force --[[@as LuaForce]]
         local force_data = def._get_force_data(force)
 
-        if config.stats.show_stats then
+        if config.show_stats then
             local row_data = Elements.stats_table.calculate_row_data(force)
             Elements.stats_table.refresh(def.add_section(container, "stats", Elements.stats_table), row_data)
         end
 
-        if config.milestones.show_milestones then
+        if config.show_milestones then
             local row_data = Elements.milestones_table.calculate_row_data(force)
             Elements.milestones_table.refresh(def.add_section(container, "milestones", Elements.milestones_table), row_data)
         end
 
-        if config.progress.show_progress then
+        if config.show_progress then
             local row_data = Elements.progress_table.calculate_row_data_all(force_data.silos)
             Elements.progress_table.refresh(def.add_section(container, "progress", Elements.progress_table), row_data)
         end
@@ -651,7 +669,7 @@ Gui.toolbar.create_button{
     sprite = "item/rocket-silo",
     tooltip = { "exp-gui_rocket-info.tooltip-main" },
     visible = function(player, element)
-        return Roles.player_has_permission(player, "exp_scenario.gui.rocket_info")
+        return feature:is_enabled() and Roles.player_has_permission(player, "exp_scenario.gui.rocket_info")
     end
 }
 
@@ -678,7 +696,7 @@ local function on_cargo_pod_finished_ascending(event)
 
     -- Discard the launch time that is no longer needed by any rolling average unless it is a milestone
     local remove_rocket = rockets_launched - largest_rolling_avg
-    if remove_rocket > 0 and not table.array_contains(config.milestones, remove_rocket) then
+    if remove_rocket > 0 and not table.array_contains(milestones, remove_rocket) then
         times[remove_rocket] = nil
     end
 
@@ -721,7 +739,7 @@ end
 
 local e = defines.events
 
-return {
+return feature:guard{
     elements = Elements,
     events = {
         [e.on_cargo_pod_finished_ascending] = on_cargo_pod_finished_ascending,

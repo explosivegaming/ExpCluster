@@ -6,7 +6,15 @@ on_player_kicked - player_index
 ]]
 
 local ExpUtil = require("modules/exp_util")
-local events = require("modules.exp_legacy.config.inventory_clear")
+local Feature = require("modules/exp_scenario/features")
+
+local feature = Feature.register("inventory_clear")
+
+--- The events which clear the inventory of the player
+local events = {
+    defines.events.on_player_banned,
+    defines.events.on_player_kicked,
+}
 
 --- @param event { player_index: number }
 local function clear_items(event)
@@ -26,6 +34,6 @@ for _, event_name in ipairs(events) do
     event_handlers[event_name] = clear_items
 end
 
-return {
+return feature:guard{
     events = event_handlers,
 }
