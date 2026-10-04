@@ -4,6 +4,7 @@ import { Instance } from "@clusterio/host";
 import { InstancePlugin } from "../dist/node/instance.js";
 import { plugin as pluginDeclaration } from "../dist/node/index.js";
 import * as messages from "../dist/node/messages.js";
+import { features } from "../dist/node/features.js";
 
 // The instance validates message classes against the link registry
 for (const Message of pluginDeclaration.messages) {
@@ -64,10 +65,12 @@ t.test("class InstancePlugin", t2 => {
 
 		t3.ok(state.sent[0] instanceof lib.SubscriptionRequest, "subscribes to updates first");
 		t3.ok(state.sent[1] instanceof messages.FeatureListRequest, "then lists the features");
-		t3.strictSame(
-			decodeRcon(state.rcons[0]),
-			[{ name: "death_markers", enabled: false, values: { show_map_markers: false } }],
-		);
+		const [update] = decodeRcon(state.rcons[0]);
+		const deathMarkers = features.find(feature => feature.name === "death_markers");
+		t3.equal(update.name, "death_markers");
+		t3.strictSame([update.values.enabled, update.values.show_map_markers], [false, false], "stored values are sent");
+		t3.equal(update.values.collect_corpses, true, "the rest are filled with their defaults");
+		t3.equal(Object.keys(update.values).length, deathMarkers.fields.length + 1, "every field and enabled");
 	});
 
 	t2.test(".handleFeatureUpdatedEvent() only sends while the game is up", async t3 => {
@@ -83,8 +86,9 @@ t.test("class InstancePlugin", t2 => {
 		await plugin.onStart();
 		state.rcons.length = 0;
 		await plugin.handleFeatureUpdatedEvent(event);
-		t3.strictSame(decodeRcon(state.rcons[0]), [{ name: "afk_kick", enabled: true, values: { afk_minutes: 5 } }],
-			"deleted features are left out");
+		const updates = decodeRcon(state.rcons[0]);
+		t3.strictSame(updates.map(update => update.name), ["afk_kick"], "deleted features are left out");
+		t3.strictSame([updates[0].values.enabled, updates[0].values.afk_minutes], [true, 5]);
 
 		await plugin.onExit();
 		state.rcons.length = 0;

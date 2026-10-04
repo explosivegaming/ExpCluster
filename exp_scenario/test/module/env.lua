@@ -18,12 +18,18 @@ local Framework = assert(loadfile(shared_root .. "/framework.lua"))() --- @type 
 --- @field on_load fun(tbl: table) Act out on_load with the given storage table
 --- @field load_config fun(name: string): ExpScenario.Feature Load module/config/<name>.lua
 --- @field logged string[] Messages passed to log
+--- @field events table[] Raised events, name and tick filled in
 
 return Framework.suite(function(env)
     --- @cast env ExpScenario.TestEnv
     local callback --- @type fun(tbl: table)
     env.logged = {}
     log = function(message) env.logged[#env.logged + 1] = message end
+    table_size = function(tbl)
+        local size = 0
+        for _ in pairs(tbl) do size = size + 1 end
+        return size
+    end
     env.extend_requires{
         ["modules/exp_util/storage"] = {
             register = function(tbl, fn)

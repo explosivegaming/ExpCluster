@@ -1,18 +1,11 @@
 /**
- * The scenario features which can be configured from the web interface.
- *
- * Defaults must match the Features.config call in the lua module,
- * test/features.test.js checks this. Only list settings which the lua side
- * reads at runtime. Settings in nested tables are named "section.key".
+ * The features which can be configured from the web interface. Defaults must
+ * match the lua side, test/features.test.js checks this.
  */
 
 export type FeatureValue = boolean | number | string | string[] | null;
 
-/**
- * A setting of a feature, shaped like a clusterio config field definition so
- * the web interface can render it with the same inputs, including the input
- * components registered by plugins.
- */
+/** A setting, shaped like a clusterio config field so the config inputs can render it */
 export type FeatureField = {
 	name: string,
 	title: string,
@@ -211,12 +204,7 @@ export const features: Feature[] = [
 	},
 ];
 
-/**
- * Check the values for a feature against its fields.
- *
- * @returns the values which differ from their default
- * @throws Error if the feature is unknown, or a value is unknown or the wrong type
- */
+/** Check values against the fields of a feature, returning those which differ from their default */
 export function validateFeatureValues(name: string, values: Record<string, FeatureValue>) {
 	const feature = features.find(f => f.name === name);
 	if (!feature) {
@@ -229,7 +217,10 @@ export function validateFeatureValues(name: string, values: Record<string, Featu
 		if (!field) {
 			throw new Error(`Feature ${name} has no setting ${key}`);
 		}
-		checkFieldValue(field, value, `Setting ${key} of ${name}`);
+		const error = fieldValueError(field, value);
+		if (error) {
+			throw new Error(`Setting ${key} of ${name} ${error}`);
+		}
 		if (!isDefaultValue(field, value)) {
 			result[key] = value;
 		}
@@ -237,39 +228,35 @@ export function validateFeatureValues(name: string, values: Record<string, Featu
 	return result;
 }
 
-function checkFieldValue(field: FeatureField, value: FeatureValue, label: string) {
+/** Why a value does not fit a field, undefined when it does */
+function fieldValueError(field: FeatureField, value: FeatureValue) {
 	if (value === null) {
-		if (field.type === "string_list" || !field.optional) {
-			throw new Error(`${label} can not be null`);
-		}
-		return;
+		return field.type === "string_list" || !field.optional ? "can not be null" : undefined;
 	}
 	switch (field.type) {
 		case "string_list":
 			if (!Array.isArray(value) || value.some(item => typeof item !== "string")) {
-				throw new Error(`${label} must be a list of strings`);
+				return "must be a list of strings";
 			}
-			return;
+			return undefined;
 		case "number":
 			if (typeof value !== "number" || !Number.isFinite(value)) {
-				throw new Error(`${label} must be a finite number`);
+				return "must be a finite number";
 			}
 			if (field.min !== undefined && value < field.min) {
-				throw new Error(`${label} must be at least ${field.min}`);
+				return `must be at least ${field.min}`;
 			}
-			return;
+			return undefined;
 		case "string":
 			if (typeof value !== "string") {
-				throw new Error(`${label} must be a string`);
+				return "must be a string";
 			}
 			if (field.enum && !field.enum.includes(value)) {
-				throw new Error(`${label} must be one of ${field.enum.join(", ")}`);
+				return `must be one of ${field.enum.join(", ")}`;
 			}
-			return;
+			return undefined;
 		default:
-			if (typeof value !== field.type) {
-				throw new Error(`${label} must be a ${field.type}`);
-			}
+			return typeof value === field.type ? undefined : `must be a ${field.type}`;
 	}
 }
 
@@ -285,24 +272,15 @@ export function isDefaultValue(field: FeatureField, value: FeatureValue) {
 	return sameValue(value, field.default);
 }
 
-/**
- * Drop stored values which no longer match the fields of a feature, after a
- * setting was renamed, removed, or changed type.
- *
- * @returns the values which are still valid, and the names of those dropped
- */
+/** Split stored values into those which still fit a field and the names of the rest */
 export function pruneFeatureValues(feature: Feature, values: Record<string, FeatureValue>) {
 	const kept: Record<string, FeatureValue> = {};
 	const dropped: string[] = [];
 	for (const [key, value] of Object.entries(values)) {
 		const field = feature.fields.find(f => f.name === key);
-		try {
-			if (!field) {
-				throw new Error("removed");
-			}
-			checkFieldValue(field, value, key);
+		if (field && !fieldValueError(field, value)) {
 			kept[key] = value;
-		} catch {
+		} else {
 			dropped.push(key);
 		}
 	}

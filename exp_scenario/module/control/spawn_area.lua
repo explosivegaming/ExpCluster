@@ -35,7 +35,7 @@ end
 apply_offset_to_array(config.turrets.locations, config.turrets.offset, 1, 2)
 apply_offset_to_array(config.afk_belts.locations, config.afk_belts.offset, 1, 2)
 apply_offset_to_array(config.water.locations, config.water.offset, 1, 2)
-apply_offset_to_array(config.water.locations, config.water.offset, 1, 2)
+apply_offset_to_array(config.pattern.locations, config.pattern.offset, 1, 2)
 apply_offset_to_array(config.entities.locations, config.entities.offset, 2, 3)
 
 --- Get or create the force used for entities in spawn

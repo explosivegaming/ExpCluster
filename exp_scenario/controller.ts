@@ -46,13 +46,7 @@ export class ControllerPlugin {
 		await this.features.save();
 	}
 
-	/**
-	 * Bring the stored records in line with the features declared in features.ts.
-	 *
-	 * New features begin with their defaults, records of removed features are
-	 * deleted, and values which no longer match a field are dropped so the
-	 * feature can still be saved from the web interface.
-	 */
+	/** Add new features, delete removed ones, and drop stored values which no longer fit a field */
 	reconcileFeatures() {
 		const declared = new Map(features.map(feature => [feature.name, feature]));
 		for (const record of [...this.features.values()]) {

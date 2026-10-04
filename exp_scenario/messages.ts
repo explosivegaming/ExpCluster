@@ -16,12 +16,7 @@ export class SeedRequest {
 
 const FeatureValueSchema = Type.Union([Type.Boolean(), Type.Number(), Type.String(), Type.Array(Type.String()), Type.Null()]);
 
-/**
- * The config of one scenario feature, see features.ts.
- *
- * Only values which differ from the default are stored, so a changed default
- * applies to every cluster which did not set that value.
- */
+/** The config of one feature, see features.ts. Only values which differ from the default are stored. */
 export class FeatureRecord {
 	constructor(
 		/** Name of the feature in features.ts */
@@ -105,7 +100,7 @@ export class FeatureListRequest {
 	static Response = lib.jsonArray(FeatureRecord);
 }
 
-/** Enable or disable a feature and replace its values, values left out go back to their default. */
+/** Replace the config of a feature, values left out go back to their default. */
 export class FeatureUpdateRequest {
 	declare ["constructor"]: typeof FeatureUpdateRequest;
 	static plugin = "exp_scenario" as const;

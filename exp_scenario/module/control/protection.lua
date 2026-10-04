@@ -45,18 +45,29 @@ local Protection = {
 --- @field last uint Tick of the last protected removal
 --- @field count number Protected removals since the last repeat violation
 
-local protected_entities = {} --- @type table<uint, table<string, LuaEntity>> Keyed by surface index then entity key
-local protected_areas = {} --- @type table<uint, table<string, BoundingBox>> Keyed by surface index then area key
-local repeats = {} --- @type table<string, ExpScenario_Protection.Repeat> Keyed by player name
+--- @class ExpScenario_Protection.Registration
+--- @field surface_index uint
+--- @field key string
+--- @field entity LuaEntity
+
+local protected_entities = {} --- @type table<uint, table<string, LuaEntity>> By surface index then entity key
+local protected_areas = {} --- @type table<uint, table<string, BoundingBox>> By surface index then area key
+local registrations = {} --- @type table<uint64, ExpScenario_Protection.Registration> By on_object_destroyed registration number
+local repeats = {} --- @type table<string, ExpScenario_Protection.Repeat> By player name
 
 Storage.register({
     protected_entities = protected_entities,
     protected_areas = protected_areas,
+    registrations = registrations,
     repeats = repeats,
 }, function(tbl)
     protected_entities = tbl.protected_entities
     protected_areas = tbl.protected_areas
+    registrations = tbl.registrations
     repeats = tbl.repeats
+end, function(tbl)
+    -- Saves from before entities were registered
+    tbl.registrations = tbl.registrations or {}
 end)
 
 --- Get the key an entity is stored under
@@ -73,15 +84,18 @@ function Protection.get_area_key(area)
     return format_string("%i,%i", floor(area.left_top.x), floor(area.left_top.y))
 end
 
---- Protect an entity
+--- Protect an entity, it is forgotten when destroyed
 --- @param entity LuaEntity
 function Protection.add_entity(entity)
-    local entities = protected_entities[entity.surface.index]
+    local surface_index = entity.surface.index
+    local entities = protected_entities[surface_index]
     if not entities then
         entities = {}
-        protected_entities[entity.surface.index] = entities
+        protected_entities[surface_index] = entities
     end
-    entities[Protection.get_entity_key(entity)] = entity
+    local key = Protection.get_entity_key(entity)
+    entities[key] = entity
+    registrations[script.register_on_object_destroyed(entity)] = { surface_index = surface_index, key = key, entity = entity }
 end
 
 --- Remove the protection from an entity
@@ -89,21 +103,18 @@ end
 function Protection.remove_entity(entity)
     local entities = protected_entities[entity.surface.index]
     if not entities then return end
-    entities[Protection.get_entity_key(entity)] = nil
+    local key = Protection.get_entity_key(entity)
+    if entities[key] == entity then
+        entities[key] = nil
+        registrations[script.register_on_object_destroyed(entity)] = nil
+    end
 end
 
 --- Get the protected entities on a surface, always protected entities are not included
--- Entities removed while the feature was disabled, or without an event, are forgotten here
 --- @param surface LuaSurface
 --- @return table<string, LuaEntity>
 function Protection.get_entities(surface)
-    local entities = protected_entities[surface.index] or {}
-    for key, entity in pairs(entities) do
-        if not entity.valid then
-            entities[key] = nil
-        end
-    end
-    return entities
+    return protected_entities[surface.index] or {}
 end
 
 --- Check if an entity is protected, either directly or by its name or type
@@ -113,13 +124,7 @@ function Protection.is_entity_protected(entity)
     if config.always_protected_names[entity.name] or config.always_protected_types[entity.type] then return true end
     local entities = protected_entities[entity.surface.index]
     if not entities then return false end
-    local key = Protection.get_entity_key(entity)
-    local protected = entities[key]
-    if protected and not protected.valid then
-        entities[key] = nil
-        return false
-    end
-    return protected == entity
+    return entities[Protection.get_entity_key(entity)] == entity
 end
 
 --- Protect every position within an area
@@ -200,7 +205,7 @@ local function raise_violation(event, player)
     end
 end
 
---- Raise the protection events when a protected entity is mined, then forget the entity
+--- Raise the protection events when a protected entity is mined
 --- @param event EventData.on_pre_player_mined_item
 local function on_pre_player_mined_item(event)
     local entity = event.entity
@@ -211,14 +216,36 @@ local function on_pre_player_mined_item(event)
     then
         raise_violation(event, player)
     end
-
-    Protection.remove_entity(entity)
 end
 
---- Forget an entity once it no longer exists
---- @param event { entity: LuaEntity }
-local function on_entity_removed(event)
-    Protection.remove_entity(event.entity)
+--- Forget a protected entity once it is destroyed, unless another one took its place
+--- @param registration_number uint64
+--- @param registration ExpScenario_Protection.Registration
+local function forget_entity(registration_number, registration)
+    registrations[registration_number] = nil
+    local entities = protected_entities[registration.surface_index]
+    if entities and entities[registration.key] == registration.entity then
+        entities[registration.key] = nil
+    end
+end
+
+--- @param event EventData.on_object_destroyed
+local function on_object_destroyed(event)
+    local registration = registrations[event.registration_number]
+    if registration then
+        forget_entity(event.registration_number, registration)
+    end
+end
+
+--- Entities destroyed while the feature was disabled were not forgotten
+--- @param event EventData.ExpScenario.on_config_updated
+local function on_config_updated(event)
+    if event.feature_name ~= feature.name or event.path ~= "enabled" then return end
+    for registration_number, registration in pairs(registrations) do
+        if not registration.entity.valid then
+            forget_entity(registration_number, registration)
+        end
+    end
 end
 
 --- Forget protected removals older than the repeat lifetime
@@ -234,10 +261,8 @@ end
 local e = defines.events
 
 Protection.events[e.on_pre_player_mined_item] = on_pre_player_mined_item
-Protection.events[e.on_space_platform_pre_mined] = on_entity_removed
-Protection.events[e.on_robot_pre_mined] = on_entity_removed
-Protection.events[e.on_entity_died] = on_entity_removed
-Protection.events[e.script_raised_destroy] = on_entity_removed
+Protection.events[e.on_object_destroyed] = on_object_destroyed
+Protection.events[Feature.events.on_config_updated] = on_config_updated
 Protection.on_nth_tick[3600 * 5] = clear_old_repeats
 
 return feature:guard(Protection)

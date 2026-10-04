@@ -39,7 +39,7 @@ function groupFields(fields: FeatureField[]) {
 	return [...groups.entries()];
 }
 
-/** Converts a section name into Title Case, same as the group titles on the role page */
+/** "afk_belts" to "Afk Belts", like the group titles on the role page */
 function formatSectionTitle(name: string) {
 	return name
 		.replace(/\./g, " / ")
@@ -54,7 +54,7 @@ function matches(text: string, query: string) {
 	return text.toLowerCase().includes(query);
 }
 
-/** The fields of a feature which match the search, every field if the feature itself matches. */
+/** Fields matching the search, every field when the feature itself matches */
 function searchFields(feature: Feature, query: string) {
 	if (!query || matches(feature.title, query) || matches(feature.description, query) || matches(feature.name, query)) {
 		return feature.fields;
@@ -64,10 +64,7 @@ function searchFields(feature: Feature, query: string) {
 	));
 }
 
-/**
- * Render the input for a setting the same way the config pages do, input components registered
- * with the web interface take priority so plugins can provide inputs for other types
- */
+/** Renders a setting like the config pages do, registered input components take priority */
 function FieldInput(props: { field: FeatureField, value: FeatureValue, disabled: boolean, onChange: (value: FeatureValue) => void }) {
 	const { field, value, disabled, onChange } = props;
 	const control = useContext(ControlContext);
@@ -126,7 +123,7 @@ function FieldInput(props: { field: FeatureField, value: FeatureValue, disabled:
 	}
 }
 
-/** A single setting, laid out like a permission on the role page. */
+/** A setting, laid out like a permission on the role page */
 function FieldItem(props: {
 	field: FeatureField, value: FeatureValue, stored: FeatureValue, disabled: boolean, onChange: (value: FeatureValue) => void,
 }) {
@@ -217,7 +214,51 @@ function FeatureNav(props: { feature: Feature, enabled: boolean }) {
 	</div>;
 }
 
-/** Enable, disable, and configure the scenario features listed in features.ts. */
+/** The pending changes with one more, dropped again when it matches what is stored */
+function withChange(pending: PendingChanges, stored: FeatureState, name: string, update: (entry: PendingChanges[string]) => void) {
+	const entry = { enabled: pending[name]?.enabled, values: { ...pending[name]?.values } };
+	update(entry);
+	if (entry.enabled === stored.enabled) {
+		delete entry.enabled;
+	}
+	for (const [key, value] of Object.entries(entry.values)) {
+		if (sameValue(value, stored.values[key])) {
+			delete entry.values[key];
+		}
+	}
+	const next = { ...pending };
+	if (entry.enabled === undefined && !Object.keys(entry.values).length) {
+		delete next[name];
+	} else {
+		next[name] = entry;
+	}
+	return next;
+}
+
+function UnsavedChangesBar(props: { onRevert: () => void, onApply: () => void }) {
+	return <div style={{
+	position: "fixed",
+	bottom: 24,
+	left: "50%",
+	transform: "translateX(-50%)",
+	background: modifiedColor,
+	borderRadius: 8,
+	boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+	padding: "10px 14px",
+	display: "flex",
+	alignItems: "center",
+	gap: 12,
+	zIndex: 1000,
+}}>
+	<span style={{ color: "#FFF" }}>You have unsaved changes</span>
+	<Space>
+		<Button onClick={props.onRevert}>Revert</Button>
+		<Button type="primary" onClick={props.onApply}>Apply</Button>
+	</Space>
+</div>;
+}
+
+/** Enable, disable, and configure the features listed in features.ts */
 export default function FeaturesPage() {
 	const control = useContext(ControlContext);
 	const account = useAccount();
@@ -226,7 +267,7 @@ export default function FeaturesPage() {
 	const [search, setSearch] = useState("");
 	const canEdit = Boolean(account.hasPermission("exp_scenario.config.edit"));
 
-	// Until the subscription delivers the records every feature would look enabled with its defaults
+	// Before the first update every feature would look enabled with its defaults
 	if (!synced) {
 		return <PageLayout nav={[{ name: "Scenario Features" }]}>
 			<PageHeader title="Scenario Features" />
@@ -240,27 +281,8 @@ export default function FeaturesPage() {
 		values: { ...stored[name].values, ...pending[name]?.values },
 	});
 
-	/** Record a change, dropping it again if it matches what is stored */
 	function change(name: string, update: (entry: PendingChanges[string]) => void) {
-		setPending(prev => {
-			const entry = { enabled: prev[name]?.enabled, values: { ...prev[name]?.values } };
-			update(entry);
-			if (entry.enabled === stored[name].enabled) {
-				delete entry.enabled;
-			}
-			for (const [key, value] of Object.entries(entry.values)) {
-				if (sameValue(value, stored[name].values[key])) {
-					delete entry.values[key];
-				}
-			}
-			const next = { ...prev };
-			if (entry.enabled === undefined && !Object.keys(entry.values).length) {
-				delete next[name];
-			} else {
-				next[name] = entry;
-			}
-			return next;
-		});
+		setPending(prev => withChange(prev, stored[name], name, update));
 	}
 
 	function applyChanges() {
@@ -284,26 +306,7 @@ export default function FeaturesPage() {
 	return <PageLayout nav={[{ name: "Scenario Features" }]}>
 		<PageHeader title="Scenario Features" />
 
-		{Object.keys(pending).length > 0 && <div style={{
-			position: "fixed",
-			bottom: 24,
-			left: "50%",
-			transform: "translateX(-50%)",
-			background: modifiedColor,
-			borderRadius: 8,
-			boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-			padding: "10px 14px",
-			display: "flex",
-			alignItems: "center",
-			gap: 12,
-			zIndex: 1000,
-		}}>
-			<span style={{ color: "#FFF" }}>You have unsaved changes</span>
-			<Space>
-				<Button onClick={() => setPending({})}>Revert</Button>
-				<Button type="primary" onClick={applyChanges}>Apply</Button>
-			</Space>
-		</div>}
+		{Object.keys(pending).length > 0 && <UnsavedChangesBar onRevert={() => setPending({})} onApply={applyChanges} />}
 
 		<Input.Search placeholder="Search features and settings" allowClear
 			onChange={e => setSearch(e.target.value)} style={{ marginBottom: 16 }} />
@@ -320,7 +323,7 @@ export default function FeaturesPage() {
 				</div>
 			</Col>
 			<Col flex="auto" style={{ minWidth: 0 }}>
-				{/* Small inputs match the line height of the text, same as the config pages */}
+				{/* Same input size as the config pages */}
 				<ConfigProvider componentSize="small">
 					<Space direction="vertical" style={{ width: "100%" }}>
 						{shown.map(({ feature, fields }) => <FeatureSection
