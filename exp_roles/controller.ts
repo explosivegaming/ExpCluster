@@ -6,59 +6,59 @@ import * as path from "node:path";
 const loaded = new WeakMap<Controller, ControllerPlugin>();
 
 export class ControllerPlugin {
-	controller: Controller;
-	logger: lib.Logger;
-	name: string;
-	roleMeta!: lib.SubscribableDatastore<messages.RoleMetaRecord>;
-
 	/** The plugin loaded on a controller, for the exp_scenario seed. */
 	static get(controller: Controller) {
 		return loaded.get(controller);
 	}
 
-	constructor(context: ControllerPluginContext) {
-		this.controller = context.controller;
-		this.logger = context.logger;
-		this.name = context.plugin.name;
-	}
+	private constructor(
+		public controller: Controller,
+		public logger: lib.Logger,
+		public name: string,
+		public roleMeta: lib.SubscribableDatastore<messages.RoleMetaRecord>,
+	) {}
 
-	async init() {
-		loaded.set(this.controller, this);
-		const databaseDirectory = this.controller.config.get("controller.database_directory");
+	static async fromContext(context: ControllerPluginContext) {
+		const controller = context.controller;
+		const databaseDirectory = controller.config.get("controller.database_directory");
 
-		this.roleMeta = new lib.SubscribableDatastore(
+		const roleMeta = new lib.SubscribableDatastore(
 			...await new lib.JsonIdDatastoreProvider(
 				path.join(databaseDirectory, "exp_roles", "role_meta.json"),
 				messages.RoleMetaRecord.fromJSON.bind(messages.RoleMetaRecord),
 			).bootstrap()
 		);
 
+		const plugin = new ControllerPlugin(controller, context.logger, context.plugin.name, roleMeta);
+		loaded.set(controller, plugin);
+
 		// The datastore can be out of step with the roles, either because the
 		// plugin was installed after they were created or because it was
 		// uninstalled while they were deleted
-		this.ensureRoleMeta();
-		this.sweepRoleMeta();
-		this.applyAutoAssign();
+		plugin.ensureRoleMeta();
+		plugin.sweepRoleMeta();
+		plugin.applyAutoAssign();
 
-		this.controller.subscriptions.handle(messages.RoleUpdatedEvent, this.handleRoleSubscription.bind(this));
-		this.controller.subscriptions.handle(
-			messages.AssignmentUpdatedEvent, this.handleAssignmentSubscription.bind(this)
+		controller.subscriptions.handle(messages.RoleUpdatedEvent, plugin.handleRoleSubscription.bind(plugin));
+		controller.subscriptions.handle(
+			messages.AssignmentUpdatedEvent, plugin.handleAssignmentSubscription.bind(plugin)
 		);
 
-		this.roleMeta.on("update", this.roleMetaUpdated.bind(this));
-		this.controller.roles.on("update", this.rolesUpdated.bind(this));
-		this.controller.users.records.on("update", this.usersUpdated.bind(this));
+		roleMeta.on("update", plugin.roleMetaUpdated.bind(plugin));
+		controller.roles.on("update", plugin.rolesUpdated.bind(plugin));
+		controller.users.records.on("update", plugin.usersUpdated.bind(plugin));
 
-		this.controller.handle(messages.RoleListRequest, this.handleRoleListRequest.bind(this));
-		this.controller.handle(messages.RoleMetaUpdateRequest, this.handleRoleMetaUpdateRequest.bind(this));
+		controller.handle(messages.RoleListRequest, plugin.handleRoleListRequest.bind(plugin));
+		controller.handle(messages.RoleMetaUpdateRequest, plugin.handleRoleMetaUpdateRequest.bind(plugin));
 
-		this.controller.handle(messages.AssignmentListRequest, this.handleAssignmentListRequest.bind(this));
-		this.controller.handle(messages.AssignmentUpdateRequest, this.handleAssignmentUpdateRequest.bind(this));
+		controller.handle(messages.AssignmentListRequest, plugin.handleAssignmentListRequest.bind(plugin));
+		controller.handle(messages.AssignmentUpdateRequest, plugin.handleAssignmentUpdateRequest.bind(plugin));
 
-		const hooks = this.controller.hooks;
-		hooks.shutdown.attach(this.name, this.onShutdown.bind(this));
-		hooks.controllerConfigFieldChanged.attach(this.name, this.onControllerConfigFieldChanged.bind(this));
-		hooks.playerEvent.attach(this.name, this.onPlayerEvent.bind(this));
+		const hooks = controller.hooks;
+		hooks.shutdown.attach(plugin.name, plugin.onShutdown.bind(plugin));
+		hooks.controllerConfigFieldChanged.attach(plugin.name, plugin.onControllerConfigFieldChanged.bind(plugin));
+		hooks.playerEvent.attach(plugin.name, plugin.onPlayerEvent.bind(plugin));
+		return plugin;
 	}
 
 	async onShutdown() {
@@ -335,5 +335,5 @@ export class ControllerPlugin {
 }
 
 export default async function (context: ControllerPluginContext) {
-	await new ControllerPlugin(context).init();
+	await ControllerPlugin.fromContext(context);
 }

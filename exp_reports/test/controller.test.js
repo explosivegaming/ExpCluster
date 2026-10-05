@@ -46,10 +46,9 @@ async function startPlugin(t2, { config = {} } = {}) {
 		broadcast(event);
 	};
 
-	const plugin = new ControllerPlugin({ plugin: { name: "exp_reports" }, controller, logger });
-	plugin.logger = { ...logger, warn: message => state.warnings.push(message) };
+	const pluginLogger = { ...logger, warn: message => state.warnings.push(message) };
+	const plugin = await ControllerPlugin.fromContext({ plugin: { name: "exp_reports" }, controller, logger: pluginLogger });
 	plugin.postWebhook = async (url, body) => { state.posts.push({ url, body }); };
-	await plugin.init();
 	return { plugin, controller, state };
 }
 

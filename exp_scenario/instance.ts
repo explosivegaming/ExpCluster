@@ -5,23 +5,24 @@ import { features, FeatureValue } from "./features.js";
 
 /** Sends feature config to the lua side, see module/features.lua. */
 export class InstancePlugin {
-	instance: Instance;
-	logger: lib.Logger;
-	name: string;
 	/** Rcon is up and the lua side can take updates */
 	started = false;
 
-	constructor(context: InstancePluginContext) {
-		this.instance = context.instance;
-		this.logger = context.logger;
-		this.name = context.plugin.name;
-	}
+	private constructor(
+		public instance: Instance,
+		public logger: lib.Logger,
+		public name: string,
+	) {}
 
-	async init() {
-		this.instance.handle(messages.FeatureUpdatedEvent, this.handleFeatureUpdatedEvent.bind(this));
-		this.instance.hooks.start.attach(this.name, this.onStart.bind(this));
-		this.instance.hooks.exit.attach(this.name, this.onExit.bind(this));
-		this.instance.hooks.controllerConnectionEvent.attach(this.name, this.onControllerConnectionEvent.bind(this));
+	static async fromContext(context: InstancePluginContext) {
+		const instance = context.instance;
+		const plugin = new InstancePlugin(instance, context.logger, context.plugin.name);
+
+		instance.handle(messages.FeatureUpdatedEvent, plugin.handleFeatureUpdatedEvent.bind(plugin));
+		instance.hooks.start.attach(plugin.name, plugin.onStart.bind(plugin));
+		instance.hooks.exit.attach(plugin.name, plugin.onExit.bind(plugin));
+		instance.hooks.controllerConnectionEvent.attach(plugin.name, plugin.onControllerConnectionEvent.bind(plugin));
+		return plugin;
 	}
 
 	async onStart() {
@@ -81,5 +82,5 @@ export class InstancePlugin {
 }
 
 export default async function (context: InstancePluginContext) {
-	await new InstancePlugin(context).init();
+	await InstancePlugin.fromContext(context);
 }

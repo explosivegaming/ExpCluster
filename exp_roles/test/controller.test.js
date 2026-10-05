@@ -44,8 +44,7 @@ async function startPlugin(t2, { roles = [] } = {}) {
 		permissionsUpdated(user);
 	};
 
-	const plugin = new ControllerPlugin({ plugin: { name: "exp_roles" }, controller, logger });
-	await plugin.init();
+	const plugin = await ControllerPlugin.fromContext({ plugin: { name: "exp_roles" }, controller, logger });
 	return { plugin, controller, state };
 }
 
@@ -62,7 +61,7 @@ t.test("entrypoint", async t2 => {
 });
 
 t.test("class ControllerPlugin", t2 => {
-	t2.test(".init() and .sweepRoleMeta() manage the role properties", async t3 => {
+	t2.test(".fromContext() and .sweepRoleMeta() manage the role properties", async t3 => {
 		const { plugin } = await startPlugin(t3, { roles: [role(0, "Cluster Admin"), role(5, "Moderator")] });
 
 		t3.strictSame(plugin.roleMeta.get(0).order, 1, "the first role is ordered first");

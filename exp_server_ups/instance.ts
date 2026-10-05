@@ -2,24 +2,25 @@ import * as lib from "@clusterio/lib";
 import type { Instance, InstancePluginContext } from "@clusterio/host";
 
 export class InstancePlugin {
-	instance: Instance;
-	logger: lib.Logger;
-	name: string;
 	private updateInterval?: ReturnType<typeof setInterval>;
 	private gameTimes: number[] = [];
 
-	constructor(context: InstancePluginContext) {
-		this.instance = context.instance;
-		this.logger = context.logger;
-		this.name = context.plugin.name;
-	}
+	private constructor(
+		public instance: Instance,
+		public logger: lib.Logger,
+		public name: string,
+	) {}
 
-	init() {
-		const hooks = this.instance.hooks;
-		hooks.start.attach(this.name, this.onStart.bind(this));
-		hooks.exit.attach(this.name, this.onExit.bind(this));
-		hooks.instanceConfigFieldChanged.attach(this.name, this.onInstanceConfigFieldChanged.bind(this));
-		hooks.playerEvent.attach(this.name, this.onPlayerEvent.bind(this));
+	static async fromContext(context: InstancePluginContext) {
+		const instance = context.instance;
+		const plugin = new InstancePlugin(instance, context.logger, context.plugin.name);
+
+		const hooks = instance.hooks;
+		hooks.start.attach(plugin.name, plugin.onStart.bind(plugin));
+		hooks.exit.attach(plugin.name, plugin.onExit.bind(plugin));
+		hooks.instanceConfigFieldChanged.attach(plugin.name, plugin.onInstanceConfigFieldChanged.bind(plugin));
+		hooks.playerEvent.attach(plugin.name, plugin.onPlayerEvent.bind(plugin));
+		return plugin;
 	}
 
 	async onStart() {
@@ -86,5 +87,5 @@ export class InstancePlugin {
 }
 
 export default async function (context: InstancePluginContext) {
-	new InstancePlugin(context).init();
+	await InstancePlugin.fromContext(context);
 }

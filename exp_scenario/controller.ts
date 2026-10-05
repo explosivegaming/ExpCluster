@@ -10,36 +10,35 @@ import { features, pruneFeatureValues, validateFeatureValues } from "./features.
 import { SeedRole, SeedGroup, seedRoles, seedGroups, flattenSeedPermissions } from "./seed.js";
 
 export class ControllerPlugin {
-	controller: Controller;
-	logger: lib.Logger;
-	name: string;
-	features!: lib.SubscribableDatastore<messages.FeatureRecord>;
+	private constructor(
+		public controller: Controller,
+		public logger: lib.Logger,
+		public name: string,
+		public features: lib.SubscribableDatastore<messages.FeatureRecord>,
+	) {}
 
-	constructor(context: ControllerPluginContext) {
-		this.controller = context.controller;
-		this.logger = context.logger;
-		this.name = context.plugin.name;
-	}
-
-	async init() {
-		const databaseDirectory = this.controller.config.get("controller.database_directory");
-		this.features = new lib.SubscribableDatastore(
+	static async fromContext(context: ControllerPluginContext) {
+		const controller = context.controller;
+		const databaseDirectory = controller.config.get("controller.database_directory");
+		const features = new lib.SubscribableDatastore(
 			...await new lib.JsonIdDatastoreProvider(
 				path.join(databaseDirectory, "exp_scenario", "features.json"),
 				messages.FeatureRecord.fromJSON.bind(messages.FeatureRecord),
 			).bootstrap()
 		);
 
-		this.reconcileFeatures();
+		const plugin = new ControllerPlugin(controller, context.logger, context.plugin.name, features);
+		plugin.reconcileFeatures();
 
-		this.controller.subscriptions.handle(messages.FeatureUpdatedEvent, this.handleFeatureSubscription.bind(this));
-		this.features.on("update", this.featuresUpdated.bind(this));
+		controller.subscriptions.handle(messages.FeatureUpdatedEvent, plugin.handleFeatureSubscription.bind(plugin));
+		features.on("update", plugin.featuresUpdated.bind(plugin));
 
-		this.controller.handle(messages.SeedRequest, this.handleSeedRequest.bind(this));
-		this.controller.handle(messages.FeatureListRequest, this.handleFeatureListRequest.bind(this));
-		this.controller.handle(messages.FeatureUpdateRequest, this.handleFeatureUpdateRequest.bind(this));
+		controller.handle(messages.SeedRequest, plugin.handleSeedRequest.bind(plugin));
+		controller.handle(messages.FeatureListRequest, plugin.handleFeatureListRequest.bind(plugin));
+		controller.handle(messages.FeatureUpdateRequest, plugin.handleFeatureUpdateRequest.bind(plugin));
 
-		this.controller.hooks.shutdown.attach(this.name, this.onShutdown.bind(this));
+		controller.hooks.shutdown.attach(plugin.name, plugin.onShutdown.bind(plugin));
+		return plugin;
 	}
 
 	async onShutdown() {
@@ -233,7 +232,7 @@ export class ControllerPlugin {
 }
 
 export default async function (context: ControllerPluginContext) {
-	await new ControllerPlugin(context).init();
+	await ControllerPlugin.fromContext(context);
 }
 
 function newId(datastore: { has(id: number): boolean }) {

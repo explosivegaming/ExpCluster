@@ -18,9 +18,6 @@ export type IpcPlayerAssignments = {
 };
 
 export class InstancePlugin {
-    instance: Instance;
-    logger: lib.Logger;
-    name: string;
     // Once only, don't send permissions for these groups
     // This is used for groups created on this instance that only need the controller generated id
     skipSendingPermissions = new Set<string>(); 
@@ -29,23 +26,27 @@ export class InstancePlugin {
     // Track known online players so that we only apply assignment updates for them
     onlinePlayers = new Set<string>();
 
-    constructor(context: InstancePluginContext) {
-        this.instance = context.instance;
-        this.logger = context.logger;
-        this.name = context.plugin.name;
-    }
+    private constructor(
+        public instance: Instance,
+        public logger: lib.Logger,
+        public name: string,
+    ) {}
 
-    async init() {
-        this.instance.handle(messages.GroupUpdatedEvent, this.handleGroupUpdatedEvent.bind(this));
-        this.instance.handle(messages.ResolvedAssignmentUpdatedEvent, this.handleResolvedAssignmentUpdatedEvent.bind(this));
-        this.instance.server.handle(`exp_group:group_updated`, this.handleGroupUpdatedIPC.bind(this))
-        this.instance.server.handle(`exp_group:group_deleted`, this.handleGroupDeletedIPC.bind(this))
-        this.instance.server.handle(`exp_group:player_assignments`, this.handlePlayerAssignmentsIPC.bind(this))
+    static async fromContext(context: InstancePluginContext) {
+        const instance = context.instance;
+        const plugin = new InstancePlugin(instance, context.logger, context.plugin.name);
 
-        const hooks = this.instance.hooks;
-        hooks.instanceConfigFieldChanged.attach(this.name, this.onInstanceConfigFieldChanged.bind(this));
-        hooks.start.attach(this.name, this.onStart.bind(this));
-        hooks.playerEvent.attach(this.name, this.onPlayerEvent.bind(this));
+        instance.handle(messages.GroupUpdatedEvent, plugin.handleGroupUpdatedEvent.bind(plugin));
+        instance.handle(messages.ResolvedAssignmentUpdatedEvent, plugin.handleResolvedAssignmentUpdatedEvent.bind(plugin));
+        instance.server.handle(`exp_group:group_updated`, plugin.handleGroupUpdatedIPC.bind(plugin))
+        instance.server.handle(`exp_group:group_deleted`, plugin.handleGroupDeletedIPC.bind(plugin))
+        instance.server.handle(`exp_group:player_assignments`, plugin.handlePlayerAssignmentsIPC.bind(plugin))
+
+        const hooks = instance.hooks;
+        hooks.instanceConfigFieldChanged.attach(plugin.name, plugin.onInstanceConfigFieldChanged.bind(plugin));
+        hooks.start.attach(plugin.name, plugin.onStart.bind(plugin));
+        hooks.playerEvent.attach(plugin.name, plugin.onPlayerEvent.bind(plugin));
+        return plugin;
     }
 
     async onInstanceConfigFieldChanged(field: string, curr: unknown, prev: unknown) {
@@ -185,5 +186,5 @@ export class InstancePlugin {
 }
 
 export default async function (context: InstancePluginContext) {
-    await new InstancePlugin(context).init();
+    await InstancePlugin.fromContext(context);
 }

@@ -4,36 +4,36 @@ import * as messages from "./messages.js";
 import * as path from "node:path";
 
 export class ControllerPlugin {
-	controller: Controller;
-	logger: lib.Logger;
-	name: string;
-	reports!: lib.SubscribableDatastore<messages.ReportRecord>;
+	private constructor(
+		public controller: Controller,
+		public logger: lib.Logger,
+		public name: string,
+		public reports: lib.SubscribableDatastore<messages.ReportRecord>,
+	) {}
 
-	constructor(context: ControllerPluginContext) {
-		this.controller = context.controller;
-		this.logger = context.logger;
-		this.name = context.plugin.name;
-	}
+	static async fromContext(context: ControllerPluginContext) {
+		const controller = context.controller;
+		const databaseDirectory = controller.config.get("controller.database_directory");
 
-	async init() {
-		const databaseDirectory = this.controller.config.get("controller.database_directory");
-
-		this.reports = new lib.SubscribableDatastore(
+		const reports = new lib.SubscribableDatastore(
 			...await new lib.JsonIdDatastoreProvider(
 				path.join(databaseDirectory, "exp_reports", "reports.json"),
 				messages.ReportRecord.fromJSON.bind(messages.ReportRecord),
 			).bootstrap()
 		);
 
-		this.controller.subscriptions.handle(messages.ReportUpdatedEvent, this.handleReportSubscription.bind(this));
-		this.reports.on("update", this.reportsUpdated.bind(this));
+		const plugin = new ControllerPlugin(controller, context.logger, context.plugin.name, reports);
 
-		this.controller.handle(messages.ReportListRequest, this.handleReportListRequest.bind(this));
-		this.controller.handle(messages.ReportGetRequest, this.handleReportGetRequest.bind(this));
-		this.controller.handle(messages.ReportCreateRequest, this.handleReportCreateRequest.bind(this));
-		this.controller.handle(messages.ReportDeleteRequest, this.handleReportDeleteRequest.bind(this));
+		controller.subscriptions.handle(messages.ReportUpdatedEvent, plugin.handleReportSubscription.bind(plugin));
+		reports.on("update", plugin.reportsUpdated.bind(plugin));
 
-		this.controller.hooks.shutdown.attach(this.name, this.onShutdown.bind(this));
+		controller.handle(messages.ReportListRequest, plugin.handleReportListRequest.bind(plugin));
+		controller.handle(messages.ReportGetRequest, plugin.handleReportGetRequest.bind(plugin));
+		controller.handle(messages.ReportCreateRequest, plugin.handleReportCreateRequest.bind(plugin));
+		controller.handle(messages.ReportDeleteRequest, plugin.handleReportDeleteRequest.bind(plugin));
+
+		controller.hooks.shutdown.attach(plugin.name, plugin.onShutdown.bind(plugin));
+		return plugin;
 	}
 
 	async onShutdown() {
@@ -154,5 +154,5 @@ export class ControllerPlugin {
 }
 
 export default async function (context: ControllerPluginContext) {
-	await new ControllerPlugin(context).init();
+	await ControllerPlugin.fromContext(context);
 }

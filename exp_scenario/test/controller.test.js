@@ -41,13 +41,11 @@ async function startPlugin(t2, { withPlugins = true, databaseDirectory = t2.test
 
 	if (withPlugins) {
 		for (const [name, Plugin] of [["exp_roles", RolesPlugin], ["exp_groups", GroupsPlugin]]) {
-			const plugin = new Plugin({ plugin: { name }, controller, logger });
-			await plugin.init();
+			await Plugin.fromContext({ plugin: { name }, controller, logger });
 		}
 	}
 
-	const plugin = new ControllerPlugin({ plugin: { name: "exp_scenario" }, controller, logger });
-	await plugin.init();
+	const plugin = await ControllerPlugin.fromContext({ plugin: { name: "exp_scenario" }, controller, logger });
 	return { plugin, controller };
 }
 
@@ -136,7 +134,7 @@ t.test("class ControllerPlugin", t2 => {
 		t3.notOk([...first.values()].filter(priority => priority === 2).length > 1, "seed priorities skip taken ones");
 	});
 
-	t2.test(".init() adds every feature with its defaults", async t3 => {
+	t2.test(".fromContext() adds every feature with its defaults", async t3 => {
 		const { plugin } = await startPlugin(t3, { withPlugins: false });
 		const records = await plugin.handleFeatureListRequest();
 		t3.strictSame(records.map(record => record.id), features.map(feature => feature.name), "one record per feature");
@@ -181,7 +179,7 @@ t.test("class ControllerPlugin", t2 => {
 		);
 	});
 
-	t2.test(".init() keeps stored features across restarts", async t3 => {
+	t2.test(".fromContext() keeps stored features across restarts", async t3 => {
 		const databaseDirectory = t3.testdir();
 		const { plugin } = await startPlugin(t3, { withPlugins: false, databaseDirectory });
 		await plugin.handleFeatureUpdateRequest(new messages.FeatureUpdateRequest("afk_kick", false, { afk_minutes: 5 }));
