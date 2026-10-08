@@ -9,4 +9,4 @@ add_static("Gui", require("modules/exp_gui"))
 
 add_static("Roles", require("modules/exp_roles"))
 add_static("Datastore", require("modules.exp_legacy.expcore.datastore"))
-add_static("External", require("modules.exp_legacy.expcore.external"))
+add_static("ExpServerList", require("modules/exp_server_list"))
