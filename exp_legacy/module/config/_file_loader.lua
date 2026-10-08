@@ -10,8 +10,5 @@ return {
     "modules.data.statistics",
     "modules.data.player-colours",
     "modules.data.greetings",
-    "modules.data.quickbar",
-    "modules.data.alt-view",
-    "modules.data.tag",
     "modules.data.language",
 }
