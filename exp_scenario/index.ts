@@ -13,7 +13,7 @@ declare module "@clusterio/lib" {
 
 export const plugin: lib.PluginDeclaration = {
 	name: "exp_scenario",
-	title: "exp_scenario",
+	title: "ExpGaming - Scenario",
 	description: "Clusterio plugin implementing the Explosive Gaming scenario.",
 	controllerEntrypoint: "./dist/node/controller.js",
 	instanceEntrypoint: "./dist/node/instance.js",
