@@ -1,7 +1,7 @@
 {
-	"name": "@expcluster/scenario",
+	"name": "@expcluster/server-list",
 	"version": "7.0.1",
-	"description": "Clusterio plugin implementing the Explosive Gaming scenario.",
+	"description": "Clusterio plugin sharing the details of every instance with the others.",
 	"author": "Cooldude2606 <https://github.com/Cooldude2606>",
 	"license": "MIT",
 	"repository": "explosivegaming/ExpCluster",
@@ -26,11 +26,7 @@
 		"@clusterio/lib": "workspace:^",
 		"@clusterio/web_ui": "workspace:^",
 		"@types/node": "catalog:",
-		"@types/react": "catalog:",
-		"antd": "catalog:",
 		"fengari": "^0.1.5",
-		"react": "catalog:",
-		"react-dom": "catalog:",
 		"tap": "^21.1.0",
 		"typescript": "catalog:",
 		"webpack": "catalog:",
@@ -38,13 +34,8 @@
 		"webpack-merge": "catalog:"
 	},
 	"dependencies": {
-		"@expcluster/lib_commands": "workspace:^",
-		"@expcluster/lib_util": "workspace:^",
-		"@expcluster/lib_gui": "workspace:^",
-		"@expcluster/permission-groups": "workspace:^",
-		"@expcluster/roles": "workspace:^",
-		"@expcluster/server-list": "workspace:^",
-		"@sinclair/typebox": "catalog:"
+		"@sinclair/typebox": "catalog:",
+		"@expcluster/lib_util": "workspace:^"
 	},
 	"publishConfig": {
 		"access": "public"

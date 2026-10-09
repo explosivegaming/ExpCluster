@@ -7,7 +7,7 @@ local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_roles")
 local Commands = require("modules/exp_commands")
 local PlayerData = require("modules.exp_legacy.expcore.player_data")
-local External = require("modules.exp_legacy.expcore.external")
+local ExpServerList = require("modules/exp_server_list")
 local config_server_detail = require("modules.exp_legacy.config.server_detail") --- @dep config.server_detail
 
 local format_number = require("util").format_number
@@ -84,16 +84,17 @@ Elements.sub_content = Gui.define("readme/sub_content")
     } --[[@as any]]
 
 --- @class ExpGui_Readme.elements.join_server.elements
---- @field server_id string
+--- @field server_id number
 
 --- Join server button
 --- @class ExpGui_Readme.elements.join_server: ExpElement
 --- @field data table<LuaGuiElement, ExpGui_Readme.elements.join_server.elements>
---- @overload fun(parent: LuaGuiElement, server_id: string, wrong_version: string?): LuaGuiElement
+--- @overload fun(parent: LuaGuiElement, server: ExpServerList.Server): LuaGuiElement
 Elements.join_server = Gui.define("readme/join_server")
     :track_all_elements()
-    :draw(function(def, parent, server_id, wrong_version)
+    :draw(function(def, parent, server)
         --- @cast def ExpGui_Readme.elements.join_server
+        --- @cast server ExpServerList.Server
         local flow = parent.add{
             type = "flow",
         }
@@ -106,10 +107,10 @@ Elements.join_server = Gui.define("readme/join_server")
         }
 
         def.data[button] = {
-            server_id = server_id,
+            server_id = server.id,
         }
 
-        Elements.join_server.refresh(button, wrong_version)
+        Elements.join_server.refresh(button, server)
         return button
     end)
     :style{
@@ -118,22 +119,30 @@ Elements.join_server = Gui.define("readme/join_server")
     }
     :on_click(function(def, player, button)
         --- @cast def ExpGui_Readme.elements.join_server
-        local server_id = def.data[button].server_id
-        External.request_connection(player, server_id, true)
+        local server = ExpServerList.get_server(def.data[button].server_id)
+        if server and ExpServerList.is_online(server) then
+            ExpServerList.request_connection(player, server, true)
+        end
     end) --[[@as any]]
 
 --- Refresh join server button
 --- @param button LuaGuiElement
---- @param wrong_version string?
-function Elements.join_server.refresh(button, wrong_version)
-    local server_id = Elements.join_server.data[button].server_id
-    local status = External.get_server_status(server_id) or "Offline"
-
-    if wrong_version then
-        status = "Version"
+--- @param server ExpServerList.Server?
+function Elements.join_server.refresh(button, server)
+    local current = ExpServerList.get_current()
+    local status, detail = "Online", nil
+    if not server or not ExpServerList.is_online(server) then
+        status = "Offline"
+    elseif current and server.id == current.id then
+        status = "Current"
+    elseif current and server.factorio_version ~= current.factorio_version then
+        status, detail = "Version", server.factorio_version
+    elseif current and server.mod_pack_name ~= current.mod_pack_name then
+        status, detail = "Modded", server.mod_pack_name
     end
 
-    button.tooltip = { "exp-gui_readme.servers-connect-" .. status, wrong_version }
+    local player_count = server and server.player_count or 0
+    button.tooltip = { "exp-gui_readme.servers-connect-" .. status, detail, player_count }
 
     if status == "Offline" or status == "Current" then
         button.enabled = false
@@ -144,11 +153,6 @@ function Elements.join_server.refresh(button, wrong_version)
         button.enabled = false
         button.sprite = "utility/shuffle"
         button.hovered_sprite = "utility/shuffle"
-
-    elseif status == "Password" then
-        button.enabled = true
-        button.sprite = "utility/warning_white"
-        button.hovered_sprite = "utility/warning"
 
     elseif status == "Modded" then
         button.enabled = true
@@ -162,21 +166,11 @@ function Elements.join_server.refresh(button, wrong_version)
     end
 end
 
---- Refresh all online join buttons
+--- Refresh all join buttons
 function Elements.join_server.refresh_all()
-    if not External.valid() then
-        return
-    end
-
-    local current_version = External.get_current_server().version
-
     for _, button in Elements.join_server:tracked_elements() do
         local server_id = Elements.join_server.data[button].server_id
-        local server = External.get_servers()[server_id]
-
-        if server then
-            Elements.join_server.refresh(button, current_version ~= server.version and server.version or nil)
-        end
+        Elements.join_server.refresh(button, ExpServerList.get_server(server_id))
     end
 end
 
@@ -190,12 +184,17 @@ define_tab(
 
         local server_details = {
             name = config_server_detail["community_name"] .. " S0 - Local",
-            welcome = "Failed to load description: disconnected from external api.",
+            welcome = "Failed to load description: disconnected from the controller.",
             reset_time = "Not Set",
         }
 
-        if External.valid() then
-            server_details = External.get_current_server()
+        local current = ExpServerList.get_current()
+        if current then
+            server_details = {
+                name = current.name,
+                welcome = current.welcome,
+                reset_time = current.reset_time ~= "" and current.reset_time or "Not Set",
+            }
         end
 
         local container = parent.add{ type = "flow", direction = "vertical" }
@@ -317,22 +316,11 @@ define_tab(
         local scroll_pane = Elements.title_table_scroll(container)
         scroll_pane.style.maximal_height = scroll_height + 20
 
-        if External.valid() then
-            local current_version = External.get_current_server().version
-
-            local factorio_servers = Elements.title_table(scroll_pane, 225, { "exp-gui_readme.servers-factorio" }, 3)
-
-            for server_id, server in pairs(External.get_servers()) do
-                Gui.elements.centered_label(factorio_servers, 110, server.short_name)
-                Gui.elements.centered_label(factorio_servers, 436, server.description)
-                Elements.join_server(factorio_servers, server_id, current_version ~= server.version and server.version or nil)
-            end
-        else
-            local factorio_servers = Elements.title_table(scroll_pane, 225, { "exp-gui_readme.servers-factorio" }, 2)
-            for i = 1, 8 do
-                Gui.elements.centered_label(factorio_servers, 110, { "exp-gui_readme.servers-" .. i })
-                Gui.elements.centered_label(factorio_servers, 460, { "exp-gui_readme.servers-d" .. i })
-            end
+        local factorio_servers = Elements.title_table(scroll_pane, 225, { "exp-gui_readme.servers-factorio" }, 3)
+        for _, server in ipairs(ExpServerList.get_servers()) do
+            Gui.elements.centered_label(factorio_servers, 110, server.short_name)
+            Gui.elements.centered_label(factorio_servers, 436, server.description)
+            Elements.join_server(factorio_servers, server)
         end
 
         local external_links = Elements.title_table(scroll_pane, 235, { "exp-gui_readme.servers-external" }, 2)
@@ -707,8 +695,6 @@ return {
         [e.on_player_created] = open_readme,
         [e.on_player_joined_game] = clear_readme,
         [e.on_player_respawned] = clear_readme,
+        [ExpServerList.on_servers_updated] = Elements.join_server.refresh_all,
     },
-    on_nth_tick = {
-        [60 * 60] = Elements.join_server.refresh_all,
-    }
 }
