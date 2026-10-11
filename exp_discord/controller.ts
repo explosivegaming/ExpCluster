@@ -15,6 +15,7 @@ const codeLetters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 type DiscordUser = { id: string, name: string };
 type Session = DiscordUser & { expiresMs: number, code?: string };
 type LinkCode = { sessionId: string, expiresMs: number };
+type WebLink = { playerName: string, expiresMs: number };
 
 /** What an http route answers with, kept apart from express so it can be tested. */
 export type RouteResult =
@@ -55,6 +56,10 @@ export class ControllerPlugin {
 	sessions = new Map<string, Session>();
 	/** Codes waiting to be used in game, by code */
 	codes = new Map<string, LinkCode>();
+	/** Links started from the user page, by ticket until authorize turns them into a state */
+	linkTickets = new Map<string, WebLink>();
+	/** Links waiting for the Discord callback, by OAuth state */
+	pendingLinks = new Map<string, WebLink>();
 	cleanupInterval?: ReturnType<typeof setInterval>;
 
 	private constructor(
@@ -80,6 +85,7 @@ export class ControllerPlugin {
 		controller.handle(messages.DiscordLinkRequest, plugin.handleLinkRequest.bind(plugin));
 		controller.handle(messages.DiscordUnlinkRequest, plugin.handleUnlinkRequest.bind(plugin));
 		controller.handle(messages.DiscordLinkGetRequest, plugin.handleLinkGetRequest.bind(plugin));
+		controller.handle(messages.DiscordLinkStartRequest, plugin.handleLinkStartRequest.bind(plugin));
 
 		plugin.addRoutes();
 		plugin.cleanupInterval = setInterval(() => plugin.removeExpired(), 60e3);
@@ -105,9 +111,11 @@ export class ControllerPlugin {
 				this.sessions.delete(id);
 			}
 		}
-		for (const [code, entry] of this.codes) {
-			if (entry.expiresMs < now) {
-				this.codes.delete(code);
+		for (const map of [this.codes, this.linkTickets, this.pendingLinks]) {
+			for (const [key, entry] of map) {
+				if (entry.expiresMs < now) {
+					map.delete(key);
+				}
 			}
 		}
 	}
@@ -133,7 +141,7 @@ export class ControllerPlugin {
 			}
 		);
 
-		app.get("/api/exp_discord/authorize", route(async () => this.authorize()));
+		app.get("/api/exp_discord/authorize", route(async req => this.authorize(req.query.link)));
 		app.get("/api/exp_discord/callback", route(async req => this.callback(
 			req.query, readCookie(req.headers.cookie, "exp_discord_state"),
 		)));
@@ -152,19 +160,36 @@ export class ControllerPlugin {
 	}
 
 	/** Back to the web ui, with the outcome in the fragment so it never reaches a server log. */
-	webRedirect(key: "session" | "error", value: string): RouteResult {
-		const url = new URL(this.controller.getControllerUrl());
+	webRedirect(key: "session" | "error", value: string, page = ""): RouteResult {
+		const url = new URL(page, this.controller.getControllerUrl());
 		url.hash = `exp_discord_${key}=${encodeURIComponent(value)}`;
 		return { redirect: url.href };
 	}
 
-	async authorize(): Promise<RouteResult> {
+	userPage(playerName: string) {
+		return `users/${encodeURIComponent(playerName)}/view`;
+	}
+
+	async authorize(linkTicket?: unknown): Promise<RouteResult> {
+		let link: WebLink | undefined;
+		if (linkTicket !== undefined) {
+			link = typeof linkTicket === "string" ? this.linkTickets.get(linkTicket) : undefined;
+			if (!link || link.expiresMs < Date.now()) {
+				return this.webRedirect("error", "Discord link expired, please try again", "users");
+			}
+			this.linkTickets.delete(linkTicket as string);
+		}
+		const page = link ? this.userPage(link.playerName) : "";
+
 		const clientId = this.controller.config.get("exp_discord.client_id");
 		if (!clientId || !this.controller.config.get("exp_discord.client_secret")) {
-			return this.webRedirect("error", "Discord login is not configured on this controller");
+			return this.webRedirect("error", "Discord login is not configured on this controller", page);
 		}
 
 		const state = crypto.randomBytes(16).toString("base64url");
+		if (link) {
+			this.pendingLinks.set(state, { playerName: link.playerName, expiresMs: Date.now() + stateTimeoutS * 1e3 });
+		}
 		const url = new URL("https://discord.com/oauth2/authorize");
 		url.search = new URLSearchParams({
 			response_type: "code",
@@ -172,7 +197,8 @@ export class ControllerPlugin {
 			scope: "identify",
 			state,
 			redirect_uri: this.redirectUri(),
-			prompt: "none",
+			// Linking always shows the Discord consent screen, so it can't happen without the user noticing
+			...(link ? {} : { prompt: "none" }),
 		}).toString();
 
 		const callbackUrl = new URL(this.redirectUri());
@@ -184,14 +210,24 @@ export class ControllerPlugin {
 	}
 
 	async callback(query: Record<string, unknown>, cookieState: string | undefined): Promise<RouteResult> {
-		if (typeof query.error === "string") {
-			return this.webRedirect("error", query.error === "access_denied" ? "Discord login was cancelled" : query.error);
+		const link = typeof query.state === "string" ? this.pendingLinks.get(query.state) : undefined;
+		if (link) {
+			this.pendingLinks.delete(query.state as string);
 		}
-		if (typeof query.state !== "string" || !cookieState || query.state !== cookieState) {
-			return this.webRedirect("error", "Discord login expired, please try again");
+		const page = link ? this.userPage(link.playerName) : "";
+
+		if (typeof query.error === "string") {
+			const message = query.error === "access_denied" ? "Discord login was cancelled" : query.error;
+			return this.webRedirect("error", message, page);
+		}
+		if (
+			typeof query.state !== "string" || !cookieState || query.state !== cookieState
+			|| (link && link.expiresMs < Date.now())
+		) {
+			return this.webRedirect("error", "Discord login expired, please try again", page);
 		}
 		if (typeof query.code !== "string") {
-			return this.webRedirect("error", "Discord did not return a login code");
+			return this.webRedirect("error", "Discord did not return a login code", page);
 		}
 
 		let discordUser;
@@ -199,7 +235,16 @@ export class ControllerPlugin {
 			discordUser = await this.fetchDiscordUser(query.code);
 		} catch (err: any) {
 			this.logger.warn(`Discord login failed: ${err.message}`);
-			return this.webRedirect("error", "Discord login failed, please try again");
+			return this.webRedirect("error", "Discord login failed, please try again", page);
+		}
+
+		if (link) {
+			try {
+				this.linkAccount(discordUser, link.playerName);
+			} catch (err: any) {
+				return this.webRedirect("error", err.message, page);
+			}
+			return { redirect: new URL(page, this.controller.getControllerUrl()).href };
 		}
 
 		const account = this.accounts.getMutable(discordUser.id);
@@ -351,32 +396,44 @@ export class ControllerPlugin {
 			throw new lib.RequestError("This code is invalid or has expired, get a new one from the website");
 		}
 
-		const name = request.playerName.toLowerCase();
-		const existing = this.accounts.get(session.id);
+		const linked = this.linkAccount(session, request.playerName);
+		this.codes.delete(code);
+		delete session.code;
+		return linked;
+	}
+
+	/** Link a player who proved they own the Factorio account, it moves over from any other Discord account. */
+	linkAccount(discordUser: DiscordUser, playerName: string) {
+		const name = playerName.toLowerCase();
+		const existing = this.accounts.get(discordUser.id);
 		const alreadyLinked = existing?.factorioNames.some(linked => linked.toLowerCase() === name);
 		const maxAccounts = this.controller.config.get("exp_discord.max_accounts");
 		if (!alreadyLinked && (existing?.factorioNames.length ?? 0) >= maxAccounts) {
 			throw new lib.RequestError(
-				`${session.name} already has ${maxAccounts} Factorio accounts linked, unlink one first`
+				`${discordUser.name} already has ${maxAccounts} Factorio accounts linked, unlink one first`
 			);
 		}
 
-		this.codes.delete(code);
-		delete session.code;
 		if (!alreadyLinked) {
-			// The player proved they own this Factorio account, so it moves over from any other Discord account
-			this.removeLink(request.playerName);
-			const account = this.accounts.getMutable(session.id)
-				?? new messages.DiscordAccountRecord(session.id, session.name, []);
-			account.name = session.name;
-			account.factorioNames = [...account.factorioNames, request.playerName];
+			this.removeLink(playerName);
+			const account = this.accounts.getMutable(discordUser.id)
+				?? new messages.DiscordAccountRecord(discordUser.id, discordUser.name, []);
+			account.name = discordUser.name;
+			account.factorioNames = [...account.factorioNames, playerName];
 			this.accounts.set(account);
 		}
-		return { id: session.id, name: session.name };
+		return { id: discordUser.id, name: discordUser.name };
 	}
 
 	async handleUnlinkRequest(request: messages.DiscordUnlinkRequest) {
 		return this.removeLink(request.playerName);
+	}
+
+	/** A ticket for /api/exp_discord/authorize?link= which links the Discord account to the user. */
+	async handleLinkStartRequest(request: messages.DiscordLinkStartRequest) {
+		const ticket = crypto.randomBytes(16).toString("base64url");
+		this.linkTickets.set(ticket, { playerName: request.playerName, expiresMs: Date.now() + 60e3 });
+		return ticket;
 	}
 
 	async handleLinkGetRequest(request: messages.DiscordLinkGetRequest) {

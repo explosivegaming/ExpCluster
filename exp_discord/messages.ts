@@ -64,6 +64,14 @@ function selfOrPermission(permission: lib.PermissionName) {
 	};
 }
 
+/** Only the user themselves, no permission lets someone link another user to their Discord. */
+function selfOnly(user: lib.IUser, message: lib.MessageRequest) {
+	const playerName = (message.data as { player_name: string }).player_name;
+	if (user.name.toLowerCase() !== playerName.toLowerCase()) {
+		throw new lib.PermissionError("You can only link your own account");
+	}
+}
+
 const LinkResponse = lib.plainJson(Type.Union([
 	Type.Null(),
 	Type.Object({
@@ -140,6 +148,33 @@ export class DiscordLinkGetRequest {
 	static dst = "controller" as const;
 	static permission = selfOrPermission("exp_discord.link.get");
 	static Response = LinkResponse;
+
+	constructor(
+		public playerName: string,
+	) {}
+
+	static jsonSchema = Type.Object({
+		player_name: Type.String(),
+	});
+
+	toJSON() {
+		return { player_name: this.playerName };
+	}
+
+	static fromJSON(json: Static<typeof this.jsonSchema>) {
+		return new this(json.player_name);
+	}
+}
+
+/** Start linking the Discord account from the user page, responds with a ticket for the authorize route. */
+export class DiscordLinkStartRequest {
+	declare ["constructor"]: typeof DiscordLinkStartRequest;
+	static plugin = "exp_discord" as const;
+	static type = "request" as const;
+	static src = "control" as const;
+	static dst = "controller" as const;
+	static permission = selfOnly;
+	static Response = lib.plainJson(Type.String());
 
 	constructor(
 		public playerName: string,

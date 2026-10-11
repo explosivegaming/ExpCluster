@@ -27,6 +27,7 @@ export const plugin: lib.PluginDeclaration = {
 		messages.DiscordLinkRequest,
 		messages.DiscordUnlinkRequest,
 		messages.DiscordLinkGetRequest,
+		messages.DiscordLinkStartRequest,
 	],
 
 	permissions: [

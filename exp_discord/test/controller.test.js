@@ -217,6 +217,60 @@ t.test("linking", t2 => {
 	t2.end();
 });
 
+t.test("linking from the user page", t2 => {
+	/** Start a link for playerName and follow authorize, returning the OAuth state. */
+	async function start(plugin, playerName) {
+		const ticket = await plugin.handleLinkStartRequest(new messages.DiscordLinkStartRequest(playerName));
+		const result = await plugin.authorize(ticket);
+		return new URL(result.redirect).searchParams;
+	}
+
+	t2.test("links the Discord account and goes back to the user page", async t3 => {
+		const { plugin } = await startPlugin(t3);
+		const params = await start(plugin, "Player1");
+		t3.equal(params.get("prompt"), null, "consent screen is shown");
+		plugin.fetchDiscordUser = async () => alice;
+		const result = await plugin.callback({ code: "c", state: params.get("state") }, params.get("state"));
+		t3.equal(result.redirect, "https://example.com/cluster/users/Player1/view");
+		t3.same(plugin.accounts.get(alice.id).factorioNames, ["Player1"]);
+		t3.equal(plugin.sessions.size, 0, "no login session is started");
+		t3.equal(plugin.pendingLinks.size, 0);
+	});
+
+	t2.test("a ticket can only be used once", async t3 => {
+		const { plugin } = await startPlugin(t3);
+		const ticket = await plugin.handleLinkStartRequest(new messages.DiscordLinkStartRequest("Player1"));
+		await plugin.authorize(ticket);
+		const result = await plugin.authorize(ticket);
+		t3.match(result.redirect, /^https:\/\/example\.com\/cluster\/users#exp_discord_error=Discord%20link%20expired/);
+	});
+
+	t2.test("errors go back to the user page", async t3 => {
+		const { plugin } = await startPlugin(t3, { config: { "exp_discord.max_accounts": 1 } });
+		await link(plugin, await discordLogin(plugin, alice), "Player2");
+
+		let params = await start(plugin, "Player1");
+		let result = await plugin.callback({ error: "access_denied", state: params.get("state") }, params.get("state"));
+		t3.match(result.redirect, /\/users\/Player1\/view#exp_discord_error=Discord%20login%20was%20cancelled$/);
+
+		params = await start(plugin, "Player1");
+		plugin.fetchDiscordUser = async () => alice;
+		result = await plugin.callback({ code: "c", state: params.get("state") }, params.get("state"));
+		t3.match(result.redirect, /\/users\/Player1\/view#exp_discord_error=.*already%20has%201/);
+		t3.same(plugin.accounts.get(alice.id).factorioNames, ["Player2"]);
+	});
+
+	t2.test("a state without the cookie does not link", async t3 => {
+		const { plugin } = await startPlugin(t3);
+		const params = await start(plugin, "Player1");
+		plugin.fetchDiscordUser = async () => t3.fail("should not fetch");
+		const result = await plugin.callback({ code: "c", state: params.get("state") }, undefined);
+		t3.match(result.redirect, "/users/Player1/view#exp_discord_error=");
+		t3.notOk(plugin.accounts.has(alice.id));
+	});
+	t2.end();
+});
+
 t.test("permissions", t2 => {
 	const user = (name, granted = []) => ({
 		name,
@@ -227,6 +281,15 @@ t.test("permissions", t2 => {
 		},
 	});
 	const request = name => ({ data: { player_name: name } });
+
+	t2.test("DiscordLinkStartRequest", async t3 => {
+		const permission = messages.DiscordLinkStartRequest.permission;
+		t3.doesNotThrow(() => permission(user("Alice"), request("alice")), "own account");
+		t3.throws(
+			() => permission(user("Alice", ["exp_discord.link.get", "exp_discord.link.delete"]), request("Bob")),
+			"never someone else's",
+		);
+	});
 
 	for (const Request of [messages.DiscordLinkGetRequest, messages.DiscordUnlinkRequest]) {
 		t2.test(Request.name, async t3 => {
