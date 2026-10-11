@@ -236,7 +236,6 @@ export const seedRoles: SeedRole[] = [
 			"exp_scenario.gui.surveillance",
 			"exp_scenario.gui.vlayer_edit",
 			"exp_scenario.gui.tool",
-			"exp_scenario.command.save_quickbar",
 			"exp_scenario.command.vlayer_info",
 			"exp_scenario.command.lawnmower",
 			"exp_scenario.command.waterfill",

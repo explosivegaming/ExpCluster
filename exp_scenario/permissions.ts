@@ -60,7 +60,6 @@ const definitions = [
 	["exp_scenario.command.research_all", "/research-all", "Research all technology for your force, or another force."],
 	["exp_scenario.command.return", "/return", "Teleports you to previous location."],
 	["exp_scenario.command.save_data", "/save-data", "Writes all your player data to a file on your computer.", true],
-	["exp_scenario.command.save_quickbar", "/save-quickbar", "Saves your Quickbar preset items to file."],
 	["exp_scenario.command.search", "/search", "Display players sorted by the quantity of an item held and playtime."],
 	["exp_scenario.command.search_amount", "/search-amount", "Display players sorted by the quantity of an item held."],
 	["exp_scenario.command.search_online", "/search-online", "Display online players sorted by item count and playtime."],
