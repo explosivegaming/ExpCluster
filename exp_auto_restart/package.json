@@ -13,7 +13,7 @@
 		"coverage": "tap --coverage-report=text test/*.test.js"
 	},
 	"engines": {
-		"node": ">=18"
+		"node": ">=22"
 	},
 	"peerDependencies": {
 		"@clusterio/controller": "workspace:^",

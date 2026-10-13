@@ -11,7 +11,7 @@
 		"prepare": "tsc --build && webpack-cli --env production"
 	},
 	"engines": {
-		"node": ">=18"
+		"node": ">=22"
 	},
 	"peerDependencies": {
 		"@clusterio/controller": "workspace:^",
