@@ -1,6 +1,6 @@
 import * as lib from "@clusterio/lib";
 import * as path from "node:path";
-import type { Controller, ControllerPluginContext } from "@clusterio/controller";
+import type { ControllerPluginContext } from "@clusterio/controller";
 import { RoleMetaRecord } from "@expcluster/roles";
 import { GroupRecord, GroupPermissions, RoleMappingRecord } from "@expcluster/permission-groups";
 import { ControllerPlugin as RolesPlugin } from "@expcluster/roles/dist/node/controller.js";
@@ -9,149 +9,55 @@ import * as messages from "./messages.js";
 import { features, pruneFeatureValues, validateFeatureValues } from "./features.js";
 import { SeedRole, SeedGroup, seedRoles, seedGroups, flattenSeedPermissions } from "./seed.js";
 
-export class ControllerPlugin {
-	private constructor(
-		public controller: Controller,
-		public logger: lib.Logger,
-		public name: string,
-		public features: lib.SubscribableDatastore<messages.FeatureRecord>,
-	) {}
-
-	static async fromContext(context: ControllerPluginContext) {
-		const controller = context.controller;
-		const databaseDirectory = controller.config.get("controller.database_directory");
-		const features = new lib.SubscribableDatastore(
-			...await new lib.JsonIdDatastoreProvider(
-				path.join(databaseDirectory, "exp_scenario", "features.json"),
-				messages.FeatureRecord.fromJSON.bind(messages.FeatureRecord),
-			).bootstrap()
-		);
-
-		const plugin = new ControllerPlugin(controller, context.logger, context.plugin.name, features);
-		plugin.reconcileFeatures();
-
-		controller.subscriptions.handle(messages.FeatureUpdatedEvent, plugin.handleFeatureSubscription.bind(plugin));
-		features.on("update", plugin.featuresUpdated.bind(plugin));
-
-		controller.handle(messages.SeedRequest, plugin.handleSeedRequest.bind(plugin));
-		controller.handle(messages.FeatureListRequest, plugin.handleFeatureListRequest.bind(plugin));
-		controller.handle(messages.FeatureUpdateRequest, plugin.handleFeatureUpdateRequest.bind(plugin));
-
-		controller.hooks.shutdown.attach(plugin.name, plugin.onShutdown.bind(plugin));
-		return plugin;
-	}
-
-	async onShutdown() {
-		await this.features.save();
-	}
+export default async function (context: ControllerPluginContext) {
+	const { controller, logger, plugin } = context;
+	const databaseDirectory = controller.config.get("controller.database_directory");
+	const featureStore = new lib.SubscribableDatastore(
+		...await new lib.JsonIdDatastoreProvider(
+			path.join(databaseDirectory, "exp_scenario", "features.json"),
+			messages.FeatureRecord.fromJSON.bind(messages.FeatureRecord),
+		).bootstrap()
+	);
 
 	/** Add new features, delete removed ones, and drop stored values which no longer fit a field */
-	reconcileFeatures() {
+	function reconcileFeatures() {
 		const declared = new Map(features.map(feature => [feature.name, feature]));
-		for (const record of this.features.values()) {
+		for (const record of featureStore.values()) {
 			const feature = declared.get(record.id);
 			if (!feature) {
-				this.logger.warn(`Dropping stored config of removed feature ${record.id}`);
-				this.features.delete(record);
+				logger.warn(`Dropping stored config of removed feature ${record.id}`);
+				featureStore.delete(record);
 				continue;
 			}
 
 			const { kept, dropped } = pruneFeatureValues(feature, record.values);
 			if (dropped.length) {
-				this.logger.warn(`Dropping stored values of ${record.id} which no longer match a setting: ${dropped.join(", ")}`);
-				this.features.set(new messages.FeatureRecord(record.id, record.enabled, kept));
+				logger.warn(`Dropping stored values of ${record.id} which no longer match a setting: ${dropped.join(", ")}`);
+				featureStore.set(new messages.FeatureRecord(record.id, record.enabled, kept));
 			}
 		}
 
-		const missing = features.filter(feature => !this.features.has(feature.name));
+		const missing = features.filter(feature => !featureStore.has(feature.name));
 		if (missing.length) {
-			this.features.setMany(missing.map(feature => new messages.FeatureRecord(feature.name, true)));
+			featureStore.setMany(missing.map(feature => new messages.FeatureRecord(feature.name, true)));
 		}
-	}
-
-	featuresUpdated(updates: messages.FeatureRecord[]) {
-		this.controller.subscriptions.broadcast(new messages.FeatureUpdatedEvent(updates));
-	}
-
-	async handleFeatureSubscription(request: lib.SubscriptionRequest) {
-		const updates = [...this.features.values()].filter(feature => feature.updatedAtMs > request.lastRequestTimeMs);
-		return updates.length ? new messages.FeatureUpdatedEvent(updates) : null;
-	}
-
-	async handleFeatureListRequest() {
-		return [...this.features.values()];
-	}
-
-	async handleFeatureUpdateRequest(request: messages.FeatureUpdateRequest) {
-		let values;
-		try {
-			values = validateFeatureValues(request.id, request.values);
-		} catch (err: any) {
-			throw new lib.RequestError(err.message);
-		}
-
-		const feature = new messages.FeatureRecord(request.id, request.enabled, values);
-		this.features.set(feature);
-		return feature;
-	}
-
-	/**
-	 * Create the roles and permission groups the scenario shipped with.
-	 *
-	 * Roles which already exist by name are reused and only gain the seed
-	 * permissions, groups which already exist by name are reset to the seed.
-	 */
-	async handleSeedRequest() {
-		const rolesPlugin = RolesPlugin.get(this.controller);
-		const groupsPlugin = GroupsPlugin.get(this.controller);
-		if (!rolesPlugin || !groupsPlugin) {
-			throw new lib.RequestError("Seeding requires the exp_roles and exp_groups plugins");
-		}
-
-		const roleIds = new Map<string, number>();
-		for (const [index, seedRole] of seedRoles.entries()) {
-			const role = this.seedRole(seedRole);
-			if (!role) {
-				continue;
-			}
-
-			roleIds.set(seedRole.name, role.id);
-			rolesPlugin.roleMeta.set(new RoleMetaRecord(
-				role.id,
-				index + 1,
-				seedRole.priority ?? 0,
-				seedRole.shortHand,
-				"",
-				seedRole.color,
-				seedRole.autoAssignHours === undefined ? null : seedRole.autoAssignHours * 3600000,
-				seedRole.blockAutoAssign ?? false,
-			));
-		}
-
-		const groupIds = new Map<string, number>();
-		for (const seedGroup of seedGroups) {
-			groupIds.set(seedGroup.name, this.seedGroup(groupsPlugin, seedGroup).id);
-		}
-
-		this.seedRoleMappings(groupsPlugin, roleIds, groupIds);
-		this.logger.info(`Seeded ${roleIds.size} roles and ${groupIds.size} permission groups`);
 	}
 
 	/** Find or create the clusterio role for a seed role, returns undefined if it has no role to use. */
-	seedRole(seedRole: SeedRole) {
-		const roles = this.controller.roles;
+	function ensureRole(seedRole: SeedRole) {
+		const roles = controller.roles;
 		if (seedRole.isAdmin) {
 			return roles.get(lib.Role.DefaultAdminRoleId);
 		}
 		if (seedRole.isDefault) {
-			const defaultRoleId = this.controller.config.get("controller.default_role_id");
+			const defaultRoleId = controller.config.get("controller.default_role_id");
 			return defaultRoleId !== null ? roles.get(defaultRoleId) : undefined;
 		}
 
 		const permissions = flattenSeedPermissions(seedRole);
 		for (const permission of permissions) {
 			if (!lib.permissions.has(permission)) {
-				this.logger.warn(`Seed role ${seedRole.name} grants unknown permission ${permission}`);
+				logger.warn(`Seed role ${seedRole.name} grants unknown permission ${permission}`);
 			}
 		}
 
@@ -163,19 +69,19 @@ export class ControllerPlugin {
 		} else {
 			const id = Math.max(5, ...[...roles.keys()].map(other => other + 1));
 			role = new lib.Role(id, seedRole.name, "", permissions);
-			this.logger.info(`Created role ${seedRole.name}`);
+			logger.info(`Created role ${seedRole.name}`);
 		}
 		roles.set(role);
 		return role;
 	}
 
 	/** Find or create the permission group for a seed group. */
-	seedGroup(groupsPlugin: GroupsPlugin, seedGroup: SeedGroup) {
+	function ensureGroup(groupsPlugin: GroupsPlugin, seedGroup: SeedGroup) {
 		const permissions = new GroupPermissions(seedGroup.isBlacklist, [...seedGroup.inputActions]);
 		const existing = [...groupsPlugin.groups.values()].find(other => other.name === seedGroup.name);
 		const group = new GroupRecord(existing?.id ?? newId(groupsPlugin.groups), seedGroup.name, permissions);
 		if (!existing) {
-			this.logger.info(`Created permission group ${seedGroup.name}`);
+			logger.info(`Created permission group ${seedGroup.name}`);
 		}
 		groupsPlugin.groups.set(group);
 		return group;
@@ -188,7 +94,7 @@ export class ControllerPlugin {
 	 * priorities follow how exp_roles picks a player's highest role: role
 	 * priority first, then the role order.
 	 */
-	seedRoleMappings(groupsPlugin: GroupsPlugin, roleIds: Map<string, number>, groupIds: Map<string, number>) {
+	function seedRoleMappings(groupsPlugin: GroupsPlugin, roleIds: Map<string, number>, groupIds: Map<string, number>) {
 		// Lowest role first, so the mapping priority rises with the role
 		const ranked = seedRoles
 			.filter(seedRole => seedRole.group !== undefined && roleIds.has(seedRole.name))
@@ -227,12 +133,78 @@ export class ControllerPlugin {
 		}
 
 		groupsPlugin.roleMappings.setMany(mappings);
-		return mappings;
 	}
-}
 
-export default async function (context: ControllerPluginContext) {
-	await ControllerPlugin.fromContext(context);
+	reconcileFeatures();
+
+	controller.subscriptions.handle(messages.FeatureUpdatedEvent, async request => {
+		const updates = [...featureStore.values()].filter(feature => feature.updatedAtMs > request.lastRequestTimeMs);
+		return updates.length ? new messages.FeatureUpdatedEvent(updates) : null;
+	});
+	featureStore.on("update", updates => {
+		controller.subscriptions.broadcast(new messages.FeatureUpdatedEvent(updates));
+	});
+
+	/**
+	 * Create the roles and permission groups the scenario shipped with.
+	 *
+	 * Roles which already exist by name are reused and only gain the seed
+	 * permissions, groups which already exist by name are reset to the seed.
+	 */
+	controller.handle(messages.SeedRequest, async () => {
+		const rolesPlugin = RolesPlugin.get(controller);
+		const groupsPlugin = GroupsPlugin.get(controller);
+		if (!rolesPlugin || !groupsPlugin) {
+			throw new lib.RequestError("Seeding requires the exp_roles and exp_groups plugins");
+		}
+
+		const roleIds = new Map<string, number>();
+		for (const [index, seed] of seedRoles.entries()) {
+			const role = ensureRole(seed);
+			if (!role) {
+				continue;
+			}
+
+			roleIds.set(seed.name, role.id);
+			rolesPlugin.roleMeta.set(new RoleMetaRecord(
+				role.id,
+				index + 1,
+				seed.priority ?? 0,
+				seed.shortHand,
+				"",
+				seed.color,
+				seed.autoAssignHours === undefined ? null : seed.autoAssignHours * 3600000,
+				seed.blockAutoAssign ?? false,
+			));
+		}
+
+		const groupIds = new Map<string, number>();
+		for (const seed of seedGroups) {
+			groupIds.set(seed.name, ensureGroup(groupsPlugin, seed).id);
+		}
+
+		seedRoleMappings(groupsPlugin, roleIds, groupIds);
+		logger.info(`Seeded ${roleIds.size} roles and ${groupIds.size} permission groups`);
+	});
+
+	controller.handle(messages.FeatureListRequest, async () => [...featureStore.values()]);
+
+	controller.handle(messages.FeatureUpdateRequest, async (request: messages.FeatureUpdateRequest) => {
+		let values;
+		try {
+			values = validateFeatureValues(request.id, request.values);
+		} catch (err: any) {
+			throw new lib.RequestError(err.message);
+		}
+
+		const feature = new messages.FeatureRecord(request.id, request.enabled, values);
+		featureStore.set(feature);
+		return feature;
+	});
+
+	controller.hooks.shutdown.attach(plugin.name, async () => {
+		await featureStore.save();
+	});
 }
 
 function newId(datastore: { has(id: number): boolean }) {

@@ -1,7 +1,7 @@
 import t from "tap";
 import * as lib from "@clusterio/lib";
 import { Instance } from "@clusterio/host";
-import { InstancePlugin } from "../dist/node/instance.js";
+import entrypoint from "../dist/node/instance.js";
 import { plugin as pluginDeclaration } from "../dist/node/index.js";
 import * as messages from "../dist/node/messages.js";
 
@@ -25,7 +25,7 @@ class TestConnector extends lib.BaseConnector {
 
 const report = (id, playerName, byPlayerName) => new messages.ReportRecord(id, playerName, byPlayerName, "griefing", "EXP", 1000);
 
-/** Build a plugin around a real running instance with spies on what leaves it. */
+/** Run the plugin on a real running instance with spies on what leaves it, returns the IPC handlers it registered. */
 async function startPlugin(t2, { reports = [report(1, "bob", "alice"), report(2, "bob", "carol")] } = {}) {
 	const instanceConfig = new lib.InstanceConfig("host");
 	instanceConfig.set("instance.id", 1);
@@ -37,8 +37,9 @@ async function startPlugin(t2, { reports = [report(1, "bob", "alice"), report(2,
 
 	// Spies which record the messages and commands leaving the instance
 	const state = { sent: [], rcons: [], failNext: null };
+	const ipc = new Map();
 	instance.server = {
-		handle: () => {},
+		handle: (name, handler) => ipc.set(name, handler),
 		sendRcon: async command => {
 			state.rcons.push(command);
 			return "";
@@ -63,8 +64,14 @@ async function startPlugin(t2, { reports = [report(1, "bob", "alice"), report(2,
 	instance.notifyStatus("running");
 	state.sent.length = 0;
 
-	const plugin = await InstancePlugin.fromContext({ plugin: { name: "exp_reports" }, instance, host: {}, logger });
-	return { plugin, instance, state };
+	await entrypoint({ plugin: { name: "exp_reports" }, instance, host: {}, logger });
+	return {
+		instance,
+		state,
+		createIPC: event => ipc.get("exp_reports:create")(event),
+		listIPC: event => ipc.get("exp_reports:list")(event),
+		deleteIPC: event => ipc.get("exp_reports:delete")(event),
+	};
 }
 
 /** The lua receiver and payload of a recorded rcon command. */
@@ -73,10 +80,10 @@ function decodeRcon(command) {
 	return { receiver: match[1], payload: JSON.parse(match[2]) };
 }
 
-t.test("class InstancePlugin", t2 => {
-	t2.test(".handleCreateIPC() creates the report and hands it to lua with the others against the player", async t3 => {
-		const { plugin, state } = await startPlugin(t3);
-		await plugin.handleCreateIPC({ player_name: "bob", by_player_name: "dave", reason: "griefing" });
+t.test("instance plugin", t2 => {
+	t2.test("exp_reports:create creates the report and hands it to lua with the others against the player", async t3 => {
+		const { state, createIPC } = await startPlugin(t3);
+		await createIPC({ player_name: "bob", by_player_name: "dave", reason: "griefing" });
 
 		const create = state.sent.find(request => request instanceof messages.ReportCreateRequest);
 		t3.strictSame([create.playerName, create.byPlayerName, create.reason], ["bob", "dave", "griefing"]);
@@ -89,20 +96,20 @@ t.test("class InstancePlugin", t2 => {
 		t3.strictSame(payload.reports.map(other => other.by_player_name), ["alice", "carol"], "along with the existing ones");
 	});
 
-	t2.test(".handleCreateIPC() prints a refusal to the reporter", async t3 => {
-		const { plugin, state } = await startPlugin(t3);
+	t2.test("exp_reports:create prints a refusal to the reporter", async t3 => {
+		const { state, createIPC } = await startPlugin(t3);
 		state.failNext = new lib.RequestError("dave has already reported bob");
-		await plugin.handleCreateIPC({ player_name: "bob", by_player_name: "dave", reason: "griefing" });
+		await createIPC({ player_name: "bob", by_player_name: "dave", reason: "griefing" });
 
 		const { receiver, payload } = decodeRcon(state.rcons[0]);
 		t3.strictSame(receiver, "receive_error");
 		t3.strictSame(payload, { caller: "dave", message: "dave has already reported bob" });
 	});
 
-	t2.test(".handleListIPC() lists the reports for the caller", async t3 => {
-		const { plugin, state } = await startPlugin(t3);
-		await plugin.handleListIPC({ caller: "admin", player_name: "bob" });
-		await plugin.handleListIPC({ caller: "admin", player_name: undefined });
+	t2.test("exp_reports:list lists the reports for the caller", async t3 => {
+		const { state, listIPC } = await startPlugin(t3);
+		await listIPC({ caller: "admin", player_name: "bob" });
+		await listIPC({ caller: "admin", player_name: undefined });
 
 		const forPlayer = decodeRcon(state.rcons[0]);
 		t3.strictSame(forPlayer.receiver, "receive_list");
@@ -113,9 +120,9 @@ t.test("class InstancePlugin", t2 => {
 		t3.strictSame(forAll.payload.player_name, undefined, "no player when listing everyone");
 	});
 
-	t2.test(".handleDeleteIPC() deletes only the matching reports", async t3 => {
-		const { plugin, state } = await startPlugin(t3);
-		await plugin.handleDeleteIPC({ caller: "admin", player_name: "bob", by_player_name: "carol" });
+	t2.test("exp_reports:delete deletes only the matching reports", async t3 => {
+		const { state, deleteIPC } = await startPlugin(t3);
+		await deleteIPC({ caller: "admin", player_name: "bob", by_player_name: "carol" });
 
 		const deletes = state.sent.filter(request => request instanceof messages.ReportDeleteRequest);
 		t3.strictSame(deletes.map(request => request.id), [2], "only carol's report is deleted");
@@ -124,17 +131,17 @@ t.test("class InstancePlugin", t2 => {
 		t3.strictSame(payload, { caller: "admin", player_name: "bob", by_player_name: "carol", count: 1 });
 
 		state.sent.length = 0;
-		await plugin.handleDeleteIPC({ caller: "admin", player_name: "bob", by_player_name: undefined });
+		await deleteIPC({ caller: "admin", player_name: "bob", by_player_name: undefined });
 		t3.strictSame(
 			state.sent.filter(request => request instanceof messages.ReportDeleteRequest).length, 2,
 			"every report is deleted without a reporter",
 		);
 	});
 
-	t2.test(".luaSend() drops answers once the instance has stopped", async t3 => {
-		const { plugin, instance, state } = await startPlugin(t3);
+	t2.test("answers are dropped once the instance has stopped", async t3 => {
+		const { instance, state, listIPC } = await startPlugin(t3);
 		instance.notifyStatus("stopped");
-		await plugin.handleListIPC({ caller: "admin", player_name: undefined });
+		await listIPC({ caller: "admin", player_name: undefined });
 		t3.strictSame(state.rcons, [], "nothing is sent to a stopped instance");
 	});
 
