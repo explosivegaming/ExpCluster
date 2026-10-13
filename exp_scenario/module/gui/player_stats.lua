@@ -159,12 +159,12 @@ function Elements.player_stats_table.refresh(data_table, player)
         else
             value = format_number(value, false)
         end
-        labels[stat_name].caption = { "readme.data-format", value, metadata.unit or "" }
+        labels[stat_name].caption = { "exp-gui_readme.data-format", value, metadata.unit or "" }
     end
 
     -- Update all computed stats
     for stat_name, data in pairs(computed_stats) do
-        labels[stat_name].caption = { "readme.data-format", data.calculate(player), "" }
+        labels[stat_name].caption = { "exp-gui_readme.data-format", data.calculate(player), "" }
     end
 end
 
