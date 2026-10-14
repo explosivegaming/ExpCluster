@@ -5,7 +5,7 @@ Adds friendly biters that walk around and give helpful messages
 local Async = require("modules/exp_util/async")
 local Storage = require("modules/exp_util/storage")
 local Feature = require("modules/exp_scenario/features")
-local config_server_detail = require("modules.exp_legacy.config.server_detail")
+local community_details = require("modules/exp_scenario/config/community_details").config
 
 local feature = Feature.register("help_bubbles")
 
@@ -17,18 +17,21 @@ local locations = {
         spawn_position = { x = 0, y = 0 },
         spawn_surface = "nauvis",
         entity_name = "small-biter",
-        messages = {
-            { "info.website", config_server_detail["website"] },
-            { "info.read-readme" },
-            { "info.discord", config_server_detail["discord"] },
-            { "info.softmod" },
-            { "info.redmew" },
-            { "info.custom-commands" },
-            { "info.status", config_server_detail["status"] },
-            { "info.lhd" },
-            { "info.github", config_server_detail["github"] },
-            { "info.patreon", config_server_detail["patreon"] },
-        },
+        --- Built each cycle so changes to community_details show without a restart
+        messages = function()
+            return {
+                { "info.website", community_details.website },
+                { "info.read-readme" },
+                { "info.discord", community_details.discord },
+                { "info.softmod" },
+                { "info.redmew" },
+                { "info.custom-commands" },
+                { "info.status", community_details.status },
+                { "info.lhd" },
+                { "info.github", community_details.github },
+                { "info.patreon", community_details.patreon },
+            }
+        end,
     }
 
 }
@@ -41,7 +44,8 @@ end)
 
 --- @class speech_bubble_task_param
 --- @field entity LuaEntity
---- @field messages LocalisedString[]
+--- @field messages LocalisedString[]?
+--- @field location string? Used when there are no messages, a key of locations
 --- @field previous_message LuaEntity?
 --- @field current_message_index number
 
@@ -60,8 +64,9 @@ local speech_bubble_task =
             return Async.status.complete()
         end
 
+        local messages = task.messages or locations[task.location].messages()
         local index = task.current_message_index
-        if index > #task.messages then
+        if index > #messages then
             index = 1
         end
 
@@ -71,7 +76,7 @@ local speech_bubble_task =
         end
 
         speech_bubble_param.source = entity
-        speech_bubble_param.text = task.messages[index]
+        speech_bubble_param.text = messages[index]
         task.previous_message = entity.surface.create_entity(speech_bubble_param)
 
         task.current_message_index = index + 1
@@ -114,7 +119,11 @@ local function check_persistent_locations()
             goto continue
         end
 
-        persistent_locations[name] = register_entity(entity, location.messages)
+        persistent_locations[name] = speech_bubble_task{
+            entity = entity,
+            location = name,
+            current_message_index = 1,
+        }
         ::continue::
     end
 end
