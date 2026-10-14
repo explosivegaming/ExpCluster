@@ -18,6 +18,26 @@ export default async function (context: ControllerPluginContext) {
 			messages.FeatureRecord.fromJSON.bind(messages.FeatureRecord),
 		).bootstrap()
 	);
+	const playerStore = new lib.SubscribableDatastore(
+		...await new lib.JsonIdDatastoreProvider(
+			path.join(databaseDirectory, "exp_scenario", "players.json"),
+			messages.PlayerRecord.fromJSON.bind(messages.PlayerRecord),
+		).bootstrap()
+	);
+
+	type PlayerSettings = Pick<messages.PlayerRecord, "joinMessage">;
+
+	/** Change some settings of a player, empty values are removed and so is a record left empty */
+	function updatePlayer(name: string, changes: PlayerSettings) {
+		const old = playerStore.get(name);
+		const settings: PlayerSettings = { joinMessage: old?.joinMessage, ...changes };
+		const record = new messages.PlayerRecord(name, settings.joinMessage || undefined);
+		if (record.joinMessage) {
+			playerStore.set(record);
+		} else if (old) {
+			playerStore.delete(old);
+		}
+	}
 
 	/** Add new features, delete removed ones, and drop stored values which no longer fit a field */
 	function reconcileFeatures() {
@@ -202,8 +222,21 @@ export default async function (context: ControllerPluginContext) {
 		return feature;
 	});
 
+	controller.handle(messages.PlayerGetRequest, async (request: messages.PlayerGetRequest) => (
+		playerStore.get(request.playerName) ?? new messages.PlayerRecord(request.playerName)
+	));
+
+	controller.handle(messages.JoinMessageSetRequest, async (request: messages.JoinMessageSetRequest) => {
+		updatePlayer(request.playerName, { joinMessage: request.message?.trim() });
+	});
+
+	controller.hooks.save.attach(plugin.name, async () => {
+		await playerStore.save();
+	});
+
 	controller.hooks.shutdown.attach(plugin.name, async () => {
 		await featureStore.save();
+		await playerStore.save();
 	});
 }
 

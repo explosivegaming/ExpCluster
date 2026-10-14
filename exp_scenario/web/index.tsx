@@ -6,6 +6,7 @@ import * as messages from "../messages.js";
 
 import FeaturesPage from "./components/FeaturesPage";
 import Seed from "./components/Seed";
+import UserPlayerSettings from "./components/UserPlayerSettings";
 
 let features: lib.MapSubscriber<messages.FeatureUpdatedEvent> | undefined;
 
@@ -17,6 +18,7 @@ export function useFeatures() {
 export default function registerPlugin(context: WebPluginContext) {
 	context.control.hooks.extensionComponents.attach("exp_scenario", () => ({
 		RolesPage: Seed,
+		UserViewPage: UserPlayerSettings,
 	}));
 
 	context.control.hooks.pages.attach("exp_scenario", () => [

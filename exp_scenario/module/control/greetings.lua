@@ -1,46 +1,50 @@
 --[[-- Control - Greetings
-Greets players when they join, players can set a message shown to everyone instead
+Greets players when they join, and lets players set a message shown to everyone when they join
+
+The join messages are kept by the controller, the instance plugin prints them when a player joins
 ]]
 
 local Commands = require("modules/exp_commands")
+local Feature = require("modules/exp_scenario/features")
+local clusterio_api = require("modules/clusterio/api")
 local community_details = require("modules/exp_scenario/config/community_details").config
 
-local PlayerData = require("modules.exp_legacy.expcore.player_data")
-local CustomMessages = PlayerData.Settings:combine("JoinMessage")
-CustomMessages:set_metadata{
-    permission = "exp_scenario.command.set_join_message",
-}
+local feature = Feature.register("greetings")
 
---- Show the message of a player once their data loads, or greet them
-CustomMessages:on_load(function(player_name, player_message)
-    local player = assert(game.get_player(player_name))
-    if player_message then
-        game.print(player_message, { color = player.color })
-    else
-        player.print{ "exp_greetings.greet", community_details.community_name, community_details.discord }
-    end
-end)
+--- @param event EventData.on_player_joined_game
+local function on_player_joined_game(event)
+    local player = assert(game.get_player(event.player_index))
+    player.print{ "exp_greetings.greet", community_details.community_name, community_details.discord }
+end
 
---- Set your custom join message
+--- Set your custom join message, or show it when no message is given
 Commands.new("set-join-message", { "exp_greetings.description-set" })
     :optional("message", { "exp_greetings.arg-message" }, Commands.types.string_max_length(255))
     :enable_auto_concatenation()
     :add_aliases{ "join-message" }
+    :add_flags{ feature = feature }
     :register(function(player, message)
         --- @cast message string?
         if message then
-            CustomMessages:set(player, message)
+            clusterio_api.send_json("exp_scenario:join_message_set", { player_name = player.name, message = message })
             return Commands.status.success{ "exp_greetings.message-set" }
-        else
-            return Commands.status.success{ "exp_greetings.message-get", CustomMessages:get(player) or "" }
         end
+        -- The instance plugin prints the message
+        clusterio_api.send_json("exp_scenario:join_message_get", { player_name = player.name })
     end)
 
 --- Removes your custom join message
 Commands.new("remove-join-message", { "exp_greetings.description-remove" })
+    :add_flags{ feature = feature }
     :register(function(player)
-        CustomMessages:remove(player)
+        clusterio_api.send_json("exp_scenario:join_message_set", { player_name = player.name })
         return Commands.status.success{ "exp_greetings.message-cleared" }
     end)
 
-return {}
+local e = defines.events
+
+return feature:guard{
+    events = {
+        [e.on_player_joined_game] = on_player_joined_game,
+    },
+}
