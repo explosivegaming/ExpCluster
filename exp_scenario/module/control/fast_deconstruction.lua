@@ -5,10 +5,14 @@ Makes trees which are marked for decon "decay" quickly to allow faster building
 local Gui = require("modules/exp_gui")
 local Async = require("modules/exp_util/async")
 local Roles = require("modules/exp_roles")
+local Storage = require("modules/exp_util/storage")
 
-local PlayerData = require("modules.exp_legacy.expcore.player_data")
-local HasEnabledDecon = PlayerData.Settings:combine("HasEnabledDecon")
-HasEnabledDecon:set_default(false)
+--- Players who toggled fast decon on, by player index
+--- @type table<number, true>
+local enabled_players = {}
+Storage.register(enabled_players, function(tbl)
+    enabled_players = tbl
+end)
 
 local random = math.random
 local floor = math.floor
@@ -58,7 +62,7 @@ local remove_trees_async =
 --- @return "fast" | "allow" | "disallow"
 local function get_permission(player)
     if Roles.player_has_permission(player, "exp_scenario.decon.fast_trees") then
-        return HasEnabledDecon:get(player) and "fast" or "allow"
+        return enabled_players[player.index] and "fast" or "allow"
     elseif Roles.player_has_permission(player, "exp_scenario.decon.standard") then
         return "allow"
     else
@@ -105,7 +109,7 @@ Gui.toolbar.create_button{
     end
 }:on_click(function(def, player, element)
     local state = Gui.toolbar.get_button_toggled_state(def, player)
-    HasEnabledDecon:set(player, state)
+    enabled_players[player.index] = state or nil
     player.print{ "exp_fast-decon.chat-toggle", state and { "exp_fast-decon.chat-enabled" } or { "exp_fast-decon.chat-disabled" } }
 end)
 
@@ -164,8 +168,7 @@ local function on_entity_damaged(event)
     end
 
     -- Mark the entity to be removed
-    local allow = get_player_cache(driver.index)
-    if allow == "fast" and HasEnabledDecon:get(driver) then
+    if get_player_cache(driver.index).permission == "fast" then
         event.entity.destroy()
     else
         event.entity.order_deconstruction(event.force, driver)
