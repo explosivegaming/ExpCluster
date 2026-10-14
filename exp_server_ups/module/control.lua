@@ -9,21 +9,6 @@ local Commands = require("modules/exp_commands")
 --- @class ExpServerUps.elements
 local Elements = {}
 
---- Stores the visible state of server ups element for a player
-local PlayerData = require("modules/exp_legacy/expcore/player_data")
-local UsesServerUps = PlayerData.Settings:combine("UsesServerUps")
-UsesServerUps:set_default(false)
-UsesServerUps:set_metadata{
-    permission = "exp_scenario.command.server_ups",
-    stringify = function(value) return value and "Visible" or "Hidden" end,
-}
-
---- Change the visible state when your data loads
-UsesServerUps:on_load(function(player_name, visible)
-    local player = assert(game.get_player(player_name))
-    Elements.server_ups.set_visible(player, visible or false)
-end)
-
 --- Label to show the server ups, drawn to screen on join
 --- @class ExpServerUps.elements.server_ups: ExpElement
 --- @overload fun(parent: LuaGuiElement, visible: boolean?): LuaGuiElement
@@ -61,7 +46,7 @@ function Elements.server_ups.get_main_label(player)
     if element and element.valid then
         return element
     end
-    return Elements.server_ups(player.gui.screen, UsesServerUps:get(player))
+    return Elements.server_ups(player.gui.screen, false)
 end
 
 --- Set the visible state of the main label
@@ -75,9 +60,8 @@ end
 Commands.new("server-ups", { "exp_server-ups.description" })
     :add_aliases{ "sups", "ups" }
     :register(function(player)
-        local visible = not UsesServerUps:get(player)
-        Elements.server_ups.set_visible(player, visible)
-        UsesServerUps:set(player, visible)
+        local label = Elements.server_ups.get_main_label(player)
+        label.visible = not label.visible
     end)
 
 --- Add an interface which can be called from rcon
