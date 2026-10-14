@@ -13,7 +13,7 @@ type Link = { id: string, name: string } | null;
 
 /** An error from linking on Discord, taken out of the url so a reload does not show it again. */
 function readError() {
-	const error = new URLSearchParams(window.location.hash.slice(1)).get("exp_discord_error");
+	const error = new URLSearchParams(window.location.hash.slice(1)).get("exp_discord_auth_error");
 	if (error) {
 		window.history.replaceState(null, "", window.location.pathname + window.location.search);
 	}
@@ -25,8 +25,8 @@ export default function UserDiscordLink(props: PluginExtensionProps<"UserViewPag
 	const control = useContext(ControlContext);
 	const account = useAccount();
 	const own = account.name.toLowerCase() === props.user.name.toLowerCase();
-	const canGet = own || account.hasPermission("exp_discord.link.get");
-	const canDelete = own || account.hasPermission("exp_discord.link.delete");
+	const canGet = own || account.hasPermission("exp_discord_auth.link.get");
+	const canDelete = own || account.hasPermission("exp_discord_auth.link.delete");
 	const [link, setLink] = useState<Link | undefined>(undefined);
 	const [error, setError] = useState(readError);
 
@@ -35,7 +35,7 @@ export default function UserDiscordLink(props: PluginExtensionProps<"UserViewPag
 			return;
 		}
 		control.send(new DiscordLinkGetRequest(props.user.name))
-			.then(setLink)
+			.then(response => setLink(response.link))
 			.catch(notifyErrorHandler("Error loading Discord link"));
 	}, [props.user.name, canGet]);
 
@@ -50,7 +50,7 @@ export default function UserDiscordLink(props: PluginExtensionProps<"UserViewPag
 
 	async function startLink() {
 		const ticket = await control.send(new DiscordLinkStartRequest(props.user.name));
-		window.location.href = `${webRoot}api/exp_discord/authorize?link=${encodeURIComponent(ticket)}`;
+		window.location.href = `${webRoot}api/exp_discord_auth/authorize?link=${encodeURIComponent(ticket)}`;
 	}
 
 	return <>

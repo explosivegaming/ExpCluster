@@ -3,8 +3,8 @@ import { Alert, Button, Space, Spin, Typography } from "antd";
 
 declare const webRoot: string;
 
-const { Paragraph, Text } = Typography;
-const sessionKey = "exp_discord_session";
+const { Link, Paragraph, Text } = Typography;
+const sessionKey = "exp_discord_auth_session";
 
 type Accounts = {
 	discord: { id: string, name: string },
@@ -13,7 +13,7 @@ type Accounts = {
 };
 
 async function api(method: "GET" | "POST", route: string, session: string) {
-	const response = await fetch(`${webRoot}api/exp_discord/${route}`, {
+	const response = await fetch(`${webRoot}api/exp_discord_auth/${route}`, {
 		method,
 		headers: { Authorization: `Bearer ${session}` },
 	});
@@ -27,8 +27,8 @@ async function api(method: "GET" | "POST", route: string, session: string) {
 /** Take the outcome of the Discord redirect out of the url, so a reload does not reuse it. */
 function readRedirect() {
 	const params = new URLSearchParams(window.location.hash.slice(1));
-	const session = params.get("exp_discord_session");
-	const error = params.get("exp_discord_error");
+	const session = params.get("exp_discord_auth_session");
+	const error = params.get("exp_discord_auth_error");
 	if (session || error) {
 		window.history.replaceState(null, "", window.location.pathname + window.location.search);
 	}
@@ -44,6 +44,7 @@ export default function DiscordLoginForm(props: { setToken(token: string): void 
 	const [error, setError] = useState<string | null>(redirect.error);
 	const [accounts, setAccounts] = useState<Accounts | null>(null);
 	const [code, setCode] = useState<string | null>(null);
+	const [configured, setConfigured] = useState<boolean | null>(null);
 	const linkedCount = useRef<number | null>(null);
 
 	function forget(message: string | null) {
@@ -54,6 +55,16 @@ export default function DiscordLoginForm(props: { setToken(token: string): void 
 		linkedCount.current = null;
 		setError(message);
 	}
+
+	useEffect(() => {
+		if (session || configured !== null) {
+			return;
+		}
+		fetch(`${webRoot}api/exp_discord_auth/status`)
+			.then(response => response.json())
+			.then(json => setConfigured(json.configured))
+			.catch(err => setError(`Failed to load Discord login: ${err.message}`));
+	}, [session, configured]);
 
 	useEffect(() => {
 		if (!session) {
@@ -110,10 +121,15 @@ export default function DiscordLoginForm(props: { setToken(token: string): void 
 	const errorAlert = error && <Alert type="error" message={error} showIcon style={{ marginBottom: 16 }} />;
 
 	if (!session) {
+		if (configured === false) {
+			return <Alert type="error" message="Discord login is not configured on this controller" showIcon />;
+		}
 		return <>
 			{errorAlert}
-			<Paragraph>Log in with your Discord account. Your Factorio account needs to be linked to it first, which you can do after logging in.</Paragraph>
-			<Button type="primary" href={`${webRoot}api/exp_discord/authorize`}>Log in with Discord</Button>
+			<Paragraph>Log in with a linked Discord account. New accounts can be linked after logging in.</Paragraph>
+			<Button type="primary" block disabled={!configured} href={`${webRoot}api/exp_discord_auth/authorize`}>
+				Log in with Discord
+			</Button>
 		</>;
 	}
 
@@ -124,7 +140,9 @@ export default function DiscordLoginForm(props: { setToken(token: string): void 
 	const canLinkMore = accounts.accounts.length < accounts.max_accounts;
 	return <>
 		{errorAlert}
-		<Paragraph>Logged in to Discord as <Text strong>{accounts.discord.name}</Text>.</Paragraph>
+		<Paragraph>
+			Logged in to Discord as <Text strong>{accounts.discord.name}</Text>. <Link onClick={() => forget(null)}>Not you?</Link>
+		</Paragraph>
 
 		{accounts.accounts.length
 			? <Space direction="vertical" style={{ width: "100%", marginBottom: 16 }}>
@@ -155,7 +173,5 @@ export default function DiscordLoginForm(props: { setToken(token: string): void 
 					{accounts.accounts.length ? "Link another Factorio account" : "Link a Factorio account"}
 				</Button>
 			</Paragraph>}
-
-		<Button type="link" onClick={() => forget(null)}>Use a different Discord account</Button>
 	</>;
 }

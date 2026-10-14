@@ -1,5 +1,5 @@
 {
-	"name": "exp_discord",
+	"name": "exp_discord_auth",
 	"load": [
 	],
 	"require": [

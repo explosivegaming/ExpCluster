@@ -6,5 +6,5 @@ Therefore, we advise that this should be the only file in your module to expose 
 
 --- @diagnostic disable: global-in-non-module
 
--- Access using `/sc exp_discord.foo()`
-exp_discord = require("modules/exp_discord/control")
+-- Access using `/sc exp_discord_auth.foo()`
+exp_discord_auth = require("modules/exp_discord_auth/control")

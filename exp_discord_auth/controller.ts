@@ -1,4 +1,5 @@
 import type { Controller, ControllerPluginContext } from "@clusterio/controller";
+import type { NextFunction, Request, Response } from "express";
 import * as lib from "@clusterio/lib";
 import * as messages from "./messages.js";
 import * as crypto from "node:crypto";
@@ -21,17 +22,6 @@ type WebLink = { playerName: string, expiresMs: number };
 export type RouteResult =
 	| { redirect: string, cookie?: string }
 	| { status: number, json: unknown };
-
-type HttpRequest = {
-	query: Record<string, unknown>,
-	headers: Record<string, string | string[] | undefined>,
-};
-type HttpResponse = {
-	status(code: number): HttpResponse,
-	json(body: unknown): unknown,
-	redirect(url: string): void,
-	setHeader(name: string, value: string): unknown,
-};
 
 function readCookie(header: string | string[] | undefined, name: string) {
 	for (const part of String(header ?? "").split(";")) {
@@ -60,14 +50,46 @@ export class ControllerPlugin {
 	linkTickets = new Map<string, WebLink>();
 	/** Links waiting for the Discord callback, by OAuth state */
 	pendingLinks = new Map<string, WebLink>();
-	cleanupInterval?: ReturnType<typeof setInterval>;
+	cleanupInterval = setInterval(() => this.removeExpired(), 60e3).unref();
 
 	private constructor(
 		public controller: Controller,
 		public logger: lib.Logger,
 		public name: string,
 		public accounts: lib.SubscribableDatastore<messages.DiscordAccountRecord>,
-	) {}
+	) {
+		controller.handle(messages.DiscordLinkRequest, this.handleLinkRequest.bind(this));
+		controller.handle(messages.DiscordUnlinkRequest, this.handleUnlinkRequest.bind(this));
+		controller.handle(messages.DiscordLinkGetRequest, this.handleLinkGetRequest.bind(this));
+		controller.handle(messages.DiscordLinkStartRequest, this.handleLinkStartRequest.bind(this));
+
+		const route = (handler: (req: Request) => Promise<RouteResult>) => (
+			(req: Request, res: Response, next: NextFunction) => {
+				handler(req).then(result => {
+					if ("redirect" in result) {
+						if (result.cookie) {
+							res.setHeader("Set-Cookie", result.cookie);
+						}
+						res.redirect(result.redirect);
+					} else {
+						res.status(result.status).json(result.json);
+					}
+				}).catch(next);
+			}
+		);
+		const app = controller.app;
+		app.get("/api/exp_discord_auth/status", route(async () => this.status()));
+		app.get("/api/exp_discord_auth/authorize", route(async req => this.authorize(req.query.link)));
+		app.get("/api/exp_discord_auth/callback", route(async req => this.callback(
+			req.query, readCookie(req.headers.cookie, "exp_discord_auth_state"),
+		)));
+		app.get("/api/exp_discord_auth/accounts", route(async req => this.listAccounts(this.sessionId(req))));
+		app.post("/api/exp_discord_auth/login", route(async req => this.login(this.sessionId(req), req.query.name)));
+		app.post("/api/exp_discord_auth/link_code", route(async req => this.linkCode(this.sessionId(req))));
+
+		controller.hooks.save.attach(name, this.onSave.bind(this));
+		controller.hooks.shutdown.attach(name, this.onShutdown.bind(this));
+	}
 
 	static async fromContext(context: ControllerPluginContext) {
 		const controller = context.controller;
@@ -75,25 +97,12 @@ export class ControllerPlugin {
 
 		const accounts = new lib.SubscribableDatastore(
 			...await new lib.JsonIdDatastoreProvider(
-				path.join(databaseDirectory, "exp_discord", "accounts.json"),
+				path.join(databaseDirectory, "exp_discord_auth", "accounts.json"),
 				messages.DiscordAccountRecord.fromJSON.bind(messages.DiscordAccountRecord),
 			).bootstrap()
 		);
 
-		const plugin = new ControllerPlugin(controller, context.logger, context.plugin.name, accounts);
-
-		controller.handle(messages.DiscordLinkRequest, plugin.handleLinkRequest.bind(plugin));
-		controller.handle(messages.DiscordUnlinkRequest, plugin.handleUnlinkRequest.bind(plugin));
-		controller.handle(messages.DiscordLinkGetRequest, plugin.handleLinkGetRequest.bind(plugin));
-		controller.handle(messages.DiscordLinkStartRequest, plugin.handleLinkStartRequest.bind(plugin));
-
-		plugin.addRoutes();
-		plugin.cleanupInterval = setInterval(() => plugin.removeExpired(), 60e3);
-		plugin.cleanupInterval.unref();
-
-		controller.hooks.save.attach(plugin.name, plugin.onSave.bind(plugin));
-		controller.hooks.shutdown.attach(plugin.name, plugin.onShutdown.bind(plugin));
-		return plugin;
+		return new ControllerPlugin(controller, context.logger, context.plugin.name, accounts);
 	}
 
 	async onSave() {
@@ -124,50 +133,36 @@ export class ControllerPlugin {
 		Http routes
 	*/
 
-	addRoutes() {
-		const app = this.controller.app;
-		const route = (handler: (req: HttpRequest) => Promise<RouteResult>) => (
-			(req: HttpRequest, res: HttpResponse, next: (err: unknown) => void) => {
-				handler(req).then(result => {
-					if ("redirect" in result) {
-						if (result.cookie) {
-							res.setHeader("Set-Cookie", result.cookie);
-						}
-						res.redirect(result.redirect);
-					} else {
-						res.status(result.status).json(result.json);
-					}
-				}).catch(next);
-			}
-		);
-
-		app.get("/api/exp_discord/authorize", route(async req => this.authorize(req.query.link)));
-		app.get("/api/exp_discord/callback", route(async req => this.callback(
-			req.query, readCookie(req.headers.cookie, "exp_discord_state"),
-		)));
-		app.get("/api/exp_discord/accounts", route(async req => this.listAccounts(this.sessionId(req))));
-		app.post("/api/exp_discord/login", route(async req => this.login(this.sessionId(req), req.query.name)));
-		app.post("/api/exp_discord/link_code", route(async req => this.linkCode(this.sessionId(req))));
-	}
-
-	sessionId(req: HttpRequest) {
+	sessionId(req: Request) {
 		const header = String(req.headers.authorization ?? "");
 		return header.startsWith("Bearer ") ? header.slice(7) : "";
 	}
 
 	redirectUri() {
-		return new URL("api/exp_discord/callback", this.controller.getControllerUrl()).href;
+		return new URL("api/exp_discord_auth/callback", this.controller.getControllerUrl()).href;
 	}
 
 	/** Back to the web ui, with the outcome in the fragment so it never reaches a server log. */
 	webRedirect(key: "session" | "error", value: string, page = ""): RouteResult {
 		const url = new URL(page, this.controller.getControllerUrl());
-		url.hash = `exp_discord_${key}=${encodeURIComponent(value)}`;
+		url.hash = `exp_discord_auth_${key}=${encodeURIComponent(value)}`;
 		return { redirect: url.href };
 	}
 
 	userPage(playerName: string) {
 		return `users/${encodeURIComponent(playerName)}/view`;
+	}
+
+	isConfigured() {
+		return Boolean(
+			this.controller.config.get("exp_discord_auth.client_id")
+			&& this.controller.config.get("exp_discord_auth.client_secret")
+		);
+	}
+
+	/** Lets the login form say Discord is not set up before anyone presses the button. */
+	async status(): Promise<RouteResult> {
+		return { status: 200, json: { configured: this.isConfigured() } };
 	}
 
 	async authorize(linkTicket?: unknown): Promise<RouteResult> {
@@ -181,8 +176,7 @@ export class ControllerPlugin {
 		}
 		const page = link ? this.userPage(link.playerName) : "";
 
-		const clientId = this.controller.config.get("exp_discord.client_id");
-		if (!clientId || !this.controller.config.get("exp_discord.client_secret")) {
+		if (!this.isConfigured()) {
 			return this.webRedirect("error", "Discord login is not configured on this controller", page);
 		}
 
@@ -193,7 +187,7 @@ export class ControllerPlugin {
 		const url = new URL("https://discord.com/oauth2/authorize");
 		url.search = new URLSearchParams({
 			response_type: "code",
-			client_id: clientId,
+			client_id: this.controller.config.get("exp_discord_auth.client_id")!,
 			scope: "identify",
 			state,
 			redirect_uri: this.redirectUri(),
@@ -205,7 +199,7 @@ export class ControllerPlugin {
 		const secure = callbackUrl.protocol === "https:" ? "; Secure" : "";
 		return {
 			redirect: url.href,
-			cookie: `exp_discord_state=${state}; Path=${callbackUrl.pathname}; Max-Age=${stateTimeoutS}; HttpOnly; SameSite=Lax${secure}`,
+			cookie: `exp_discord_auth_state=${state}; Path=${callbackUrl.pathname}; Max-Age=${stateTimeoutS}; HttpOnly; SameSite=Lax${secure}`,
 		};
 	}
 
@@ -264,8 +258,8 @@ export class ControllerPlugin {
 			method: "POST",
 			headers: { "Content-Type": "application/x-www-form-urlencoded" },
 			body: new URLSearchParams({
-				client_id: this.controller.config.get("exp_discord.client_id") ?? "",
-				client_secret: this.controller.config.get("exp_discord.client_secret") ?? "",
+				client_id: this.controller.config.get("exp_discord_auth.client_id") ?? "",
+				client_secret: this.controller.config.get("exp_discord_auth.client_secret") ?? "",
 				grant_type: "authorization_code",
 				code,
 				redirect_uri: this.redirectUri(),
@@ -304,7 +298,7 @@ export class ControllerPlugin {
 			json: {
 				discord: { id: session.id, name: session.name },
 				accounts: this.accounts.get(session.id)?.factorioNames ?? [],
-				max_accounts: this.controller.config.get("exp_discord.max_accounts"),
+				max_accounts: this.controller.config.get("exp_discord_auth.max_accounts"),
 			},
 		};
 	}
@@ -393,7 +387,9 @@ export class ControllerPlugin {
 		const entry = this.codes.get(code);
 		const session = entry ? this.sessions.get(entry.sessionId) : undefined;
 		if (!entry || !session || entry.expiresMs < Date.now()) {
-			throw new lib.RequestError("This code is invalid or has expired, get a new one from the website");
+			throw new lib.RequestError(
+				`This code is invalid or has expired, get a new one from ${this.controller.getControllerUrl()}`
+			);
 		}
 
 		const linked = this.linkAccount(session, request.playerName);
@@ -407,7 +403,7 @@ export class ControllerPlugin {
 		const name = playerName.toLowerCase();
 		const existing = this.accounts.get(discordUser.id);
 		const alreadyLinked = existing?.factorioNames.some(linked => linked.toLowerCase() === name);
-		const maxAccounts = this.controller.config.get("exp_discord.max_accounts");
+		const maxAccounts = this.controller.config.get("exp_discord_auth.max_accounts");
 		if (!alreadyLinked && (existing?.factorioNames.length ?? 0) >= maxAccounts) {
 			throw new lib.RequestError(
 				`${discordUser.name} already has ${maxAccounts} Factorio accounts linked, unlink one first`
@@ -426,10 +422,10 @@ export class ControllerPlugin {
 	}
 
 	async handleUnlinkRequest(request: messages.DiscordUnlinkRequest) {
-		return this.removeLink(request.playerName);
+		return { link: this.removeLink(request.playerName), url: this.controller.getControllerUrl() };
 	}
 
-	/** A ticket for /api/exp_discord/authorize?link= which links the Discord account to the user. */
+	/** A ticket for /api/exp_discord_auth/authorize?link= which links the Discord account to the user. */
 	async handleLinkStartRequest(request: messages.DiscordLinkStartRequest) {
 		const ticket = crypto.randomBytes(16).toString("base64url");
 		this.linkTickets.set(ticket, { playerName: request.playerName, expiresMs: Date.now() + 60e3 });
@@ -438,10 +434,11 @@ export class ControllerPlugin {
 
 	async handleLinkGetRequest(request: messages.DiscordLinkGetRequest) {
 		const account = this.findAccount(request.playerName);
-		return account ? { id: account.id, name: account.name } : null;
+		return {
+			link: account ? { id: account.id, name: account.name } : null,
+			url: this.controller.getControllerUrl(),
+		};
 	}
 }
 
-export default async function (context: ControllerPluginContext) {
-	await ControllerPlugin.fromContext(context);
-}
+export default ControllerPlugin.fromContext.bind(ControllerPlugin);

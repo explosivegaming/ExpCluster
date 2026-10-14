@@ -13,8 +13,8 @@ module.exports = (env = {}) => merge(common(env), {
 	},
 	plugins: [
 		new webpack.container.ModuleFederationPlugin({
-			name: "exp_discord",
-			library: { type: "window", name: "plugin_exp_discord" },
+			name: "exp_discord_auth",
+			library: { type: "window", name: "plugin_exp_discord_auth" },
 			exposes: {
 				"./": "./index.ts",
 				"./package.json": "./package.json",

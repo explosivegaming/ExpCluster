@@ -72,13 +72,19 @@ function selfOnly(user: lib.IUser, message: lib.MessageRequest) {
 	}
 }
 
-const LinkResponse = lib.plainJson(Type.Union([
+const Link = Type.Union([
 	Type.Null(),
 	Type.Object({
 		id: Type.String(),
 		name: Type.String(),
 	}),
-]));
+]);
+const LinkResponse = lib.plainJson(Link);
+/** The website is included so the player can be told where to link their account. */
+const LinkStatusResponse = lib.plainJson(Type.Object({
+	link: Link,
+	url: Type.String(),
+}));
 
 /*
 	Link requests
@@ -87,7 +93,7 @@ const LinkResponse = lib.plainJson(Type.Union([
 /** Link a player to the Discord account which generated the code, sent when the player uses the code in game. */
 export class DiscordLinkRequest {
 	declare ["constructor"]: typeof DiscordLinkRequest;
-	static plugin = "exp_discord" as const;
+	static plugin = "exp_discord_auth" as const;
 	static type = "request" as const;
 	static src = "instance" as const;
 	static dst = "controller" as const;
@@ -112,15 +118,15 @@ export class DiscordLinkRequest {
 	}
 }
 
-/** Remove the link of a player, responds with the account it was linked to. */
+/** Remove the link of a player, responds with the account it was linked to and the website url. */
 export class DiscordUnlinkRequest {
 	declare ["constructor"]: typeof DiscordUnlinkRequest;
-	static plugin = "exp_discord" as const;
+	static plugin = "exp_discord_auth" as const;
 	static type = "request" as const;
 	static src = ["control", "instance"] as const;
 	static dst = "controller" as const;
-	static permission = selfOrPermission("exp_discord.link.delete");
-	static Response = LinkResponse;
+	static permission = selfOrPermission("exp_discord_auth.link.delete");
+	static Response = LinkStatusResponse;
 
 	constructor(
 		public playerName: string,
@@ -139,15 +145,15 @@ export class DiscordUnlinkRequest {
 	}
 }
 
-/** Get the Discord account a player is linked to. */
+/** Get the Discord account a player is linked to and the website url. */
 export class DiscordLinkGetRequest {
 	declare ["constructor"]: typeof DiscordLinkGetRequest;
-	static plugin = "exp_discord" as const;
+	static plugin = "exp_discord_auth" as const;
 	static type = "request" as const;
 	static src = ["control", "instance"] as const;
 	static dst = "controller" as const;
-	static permission = selfOrPermission("exp_discord.link.get");
-	static Response = LinkResponse;
+	static permission = selfOrPermission("exp_discord_auth.link.get");
+	static Response = LinkStatusResponse;
 
 	constructor(
 		public playerName: string,
@@ -169,7 +175,7 @@ export class DiscordLinkGetRequest {
 /** Start linking the Discord account from the user page, responds with a ticket for the authorize route. */
 export class DiscordLinkStartRequest {
 	declare ["constructor"]: typeof DiscordLinkStartRequest;
-	static plugin = "exp_discord" as const;
+	static plugin = "exp_discord_auth" as const;
 	static type = "request" as const;
 	static src = "control" as const;
 	static dst = "controller" as const;

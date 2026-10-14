@@ -26,8 +26,8 @@ async function startPlugin(t2, { config = {} } = {}) {
 		// testdir() empties the folder, so a reload passes the directory in
 		"controller.database_directory": config["controller.database_directory"] ?? t2.testdir(),
 		"controller.public_url": "https://example.com/cluster/",
-		"exp_discord.client_id": "123",
-		"exp_discord.client_secret": "secret",
+		"exp_discord_auth.client_id": "123",
+		"exp_discord_auth.client_secret": "secret",
 		"controller.auth_secret": Buffer.from("test secret").toString("base64"),
 		...config,
 	});
@@ -36,7 +36,7 @@ async function startPlugin(t2, { config = {} } = {}) {
 		controller.users.createUser(name);
 	}
 
-	const plugin = await ControllerPlugin.fromContext({ plugin: { name: "exp_discord" }, controller, logger });
+	const plugin = await ControllerPlugin.fromContext({ plugin: { name: "exp_discord_auth" }, controller, logger });
 	t2.teardown(() => clearInterval(plugin.cleanupInterval));
 	return { plugin, controller };
 }
@@ -57,9 +57,9 @@ async function link(plugin, session, playerName) {
 t.test("entrypoint", async t2 => {
 	const controllerConfig = new lib.ControllerConfig("controller", { "controller.database_directory": t2.testdir() });
 	const controller = new Controller(logger, [], controllerConfig);
-	await entrypoint({ controller, logger, plugin: { name: "exp_discord" }, metrics: undefined });
+	await entrypoint({ controller, logger, plugin: { name: "exp_discord_auth" }, metrics: undefined });
 	for (const hook of ["save", "shutdown"]) {
-		t2.ok([...controller.hooks[hook].attached].includes("exp_discord"), `attached to ${hook}`);
+		t2.ok([...controller.hooks[hook].attached].includes("exp_discord_auth"), `attached to ${hook}`);
 	}
 	await controller.hooks.shutdown.invoke();
 });
@@ -71,16 +71,23 @@ t.test("oauth", t2 => {
 		const url = new URL(result.redirect);
 		t3.equal(url.origin + url.pathname, "https://discord.com/oauth2/authorize");
 		t3.equal(url.searchParams.get("client_id"), "123");
-		t3.equal(url.searchParams.get("redirect_uri"), "https://example.com/cluster/api/exp_discord/callback");
+		t3.equal(url.searchParams.get("redirect_uri"), "https://example.com/cluster/api/exp_discord_auth/callback");
 		const state = url.searchParams.get("state");
-		t3.match(result.cookie, `exp_discord_state=${state}; Path=/cluster/api/exp_discord/callback`);
+		t3.match(result.cookie, `exp_discord_auth_state=${state}; Path=/cluster/api/exp_discord_auth/callback`);
 		t3.match(result.cookie, "Secure");
 	});
 
+	t2.test(".status() tells the login form whether Discord is configured", async t3 => {
+		const { plugin } = await startPlugin(t3);
+		t3.same(await plugin.status(), { status: 200, json: { configured: true } });
+		const { plugin: unconfigured } = await startPlugin(t3, { config: { "exp_discord_auth.client_id": null } });
+		t3.same(await unconfigured.status(), { status: 200, json: { configured: false } });
+	});
+
 	t2.test(".authorize() without credentials goes back with an error", async t3 => {
-		const { plugin } = await startPlugin(t3, { config: { "exp_discord.client_secret": null } });
+		const { plugin } = await startPlugin(t3, { config: { "exp_discord_auth.client_secret": null } });
 		const result = await plugin.authorize();
-		t3.match(result.redirect, /^https:\/\/example\.com\/cluster\/#exp_discord_error=/);
+		t3.match(result.redirect, /^https:\/\/example\.com\/cluster\/#exp_discord_auth_error=/);
 	});
 
 	t2.test(".callback() rejects a state which does not match the cookie", async t3 => {
@@ -88,7 +95,7 @@ t.test("oauth", t2 => {
 		plugin.fetchDiscordUser = async () => t3.fail("should not fetch");
 		for (const cookie of [undefined, "other"]) {
 			const result = await plugin.callback({ code: "c", state: "s" }, cookie);
-			t3.match(result.redirect, "#exp_discord_error=");
+			t3.match(result.redirect, "#exp_discord_auth_error=");
 		}
 		t3.equal(plugin.sessions.size, 0);
 	});
@@ -97,7 +104,7 @@ t.test("oauth", t2 => {
 		const { plugin } = await startPlugin(t3);
 		plugin.fetchDiscordUser = async () => { throw new Error("401"); };
 		const result = await plugin.callback({ code: "c", state: "s" }, "s");
-		t3.match(result.redirect, "#exp_discord_error=");
+		t3.match(result.redirect, "#exp_discord_auth_error=");
 	});
 
 	t2.test(".callback() starts a session", async t3 => {
@@ -137,7 +144,8 @@ t.test("linking", t2 => {
 		const { json } = await plugin.linkCode(session);
 		await plugin.handleLinkRequest(new messages.DiscordLinkRequest("Player1", json.code));
 		await t3.rejects(
-			plugin.handleLinkRequest(new messages.DiscordLinkRequest("Player2", json.code)), /invalid or has expired/,
+			plugin.handleLinkRequest(new messages.DiscordLinkRequest("Player2", json.code)),
+			/invalid or has expired, get a new one from https:\/\/example\.com\/cluster\//,
 		);
 	});
 
@@ -156,7 +164,7 @@ t.test("linking", t2 => {
 	});
 
 	t2.test("several accounts up to the limit", async t3 => {
-		const { plugin } = await startPlugin(t3, { config: { "exp_discord.max_accounts": 2 } });
+		const { plugin } = await startPlugin(t3, { config: { "exp_discord_auth.max_accounts": 2 } });
 		const session = await discordLogin(plugin, alice);
 		await link(plugin, session, "Player1");
 		await link(plugin, session, "Player2");
@@ -189,10 +197,13 @@ t.test("linking", t2 => {
 	t2.test("unlink and get", async t3 => {
 		const { plugin } = await startPlugin(t3);
 		await link(plugin, await discordLogin(plugin, alice), "Player1");
-		t3.same(await plugin.handleLinkGetRequest(new messages.DiscordLinkGetRequest("player1")), alice);
-		t3.same(await plugin.handleUnlinkRequest(new messages.DiscordUnlinkRequest("Player1")), alice);
-		t3.equal(await plugin.handleLinkGetRequest(new messages.DiscordLinkGetRequest("Player1")), null);
-		t3.equal(await plugin.handleUnlinkRequest(new messages.DiscordUnlinkRequest("Player1")), null);
+		const url = "https://example.com/cluster/";
+		const get = name => plugin.handleLinkGetRequest(new messages.DiscordLinkGetRequest(name));
+		const unlink = name => plugin.handleUnlinkRequest(new messages.DiscordUnlinkRequest(name));
+		t3.same(await get("player1"), { link: alice, url });
+		t3.same(await unlink("Player1"), { link: alice, url });
+		t3.same(await get("Player1"), { link: null, url });
+		t3.same(await unlink("Player1"), { link: null, url });
 	});
 
 	t2.test("links are saved and loaded", async t3 => {
@@ -242,21 +253,21 @@ t.test("linking from the user page", t2 => {
 		const ticket = await plugin.handleLinkStartRequest(new messages.DiscordLinkStartRequest("Player1"));
 		await plugin.authorize(ticket);
 		const result = await plugin.authorize(ticket);
-		t3.match(result.redirect, /^https:\/\/example\.com\/cluster\/users#exp_discord_error=Discord%20link%20expired/);
+		t3.match(result.redirect, /^https:\/\/example\.com\/cluster\/users#exp_discord_auth_error=Discord%20link/);
 	});
 
 	t2.test("errors go back to the user page", async t3 => {
-		const { plugin } = await startPlugin(t3, { config: { "exp_discord.max_accounts": 1 } });
+		const { plugin } = await startPlugin(t3, { config: { "exp_discord_auth.max_accounts": 1 } });
 		await link(plugin, await discordLogin(plugin, alice), "Player2");
 
 		let params = await start(plugin, "Player1");
 		let result = await plugin.callback({ error: "access_denied", state: params.get("state") }, params.get("state"));
-		t3.match(result.redirect, /\/users\/Player1\/view#exp_discord_error=Discord%20login%20was%20cancelled$/);
+		t3.match(result.redirect, /\/users\/Player1\/view#exp_discord_auth_error=Discord%20login%20was%20cancelled$/);
 
 		params = await start(plugin, "Player1");
 		plugin.fetchDiscordUser = async () => alice;
 		result = await plugin.callback({ code: "c", state: params.get("state") }, params.get("state"));
-		t3.match(result.redirect, /\/users\/Player1\/view#exp_discord_error=.*already%20has%201/);
+		t3.match(result.redirect, /\/users\/Player1\/view#exp_discord_auth_error=.*already%20has%201/);
 		t3.same(plugin.accounts.get(alice.id).factorioNames, ["Player2"]);
 	});
 
@@ -265,7 +276,7 @@ t.test("linking from the user page", t2 => {
 		const params = await start(plugin, "Player1");
 		plugin.fetchDiscordUser = async () => t3.fail("should not fetch");
 		const result = await plugin.callback({ code: "c", state: params.get("state") }, undefined);
-		t3.match(result.redirect, "/users/Player1/view#exp_discord_error=");
+		t3.match(result.redirect, "/users/Player1/view#exp_discord_auth_error=");
 		t3.notOk(plugin.accounts.has(alice.id));
 	});
 	t2.end();
@@ -286,7 +297,9 @@ t.test("permissions", t2 => {
 		const permission = messages.DiscordLinkStartRequest.permission;
 		t3.doesNotThrow(() => permission(user("Alice"), request("alice")), "own account");
 		t3.throws(
-			() => permission(user("Alice", ["exp_discord.link.get", "exp_discord.link.delete"]), request("Bob")),
+			() => permission(
+				user("Alice", ["exp_discord_auth.link.get", "exp_discord_auth.link.delete"]), request("Bob"),
+			),
 			"never someone else's",
 		);
 	});
@@ -294,8 +307,8 @@ t.test("permissions", t2 => {
 	for (const Request of [messages.DiscordLinkGetRequest, messages.DiscordUnlinkRequest]) {
 		t2.test(Request.name, async t3 => {
 			const permission = Request === messages.DiscordUnlinkRequest
-				? "exp_discord.link.delete"
-				: "exp_discord.link.get";
+				? "exp_discord_auth.link.delete"
+				: "exp_discord_auth.link.get";
 			t3.doesNotThrow(() => Request.permission(user("Alice"), request("alice")), "own link");
 			t3.throws(() => Request.permission(user("Alice"), request("Bob")), "someone else's");
 			t3.doesNotThrow(() => Request.permission(user("Alice", [permission]), request("Bob")), "with permission");
