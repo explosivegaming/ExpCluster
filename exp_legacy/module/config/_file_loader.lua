@@ -8,7 +8,5 @@ return {
 
     --- Data
     "modules.data.statistics",
-    "modules.data.player-colours",
-    "modules.data.greetings",
     "modules.data.language",
 }
