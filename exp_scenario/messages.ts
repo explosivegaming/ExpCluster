@@ -134,6 +134,8 @@ export class PlayerRecord {
 		public id: string,
 		/** Shown to everyone when the player joins */
 		public joinMessage?: string,
+		/** The language of their game, such as "en" or "pt-BR" */
+		public locale?: string,
 		public updatedAtMs: number = 0,
 		public isDeleted: boolean = false,
 	) {}
@@ -141,6 +143,7 @@ export class PlayerRecord {
 	static jsonSchema = Type.Object({
 		id: Type.String(),
 		join_message: Type.Optional(Type.String()),
+		locale: Type.Optional(Type.String()),
 		updated_at_ms: Type.Optional(Type.Number()),
 		is_deleted: Type.Optional(Type.Boolean()),
 	});
@@ -149,6 +152,9 @@ export class PlayerRecord {
 		const json: Static<typeof PlayerRecord.jsonSchema> = { id: this.id };
 		if (this.joinMessage) {
 			json.join_message = this.joinMessage;
+		}
+		if (this.locale) {
+			json.locale = this.locale;
 		}
 		if (this.updatedAtMs) {
 			json.updated_at_ms = this.updatedAtMs;
@@ -163,6 +169,7 @@ export class PlayerRecord {
 		return new this(
 			json.id,
 			json.join_message,
+			json.locale,
 			json.updated_at_ms ?? 0,
 			json.is_deleted ?? false,
 		);
@@ -240,5 +247,32 @@ export class JoinMessageSetRequest {
 
 	static fromJSON(json: Static<typeof this.jsonSchema>) {
 		return new this(json.player_name, json.message);
+	}
+}
+
+/** The language a player's game uses, sent when they join and when they change it. */
+export class PlayerLocaleEvent {
+	declare ["constructor"]: typeof PlayerLocaleEvent;
+	static plugin = "exp_scenario" as const;
+	static type = "event" as const;
+	static src = "instance" as const;
+	static dst = "controller" as const;
+
+	constructor(
+		public playerName: string,
+		public locale: string,
+	) {}
+
+	static jsonSchema = Type.Object({
+		player_name: Type.String(),
+		locale: Type.String(),
+	});
+
+	toJSON() {
+		return { player_name: this.playerName, locale: this.locale };
+	}
+
+	static fromJSON(json: Static<typeof this.jsonSchema>) {
+		return new this(json.player_name, json.locale);
 	}
 }

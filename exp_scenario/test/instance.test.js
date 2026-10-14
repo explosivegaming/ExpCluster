@@ -153,7 +153,7 @@ t.test("instance plugin", t2 => {
 	t2.end();
 });
 
-t.test("join messages", t2 => {
+t.test("player settings", t2 => {
 	const alice = new messages.PlayerRecord("Alice", "Alice has arrived ]=] ]==]");
 
 	t2.test("a joining player's message is printed to everyone", async t3 => {
@@ -193,6 +193,13 @@ t.test("join messages", t2 => {
 		await ipc("exp_scenario:join_message_set", { player_name: "Alice" });
 		const sent = state.sent.filter(request => request instanceof messages.JoinMessageSetRequest);
 		t3.strictSame(sent.map(request => [request.playerName, request.message]), [["Alice", "Hi"], ["Alice", null]]);
+	});
+
+	t2.test("ipc with a locale is forwarded to the controller", async t3 => {
+		const { ipc, state } = await startPlugin(t3);
+		await ipc("exp_scenario:locale", { player_name: "Alice", locale: "de" });
+		const [event] = state.sent.filter(request => request instanceof messages.PlayerLocaleEvent);
+		t3.strictSame([event.playerName, event.locale], ["Alice", "de"]);
 	});
 
 	t2.test("ipc asking for the message prints it to the player", async t3 => {
