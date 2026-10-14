@@ -8,7 +8,7 @@ local Roles = require("modules/exp_roles")
 local Commands = require("modules/exp_commands")
 local PlayerData = require("modules.exp_legacy.expcore.player_data")
 local ExpServerList = require("modules/exp_server_list")
-local config_server_detail = require("modules.exp_legacy.config.server_detail") --- @dep config.server_detail
+local community = require("modules/exp_scenario/config/community_details").config
 
 local format_number = require("util").format_number
 local format_time = ExpUtil.format_time_factory_locale{ format = "long", days = true, hours = true, minutes = true }
@@ -37,12 +37,12 @@ end
 --- @class ExpGui_Readme.elements
 local Elements = {}
 
---- @type table<number, { caption: LocalisedString, tooltip: LocalisedString, element: ExpElement }>
+--- @type table<number, { caption: LocalisedString, tooltip: LocalisedString | (fun(): LocalisedString), element: ExpElement }>
 local tabs = {}
 
 --- Register a readme tab
 --- @param caption LocalisedString
---- @param tooltip LocalisedString
+--- @param tooltip LocalisedString | fun(): LocalisedString Functions are called when the readme opens
 --- @param element ExpElement
 local function define_tab(caption, tooltip, element)
     tabs[#tabs + 1] = { caption = caption, tooltip = tooltip, element = element }
@@ -202,13 +202,13 @@ end
 --- Welcome tab
 define_tab(
     { "exp-gui_readme.welcome-tab" },
-    { "exp-gui_readme.welcome-tooltip", config_server_detail["community_name"] },
+    function() return { "exp-gui_readme.welcome-tooltip", community.community_name } end,
     Gui.define("readme/welcome")
     :draw(function(_, parent)
         local player = Gui.get_player(parent)
 
         local server_details = {
-            name = config_server_detail["community_name"] .. " S0 - Local",
+            name = community.community_name .. " S0 - Local",
             welcome = "Failed to load description: disconnected from the controller.",
             reset_time = "Not Set",
         }
@@ -248,7 +248,7 @@ define_tab(
             frame_width,
             {
                 "exp-gui_readme.welcome-general",
-                config_server_detail["community_name"],
+                community.community_name,
                 format_time(game.tick),
                 server_details.reset_time,
             }
@@ -353,7 +353,7 @@ define_tab(
         local external_links = Elements.title_table(scroll_pane, 235, { "exp-gui_readme.servers-external" }, 2)
         for _, key in ipairs{ "discord", "website", "patreon", "status", "github" } do
             Gui.elements.centered_label(external_links, 110, key:gsub("^%l", string.upper))
-            Gui.elements.centered_label(external_links, 460, config_server_detail[key], { "exp-gui_readme.servers-open-in-browser" })
+            Gui.elements.centered_label(external_links, 460, community[key], { "exp-gui_readme.servers-open-in-browser" })
         end
 
         return container
@@ -651,11 +651,16 @@ Elements.container = Gui.define("readme/container")
         }
 
         for _, tab in ipairs(tabs) do
+            local tooltip = tab.tooltip
+            if type(tooltip) == "function" then
+                tooltip = tooltip()
+            end
+
             local gui_tab = pane.add{
                 type = "tab",
                 style = "frame_tab",
                 caption = tab.caption,
-                tooltip = tab.tooltip,
+                tooltip = tooltip,
             }
 
             pane.add_tab(gui_tab, tab.element(pane))

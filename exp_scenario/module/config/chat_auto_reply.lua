@@ -4,7 +4,7 @@
 local ExpUtil = require("modules/exp_util")
 local Feature = require("modules/exp_scenario/features")
 local Async = require("modules/exp_util/async")
-local config_server_detail = require("modules.exp_legacy.config.server_detail") --- @dep config.server_detail
+local community_details = require("modules/exp_scenario/config/community_details").config
 
 local floor = math.floor
 local random = math.random
@@ -20,6 +20,15 @@ local send_message_async =
         end
     end)
 
+--- Reply with a link from community_details, read when the reply is sent
+--- @param key string
+--- @return fun(): LocalisedString
+local function server_link(key)
+    return function()
+        return { "info." .. key, community_details[key] }
+    end
+end
+
 local afk_time_units = {
     minutes = true,
     seconds = true,
@@ -28,13 +37,13 @@ local afk_time_units = {
 return Feature.register("chat_auto_reply", {
     --- @type table<string, LocalisedString | fun(player: LuaPlayer, is_command: boolean): LocalisedString>
     messages = { -- will trigger when ever the word is said
-        ["discord"] = { "info.discord", config_server_detail["discord"] },
-        ["expgaming"] = { "info.website", config_server_detail["website"] },
-        ["website"] = { "info.website", config_server_detail["website"] },
-        ["status"] = { "info.status", config_server_detail["status"] },
-        ["github"] = { "info.github", config_server_detail["github"] },
-        ["patreon"] = { "info.patreon", config_server_detail["patreon"] },
-        ["donate"] = { "info.patreon", config_server_detail["patreon"] },
+        ["discord"] = server_link("discord"),
+        ["expgaming"] = server_link("website"),
+        ["website"] = server_link("website"),
+        ["status"] = server_link("status"),
+        ["github"] = server_link("github"),
+        ["patreon"] = server_link("patreon"),
+        ["donate"] = server_link("patreon"),
         ["command"] = { "info.custom-commands" },
         ["commands"] = { "info.custom-commands" },
         ["softmod"] = { "info.softmod" },
