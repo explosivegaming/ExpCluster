@@ -17,7 +17,16 @@
 	},
 	"peerDependencies": {
 		"@clusterio/controller": "workspace:^",
+		"@clusterio/host": "workspace:^",
 		"@clusterio/lib": "workspace:^"
+	},
+	"peerDependenciesMeta": {
+		"@clusterio/controller": {
+			"optional": true
+		},
+		"@clusterio/host": {
+			"optional": true
+		}
 	},
 	"devDependencies": {
 		"@clusterio/controller": "workspace:^",
