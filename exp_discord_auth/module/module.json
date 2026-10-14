@@ -1,0 +1,14 @@
+{
+	"name": "exp_discord_auth",
+	"load": [
+	],
+	"require": [
+		"globals.lua",
+		"commands.lua"
+	],
+	"dependencies": {
+		"clusterio": "*",
+		"exp_util": "*",
+		"exp_commands": "*"
+	}
+}
