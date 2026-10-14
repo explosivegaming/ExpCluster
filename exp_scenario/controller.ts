@@ -25,14 +25,18 @@ export default async function (context: ControllerPluginContext) {
 		).bootstrap()
 	);
 
-	type PlayerSettings = Pick<messages.PlayerRecord, "joinMessage" | "locale">;
+	type PlayerSettings = Pick<messages.PlayerRecord, "joinMessage" | "locale" | "toolbar">;
 
 	/** Change some settings of a player, empty values are removed and so is a record left empty */
 	function updatePlayer(name: string, changes: PlayerSettings) {
 		const old = playerStore.get(name);
-		const settings: PlayerSettings = { joinMessage: old?.joinMessage, locale: old?.locale, ...changes };
-		const record = new messages.PlayerRecord(name, settings.joinMessage || undefined, settings.locale || undefined);
-		if (record.joinMessage || record.locale) {
+		const settings: PlayerSettings = {
+			joinMessage: old?.joinMessage, locale: old?.locale, toolbar: old?.toolbar, ...changes,
+		};
+		const record = new messages.PlayerRecord(
+			name, settings.joinMessage || undefined, settings.locale || undefined, settings.toolbar || undefined,
+		);
+		if (record.joinMessage || record.locale || record.toolbar) {
 			playerStore.set(record);
 		} else if (old) {
 			playerStore.delete(old);
@@ -232,6 +236,10 @@ export default async function (context: ControllerPluginContext) {
 
 	controller.handle(messages.PlayerLocaleEvent, async (event: messages.PlayerLocaleEvent) => {
 		updatePlayer(event.playerName, { locale: event.locale });
+	});
+
+	controller.handle(messages.PlayerToolbarEvent, async (event: messages.PlayerToolbarEvent) => {
+		updatePlayer(event.playerName, { toolbar: event.toolbar });
 	});
 
 	controller.hooks.save.attach(plugin.name, async () => {

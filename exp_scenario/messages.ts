@@ -136,6 +136,8 @@ export class PlayerRecord {
 		public joinMessage?: string,
 		/** The language of their game, such as "en" or "pt-BR" */
 		public locale?: string,
+		/** Toolbar state from Gui.toolbar.get_state, json compressed with helpers.encode_string */
+		public toolbar?: string,
 		public updatedAtMs: number = 0,
 		public isDeleted: boolean = false,
 	) {}
@@ -144,6 +146,7 @@ export class PlayerRecord {
 		id: Type.String(),
 		join_message: Type.Optional(Type.String()),
 		locale: Type.Optional(Type.String()),
+		toolbar: Type.Optional(Type.String()),
 		updated_at_ms: Type.Optional(Type.Number()),
 		is_deleted: Type.Optional(Type.Boolean()),
 	});
@@ -155,6 +158,9 @@ export class PlayerRecord {
 		}
 		if (this.locale) {
 			json.locale = this.locale;
+		}
+		if (this.toolbar) {
+			json.toolbar = this.toolbar;
 		}
 		if (this.updatedAtMs) {
 			json.updated_at_ms = this.updatedAtMs;
@@ -170,6 +176,7 @@ export class PlayerRecord {
 			json.id,
 			json.join_message,
 			json.locale,
+			json.toolbar,
 			json.updated_at_ms ?? 0,
 			json.is_deleted ?? false,
 		);
@@ -274,5 +281,32 @@ export class PlayerLocaleEvent {
 
 	static fromJSON(json: Static<typeof this.jsonSchema>) {
 		return new this(json.player_name, json.locale);
+	}
+}
+
+/** The toolbar of a player, sent when they leave. */
+export class PlayerToolbarEvent {
+	declare ["constructor"]: typeof PlayerToolbarEvent;
+	static plugin = "exp_scenario" as const;
+	static type = "event" as const;
+	static src = "instance" as const;
+	static dst = "controller" as const;
+
+	constructor(
+		public playerName: string,
+		public toolbar: string,
+	) {}
+
+	static jsonSchema = Type.Object({
+		player_name: Type.String(),
+		toolbar: Type.String(),
+	});
+
+	toJSON() {
+		return { player_name: this.playerName, toolbar: this.toolbar };
+	}
+
+	static fromJSON(json: Static<typeof this.jsonSchema>) {
+		return new this(json.player_name, json.toolbar);
 	}
 }

@@ -9,6 +9,8 @@ export type IpcJoinMessageSet = { player_name: string, message?: string };
 export type IpcJoinMessageGet = { player_name: string };
 /** Sent by the lua side when a player joins or changes language, see module/control/player_settings.lua */
 export type IpcLocale = { player_name: string, locale: string };
+/** Sent by the lua side when a player leaves */
+export type IpcToolbar = { player_name: string, toolbar: string };
 
 /** Json as a lua expression for a table, inside a long bracket the json does not contain */
 export function luaJson(value: unknown) {
@@ -69,6 +71,11 @@ export default async function (context: InstancePluginContext) {
 		if (record.joinMessage && featureEnabled.get("greetings") !== false) {
 			await luaWithPlayer(name, { message: record.joinMessage }, "game.print(d.message, { color = p.color })");
 		}
+		if (record.toolbar) {
+			await luaWithPlayer(
+				name, { toolbar: record.toolbar }, "exp_scenario.player_settings.receive_toolbar(d.name, d.toolbar)",
+			);
+		}
 	}
 
 	instance.handle(messages.FeatureUpdatedEvent, async event => {
@@ -95,10 +102,14 @@ export default async function (context: InstancePluginContext) {
 		instance.sendTo("controller", new messages.PlayerLocaleEvent(event.player_name, event.locale));
 	});
 
+	instance.server.handle("exp_scenario:toolbar", async (event: IpcToolbar) => {
+		instance.sendTo("controller", new messages.PlayerToolbarEvent(event.player_name, event.toolbar));
+	});
+
 	instance.hooks.playerEvent.attach(plugin.name, async event => {
 		if (event.type === "join") {
 			await onPlayerJoin(event.name).catch(err => logger.error(
-				`Error showing the join message of ${event.name}:\n${err.stack ?? err.message}`,
+				`Error sending the settings of ${event.name}:\n${err.stack ?? err.message}`,
 			));
 		}
 	});

@@ -290,6 +290,18 @@ t.test("player settings", t2 => {
 		t3.equal(cleared.locale, "pt-BR", "clearing the message keeps the locale");
 	});
 
+	t2.test("PlayerToolbarEvent stores the toolbar and it is saved", async t3 => {
+		const databaseDirectory = t3.testdir();
+		const { send, save } = await startPlugin(t3, { withPlugins: false, databaseDirectory });
+		await send(new messages.PlayerToolbarEvent("Alice", "abc"));
+		t3.equal((await send(new messages.PlayerGetRequest("Alice"))).toolbar, "abc");
+
+		await save();
+		const stored = await loadPlayers(databaseDirectory);
+		const alice = stored.get("Alice");
+		t3.strictSame(alice.toJSON(), { id: "Alice", toolbar: "abc", updated_at_ms: alice.updatedAtMs });
+	});
+
 	t2.test("permissions", async t3 => {
 		const user = (name, granted = []) => ({
 			name,

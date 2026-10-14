@@ -17,6 +17,7 @@ local Framework = assert(loadfile(shared_root .. "/framework.lua"))() --- @type 
 --- @field storage table The table registered with storage, as on_init would store it
 --- @field on_load fun(tbl: table) Act out on_load with the given storage table
 --- @field load_config fun(name: string): ExpScenario.Feature Load module/config/<name>.lua
+--- @field load_module fun(name: string): any Load module/<name>.lua, such as "control/player_settings"
 --- @field logged string[] Messages passed to log
 --- @field events table[] Raised events, name and tick filled in
 
@@ -49,6 +50,10 @@ return Framework.suite(function(env)
 
     function env.load_config(name)
         return assert(loadfile(plugin_root .. "/module/config/" .. name .. ".lua"))()
+    end
+
+    function env.load_module(name)
+        return assert(loadfile(plugin_root .. "/module/" .. name .. ".lua"))()
     end
 
     return env
