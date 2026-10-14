@@ -49,7 +49,7 @@ end
 --- @param is_address boolean?
 --- @return boolean, LocalisedString | ExpServerList.Server | string # True for success
 local function resolve_server(server, is_address)
-    if is_address or not ExpServerList.get_current() then
+    if is_address or not ExpServerList.is_synced() then
         return true, server
     end
     return find_server(server)

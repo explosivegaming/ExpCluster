@@ -16,6 +16,23 @@ local format_time = ExpUtil.format_time_factory_locale{ format = "long", days = 
 local frame_width = 595
 local title_width = 270
 local scroll_height = 275
+local description_length = 120
+
+--- Cut a string to a number of bytes without splitting a utf8 character
+--- @param str string
+--- @param length number
+--- @return string
+local function shorten(str, length)
+    if #str <= length then
+        return str
+    end
+    local next_byte = str:byte(length + 1)
+    while length > 0 and next_byte >= 0x80 and next_byte < 0xC0 do
+        length = length - 1
+        next_byte = str:byte(length + 1)
+    end
+    return str:sub(1, length) .. "..."
+end
 
 --- @class ExpGui_Readme.elements
 local Elements = {}
@@ -137,12 +154,15 @@ function Elements.join_server.refresh(button, server)
         status = "Current"
     elseif current and server.factorio_version ~= current.factorio_version then
         status, detail = "Version", server.factorio_version
+    elseif server.has_password then
+        status = "Password"
     elseif current and server.mod_pack_name ~= current.mod_pack_name then
         status, detail = "Modded", server.mod_pack_name
     end
 
+    -- Factorio drops nil parameters, which would shift the player count into __1__
     local player_count = server and server.player_count or 0
-    button.tooltip = { "exp-gui_readme.servers-connect-" .. status, detail, player_count }
+    button.tooltip = { "exp-gui_readme.servers-connect-" .. status, detail or "", player_count }
 
     if status == "Offline" or status == "Current" then
         button.enabled = false
@@ -153,6 +173,11 @@ function Elements.join_server.refresh(button, server)
         button.enabled = false
         button.sprite = "utility/shuffle"
         button.hovered_sprite = "utility/shuffle"
+
+    elseif status == "Password" then
+        button.enabled = true
+        button.sprite = "utility/warning_white"
+        button.hovered_sprite = "utility/warning"
 
     elseif status == "Modded" then
         button.enabled = true
@@ -192,7 +217,7 @@ define_tab(
         if current then
             server_details = {
                 name = current.name,
-                welcome = current.welcome,
+                welcome = current.welcome ~= "" and current.welcome or { "exp-gui_readme.welcome-default" },
                 reset_time = current.reset_time ~= "" and current.reset_time or "Not Set",
             }
         end
@@ -205,7 +230,7 @@ define_tab(
         local center_flow = top_flow.add{ type = "flow", direction = "vertical" }
         center_flow.style.horizontal_align = "center"
 
-        Gui.elements.title_label(center_flow, 62, { "exp-gui_readme.welcome-title", server_details.name })
+        Gui.elements.centered_label(center_flow, 380, { "exp-gui_readme.welcome-title", server_details.name })
         Gui.elements.centered_label(center_flow, 380, server_details.welcome)
 
         top_flow.add{ type = "sprite", sprite = "file/modules/exp_scenario/gui/logo.png" }
@@ -318,8 +343,10 @@ define_tab(
 
         local factorio_servers = Elements.title_table(scroll_pane, 225, { "exp-gui_readme.servers-factorio" }, 3)
         for _, server in ipairs(ExpServerList.get_servers()) do
-            Gui.elements.centered_label(factorio_servers, 110, server.short_name)
-            Gui.elements.centered_label(factorio_servers, 436, server.description)
+            local description = shorten(server.description, description_length)
+            local tooltip = description ~= server.description and server.description or nil
+            Gui.elements.centered_label(factorio_servers, 110, server.display_name)
+            Gui.elements.centered_label(factorio_servers, 436, description, tooltip)
             Elements.join_server(factorio_servers, server)
         end
 

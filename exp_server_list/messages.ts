@@ -11,11 +11,15 @@ export class ServerRecord {
 	constructor(
 		public id: number,
 		public name: string,
-		public shortName: string,
+		public displayName: string,
 		public description: string,
 		public welcome: string,
 		public resetTime: string,
 		public hidden: boolean,
+		/** Sorted before the servers which are not */
+		public alwaysOnTop: boolean,
+		/** The password itself is never sent */
+		public hasPassword: boolean,
 		/** Empty when the instance has no mod pack */
 		public modPackName: string,
 		/** Version the server last ran, empty if it has never started */
@@ -31,11 +35,13 @@ export class ServerRecord {
 	static jsonSchema = Type.Object({
 		id: Type.Integer(),
 		name: Type.String(),
-		short_name: Type.String(),
+		display_name: Type.String(),
 		description: Type.String(),
 		welcome: Type.String(),
 		reset_time: Type.String(),
 		hidden: Type.Boolean(),
+		always_on_top: Type.Boolean(),
+		has_password: Type.Boolean(),
 		mod_pack_name: Type.String(),
 		factorio_version: Type.String(),
 		player_count: Type.Integer(),
@@ -49,11 +55,13 @@ export class ServerRecord {
 		const json: Static<typeof ServerRecord.jsonSchema> = {
 			id: this.id,
 			name: this.name,
-			short_name: this.shortName,
+			display_name: this.displayName,
 			description: this.description,
 			welcome: this.welcome,
 			reset_time: this.resetTime,
 			hidden: this.hidden,
+			always_on_top: this.alwaysOnTop,
+			has_password: this.hasPassword,
 			mod_pack_name: this.modPackName,
 			factorio_version: this.factorioVersion,
 			player_count: this.playerCount,
@@ -76,11 +84,13 @@ export class ServerRecord {
 		return new this(
 			json.id,
 			json.name,
-			json.short_name,
+			json.display_name,
 			json.description,
 			json.welcome,
 			json.reset_time,
 			json.hidden,
+			json.always_on_top,
+			json.has_password,
 			json.mod_pack_name,
 			json.factorio_version,
 			json.player_count,
@@ -95,11 +105,13 @@ export class ServerRecord {
 	sameAs(other: ServerRecord) {
 		return this.id === other.id
 			&& this.name === other.name
-			&& this.shortName === other.shortName
+			&& this.displayName === other.displayName
 			&& this.description === other.description
 			&& this.welcome === other.welcome
 			&& this.resetTime === other.resetTime
 			&& this.hidden === other.hidden
+			&& this.alwaysOnTop === other.alwaysOnTop
+			&& this.hasPassword === other.hasPassword
 			&& this.modPackName === other.modPackName
 			&& this.factorioVersion === other.factorioVersion
 			&& this.playerCount === other.playerCount

@@ -3,7 +3,7 @@ The details of every instance in the cluster, kept up to date by the controller.
 
 The instance plugin sends the whole list when the server starts and each
 changed server after that. Hidden servers are kept but left out of
-get_servers and find_servers.
+get_servers and find_servers. Servers which are always on top come first.
 
 local ExpServerList = require("modules/exp_server_list")
 
@@ -19,11 +19,13 @@ local Storage = require("modules/exp_util/storage")
 --- @class ExpServerList.Server
 --- @field id number The instance id
 --- @field name string
---- @field short_name string The name when not set
---- @field description string
---- @field welcome string
+--- @field display_name string The name when not set
+--- @field description string The server description when not set
+--- @field welcome string The controller welcome when not set, can still be empty
 --- @field reset_time string
 --- @field hidden boolean
+--- @field always_on_top boolean
+--- @field has_password boolean
 --- @field mod_pack_name string
 --- @field factorio_version string Empty if it has never started
 --- @field player_count number
@@ -55,10 +57,13 @@ end)
 --- @param a ExpServerList.Server
 --- @param b ExpServerList.Server
 local function by_name(a, b)
+    if a.always_on_top ~= b.always_on_top then
+        return a.always_on_top
+    end
     return a.name < b.name
 end
 
---- Get every server that is not hidden, sorted by name
+--- Get every server that is not hidden, those always on top first then by name
 --- @return ExpServerList.Server[]
 function ExpServerList.get_servers()
     local rtn, count = {}, 0
@@ -79,20 +84,26 @@ function ExpServerList.get_server(server_id)
     return servers[server_id]
 end
 
+--- True once the controller has sent the list
+--- @return boolean
+function ExpServerList.is_synced()
+    return current.id ~= nil
+end
+
 --- Get this server, nil until the controller has sent the list
 --- @return ExpServerList.Server?
 function ExpServerList.get_current()
     return current.id and servers[current.id]
 end
 
---- Get the servers that are not hidden whose name, short name or id contains the search, sorted by name
+--- Get the servers that are not hidden whose name, display name or id contains the search, sorted like get_servers
 --- @param search string
 --- @return ExpServerList.Server[]
 function ExpServerList.find_servers(search)
     search = search:lower()
     local rtn, count = {}, 0
     for _, server in ipairs(ExpServerList.get_servers()) do
-        local str = server.name .. " " .. server.short_name .. " " .. server.id
+        local str = server.name .. " " .. server.display_name .. " " .. server.id
         if str:lower():find(search, 1, true) then
             count = count + 1
             rtn[count] = server
