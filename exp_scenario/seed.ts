@@ -87,6 +87,7 @@ export const seedRoles: SeedRole[] = [
 			"exp_scenario.command.tag_clear.always",
 			"exp_scenario.command.spawn.always",
 			"exp_scenario.command.clear_reports",
+			"exp_scenario.join_message.set_other",
 			"exp_scenario.command.clear_inventory",
 			"exp_scenario.command.kill_enemies",
 			"exp_scenario.command.remove_enemies",
@@ -193,6 +194,7 @@ export const seedRoles: SeedRole[] = [
 			"exp_scenario.command.unjail",
 			"exp_scenario.command.set_join_message",
 			"exp_scenario.command.remove_join_message",
+			"exp_scenario.join_message.set",
 		],
 	},
 	{

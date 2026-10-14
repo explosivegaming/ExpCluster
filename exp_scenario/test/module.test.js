@@ -6,3 +6,6 @@ const envFile = path.join(import.meta.dirname, "module", "env.lua");
 
 // Each file runs in its own lua state, and each test in a fresh environment
 t.test("features.lua", t2 => reportLuaTests(t2, envFile, path.join(import.meta.dirname, "module", "features.lua")));
+t.test("player_settings.lua", t2 => reportLuaTests(
+	t2, envFile, path.join(import.meta.dirname, "module", "player_settings.lua"),
+));

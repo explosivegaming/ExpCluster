@@ -8,5 +8,4 @@ return {
 
     --- Data
     "modules.data.statistics",
-    "modules.data.language",
 }

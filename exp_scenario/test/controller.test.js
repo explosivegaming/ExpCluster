@@ -66,6 +66,9 @@ async function startPlugin(t2, { withPlugins = true, databaseDirectory = t2.test
 		updateFeature: request => handlers.get(messages.FeatureUpdateRequest)(request),
 		featureSubscription: request => handlers.get(messages.FeatureUpdatedEvent)(request),
 		shutdown: () => controller.hooks.shutdown.invoke(),
+		save: () => controller.hooks.save.invoke(),
+		/** Call the handler of a message as it would be called for a request or event */
+		send: message => handlers.get(message.constructor)(message),
 	};
 }
 
@@ -222,6 +225,109 @@ t.test("controller plugin", t2 => {
 		const { listFeatures } = await startPlugin(t3, { withPlugins: false, databaseDirectory });
 		const record = await getFeature(listFeatures, "afk_kick");
 		t3.strictSame([record.enabled, record.values], [false, { afk_minutes: 5 }], "the stored record is loaded");
+	});
+
+	t2.end();
+});
+
+/** Read players.json as the next run would. */
+async function loadPlayers(databaseDirectory) {
+	return new lib.JsonIdDatastoreProvider(
+		path.join(databaseDirectory, "exp_scenario", "players.json"),
+		messages.PlayerRecord.fromJSON.bind(messages.PlayerRecord),
+	).load();
+}
+
+t.test("player settings", t2 => {
+	t2.test("PlayerGetRequest returns an empty record for unknown players", async t3 => {
+		const { send } = await startPlugin(t3, { withPlugins: false });
+		const record = await send(new messages.PlayerGetRequest("Alice"));
+		t3.equal(record.id, "Alice");
+		t3.strictSame(record.toJSON(), { id: "Alice" }, "nothing is set");
+	});
+
+	t2.test("JoinMessageSetRequest sets, trims, and clears the message", async t3 => {
+		const { send } = await startPlugin(t3, { withPlugins: false });
+		await send(new messages.JoinMessageSetRequest("Alice", "  Hello there  "));
+		t3.equal((await send(new messages.PlayerGetRequest("Alice"))).joinMessage, "Hello there");
+
+		await send(new messages.JoinMessageSetRequest("Alice", null));
+		t3.equal((await send(new messages.PlayerGetRequest("Alice"))).joinMessage, undefined, "null clears it");
+
+		await send(new messages.JoinMessageSetRequest("Alice", "Hi"));
+		await send(new messages.JoinMessageSetRequest("Alice", "   "));
+		t3.equal((await send(new messages.PlayerGetRequest("Alice"))).joinMessage, undefined, "blank clears it");
+	});
+
+	t2.test("players are saved on the save hook and empty records are removed", async t3 => {
+		const databaseDirectory = t3.testdir();
+		const { send, save, shutdown } = await startPlugin(t3, { withPlugins: false, databaseDirectory });
+		await send(new messages.JoinMessageSetRequest("Alice", "Hi"));
+		await send(new messages.JoinMessageSetRequest("Bob", "Hey"));
+		await send(new messages.JoinMessageSetRequest("Bob", null));
+		await save();
+
+		const stored = await loadPlayers(databaseDirectory);
+		t3.strictSame([...stored.keys()], ["Alice"], "only players with a setting are stored");
+		t3.equal(stored.get("Alice").joinMessage, "Hi");
+
+		await send(new messages.JoinMessageSetRequest("Alice", "Bye"));
+		await shutdown();
+		const restarted = await startPlugin(t3, { withPlugins: false, databaseDirectory });
+		const record = await restarted.send(new messages.PlayerGetRequest("Alice"));
+		t3.equal(record.joinMessage, "Bye", "kept across restarts");
+	});
+
+	t2.test("PlayerLocaleEvent stores the locale next to the join message", async t3 => {
+		const { send } = await startPlugin(t3, { withPlugins: false });
+		await send(new messages.JoinMessageSetRequest("Alice", "Hi"));
+		await send(new messages.PlayerLocaleEvent("Alice", "pt-BR"));
+		const record = await send(new messages.PlayerGetRequest("Alice"));
+		t3.strictSame([record.joinMessage, record.locale], ["Hi", "pt-BR"]);
+
+		await send(new messages.JoinMessageSetRequest("Alice", null));
+		const cleared = await send(new messages.PlayerGetRequest("Alice"));
+		t3.equal(cleared.locale, "pt-BR", "clearing the message keeps the locale");
+	});
+
+	t2.test("PlayerToolbarEvent stores the toolbar and it is saved", async t3 => {
+		const databaseDirectory = t3.testdir();
+		const { send, save } = await startPlugin(t3, { withPlugins: false, databaseDirectory });
+		await send(new messages.PlayerToolbarEvent("Alice", "abc"));
+		t3.equal((await send(new messages.PlayerGetRequest("Alice"))).toolbar, "abc");
+
+		await save();
+		const stored = await loadPlayers(databaseDirectory);
+		const alice = stored.get("Alice");
+		t3.strictSame(alice.toJSON(), { id: "Alice", toolbar: "abc", updated_at_ms: alice.updatedAtMs });
+	});
+
+	t2.test("permissions", async t3 => {
+		const user = (name, granted = []) => ({
+			name,
+			checkPermission(permission) {
+				if (!granted.includes(permission)) {
+					throw new lib.PermissionError("denied");
+				}
+			},
+		});
+		const request = name => ({ data: { player_name: name } });
+
+		const set = messages.JoinMessageSetRequest.permission;
+		t3.throws(() => set(user("Alice"), request("alice")), "own message needs the set permission");
+		t3.doesNotThrow(() => set(user("Alice", ["exp_scenario.join_message.set"]), request("alice")), "own message");
+		t3.throws(
+			() => set(user("Alice", ["exp_scenario.join_message.set"]), request("Bob")),
+			"someone else's message needs set_other",
+		);
+		t3.doesNotThrow(
+			() => set(user("Alice", ["exp_scenario.join_message.set_other"]), request("Bob")), "with set_other",
+		);
+
+		const get = messages.PlayerGetRequest.permission;
+		t3.doesNotThrow(() => get(user("Alice"), request("alice")), "own settings");
+		t3.throws(() => get(user("Alice"), request("Bob")), "someone else's");
+		t3.doesNotThrow(() => get(user("Alice", ["core.user.get"]), request("Bob")), "with core.user.get");
 	});
 
 	t2.end();

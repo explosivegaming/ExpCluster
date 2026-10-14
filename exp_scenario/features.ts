@@ -175,6 +175,12 @@ export const features: Feature[] = [
 		],
 	},
 	{
+		name: "greetings",
+		title: "Greetings",
+		description: "Greet players when they join and show the join message they set, the messages are edited on the user page",
+		fields: [],
+	},
+	{
 		name: "help_bubbles",
 		title: "Help Bubbles",
 		description: "A compilatron at spawn which cycles through tips and the community links",

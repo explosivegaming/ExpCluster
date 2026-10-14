@@ -8,6 +8,8 @@ declare module "@clusterio/lib" {
 		"exp_scenario.config.view": never;
 		"exp_scenario.config.edit": never;
 		"exp_scenario.seed": never;
+		"exp_scenario.join_message.set": never;
+		"exp_scenario.join_message.set_other": never;
 	}
 }
 
@@ -23,6 +25,10 @@ export const plugin: lib.PluginDeclaration = {
 		messages.FeatureUpdatedEvent,
 		messages.FeatureListRequest,
 		messages.FeatureUpdateRequest,
+		messages.PlayerGetRequest,
+		messages.JoinMessageSetRequest,
+		messages.PlayerLocaleEvent,
+		messages.PlayerToolbarEvent,
 	],
 
 	permissions: [
@@ -41,6 +47,16 @@ export const plugin: lib.PluginDeclaration = {
 			name: "exp_scenario.seed",
 			title: "Seed ExpScenario roles and groups",
 			description: "Create the roles and permission groups the scenario shipped with",
+		},
+		{
+			name: "exp_scenario.join_message.set",
+			title: "Set own join message",
+			description: "Set the message shown to everyone when you join, in game this is /set-join-message",
+		},
+		{
+			name: "exp_scenario.join_message.set_other",
+			title: "Set join messages of others",
+			description: "Set the message shown to everyone when another user joins",
 		},
 	],
 

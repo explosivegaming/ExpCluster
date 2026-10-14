@@ -18,6 +18,30 @@ export default async function (context: ControllerPluginContext) {
 			messages.FeatureRecord.fromJSON.bind(messages.FeatureRecord),
 		).bootstrap()
 	);
+	const playerStore = new lib.SubscribableDatastore(
+		...await new lib.JsonIdDatastoreProvider(
+			path.join(databaseDirectory, "exp_scenario", "players.json"),
+			messages.PlayerRecord.fromJSON.bind(messages.PlayerRecord),
+		).bootstrap()
+	);
+
+	type PlayerSettings = Pick<messages.PlayerRecord, "joinMessage" | "locale" | "toolbar">;
+
+	/** Change some settings of a player, empty values are removed and so is a record left empty */
+	function updatePlayer(name: string, changes: PlayerSettings) {
+		const old = playerStore.get(name);
+		const settings: PlayerSettings = {
+			joinMessage: old?.joinMessage, locale: old?.locale, toolbar: old?.toolbar, ...changes,
+		};
+		const record = new messages.PlayerRecord(
+			name, settings.joinMessage || undefined, settings.locale || undefined, settings.toolbar || undefined,
+		);
+		if (record.joinMessage || record.locale || record.toolbar) {
+			playerStore.set(record);
+		} else if (old) {
+			playerStore.delete(old);
+		}
+	}
 
 	/** Add new features, delete removed ones, and drop stored values which no longer fit a field */
 	function reconcileFeatures() {
@@ -202,8 +226,29 @@ export default async function (context: ControllerPluginContext) {
 		return feature;
 	});
 
+	controller.handle(messages.PlayerGetRequest, async (request: messages.PlayerGetRequest) => (
+		playerStore.get(request.playerName) ?? new messages.PlayerRecord(request.playerName)
+	));
+
+	controller.handle(messages.JoinMessageSetRequest, async (request: messages.JoinMessageSetRequest) => {
+		updatePlayer(request.playerName, { joinMessage: request.message?.trim() });
+	});
+
+	controller.handle(messages.PlayerLocaleEvent, async (event: messages.PlayerLocaleEvent) => {
+		updatePlayer(event.playerName, { locale: event.locale });
+	});
+
+	controller.handle(messages.PlayerToolbarEvent, async (event: messages.PlayerToolbarEvent) => {
+		updatePlayer(event.playerName, { toolbar: event.toolbar });
+	});
+
+	controller.hooks.save.attach(plugin.name, async () => {
+		await playerStore.save();
+	});
+
 	controller.hooks.shutdown.attach(plugin.name, async () => {
 		await featureStore.save();
+		await playerStore.save();
 	});
 }
 
