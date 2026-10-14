@@ -1,4 +1,4 @@
-local Suite = ... --- @type Suite<ExpStatistics.TestEnv>
+local Suite = ... --- @type Suite<ExpPlayerStatistics.TestEnv>
 
 Suite.test("counters go up by one for online players", function(env)
     local Stats = env.Statistics
@@ -21,7 +21,7 @@ Suite.test("a player is counted once per map", function(env)
     Suite.eq(env.Statistics.get(alice, "MapsPlayed"), 1, "maps played")
 end)
 
-Suite.test("playtime and afk time go up each minute", function(env)
+Suite.test("afk time goes up each minute, playtime comes from clusterio", function(env)
     local Stats = env.Statistics
     local alice = env.add_player{ name = "alice" }
     local bob = env.add_player{ name = "bob", afk_time = 6 * 3600 }
@@ -30,7 +30,7 @@ Suite.test("playtime and afk time go up each minute", function(env)
     tick()
     tick()
 
-    Suite.eq(Stats.get(alice, "Playtime"), 2, "playtime")
+    Suite.eq(Stats.get(alice, "Playtime"), 0, "playtime is not counted")
     Suite.eq(Stats.get(alice, "AfkTime"), 0, "not afk")
     Suite.eq(Stats.get(bob, "AfkTime"), 2, "afk")
 end)

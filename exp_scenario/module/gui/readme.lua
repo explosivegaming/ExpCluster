@@ -6,7 +6,7 @@ local ExpUtil = require("modules/exp_util")
 local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_roles")
 local Commands = require("modules/exp_commands")
-local ExpStatistics = require("modules/exp_statistics")
+local ExpPlayerStatistics = require("modules/exp_player_statistics")
 local ExpServerList = require("modules/exp_server_list")
 local community = require("modules/exp_scenario/config/community_details").config
 
@@ -471,12 +471,14 @@ define_tab(
         container.add{ type = "flow" }
 
         local scroll_pane = Elements.title_table_scroll(container)
-        local statistics = Elements.title_table(scroll_pane, 250, { "exp-gui_readme.data-tab" }, 4)
-        for _, name in ipairs(ExpStatistics.display_order) do
-            local value = ExpStatistics.format(name, ExpStatistics.get(player_name, name))
+        local statistics = scroll_pane.add{ type = "table", column_count = 4, style = "bordered_table" }
+        statistics.style.cell_padding = 0
+        statistics.style.horizontally_stretchable = true
+        for _, name in ipairs(ExpPlayerStatistics.display_order) do
+            local value = ExpPlayerStatistics.format(name, ExpPlayerStatistics.get(player_name, name), true)
             local tooltip = { "exp-statistics." .. name .. "-tooltip" }
             Gui.elements.centered_label(statistics, 150, { "exp-statistics." .. name }, tooltip)
-            Gui.elements.centered_label(statistics, 130, { "exp-gui_readme.data-format", value, ExpStatistics.units[name] or "" }, tooltip)
+            Gui.elements.centered_label(statistics, 130, { "exp-gui_readme.data-format", value, ExpPlayerStatistics.units[name] or "" }, tooltip)
         end
 
         return container

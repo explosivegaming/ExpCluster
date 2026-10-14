@@ -1,5 +1,5 @@
 {
-	"name": "exp_statistics",
+	"name": "exp_player_statistics",
 	"load": [
 		"events.lua"
 	],

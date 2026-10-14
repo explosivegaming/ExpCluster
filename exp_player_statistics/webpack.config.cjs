@@ -13,8 +13,8 @@ module.exports = (env = {}) => merge(common(env), {
 	},
 	plugins: [
 		new webpack.container.ModuleFederationPlugin({
-			name: "exp_statistics",
-			library: { type: "window", name: "plugin_exp_statistics" },
+			name: "exp_player_statistics",
+			library: { type: "window", name: "plugin_exp_player_statistics" },
 			exposes: {
 				"./": "./index.ts",
 				"./package.json": "./package.json",

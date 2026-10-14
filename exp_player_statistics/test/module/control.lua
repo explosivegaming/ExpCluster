@@ -1,4 +1,4 @@
-local Suite = ... --- @type Suite<ExpStatistics.TestEnv>
+local Suite = ... --- @type Suite<ExpPlayerStatistics.TestEnv>
 
 Suite.test("increment() adds to the unsent statistics", function(env)
     local Stats = env.Statistics
@@ -20,7 +20,7 @@ Suite.test("send_all() sends every player with changes in one update", function(
     Stats.send_all()
 
     Suite.eq(#env.sent, 1, "one update")
-    Suite.eq(assert(env.sent[1]).channel, "exp_statistics:update", "on the update channel")
+    Suite.eq(assert(env.sent[1]).channel, "exp_player_statistics:update", "on the update channel")
     local players = assert(env.sent[1]).data.players
     table.sort(players, function(a, b) return a.name < b.name end)
     Suite.eq(players, {
@@ -53,7 +53,7 @@ Suite.test("send() sends one player", function(env)
     Stats.increment(alice, "Kills")
     Stats.increment(bob, "Kills")
     Stats.send("alice")
-    Suite.eq(env.sent, { { channel = "exp_statistics:update", data = { players = { { name = "alice", stats = { Kills = 1 } } } } } }, "only that player")
+    Suite.eq(env.sent, { { channel = "exp_player_statistics:update", data = { players = { { name = "alice", stats = { Kills = 1 } } } } } }, "only that player")
 
     env.reset_log()
     Stats.send("carol")

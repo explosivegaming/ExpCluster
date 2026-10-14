@@ -24,23 +24,23 @@ local event_names = {
     "on_player_used_capsule", "on_player_repaired_entity",
 }
 
---- @class ExpStatistics.TestEnv : Stubs
---- @field Statistics ExpStatistics A fresh copy of the statistics module
+--- @class ExpPlayerStatistics.TestEnv : Stubs
+--- @field Statistics ExpPlayerStatistics A fresh copy of the statistics module
 --- @field handlers { events: table<number, fun(event: table)>, on_nth_tick: table<number, fun()> } From events.lua
 --- @field force fun(name: string): table A force stub with the online players added to it
 --- @field raise fun(name: string, event: table) Call the handler of an event by its name
---- @field add_player fun(params: ExpStatistics.TestPlayerParams): ExpStatistics.TestPlayer
+--- @field add_player fun(params: ExpPlayerStatistics.TestPlayerParams): ExpPlayerStatistics.TestPlayer
 
---- @class ExpStatistics.TestPlayerParams : Stubs.PlayerParams
+--- @class ExpPlayerStatistics.TestPlayerParams : Stubs.PlayerParams
 --- @field afk_time number? Defaults to 0
 --- @field force string? Defaults to "player"
 
---- @class ExpStatistics.TestPlayer : Stubs.Player
+--- @class ExpPlayerStatistics.TestPlayer : Stubs.Player
 --- @field afk_time number
 --- @field force table
 
 return Framework.suite(function(env)
-    --- @cast env ExpStatistics.TestEnv
+    --- @cast env ExpPlayerStatistics.TestEnv
     local events = {}
     for index, name in ipairs(event_names) do
         events[name] = 10 + index
@@ -61,10 +61,10 @@ return Framework.suite(function(env)
         },
     }
     env.extend_requires{
-        ["modules/exp_statistics/config"] = assert(loadfile(plugin_root .. "/module/config.lua"))(),
+        ["modules/exp_player_statistics/config"] = assert(loadfile(plugin_root .. "/module/config.lua"))(),
     }
-    env.Statistics = assert(loadfile(plugin_root .. "/module/control.lua"))() --- @type ExpStatistics
-    env.extend_requires{ ["modules/exp_statistics/control"] = env.Statistics }
+    env.Statistics = assert(loadfile(plugin_root .. "/module/control.lua"))() --- @type ExpPlayerStatistics
+    env.extend_requires{ ["modules/exp_player_statistics/control"] = env.Statistics }
     env.handlers = assert(loadfile(plugin_root .. "/module/events.lua"))()
 
     local forces = {}
@@ -79,7 +79,7 @@ return Framework.suite(function(env)
 
     local add_player = env.add_player
     function env.add_player(params)
-        local player = add_player(params) --[[@as ExpStatistics.TestPlayer]]
+        local player = add_player(params) --[[@as ExpPlayerStatistics.TestPlayer]]
         local force = env.force(params.force or "player")
         rawset(player, "afk_time", params.afk_time or 0)
         rawset(player, "force", force)

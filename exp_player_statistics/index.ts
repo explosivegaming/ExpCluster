@@ -3,13 +3,13 @@ import * as messages from "./messages.js";
 
 declare module "@clusterio/lib" {
 	export interface Permissions {
-		"exp_statistics.view": never;
+		"exp_player_statistics.view": never;
 	}
 }
 
 export const plugin: lib.PluginDeclaration = {
-	name: "exp_statistics",
-	title: "ExpGaming - Statistics",
+	name: "exp_player_statistics",
+	title: "ExpGaming - Player Statistics",
 	description: "Clusterio plugin keeping player statistics on the controller",
 
 	controllerEntrypoint: "./dist/node/controller.js",
@@ -24,7 +24,7 @@ export const plugin: lib.PluginDeclaration = {
 
 	permissions: [
 		{
-			name: "exp_statistics.view",
+			name: "exp_player_statistics.view",
 			title: "View player statistics",
 			description: "View the statistics of every player and subscribe to their updates",
 			grantByDefault: true,
@@ -33,6 +33,6 @@ export const plugin: lib.PluginDeclaration = {
 
 	webEntrypoint: "./web",
 	routes: [
-		"/exp_statistics",
+		"/exp_player_statistics",
 	],
 };

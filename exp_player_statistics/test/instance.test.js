@@ -54,18 +54,19 @@ async function startPlugin(t2, { status = "running", stats = { Kills: 3 } } = {}
 	state.sent.length = 0;
 
 	const pluginLogger = { ...logger, warn: message => state.warnings.push(message) };
-	await entrypoint({ plugin: { name: "exp_statistics" }, instance, host: {}, logger: pluginLogger });
-	return { instance, state, updateIPC: event => ipc.get("exp_statistics:update")(event) };
+	await entrypoint({ plugin: { name: "exp_player_statistics" }, instance, host: {}, logger: pluginLogger });
+	return { instance, state, updateIPC: event => ipc.get("exp_player_statistics:update")(event) };
 }
 
 /** The payload of a recorded receive_totals command. */
 function decodeTotals(command) {
-	const match = command.match(/^\/sc exp_statistics\.receive_totals\(helpers\.json_to_table\[(=+)\[(.*)\]\1\]\)$/s);
+	const pattern = /^\/sc exp_player_statistics\.receive_totals\(helpers\.json_to_table\[(=+)\[(.*)\]\1\]\)$/s;
+	const match = command.match(pattern);
 	return JSON.parse(match[2]);
 }
 
 t.test("instance plugin", t2 => {
-	t2.test("exp_statistics:update is forwarded to the controller", async t3 => {
+	t2.test("exp_player_statistics:update is forwarded to the controller", async t3 => {
 		const { state, updateIPC } = await startPlugin(t3);
 		await updateIPC({ players: [{ name: "alice", stats: { Kills: 1 } }, { name: "bob", stats: { Deaths: 2 } }] });
 
@@ -123,8 +124,8 @@ t.test("instance plugin", t2 => {
 		await instance.hooks.start.invoke();
 		await instance.hooks.stop.invoke();
 		t3.strictSame(state.rcons, [
-			"/sc exp_statistics.discard_unsent()",
-			"/sc exp_statistics.send_all()",
+			"/sc exp_player_statistics.discard_unsent()",
+			"/sc exp_player_statistics.send_all()",
 		]);
 	});
 

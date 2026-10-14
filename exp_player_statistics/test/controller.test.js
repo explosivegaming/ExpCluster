@@ -44,7 +44,7 @@ async function startPlugin(t2, databaseDirectory = t2.testdir()) {
 		subscriptionHandle(Class, handler);
 	};
 
-	await entrypoint({ plugin: { name: "exp_statistics" }, controller, logger });
+	await entrypoint({ plugin: { name: "exp_player_statistics" }, controller, logger });
 	const delta = (name, stats) => new messages.StatisticsDelta(name, stats);
 	return {
 		controller,
@@ -54,6 +54,10 @@ async function startPlugin(t2, databaseDirectory = t2.testdir()) {
 		),
 		get: name => handlers.get(messages.StatisticsGetRequest)(new messages.StatisticsGetRequest(name), fromInstance),
 		list: () => handlers.get(messages.StatisticsListRequest)(new messages.StatisticsListRequest(), fromInstance),
+		/** The stored totals, without the values get adds from the clusterio user */
+		stored: async name => (await handlers.get(messages.StatisticsListRequest)(
+			new messages.StatisticsListRequest(), fromInstance,
+		)).find(player => player.id === name)?.stats,
 		subscription: lastRequestTimeMs => handlers.get(messages.PlayerStatisticsUpdatedEvent)({ lastRequestTimeMs }),
 	};
 }
@@ -61,40 +65,51 @@ async function startPlugin(t2, databaseDirectory = t2.testdir()) {
 t.test("entrypoint attaches to save and shutdown", async t2 => {
 	const { controller } = await startPlugin(t2);
 	for (const hook of ["save", "shutdown"]) {
-		t2.ok([...controller.hooks[hook].attached].includes("exp_statistics"), `attached to ${hook}`);
+		t2.ok([...controller.hooks[hook].attached].includes("exp_player_statistics"), `attached to ${hook}`);
 	}
 });
 
 t.test("controller plugin", t2 => {
 	t2.test("StatisticsUpdateEvent adds the deltas to the totals", async t3 => {
-		const { update, get } = await startPlugin(t3);
-		await update(["alice", { Kills: 2, Playtime: 5 }], ["bob", { Deaths: 1 }]);
+		const { update, stored } = await startPlugin(t3);
+		await update(["alice", { Kills: 2, AfkTime: 5 }], ["bob", { Deaths: 1 }]);
 		await update(["alice", { Kills: 3, Deaths: 1 }]);
 
-		t3.strictSame((await get("alice")).stats, { Kills: 5, Playtime: 5, Deaths: 1 }, "deltas are summed per stat");
-		t3.strictSame((await get("bob")).stats, { Deaths: 1 });
+		t3.strictSame(await stored("alice"), { Kills: 5, AfkTime: 5, Deaths: 1 }, "deltas are summed per stat");
+		t3.strictSame(await stored("bob"), { Deaths: 1 });
+	});
+
+	t2.test("StatisticsGetRequest adds Playtime and JoinCount from the clusterio user", async t3 => {
+		const { controller, update, get } = await startPlugin(t3);
+		const user = controller.users.getOrCreateUser("alice");
+		user.instanceStats.set(1, lib.PlayerStats.fromJSON({ join_count: 3, online_time_ms: 125.5 * 60e3 }));
+		user.recalculatePlayerStats();
+		await update(["alice", { Kills: 1 }]);
+
+		t3.strictSame((await get("alice")).stats, { Kills: 1, Playtime: 125, JoinCount: 3 });
+		t3.strictSame((await get("bob")).stats, { Playtime: 0, JoinCount: 0 }, "no user and no record");
 	});
 
 	t2.test("StatisticsUpdateEvent merges deltas for the same player in one update", async t3 => {
-		const { update, get, state } = await startPlugin(t3);
+		const { update, stored, state } = await startPlugin(t3);
 		await update(["alice", { Kills: 1 }], ["alice", { Kills: 2 }]);
 
-		t3.strictSame((await get("alice")).stats, { Kills: 3 });
+		t3.strictSame(await stored("alice"), { Kills: 3 });
 		t3.equal(state.broadcasts.length, 1, "one broadcast");
 		t3.strictSame(state.broadcasts[0].updates.map(player => player.id), ["alice"], "with the player once");
 	});
 
 	t2.test("StatisticsUpdateEvent ignores values which are not finite or zero", async t3 => {
-		const { update, get } = await startPlugin(t3);
+		const { update, stored } = await startPlugin(t3);
 		await update(["alice", { Kills: 1, Deaths: 0, Bad: Infinity, Worse: NaN }]);
-		t3.strictSame((await get("alice")).stats, { Kills: 1 });
+		t3.strictSame(await stored("alice"), { Kills: 1 });
 	});
 
 	t2.test("StatisticsGetRequest gives an empty record for an unknown player", async t3 => {
 		const { get, list } = await startPlugin(t3);
 		const record = await get("carol");
 		t3.equal(record.id, "carol");
-		t3.strictSame(record.stats, {});
+		t3.strictSame(record.stats, { Playtime: 0, JoinCount: 0 });
 		t3.strictSame(await list(), [], "nothing is stored");
 	});
 
@@ -119,7 +134,7 @@ t.test("controller plugin", t2 => {
 		await first.controller.hooks.save.invoke();
 
 		const second = await startPlugin(t3, directory);
-		t3.strictSame((await second.get("alice")).stats, { Kills: 4 });
+		t3.strictSame(await second.stored("alice"), { Kills: 4 });
 	});
 
 	t2.end();
@@ -127,11 +142,11 @@ t.test("controller plugin", t2 => {
 
 t.test("permissions", async t2 => {
 	const names = pluginDeclaration.permissions.map(permission => permission.name);
-	t2.strictSame(names, ["exp_statistics.view"]);
+	t2.strictSame(names, ["exp_player_statistics.view"]);
 	for (const Message of [
 		messages.StatisticsGetRequest, messages.StatisticsListRequest, messages.PlayerStatisticsUpdatedEvent,
 	]) {
-		t2.equal(Message.permission, "exp_statistics.view", `${Message.name} needs view`);
+		t2.equal(Message.permission, "exp_player_statistics.view", `${Message.name} needs view`);
 	}
 	t2.equal(messages.StatisticsUpdateEvent.permission, null, "updates only come from instances");
 	t2.strictSame(messages.StatisticsUpdateEvent.src, "instance");

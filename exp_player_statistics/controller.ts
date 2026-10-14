@@ -9,7 +9,7 @@ export default async function (context: ControllerPluginContext) {
 	const databaseDirectory = controller.config.get("controller.database_directory");
 	const players = new lib.SubscribableDatastore(
 		...await new lib.JsonIdDatastoreProvider(
-			path.join(databaseDirectory, "exp_statistics", "players.json"),
+			path.join(databaseDirectory, "exp_player_statistics", "players.json"),
 			messages.PlayerStatistics.fromJSON.bind(messages.PlayerStatistics),
 		).bootstrap()
 	);
@@ -45,9 +45,13 @@ export default async function (context: ControllerPluginContext) {
 		addDeltas(event.deltas);
 	});
 
-	controller.handle(messages.StatisticsGetRequest, async (request: messages.StatisticsGetRequest) => (
-		players.get(request.name) ?? new messages.PlayerStatistics(request.name)
-	));
+	controller.handle(messages.StatisticsGetRequest, async (request: messages.StatisticsGetRequest) => {
+		const record = players.get(request.name);
+		return new messages.PlayerStatistics(request.name, {
+			...record?.stats,
+			...messages.userStatistics(controller.users.getByName(request.name)),
+		}, record?.updatedAtMs);
+	});
 
 	controller.handle(messages.StatisticsListRequest, async () => [...players.values()]);
 

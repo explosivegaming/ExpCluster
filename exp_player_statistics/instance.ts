@@ -24,10 +24,10 @@ export default async function (context: InstancePluginContext) {
 		while (json.includes(`]${level}]`)) {
 			level += "=";
 		}
-		await luaCall(`exp_statistics.receive_totals(helpers.json_to_table[${level}[${json}]${level}])`);
+		await luaCall(`exp_player_statistics.receive_totals(helpers.json_to_table[${level}[${json}]${level}])`);
 	}
 
-	instance.server.handle("exp_statistics:update", async (event: IpcStatisticsUpdate) => {
+	instance.server.handle("exp_player_statistics:update", async (event: IpcStatisticsUpdate) => {
 		instance.sendTo("controller", new messages.StatisticsUpdateEvent(
 			event.players.map(player => new messages.StatisticsDelta(player.name, player.stats)),
 		));
@@ -50,10 +50,10 @@ export default async function (context: InstancePluginContext) {
 	// Anything still unsent at start came from a save made before the last
 	// update was sent, so it is dropped rather than counted twice
 	instance.hooks.start.attach(plugin.name, async () => {
-		await luaCall("exp_statistics.discard_unsent()");
+		await luaCall("exp_player_statistics.discard_unsent()");
 	});
 
 	instance.hooks.stop.attach(plugin.name, async () => {
-		await luaCall("exp_statistics.send_all()");
+		await luaCall("exp_player_statistics.send_all()");
 	});
 }

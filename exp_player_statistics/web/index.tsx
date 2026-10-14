@@ -5,6 +5,7 @@ import * as lib from "@clusterio/lib";
 import * as messages from "../messages.js";
 
 import StatisticsPage from "./components/StatisticsPage";
+import UserStatistics from "./components/UserStatistics";
 
 let players: lib.MapSubscriber<messages.PlayerStatisticsUpdatedEvent> | undefined;
 
@@ -14,11 +15,15 @@ export function usePlayerStatistics() {
 }
 
 export default function registerPlugin(context: WebPluginContext) {
-	context.control.hooks.pages.attach("exp_statistics", () => [
+	context.control.hooks.extensionComponents.attach("exp_player_statistics", () => ({
+		UserViewPage: UserStatistics,
+	}));
+
+	context.control.hooks.pages.attach("exp_player_statistics", () => [
 		{
-			path: "/exp_statistics",
+			path: "/exp_player_statistics",
 			sidebarName: "Statistics",
-			permission: "exp_statistics.view",
+			permission: "exp_player_statistics.view",
 			content: <StatisticsPage />,
 		},
 	]);

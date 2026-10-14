@@ -1,5 +1,5 @@
 {
-	"name": "@expcluster/statistics",
+	"name": "@expcluster/player-statistics",
 	"version": "7.0.1",
 	"description": "Clusterio plugin keeping player statistics on the controller",
 	"author": "Cooldude2606 <https://github.com/Cooldude2606>",

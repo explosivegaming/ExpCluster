@@ -6,7 +6,7 @@ local ExpUtil = require("modules/exp_util")
 local Gui = require("modules/exp_gui")
 local ElementsExtra = require("modules/exp_scenario/gui/elements")
 local Roles = require("modules/exp_roles")
-local ExpStatistics = require("modules/exp_statistics")
+local ExpPlayerStatistics = require("modules/exp_player_statistics")
 
 --- @class ExpGui_PlayerStats.elements
 local Elements = {}
@@ -26,7 +26,7 @@ local short_time_zero, format_number_zero = short_time_format(0), format_number_
 --- @param default number
 --- @return number
 local function get_stat(player, statistic, default)
-    local value = ExpStatistics.get(player, statistic)
+    local value = ExpPlayerStatistics.get(player, statistic)
     return value == 0 and default or value
 end
 
@@ -113,14 +113,14 @@ Elements.player_stats_table = Gui.define("player_stats/data_table")
         local labels = {}
 
         -- Add all standalone stats
-        for _, stat_name in ipairs(ExpStatistics.display_order) do
+        for _, stat_name in ipairs(ExpPlayerStatistics.display_order) do
             Elements.table_label(data_table, {
                 caption = { "exp-statistics." .. stat_name },
                 tooltip = { "exp-statistics." .. stat_name .. "-tooltip" },
                 width = 135,
             })
             labels[stat_name] = Elements.table_label(data_table, {
-                caption = { "exp-gui_readme.data-format", ExpStatistics.format(stat_name, 0, true), ExpStatistics.units[stat_name] or "" },
+                caption = { "exp-gui_readme.data-format", ExpPlayerStatistics.format(stat_name, 0, true), ExpPlayerStatistics.units[stat_name] or "" },
                 tooltip = { "exp-statistics." .. stat_name .. "-tooltip" },
                 width = 105,
             })
@@ -151,9 +151,9 @@ function Elements.player_stats_table.refresh(data_table, player)
     local labels = Elements.player_stats_table.data[data_table]
 
     -- Update all standalone stats
-    for _, stat_name in ipairs(ExpStatistics.display_order) do
-        local value = ExpStatistics.format(stat_name, ExpStatistics.get(player, stat_name), true)
-        labels[stat_name].caption = { "exp-gui_readme.data-format", value, ExpStatistics.units[stat_name] or "" }
+    for _, stat_name in ipairs(ExpPlayerStatistics.display_order) do
+        local value = ExpPlayerStatistics.format(stat_name, ExpPlayerStatistics.get(player, stat_name), true)
+        labels[stat_name].caption = { "exp-gui_readme.data-format", value, ExpPlayerStatistics.units[stat_name] or "" }
     end
 
     -- Update all computed stats

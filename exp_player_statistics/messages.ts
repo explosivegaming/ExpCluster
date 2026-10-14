@@ -42,6 +42,14 @@ export class PlayerStatistics {
 	}
 }
 
+/** Statistics clusterio already keeps for every user, shown with the others but never added to */
+export function userStatistics(user?: Pick<lib.UserDetails, "playerStats">): Record<string, number> {
+	return {
+		Playtime: Math.floor((user?.playerStats.onlineTimeMs ?? 0) / 60e3),
+		JoinCount: user?.playerStats.joinCount ?? 0,
+	};
+}
+
 /** Statistics gained by one player since the last update */
 export class StatisticsDelta {
 	constructor(
@@ -66,7 +74,7 @@ export class StatisticsDelta {
 /** Sent by an instance to add to the totals of its players. */
 export class StatisticsUpdateEvent {
 	declare ["constructor"]: typeof StatisticsUpdateEvent;
-	static plugin = "exp_statistics" as const;
+	static plugin = "exp_player_statistics" as const;
 	static type = "event" as const;
 	static src = "instance" as const;
 	static dst = "controller" as const;
@@ -91,11 +99,11 @@ export class StatisticsUpdateEvent {
 
 export class PlayerStatisticsUpdatedEvent {
 	declare ["constructor"]: typeof PlayerStatisticsUpdatedEvent;
-	static plugin = "exp_statistics" as const;
+	static plugin = "exp_player_statistics" as const;
 	static type = "event" as const;
 	static src = "controller" as const;
 	static dst = "control" as const;
-	static permission = "exp_statistics.view" as const;
+	static permission = "exp_player_statistics.view" as const;
 
 	constructor(
 		public updates: PlayerStatistics[],
@@ -114,14 +122,14 @@ export class PlayerStatisticsUpdatedEvent {
 	}
 }
 
-/** Totals for one player, empty when they have none. */
+/** Totals for one player, with Playtime and JoinCount from their clusterio user. */
 export class StatisticsGetRequest {
 	declare ["constructor"]: typeof StatisticsGetRequest;
-	static plugin = "exp_statistics" as const;
+	static plugin = "exp_player_statistics" as const;
 	static type = "request" as const;
 	static src = ["control", "instance"] as const;
 	static dst = "controller" as const;
-	static permission = "exp_statistics.view" as const;
+	static permission = "exp_player_statistics.view" as const;
 	static Response = PlayerStatistics;
 
 	constructor(
@@ -143,10 +151,10 @@ export class StatisticsGetRequest {
 
 export class StatisticsListRequest {
 	declare ["constructor"]: typeof StatisticsListRequest;
-	static plugin = "exp_statistics" as const;
+	static plugin = "exp_player_statistics" as const;
 	static type = "request" as const;
 	static src = ["control", "instance"] as const;
 	static dst = "controller" as const;
-	static permission = "exp_statistics.view" as const;
+	static permission = "exp_player_statistics.view" as const;
 	static Response = lib.jsonArray(PlayerStatistics);
 }
