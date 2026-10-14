@@ -6,6 +6,7 @@ local ExpUtil = require("modules/exp_util")
 local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_roles")
 local Commands = require("modules/exp_commands")
+local ExpStatistics = require("modules/exp_statistics")
 local PlayerData = require("modules.exp_legacy.expcore.player_data")
 local ExpServerList = require("modules/exp_server_list")
 local community = require("modules/exp_scenario/config/community_details").config
@@ -581,6 +582,14 @@ define_tab(
                 column_width = 130,
                 default_stringify = function(value)
                     return format_number(value or 0, false)
+                end,
+                extra_rows = function(statistics)
+                    for _, name in ipairs(ExpStatistics.display_order) do
+                        local value = ExpStatistics.format(name, ExpStatistics.get(player_name, name))
+                        local tooltip = { "exp-statistics." .. name .. "-tooltip" }
+                        Gui.elements.centered_label(statistics, 150, { "exp-statistics." .. name }, tooltip)
+                        Gui.elements.centered_label(statistics, 130, { "exp-gui_readme.data-format", value, ExpStatistics.units[name] or "" }, tooltip)
+                    end
                 end,
             }
         end
