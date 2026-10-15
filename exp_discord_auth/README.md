@@ -32,12 +32,24 @@ All fields are on the controller.
 There are two ways to link a Factorio account:
 
 - On the user page, a logged in user clicks Link Discord and approves it on Discord.
-- On the login page, a player logs in with Discord and gets a code, then types `/link-discord CODE` on any server. This is how a player who can't log in to the web interface yet links their account.
+- On the login page, a player logs in with Discord and gets a code, then types `/link-discord CODE` on any server within 10 minutes. This is how a player who can't log in to the web interface yet links their account.
 
-Linking a Factorio account that is already linked to another Discord account moves it. `/link-discord` without a code shows the current link, and `/unlink-discord` removes it. The user page has an Unlink button too.
+Linking a Factorio account that is already linked to another Discord account moves it. `/link-discord` without a code shows the current link, and `/unlink-discord` removes it. `/link` and `/unlink` are aliases. The user page has an Unlink button too.
 
 Users can always see and remove their own link. The `exp_discord_auth.link.get` and `exp_discord_auth.link.delete` permissions allow it for other users.
 
 Once linked, the Discord tab on the login page has a "Log in as" button for each linked account. Banned users can't log in this way.
 
 Links are stored in `database/exp_discord_auth/accounts.json` on the controller.
+
+## Lua
+
+Each call goes to the controller, and the player gets the answer printed once it arrives.
+
+```lua
+local ExpDiscordAuth = require("modules/exp_discord_auth")
+
+ExpDiscordAuth.link(player, code)
+ExpDiscordAuth.unlink(player)
+ExpDiscordAuth.get_linked(player) -- Prints the Discord account the player is linked to
+```

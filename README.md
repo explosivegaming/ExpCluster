@@ -38,6 +38,27 @@ This module is currently not published and therefore can not be installed via `n
 3) Install the package dev dependencies: `pnpm install` (`pnpm` is recommended over `npm`)
 4) Add supported plugins will be loaded on next controller / host restart.
 
+## Plugins
+
+Each plugin has a readme in its folder with its config, permissions and API.
+
+| Plugin | Description |
+|---|---|
+| [Scenario (@expcluster/scenario)](exp_scenario/README.md) | The ExpGaming scenario. Adds the commands, guis and control modules, each feature configurable from the web interface. |
+| [Roles (@expcluster/roles)](exp_roles/README.md) | Mirrors clusterio roles into the game, and grants roles by online time. |
+| [Permission Groups (@expcluster/permission-groups)](exp_groups/README.md) | Syncs Factorio permission groups, and puts players in a group based on their roles. |
+| [Player Statistics (@expcluster/player-statistics)](exp_player_statistics/README.md) | Counts statistics such as kills and machines built for each player, across every server. |
+| [Reports (@expcluster/reports)](exp_reports/README.md) | Lets players report each other in game or from the web interface, with optional Discord and JSON webhooks. |
+| [Server List (@expcluster/server-list)](exp_server_list/README.md) | Shares the details of every instance with the others, for the server list in game. |
+| [Discord Auth (@expcluster/discord-auth)](exp_discord_auth/README.md) | Log in to the web interface with Discord, and link Factorio accounts to a Discord account. |
+| [Auto Restart (@expcluster/auto-restart)](exp_auto_restart/README.md) | Restarts hosts, and optionally the controller, that need a restart once nobody is playing on them. |
+| [Server UPS (@expcluster/server-ups)](exp_server_ups/README.md) | Shows the UPS the server is running at, toggled with `/server-ups`. |
+| [Commands (@expcluster/lib_commands)](exp_commands/README.md) | Lua library for commands with typed arguments, aliases and permission checks. |
+| [GUI (@expcluster/lib_gui)](exp_gui/readme.md) | Lua library for defining guis and the toolbar. |
+| [Module Utilities (@expcluster/lib_util)](exp_util/README.md) | Lua library with storage, tasks spread over ticks, selection tools and other helpers. |
+
+The last three are libraries the other plugins use. The scenario needs Roles, Reports, Server List, Player Statistics and the three libraries, and seeding its roles also needs Permission Groups.
+
 ## Contributing
 
 See [Contributing](CONTRIBUTING.md) for how to make pull requests and issues.

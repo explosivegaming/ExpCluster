@@ -2,7 +2,7 @@
 
 Restarts hosts, and optionally the controller, that need a restart once nobody is playing on them.
 
-A host needs a restart after a plugin or clusterio update, and after a config change that only applies on restart. The web UI shows this as "Restart Required". This plugin waits until the host has had no players online for a while and then sends it the same restart request the web UI button does.
+A host needs a restart after a plugin is installed or updated, after a clusterio update, and after a config change that only applies on restart. The web UI shows this as "Restart Required". This plugin waits until the host has had no players online for a while and then sends it the same restart request the web UI button does.
 
 Restarting a host stops every instance on it. Once the host is back, the instances that were running are started again. Instances with auto start enabled are started by the host itself.
 
@@ -10,7 +10,8 @@ Restarting a host stops every instance on it. Once the host is back, the instanc
 
 - Hosts must be run with `--can-restart` so their process monitor starts them again. The systemd units and run scripts written by the installer do this.
 - `controller.system_metrics_interval` must be above 0. That poll is how the controller learns a host needs a restart.
-- Installing a plugin on a host does not yet mark it as needing a restart, only updates and config changes do. Until clusterio does, restart the host by hand after an install.
+- Plugins added outside clusterio, for example checked out into `external_plugins`, do not mark the host as needing a restart. Use "Mark Restart Required" on the host page, or `clusterioctl host mark-restart-required <host>`, so this plugin picks it up.
+- With `restart_controller` enabled, the controller must also be run with `--can-restart`. The controller is not restarted if the installed clusterio version is older than the running one.
 
 ## Config
 

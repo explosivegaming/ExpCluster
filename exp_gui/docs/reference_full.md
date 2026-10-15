@@ -180,7 +180,7 @@ The returned tupple is `LuaPlayer, LuaGuiElement`.
 This method is named "filtered" because it is expected that the player list provided has been filtered on some condition and only elements for players in this list are returned.
 The optional third argument can be provided to filter to online only if you have not done so yourself.
 
-### `GuiIter.all_element`
+### `GuiIter.all_elements`
 
 Iterates all elements for all players in a given scope.
 The returned tupple is `LuaPlayer, LuaGuiElement`.
