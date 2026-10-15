@@ -6,10 +6,7 @@ local ExpUtil = require("modules/exp_util")
 local Gui = require("modules/exp_gui")
 local ElementsExtra = require("modules/exp_scenario/gui/elements")
 local Roles = require("modules/exp_roles")
-
-require("modules/exp_legacy/modules/data/statistics")
-local PlayerData = require("modules/exp_legacy/expcore/player_data")
-local PlayerStats = PlayerData.Statistics
+local ExpPlayerStatistics = require("modules/exp_player_statistics")
 
 --- @class ExpGui_PlayerStats.elements
 local Elements = {}
@@ -23,54 +20,64 @@ end
 
 local short_time_zero, format_number_zero = short_time_format(0), format_number_2dp(0)
 
+--- Get a statistic of a player, or the default when it is zero
+--- @param player LuaPlayer
+--- @param statistic string
+--- @param default number
+--- @return number
+local function get_stat(player, statistic, default)
+    local value = ExpPlayerStatistics.get(player, statistic)
+    return value == 0 and default or value
+end
+
 --- @type table<string, { default: LocalisedString, calculate: fun(player: LuaPlayer): LocalisedString }>
 local computed_stats = {
     DamageDeathRatio = {
         default = format_number_zero,
         calculate = function(player)
-            return format_number_2dp(PlayerStats["DamageDealt"]:get(player, 0) / PlayerStats["Deaths"]:get(player, 1))
+            return format_number_2dp(get_stat(player, "DamageDealt", 0) / get_stat(player, "Deaths", 1))
         end,
     },
     KillDeathRatio = {
         default = format_number_zero,
         calculate = function(player)
-            return format_number_2dp(PlayerStats["Kills"]:get(player, 0) / PlayerStats["Deaths"]:get(player, 1))
+            return format_number_2dp(get_stat(player, "Kills", 0) / get_stat(player, "Deaths", 1))
         end,
     },
     SessionTime = {
         default = short_time_zero,
         calculate = function(player)
-            return short_time_format((PlayerStats["Playtime"]:get(player, 0) - PlayerStats["AfkTime"]:get(player, 0)) / PlayerStats["JoinCount"]:get(player, 1))
+            return short_time_format((get_stat(player, "Playtime", 0) - get_stat(player, "AfkTime", 0)) / get_stat(player, "JoinCount", 1))
         end,
     },
     BuildRatio = {
         default = format_number_zero,
         calculate = function(player)
-            return format_number_2dp(PlayerStats["MachinesBuilt"]:get(player, 0) / PlayerStats["MachinesRemoved"]:get(player, 1))
+            return format_number_2dp(get_stat(player, "MachinesBuilt", 0) / get_stat(player, "MachinesRemoved", 1))
         end,
     },
     RocketPerHour = {
         default = format_number_zero,
         calculate = function(player)
-            return format_number_2dp(PlayerStats["RocketsLaunched"]:get(player, 0) * 60 / PlayerStats["Playtime"]:get(player, 1))
+            return format_number_2dp(get_stat(player, "RocketsLaunched", 0) * 60 / get_stat(player, "Playtime", 1))
         end,
     },
     TreeKillPerMinute = {
         default = format_number_zero,
         calculate = function(player)
-            return format_number_2dp(PlayerStats["TreesDestroyed"]:get(player, 0) / PlayerStats["Playtime"]:get(player, 1))
+            return format_number_2dp(get_stat(player, "TreesDestroyed", 0) / get_stat(player, "Playtime", 1))
         end,
     },
     NetPlayTime = {
         default = short_time_zero,
         calculate = function(player)
-            return short_time_format((PlayerStats["Playtime"]:get(player, 0) - PlayerStats["AfkTime"]:get(player, 0)))
+            return short_time_format((get_stat(player, "Playtime", 0) - get_stat(player, "AfkTime", 0)))
         end,
     },
     AFKTimeRatio = {
         default = format_number_zero,
         calculate = function(player)
-            return format_number_2dp(PlayerStats["AfkTime"]:get(player, 0) * 100 / PlayerStats["Playtime"]:get(player, 1))
+            return format_number_2dp(get_stat(player, "AfkTime", 0) * 100 / get_stat(player, "Playtime", 1))
         end,
     },
     Locale = {
@@ -106,19 +113,15 @@ Elements.player_stats_table = Gui.define("player_stats/data_table")
         local labels = {}
 
         -- Add all standalone stats
-        for _, stat_name in pairs(PlayerData.Statistics.metadata.display_order) do
-            local metadata = PlayerData.Statistics[stat_name].metadata
-            local value = metadata.stringify_short and metadata.stringify_short(0)
-                or metadata.stringify and metadata.stringify(0)
-                or format_number(0, false)
+        for _, stat_name in ipairs(ExpPlayerStatistics.display_order) do
             Elements.table_label(data_table, {
-                caption = metadata.name or { "exp-statistics." .. stat_name },
-                tooltip = metadata.tooltip or { "exp-statistics." .. stat_name .. "-tooltip" },
+                caption = { "exp-statistics." .. stat_name },
+                tooltip = { "exp-statistics." .. stat_name .. "-tooltip" },
                 width = 135,
             })
             labels[stat_name] = Elements.table_label(data_table, {
-                caption = { "exp-gui_readme.data-format", value, metadata.unit or "" },
-                tooltip = metadata.value_tooltip or { "exp-statistics." .. stat_name .. "-tooltip" },
+                caption = { "exp-gui_readme.data-format", ExpPlayerStatistics.format(stat_name, 0, true), ExpPlayerStatistics.units[stat_name] or "" },
+                tooltip = { "exp-statistics." .. stat_name .. "-tooltip" },
                 width = 105,
             })
         end
@@ -148,18 +151,9 @@ function Elements.player_stats_table.refresh(data_table, player)
     local labels = Elements.player_stats_table.data[data_table]
 
     -- Update all standalone stats
-    for _, stat_name in pairs(PlayerStats.metadata.display_order) do
-        local stat = PlayerStats[stat_name]
-        local metadata = stat.metadata
-        local value = stat:get(player, 0)
-        if metadata.stringify_short then
-            value = metadata.stringify_short(value)
-        elseif metadata.stringify then
-            value = metadata.stringify(value)
-        else
-            value = format_number(value, false)
-        end
-        labels[stat_name].caption = { "exp-gui_readme.data-format", value, metadata.unit or "" }
+    for _, stat_name in ipairs(ExpPlayerStatistics.display_order) do
+        local value = ExpPlayerStatistics.format(stat_name, ExpPlayerStatistics.get(player, stat_name), true)
+        labels[stat_name].caption = { "exp-gui_readme.data-format", value, ExpPlayerStatistics.units[stat_name] or "" }
     end
 
     -- Update all computed stats

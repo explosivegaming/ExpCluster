@@ -52,6 +52,7 @@
 		"@expcluster/permission-groups": "workspace:^",
 		"@expcluster/roles": "workspace:^",
 		"@expcluster/server-list": "workspace:^",
+		"@expcluster/player-statistics": "workspace:^",
 		"@sinclair/typebox": "catalog:"
 	},
 	"publishConfig": {

@@ -5,7 +5,4 @@
 -- @config File-Loader
 return {
     "expcore.player_data", -- must be loaded first to register event handlers
-
-    --- Data
-    "modules.data.statistics",
 }

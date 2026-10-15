@@ -6,11 +6,10 @@ local ExpUtil = require("modules/exp_util")
 local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_roles")
 local Commands = require("modules/exp_commands")
-local PlayerData = require("modules.exp_legacy.expcore.player_data")
+local ExpPlayerStatistics = require("modules/exp_player_statistics")
 local ExpServerList = require("modules/exp_server_list")
 local community = require("modules/exp_scenario/config/community_details").config
 
-local format_number = require("util").format_number
 local format_time = ExpUtil.format_time_factory_locale{ format = "long", days = true, hours = true, minutes = true }
 
 local frame_width = 595
@@ -457,75 +456,14 @@ define_tab(
     end) --[[@as any]]
 )
 
---- @class (exact) ExpGui_Readme.elements.readme_data.param table
---- @field scroll_pane LuaGuiElement
---- @field player LuaPlayer
---- @field player_name string
---- @field children table
---- @field title LocalisedString
---- @field locale_prefix string
---- @field default_stringify fun(value: any): string
---- @field columns number
---- @field title_width number
---- @field column_width number
---- @field extra_rows fun(data_table: LuaGuiElement)?
-
---- Render a player data category
---- @param opts ExpGui_Readme.elements.readme_data.param
-local function render_data_category(opts)
-    local data_table = Elements.title_table(opts.scroll_pane, opts.title_width, opts.title, opts.columns)
-
-    if opts.extra_rows then
-        opts.extra_rows(data_table)
-    end
-
-    for name, child in pairs(opts.children) do
-        local metadata = child.metadata
-
-        if not metadata.permission or Roles.player_has_permission(opts.player, metadata.permission) then
-            local value = child:get(opts.player_name)
-
-            if value ~= nil or metadata.show_always then
-                if metadata.stringify_short then
-                    value = metadata.stringify_short(value)
-                elseif metadata.stringify then
-                    value = metadata.stringify(value)
-                else
-                    value = opts.default_stringify(value)
-                end
-
-                local tooltip = metadata.tooltip or { opts.locale_prefix .. name .. "-tooltip" }
-                Gui.elements.centered_label(
-                    data_table, 150,
-                    metadata.name or { opts.locale_prefix .. name },
-                    tooltip
-                )
-
-                Gui.elements.centered_label(
-                    data_table, opts.column_width,
-                    { "exp-gui_readme.data-format", value, metadata.unit or "" },
-                    metadata.value_tooltip or { "?", { opts.locale_prefix .. name .. "-value-tooltip" }, tooltip }
-                )
-            end
-        end
-    end
-end
-
---- Content area for the player data tab
+--- Content area for the statistics tab
 define_tab(
     { "exp-gui_readme.data-tab" },
     { "exp-gui_readme.data-tooltip" },
     Gui.define("readme/data")
     :draw(function(_, parent)
         local container = parent.add{ type = "flow", direction = "vertical" }
-
-        local player = Gui.get_player(parent)
-        local player_name = player.name
-
-        local enum = PlayerData.PreferenceEnum
-        local preference = PlayerData.DataSavingPreference:get(player_name)
-        local preference_meta = PlayerData.DataSavingPreference.metadata
-        preference = enum[preference]
+        local player_name = Gui.get_player(parent).name
 
         Gui.elements.title_label(container, title_width, { "exp-gui_readme.data-tab" })
         Gui.elements.centered_label(container, frame_width, { "exp-gui_readme.data-general" })
@@ -533,90 +471,14 @@ define_tab(
         container.add{ type = "flow" }
 
         local scroll_pane = Elements.title_table_scroll(container)
-
-        render_data_category{
-            scroll_pane = scroll_pane,
-            player = player,
-            player_name = player_name,
-            children = PlayerData.Required.children,
-            title = { "exp-gui_readme.data-required" },
-            locale_prefix = "exp-required.",
-            columns = 2,
-            title_width = 250,
-            column_width = 420,
-            default_stringify = tostring,
-            extra_rows = function(required)
-                Gui.elements.centered_label(required, 150, preference_meta.name, preference_meta.tooltip)
-                Gui.elements.centered_label(required, 420, { "expcore-data.preference-" .. enum[preference] }, preference_meta.value_tooltip)
-            end,
-        }
-
-        if preference <= enum.Settings then
-            render_data_category{
-                scroll_pane = scroll_pane,
-                player = player,
-                player_name = player_name,
-                children = PlayerData.Settings.children,
-                title = { "exp-gui_readme.data-settings" },
-                locale_prefix = "exp-settings.",
-                columns = 2,
-                title_width = 255,
-                column_width = 420,
-                default_stringify = function(value)
-                    return tostring(value or "None set")
-                end,
-            }
-        end
-
-        if preference <= enum.Statistics then
-            render_data_category{
-                scroll_pane = scroll_pane,
-                player = player,
-                player_name = player_name,
-                children = PlayerData.Statistics.children,
-                title = { "exp-gui_readme.data-statistics" },
-                locale_prefix = "exp-statistics.",
-                columns = 4,
-                title_width = 250,
-                column_width = 130,
-                default_stringify = function(value)
-                    return format_number(value or 0, false)
-                end,
-            }
-        end
-
-        local skip = {
-            DataSavingPreference = true,
-            Settings = true,
-            Statistics = true,
-            Required = true,
-        }
-
-        local count = 0
-        for _ in pairs(PlayerData.All.children) do
-            count = count + 1
-        end
-
-        if preference <= enum.All and count > 4 then
-            local misc = {}
-            for name, child in pairs(PlayerData.All.children) do
-                if not skip[name] then
-                    misc[name] = child
-                end
-            end
-
-            render_data_category{
-                scroll_pane = scroll_pane,
-                player = player,
-                player_name = player_name,
-                children = misc,
-                title = { "exp-gui_readme.data-misc" },
-                locale_prefix = "",
-                columns = 2,
-                title_width = 232,
-                column_width = 420,
-                default_stringify = tostring,
-            }
+        local statistics = scroll_pane.add{ type = "table", column_count = 4, style = "bordered_table" }
+        statistics.style.cell_padding = 0
+        statistics.style.horizontally_stretchable = true
+        for _, name in ipairs(ExpPlayerStatistics.display_order) do
+            local value = ExpPlayerStatistics.format(name, ExpPlayerStatistics.get(player_name, name), true)
+            local tooltip = { "exp-statistics." .. name .. "-tooltip" }
+            Gui.elements.centered_label(statistics, 150, { "exp-statistics." .. name }, tooltip)
+            Gui.elements.centered_label(statistics, 130, { "exp-gui_readme.data-format", value, ExpPlayerStatistics.units[name] or "" }, tooltip)
         end
 
         return container

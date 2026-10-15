@@ -1,0 +1,13 @@
+{
+	"name": "exp_player_statistics",
+	"load": [
+		"events.lua"
+	],
+	"require": [
+		"globals.lua"
+	],
+	"dependencies": {
+		"clusterio": "*",
+		"exp_util": "*"
+	}
+}
