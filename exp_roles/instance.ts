@@ -14,8 +14,14 @@ export default async function (context: InstancePluginContext) {
 	const syncMode = () => instance.config.get("exp_roles.sync_mode");
 
 	async function luaSend(receiver: string, json: any) {
+		const text = JSON.stringify(json);
+		// Role names and tags can contain anything, so pick a long bracket level the json does not close
+		let level = "=";
+		while (text.includes(`]${level}]`)) {
+			level += "=";
+		}
 		await instance.sendRcon(
-			`/sc exp_roles.${receiver}(helpers.json_to_table[=[${JSON.stringify(json)}]=])`, true
+			`/sc exp_roles.${receiver}(helpers.json_to_table[${level}[${text}]${level}])`, true
 		);
 	}
 

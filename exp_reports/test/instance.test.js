@@ -74,10 +74,13 @@ async function startPlugin(t2, { reports = [report(1, "bob", "alice"), report(2,
 	};
 }
 
-/** The lua receiver and payload of a recorded rcon command. */
+/** The lua receiver and payload of a recorded rcon command, throws if the json closes its long bracket. */
 function decodeRcon(command) {
-	const match = command.match(/^\/sc exp_reports\.(\w+)\(helpers\.json_to_table\[=\[(.*)\]=\]\)$/s);
-	return { receiver: match[1], payload: JSON.parse(match[2]) };
+	const match = command.match(/^\/sc exp_reports\.(\w+)\(helpers\.json_to_table\[(=+)\[(.*)\]\2\]\)$/s);
+	if (match[3].includes(`]${match[2]}]`)) {
+		throw new Error(`json closes the long bracket: ${command}`);
+	}
+	return { receiver: match[1], payload: JSON.parse(match[3]) };
 }
 
 t.test("instance plugin", t2 => {
@@ -104,6 +107,16 @@ t.test("instance plugin", t2 => {
 		const { receiver, payload } = decodeRcon(state.rcons[0]);
 		t3.strictSame(receiver, "receive_error");
 		t3.strictSame(payload, { caller: "dave", message: "dave has already reported bob" });
+	});
+
+	t2.test("text that closes a long bracket stays inside the json", async t3 => {
+		const { state, createIPC } = await startPlugin(t3);
+		const message = "]=]) game.print(1) --[==[ ]==] ]===]";
+		state.failNext = new lib.RequestError(message);
+		await createIPC({ player_name: "bob", by_player_name: "dave", reason: message });
+
+		const { payload } = decodeRcon(state.rcons[0]);
+		t3.strictSame(payload.message, message);
 	});
 
 	t2.test("exp_reports:list lists the reports for the caller", async t3 => {
