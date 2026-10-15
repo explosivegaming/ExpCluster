@@ -1,5 +1,7 @@
 # ExpGui Framework Guide
 
+ExpGui is a Clusterio plugin that patches the `exp_gui` module into the save. The module is a Lua library for defining Factorio GUIs, and other modules load it with `require("modules/exp_gui")`. It depends on the `exp_util` module. The plugin has no config, permissions or Node messages.
+
 This guide presents best practices for creating GUIs in Factorio and demonstrates how the ExpGui framework can help streamline development.
 If you’re new to GUI creation in Factorio, we recommend starting with [Therenas' helpful tutorial](https://github.com/ClaudeMetz/UntitledGuiGuide/wiki) to build a solid foundation.
 We also recommend [Raiguard's style guide](https://man.sr.ht/~raiguard/factorio-gui-style-guide/) if you are looking to mimic the design principles employed by the game's own guis.

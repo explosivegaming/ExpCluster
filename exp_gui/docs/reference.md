@@ -442,7 +442,7 @@ If a state argument is not given then this becomes `toggle_button_toggled_state`
 This method does not raise `on_click`; instead, it raises `on_button_toggled`
 
 ```lua
-Gui.toolbar.set_button_toggled_state(Elements.toggle_me, true)
+Gui.toolbar.set_button_toggled_state(Elements.toggle_me, player, true)
 ```
 
 ### `Gui.toolbar.set_left_element_visible_state`
@@ -453,5 +453,5 @@ If a state argument is not given then this becomes `toggle_left_element_visible_
 When a toolbar button is linked, this method also raises `on_button_toggled` for that button to reflect the change.
 
 ```lua
-Gui.toolbar.set_button_toggled_state(Elements.my_frame, true)
+Gui.toolbar.set_left_element_visible_state(Elements.my_frame, player, true)
 ```
