@@ -36,8 +36,14 @@ export default async function (context: InstancePluginContext) {
 		if (instance.status !== "running") {
 			return;
 		}
+		const text = JSON.stringify(json);
+		// Reasons can contain anything, so pick a long bracket level the json does not close
+		let level = "=";
+		while (text.includes(`]${level}]`)) {
+			level += "=";
+		}
 		await instance.sendRcon(
-			`/sc exp_reports.${receiver}(helpers.json_to_table[=[${JSON.stringify(json)}]=])`, true
+			`/sc exp_reports.${receiver}(helpers.json_to_table[${level}[${text}]${level}])`, true
 		);
 	}
 

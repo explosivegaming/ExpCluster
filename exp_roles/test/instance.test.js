@@ -83,10 +83,13 @@ async function startPlugin(t2, { syncMode = "bidirectional", roles = sampleRoles
 	};
 }
 
-/** The lua receiver and payload of a recorded rcon command. */
+/** The lua receiver and payload of a recorded rcon command, throws if the json closes its long bracket. */
 function decodeRcon(command) {
-	const match = command.match(/^\/sc exp_roles\.(\w+)\(helpers\.json_to_table\[=\[(.*)\]=\]\)$/s);
-	return { receiver: match[1], payload: JSON.parse(match[2]) };
+	const match = command.match(/^\/sc exp_roles\.(\w+)\(helpers\.json_to_table\[(=+)\[(.*)\]\2\]\)$/s);
+	if (match[3].includes(`]${match[2]}]`)) {
+		throw new Error(`json closes the long bracket: ${command}`);
+	}
+	return { receiver: match[1], payload: JSON.parse(match[3]) };
 }
 
 t.test("entrypoint", async t2 => {
@@ -159,6 +162,14 @@ t.test("instance plugin", t2 => {
 		await assignmentUpdated(new messages.AssignmentUpdatedEvent(sampleAssignments()));
 		const assignments = decodeRcon(state.rcons[1]);
 		t3.strictSame(assignments.receiver, "receive_assignment_updates", "assignment updates are forwarded");
+	});
+
+	t2.test("role names that close a long bracket stay inside the json", async t3 => {
+		const { state, roleUpdated } = await startPlugin(t3);
+		const records = sampleRoles();
+		records[0].name = "]=]) game.print(1) --[==[ ]==]";
+		await roleUpdated(new messages.RoleUpdatedEvent(records));
+		t3.strictSame(decodeRcon(state.rcons[0]).payload[0].name, records[0].name);
 	});
 
 	t2.test("role and assignment updates are gated while disabled", async t3 => {
