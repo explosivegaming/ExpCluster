@@ -5,7 +5,6 @@ local Public = {}
 
 local pages = {
     require("modules/exp_scenario/gui/debug/redmew_global_view"),
-    require("modules/exp_scenario/gui/debug/expcore_datastore_view"),
     require("modules/exp_scenario/gui/debug/expcore_gui_view"),
     require("modules/exp_scenario/gui/debug/global_view"),
     require("modules/exp_scenario/gui/debug/package_view"),
