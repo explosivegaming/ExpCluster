@@ -1,6 +1,6 @@
 # ExpGaming - Server List
 
-Shares the details of every instance with every other instance. Replaces `expcore/external` from exp_legacy, which read the same data from a file written by an outside service.
+Shares the details of every instance with every other instance.
 
 The controller keeps one record per instance with its name, mod pack, Factorio version, players online, status and address. The address is the public address of the host and the game port of the instance, the same one the web UI shows. Whether the server has a game password is sent, the password is not. Nothing is saved, the records are rebuilt from the instances when the controller starts.
 
