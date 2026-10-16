@@ -14,19 +14,16 @@
 		"node": ">=22"
 	},
 	"peerDependencies": {
-		"@clusterio/controller": "workspace:^",
 		"@clusterio/host": "workspace:^",
 		"@clusterio/lib": "workspace:^"
 	},
 	"peerDependenciesMeta": {
-		"@clusterio/controller": {
-			"optional": true
-		},
 		"@clusterio/host": {
 			"optional": true
 		}
 	},
 	"devDependencies": {
+		"@clusterio/host": "workspace:^",
 		"@clusterio/lib": "workspace:^",
 		"typescript": "catalog:",
 		"@types/node": "catalog:",
