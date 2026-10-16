@@ -9,7 +9,7 @@ local valid_state = { order = { { name = "readme", favourite = true } }, open = 
 --- @return table restored Calls to set_state as { player name, state }
 local function load(env, toolbar)
     local restored = {}
-    env.extend_defines{ events = { on_player_locale_changed = 3, on_player_left_game = 4 } }
+    env.extend_defines{ events = { on_player_left_game = 4 } }
     env.extend_requires{
         ["modules/exp_gui"] = {
             toolbar = toolbar or {
@@ -27,13 +27,6 @@ local function load(env, toolbar)
     }
     return env.load_module("control/player_settings"), restored
 end
-
-Suite.test("send_locale() sends the locale of the player", function(env)
-    local PlayerSettings = load(env)
-    rawset(env.add_player{ name = "Alice" }, "locale", "pt-BR")
-    PlayerSettings.events[defines.events.on_player_joined_game]{ player_index = 1 }
-    Suite.eq(env.sent, { { channel = "exp_scenario:locale", data = { player_name = "Alice", locale = "pt-BR" } } }, "sent")
-end)
 
 Suite.test("send_toolbar() sends the compressed toolbar when a player leaves", function(env)
     local PlayerSettings = load(env)

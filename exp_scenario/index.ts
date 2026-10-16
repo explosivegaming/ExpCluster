@@ -27,7 +27,6 @@ export const plugin: lib.PluginDeclaration = {
 		messages.FeatureUpdateRequest,
 		messages.PlayerGetRequest,
 		messages.JoinMessageSetRequest,
-		messages.PlayerLocaleEvent,
 		messages.PlayerToolbarEvent,
 	],
 

@@ -4,7 +4,6 @@ import { Button, Descriptions, Input, Space } from "antd";
 import { ControlContext, PluginExtensionProps, SectionHeader, notifyErrorHandler, useAccount } from "@clusterio/web_ui";
 
 import { JoinMessageSetRequest, PlayerGetRequest, PlayerRecord, joinMessageMaxLength } from "../../messages.js";
-import { localeFlag, localeName } from "../../locales.js";
 
 /** The settings the scenario keeps for a player, shown on their user page. */
 export default function UserPlayerSettings(props: PluginExtensionProps<"UserViewPage">) {
@@ -49,11 +48,6 @@ export default function UserPlayerSettings(props: PluginExtensionProps<"UserView
 	return <>
 		<SectionHeader title="Scenario" />
 		<Descriptions bordered size="small" column={1}>
-			<Descriptions.Item label="Language">
-				{record.locale
-					? `${localeFlag(record.locale)} ${localeName(record.locale)} (${record.locale})`.trim()
-					: <span style={{ color: "#888" }}>Unknown</span>}
-			</Descriptions.Item>
 			<Descriptions.Item label="Join message">
 				{draft !== undefined
 					? <Space.Compact style={{ width: "100%", maxWidth: 600 }}>

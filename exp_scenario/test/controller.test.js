@@ -278,18 +278,6 @@ t.test("player settings", t2 => {
 		t3.equal(record.joinMessage, "Bye", "kept across restarts");
 	});
 
-	t2.test("PlayerLocaleEvent stores the locale next to the join message", async t3 => {
-		const { send } = await startPlugin(t3, { withPlugins: false });
-		await send(new messages.JoinMessageSetRequest("Alice", "Hi"));
-		await send(new messages.PlayerLocaleEvent("Alice", "pt-BR"));
-		const record = await send(new messages.PlayerGetRequest("Alice"));
-		t3.strictSame([record.joinMessage, record.locale], ["Hi", "pt-BR"]);
-
-		await send(new messages.JoinMessageSetRequest("Alice", null));
-		const cleared = await send(new messages.PlayerGetRequest("Alice"));
-		t3.equal(cleared.locale, "pt-BR", "clearing the message keeps the locale");
-	});
-
 	t2.test("PlayerToolbarEvent stores the toolbar and it is saved", async t3 => {
 		const databaseDirectory = t3.testdir();
 		const { send, save } = await startPlugin(t3, { withPlugins: false, databaseDirectory });

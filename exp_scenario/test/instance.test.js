@@ -196,7 +196,7 @@ t.test("player settings", t2 => {
 	});
 
 	t2.test("a joining player's stored toolbar is sent to the lua side", async t3 => {
-		const bob = new messages.PlayerRecord("Bob", undefined, undefined, "eNqrVkrLz1eyUlBKSixSqgUAGQwD8g==");
+		const bob = new messages.PlayerRecord("Bob", undefined, "eNqrVkrLz1eyUlBKSixSqgUAGQwD8g==");
 		const { start, playerEvent, setStatus, state } = await startPlugin(t3, [], [bob]);
 		await start();
 		setStatus("running");
@@ -214,13 +214,6 @@ t.test("player settings", t2 => {
 		await ipc("exp_scenario:toolbar", { player_name: "Alice", toolbar: "abc" });
 		const [event] = state.sent.filter(request => request instanceof messages.PlayerToolbarEvent);
 		t3.strictSame([event.playerName, event.toolbar], ["Alice", "abc"]);
-	});
-
-	t2.test("ipc with a locale is forwarded to the controller", async t3 => {
-		const { ipc, state } = await startPlugin(t3);
-		await ipc("exp_scenario:locale", { player_name: "Alice", locale: "de" });
-		const [event] = state.sent.filter(request => request instanceof messages.PlayerLocaleEvent);
-		t3.strictSame([event.playerName, event.locale], ["Alice", "de"]);
 	});
 
 	t2.test("ipc asking for the message prints it to the player", async t3 => {
