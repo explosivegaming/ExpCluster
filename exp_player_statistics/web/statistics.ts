@@ -31,7 +31,7 @@ const timeStatistics = new Set(["Playtime", "AfkTime"]);
 
 export function formatValue(name: string, value: number) {
 	if (timeStatistics.has(name)) {
-		return `${Math.floor(value / 60)}h ${value % 60}m`;
+		return `${Math.floor(value / 60)} h ${value % 60} m`;
 	}
 	if (name === "DistanceTravelled") {
 		return `${value.toLocaleString()} tiles`;
