@@ -1,6 +1,6 @@
 {
 	"name": "@expcluster/discord-auth",
-	"version": "7.0.2",
+	"version": "7.0.3",
 	"description": "Clusterio plugin linking Factorio accounts to Discord accounts and logging in to the web interface with Discord",
 	"author": "Cooldude2606 <https://github.com/Cooldude2606>",
 	"license": "MIT",

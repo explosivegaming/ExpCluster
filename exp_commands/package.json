@@ -1,6 +1,6 @@
 {
 	"name": "@expcluster/lib_commands",
-	"version": "7.0.2",
+	"version": "7.0.3",
 	"description": "Clusterio plugin providing a Lua command processing library.",
 	"author": "Cooldude2606 <https://github.com/Cooldude2606>",
 	"license": "MIT",

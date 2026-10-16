@@ -1,6 +1,6 @@
 {
 	"name": "@expcluster/server-ups",
-	"version": "7.0.2",
+	"version": "7.0.3",
 	"description": "Clusterio plugin providing in game server ups counter",
 	"author": "Cooldude2606 <https://github.com/Cooldude2606>",
 	"license": "MIT",
