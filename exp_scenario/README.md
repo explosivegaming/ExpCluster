@@ -85,7 +85,6 @@ It can be run again. Roles that already exist by name keep their permissions and
 The controller keeps some settings per player in `database/exp_scenario/players.json`, so they follow a player between servers:
 
 - Join message. Printed to everyone when the player joins, unless `greetings` is disabled. Set in game with `/set-join-message` and removed with `/remove-join-message`, or edited on the user page of the web interface. Up to 255 characters.
-- Locale. Sent when the player joins and when they change language, shown on the user page.
 - Toolbar. The order and state of the player's toolbar buttons, sent when they leave and restored when they join.
 
 ## Permissions

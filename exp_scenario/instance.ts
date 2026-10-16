@@ -7,8 +7,6 @@ import { features, FeatureValue } from "./features.js";
 export type IpcJoinMessageSet = { player_name: string, message?: string };
 /** Sent by the lua side when a player asks for their join message */
 export type IpcJoinMessageGet = { player_name: string };
-/** Sent by the lua side when a player joins or changes language, see module/control/player_settings.lua */
-export type IpcLocale = { player_name: string, locale: string };
 /** Sent by the lua side when a player leaves */
 export type IpcToolbar = { player_name: string, toolbar: string };
 
@@ -96,10 +94,6 @@ export default async function (context: InstancePluginContext) {
 			record.joinMessage ? { message: record.joinMessage } : {},
 			"p.print(d.message and { \"exp_greetings.message-get\", d.message } or { \"exp_greetings.message-none\" })",
 		);
-	});
-
-	instance.server.handle("exp_scenario:locale", async (event: IpcLocale) => {
-		instance.sendTo("controller", new messages.PlayerLocaleEvent(event.player_name, event.locale));
 	});
 
 	instance.server.handle("exp_scenario:toolbar", async (event: IpcToolbar) => {

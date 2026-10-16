@@ -8,12 +8,6 @@ calls receive_toolbar with it when they join again
 local Gui = require("modules/exp_gui")
 local clusterio_api = require("modules/clusterio/api")
 
---- @param event EventData.on_player_joined_game | EventData.on_player_locale_changed
-local function send_locale(event)
-    local player = assert(game.get_player(event.player_index))
-    clusterio_api.send_json("exp_scenario:locale", { player_name = player.name, locale = player.locale })
-end
-
 --- @param event EventData.on_player_left_game
 local function send_toolbar(event)
     local player = assert(game.get_player(event.player_index))
@@ -60,8 +54,6 @@ local e = defines.events
 
 return {
     events = {
-        [e.on_player_joined_game] = send_locale,
-        [e.on_player_locale_changed] = send_locale,
         [e.on_player_left_game] = send_toolbar,
     },
     receive_toolbar = receive_toolbar,

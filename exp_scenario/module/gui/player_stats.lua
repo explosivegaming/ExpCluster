@@ -80,12 +80,6 @@ local computed_stats = {
             return format_number_2dp(get_stat(player, "AfkTime", 0) * 100 / get_stat(player, "Playtime", 1))
         end,
     },
-    Locale = {
-        default = "en",
-        calculate = function(player)
-            return player.locale
-        end,
-    },
 }
 
 --- Label used for all data in the data table
