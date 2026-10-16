@@ -29,7 +29,7 @@ This is a plugin collection for [Clusterio](https://github.com/clusterio/cluster
 
 To use this plugin you must have a clusterio instance running, see [here](https://github.com/clusterio/clusterio?tab=readme-ov-file#installation) for clusterio installation instructions.
 
-This module is currently not published and therefore can not be installed via `npm`. Instead follow the steps for [building from source](#building-from-source)
+These plugins can then be installed via `npm install` or using `npx clusteriocontroller plugin install`. See [our plugin list](#plugins) for all the plugins which are available.
 
 ## Building from source
 
@@ -73,6 +73,7 @@ For the locale, access to [Translation](https://translate.aperx.org).
 
 | Release* | Release Name | Factorio Version** |
 |---|---|---|
+| [7.0.2][s7.0.2] | Clusterio Plugin (Release) | [2.1.22][f2.1.22] |
 | [7.0][s7.0] | Clusterio Plugin (Beta) | [2.1.7][f2.1.7] |
 | [6.4][s6.4] | Farewell Factorio 1.1 | [1.1.110][f1.1.110] |
 | [6.3][s6.3] | Feature Bundle 2: Electric Boogaloo | [1.1.101][f1.1.101] |
@@ -100,6 +101,7 @@ For the locale, access to [Translation](https://translate.aperx.org).
 
 \*\* Factorio versions show the version they were made for, often the minimum requirement to run the scenario.
 
+[s7.0.2]: https://github.com/explosivegaming/scenario/releases/tag/7.0.2
 [s7.0]: https://github.com/explosivegaming/scenario/releases/tag/7.0.0
 [s6.4]: https://github.com/explosivegaming/scenario/releases/tag/6.4.0
 [s6.3]: https://github.com/explosivegaming/scenario/releases/tag/6.3.0
@@ -123,6 +125,7 @@ For the locale, access to [Translation](https://translate.aperx.org).
 [s1.0]: https://github.com/explosivegaming/scenario/releases/tag/v1.0
 [s0.1]: https://github.com/explosivegaming/scenario/releases/tag/v0.1
 
+[f2.1.22]: https://wiki.factorio.com/Version_history/2.1.0#2.1.22
 [f2.1.7]: https://wiki.factorio.com/Version_history/2.1.0#2.1.7
 [f1.1.110]: https://wiki.factorio.com/Version_history/1.1.0#1.1.110
 [f1.1.101]: https://wiki.factorio.com/Version_history/1.1.0#1.1.101
