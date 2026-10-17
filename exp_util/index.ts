@@ -5,4 +5,5 @@ export const plugin: lib.PluginDeclaration = {
 	title: "ExpGaming - Module Utilities",
 	description: "Provides extensions and overrides of base Lua library functions, and provides utility modules for improved module compatibly",
 	instanceEntrypoint: "./dist/node/instance.js",
+	webEntrypoint: "./web",
 };

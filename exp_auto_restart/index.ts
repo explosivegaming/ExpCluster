@@ -13,6 +13,7 @@ export const plugin: lib.PluginDeclaration = {
 	name: "exp_auto_restart",
 	title: "ExpGaming - Auto Restart",
 	description: "Clusterio plugin restarting hosts and the controller once no players are online",
+	webEntrypoint: "./web",
 
 	controllerEntrypoint: "./dist/node/controller.js",
 	controllerConfigFields: {

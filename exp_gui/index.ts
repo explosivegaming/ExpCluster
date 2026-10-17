@@ -5,4 +5,5 @@ export const plugin: lib.PluginDeclaration = {
 	title: "ExpGaming - GUI",
 	description: "Clusterio plugin providing a Lua GUI definition library.",
 	instanceEntrypoint: "./dist/node/instance.js",
+	webEntrypoint: "./web",
 };

@@ -24,6 +24,7 @@ export const plugin: lib.PluginDeclaration = {
 	name: "exp_server_list",
 	title: "ExpGaming - Server List",
 	description: "Clusterio plugin sharing the details of every instance with the others",
+	webEntrypoint: "./web",
 
 	controllerEntrypoint: "./dist/node/controller.js",
 	instanceEntrypoint: "./dist/node/instance.js",
