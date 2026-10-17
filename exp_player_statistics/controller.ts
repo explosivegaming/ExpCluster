@@ -49,7 +49,7 @@ export default async function (context: ControllerPluginContext) {
 		const record = players.get(request.name);
 		return new messages.PlayerStatistics(request.name, {
 			...record?.stats,
-			...messages.userStatistics(controller.users.getByName(request.name)),
+			...messages.userStatistics(controller.users.getByName(request.name), record?.stats),
 		}, record?.updatedAtMs);
 	});
 

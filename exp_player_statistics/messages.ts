@@ -42,11 +42,11 @@ export class PlayerStatistics {
 	}
 }
 
-/** Statistics clusterio already keeps for every user, shown with the others but never added to */
-export function userStatistics(user?: Pick<lib.UserDetails, "playerStats">): Record<string, number> {
+/** Statistics clusterio already keeps for every user, shown with the others but never added to, existing stats may contain legacy values */
+export function userStatistics(user?: Pick<lib.UserDetails, "playerStats">, stats: Record<string, number> = {}): Record<string, number> {
 	return {
-		Playtime: Math.floor((user?.playerStats.onlineTimeMs ?? 0) / 60e3),
-		JoinCount: user?.playerStats.joinCount ?? 0,
+		Playtime: (stats.Playtime ?? 0) + Math.floor((user?.playerStats.onlineTimeMs ?? 0) / 60e3),
+		JoinCount: (stats.JoinCount ?? 0) + (user?.playerStats.joinCount ?? 0),
 	};
 }
 
