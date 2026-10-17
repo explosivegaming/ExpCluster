@@ -180,7 +180,7 @@ function Elements.join_server.refresh(button, server)
 
     elseif status == "Modded" then
         button.enabled = true
-        button.sprite = "utility/downloading_white"
+        button.sprite = "utility/downloading"
         button.hovered_sprite = "utility/downloading"
 
     else
