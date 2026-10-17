@@ -1,6 +1,6 @@
 {
 	"name": "@expcluster/server-list",
-	"version": "7.0.3",
+	"version": "7.0.4",
 	"description": "Clusterio plugin sharing the details of every instance with the others.",
 	"author": "Cooldude2606 <https://github.com/Cooldude2606>",
 	"license": "MIT",

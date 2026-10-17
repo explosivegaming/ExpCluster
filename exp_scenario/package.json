@@ -1,6 +1,6 @@
 {
 	"name": "@expcluster/scenario",
-	"version": "7.0.3",
+	"version": "7.0.4",
 	"description": "Clusterio plugin implementing the Explosive Gaming scenario.",
 	"author": "Cooldude2606 <https://github.com/Cooldude2606>",
 	"license": "MIT",

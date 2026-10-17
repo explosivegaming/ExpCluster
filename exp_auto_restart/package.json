@@ -1,6 +1,6 @@
 {
 	"name": "@expcluster/auto-restart",
-	"version": "7.0.3",
+	"version": "7.0.4",
 	"description": "Clusterio plugin restarting hosts and the controller once no players are online.",
 	"author": "Cooldude2606 <https://github.com/Cooldude2606>",
 	"license": "MIT",

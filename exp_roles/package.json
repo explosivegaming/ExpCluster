@@ -1,6 +1,6 @@
 {
 	"name": "@expcluster/roles",
-	"version": "7.0.3",
+	"version": "7.0.4",
 	"description": "Clusterio plugin providing syncing of in game roles.",
 	"author": "Cooldude2606 <https://github.com/Cooldude2606>",
 	"license": "MIT",
