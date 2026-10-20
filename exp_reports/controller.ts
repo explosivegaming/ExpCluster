@@ -75,10 +75,13 @@ export default async function (context: ControllerPluginContext) {
 						{ name: "Player", value: event.playerName, inline: true },
 						{ name: "Instance", value: event.instanceName, inline: true },
 						...entry ? [{ name: `Watch list, added by ${entry.byPlayerName}`, value: entry.reason }] : [],
-						...event.unreadReports.map(report => ({
+						...event.unreadReports.slice(0, 3).map(report => ({
 							name: `Unread report by ${report.byPlayerName}`, value: report.reason,
 						})),
 					],
+					...event.unreadReports.length > 3 ? {
+						footer: { text: `+${event.unreadReports.length - 3} more unread reports` },
+					} : {},
 				}],
 			});
 		}
@@ -104,11 +107,14 @@ export default async function (context: ControllerPluginContext) {
 		}
 	}
 
-	/** Tell every instance and the webhooks when a watched player joins. */
+	/** Tell the instances and the webhooks when a watched player joins, names are case insensitive. */
 	function playerJoined(instance: InstanceRecord, playerName: string) {
-		const watchListEntry = watchList.get(playerName);
+		const key = playerName.toLowerCase();
+		const watchListEntry = watchList.get(key);
 		const unreadReports = controller.config.get("exp_reports.watch_unread_reports")
-			? listReports(playerName).filter(report => !report.isRead)
+			? [...reports.values()]
+				.filter(report => !report.isRead && report.playerName.toLowerCase() === key)
+				.sort((a, b) => b.createdAtMs - a.createdAtMs)
 			: [];
 		if (!watchListEntry && !unreadReports.length) {
 			return;
@@ -117,7 +123,11 @@ export default async function (context: ControllerPluginContext) {
 		const event = new messages.WatchedPlayerJoinedEvent(
 			playerName, instance.config.get("instance.name"), watchListEntry, unreadReports,
 		);
-		controller.sendTo("allInstances", event);
+		if (controller.config.get("exp_reports.announce_to_all_instances")) {
+			controller.sendTo("allInstances", event);
+		} else {
+			controller.sendTo({ instanceId: instance.id }, event);
+		}
 		sendJoinWebhooks(event);
 	}
 
@@ -215,8 +225,9 @@ export default async function (context: ControllerPluginContext) {
 		if (!request.reason.trim()) {
 			throw new lib.RequestError("A reason is required");
 		}
-		if (watchList.has(playerName)) {
-			throw new lib.RequestError(`${playerName} is already on the watch list`);
+		const existing = watchList.get(playerName.toLowerCase());
+		if (existing) {
+			throw new lib.RequestError(`${existing.playerName} is already on the watch list`);
 		}
 
 		const entry = new messages.WatchListRecord(playerName, request.reason.trim(), controlUserName(src), Date.now());
@@ -225,14 +236,14 @@ export default async function (context: ControllerPluginContext) {
 	});
 
 	controller.handle(messages.WatchListRemoveRequest, async (request: messages.WatchListRemoveRequest) => {
-		const entry = watchList.getMutable(request.playerName);
+		const entry = watchList.getMutable(request.playerName.toLowerCase());
 		if (!entry) {
 			throw new lib.RequestError(`${request.playerName} is not on the watch list`);
 		}
 		watchList.delete(entry);
 	});
 
-	controller.hooks.shutdown.attach(plugin.name, async () => {
+	controller.hooks.save.attach(plugin.name, async () => {
 		await reports.save();
 		await watchList.save();
 	});

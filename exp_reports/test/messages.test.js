@@ -30,7 +30,7 @@ t.test("class WatchListRecord", t2 => {
 		[0, 12345], // updatedAtMs
 		[false, true], // isDeleted
 	));
-	t2.equal(sampleEntry.id, "bob", "the player name is the id");
+	t2.equal(new messages.WatchListRecord("Bob", "griefing", "alice").id, "bob", "the lower case player name is the id");
 
 	t2.end();
 });

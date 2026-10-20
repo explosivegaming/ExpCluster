@@ -89,8 +89,9 @@ export class WatchListRecord {
 		public isDeleted: boolean = false,
 	) {}
 
+	/** Player names are case insensitive in Factorio and Clusterio. */
 	get id() {
-		return this.playerName;
+		return this.playerName.toLowerCase();
 	}
 
 	static jsonSchema = Type.Object({
@@ -400,10 +401,12 @@ export class WatchListRemoveRequest {
 
 /**
  * A watched player joined an instance, sent to every instance so admins
- * everywhere see it.
+ * everywhere see it, or only to the one they joined when
+ * exp_reports.announce_to_all_instances is off.
  *
  * The player is watched because of their watch list entry, their unread
- * reports when exp_reports.watch_unread_reports is set, or both.
+ * reports when exp_reports.watch_unread_reports is set, or both. Unread
+ * reports are newest first.
  */
 export class WatchedPlayerJoinedEvent {
 	declare ["constructor"]: typeof WatchedPlayerJoinedEvent;

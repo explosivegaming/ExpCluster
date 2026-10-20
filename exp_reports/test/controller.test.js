@@ -98,10 +98,10 @@ t.test("entrypoint", async t2 => {
 	const controllerConfig = new lib.ControllerConfig("controller", { "controller.database_directory": t2.testdir() });
 	const controller = new Controller(logger, [], controllerConfig);
 	await entrypoint({ controller, logger, plugin: { name: "exp_reports" }, metrics: undefined });
-	for (const hook of ["playerEvent", "shutdown"]) {
+	for (const hook of ["playerEvent", "save"]) {
 		t2.ok([...controller.hooks[hook].attached].includes("exp_reports"), `attached to ${hook}`);
 	}
-	await controller.hooks.shutdown.invoke();
+	await controller.hooks.save.invoke();
 });
 
 t.test("controller plugin", t2 => {
@@ -223,10 +223,13 @@ t.test("controller plugin", t2 => {
 		t3.strictSame((await watchSubscription(0)).updates, [entry], "subscribers get the entry");
 
 		await t3.rejects(watch("bob", "again"), { message: "bob is already on the watch list" });
+		await t3.rejects(
+			watch("BOB", "again"), { message: "bob is already on the watch list" }, "names are case insensitive",
+		);
 		await t3.rejects(watch(" ", "spam"), { message: "A player name is required" });
 		await t3.rejects(watch("carol", " "), { message: "A reason is required" });
 
-		await unwatch("bob");
+		await unwatch("Bob");
 		t3.ok(
 			state.broadcasts.some(event => event instanceof messages.WatchListUpdatedEvent && event.updates[0].isDeleted),
 			"subscribers are told it was removed",
@@ -258,6 +261,49 @@ t.test("controller plugin", t2 => {
 			[["Player", "bob"], ["Instance", "EXP"], ["Watch list, added by admin", "griefing"]],
 		);
 		t3.strictSame(state.posts[1].body, { type: "watched_player_joined", ...message.toJSON() });
+	});
+
+	t2.test("watch list names match joins case insensitively", async t3 => {
+		const { controller, watch, create, join, state } = await startPlugin(t3);
+		const entry = await watch("Bob", "griefing");
+		await join("bOB");
+		t3.strictSame(state.sent[0].message.watchListEntry, entry, "the entry is found");
+		t3.strictSame(state.sent[0].message.playerName, "bOB", "the event names the player as they joined");
+
+		state.sent.length = 0;
+		controller.config.set("exp_reports.watch_unread_reports", true);
+		await create("carol", "spam", "alice");
+		await join("CAROL");
+		t3.strictSame(state.sent[0].message.unreadReports.length, 1, "unread reports are found");
+	});
+
+	t2.test("the join goes only to the joined instance when announce_to_all_instances is off", async t3 => {
+		const { controller, watch, join, state } = await startPlugin(t3);
+		await watch("bob", "griefing");
+		controller.config.set("exp_reports.announce_to_all_instances", false);
+		await join("bob");
+		t3.strictSame(state.sent[0].dst, { instanceId: 1 });
+	});
+
+	t2.test("the discord embed lists the three newest unread reports and counts the rest", async t3 => {
+		const { create, join, state } = await startPlugin(t3, { config: {
+			"exp_reports.discord_webhook_url": "https://discord.example/hook",
+			"exp_reports.watch_unread_reports": true,
+		} });
+		for (const [index, reporter] of ["a", "b", "c", "d", "e"].entries()) {
+			const report = await create("bob", `reason ${index}`, reporter);
+			report.createdAtMs = 1000 + index;
+		}
+		state.posts.length = 0;
+		await join("bob");
+
+		const embed = state.posts[0].body.embeds[0];
+		t3.strictSame(
+			embed.fields.slice(2).map(field => field.value), ["reason 4", "reason 3", "reason 2"],
+			"the newest three are listed",
+		);
+		t3.strictSame(embed.footer, { text: "+2 more unread reports" });
+		t3.strictSame(state.sent[0].message.unreadReports.length, 5, "the instances still get every report");
 	});
 
 	t2.test("unread reports count as the watch list only when configured", async t3 => {

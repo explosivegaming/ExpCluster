@@ -6,6 +6,7 @@ declare module "@clusterio/lib" {
 		"exp_reports.discord_webhook_url": string | null;
 		"exp_reports.json_webhook_url": string | null;
 		"exp_reports.watch_unread_reports": boolean;
+		"exp_reports.announce_to_all_instances": boolean;
 	}
 	export interface Permissions {
 		"exp_reports.report.get": never;
@@ -123,6 +124,12 @@ export const plugin: lib.PluginDeclaration = {
 			description: "Treat players with unread reports as if they were on the watch list.",
 			type: "boolean",
 			initialValue: false,
+		},
+		"exp_reports.announce_to_all_instances": {
+			title: "Announce to All Instances",
+			description: "Tell admins on every instance when a watched player joins, instead of only the instance they joined.",
+			type: "boolean",
+			initialValue: true,
 		},
 	},
 

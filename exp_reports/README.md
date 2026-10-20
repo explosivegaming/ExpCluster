@@ -4,7 +4,7 @@ Lets players report each other in game or from the web interface. Reports are ke
 
 Each report has the reported player, the player who made it, a reason, the instance it was made on and the time. A player can only report the same player once. Reports can't be edited, only marked as read or unread from the web interface, and deleted. Nothing is stored in the Lua state, every command sends a request to the controller and the answer is printed once it arrives.
 
-The plugin also keeps a watch list in `database/exp_reports/watch_list.json`. When a player on it joins any instance, every admin online on every instance is told who joined where and why they are watched, and the join is posted to the webhooks. With `exp_reports.watch_unread_reports` set, players with unread reports are treated as if they were on the watch list, and their unread reports are listed with the join.
+The plugin also keeps a watch list in `database/exp_reports/watch_list.json`. When a player on it joins any instance, every admin online on every instance is told who joined where and why they are watched, and the join is posted to the webhooks. Names on the watch list are case insensitive, like Factorio and Clusterio user names. With `exp_reports.watch_unread_reports` set, players with unread reports are treated as if they were on the watch list, and their unread reports are listed with the join.
 
 ## Config
 
@@ -15,8 +15,9 @@ All fields are on the controller.
 | `exp_reports.discord_webhook_url` | | Discord channel webhook which new reports and watched player joins are posted to as an embed. |
 | `exp_reports.json_webhook_url` | | URL which new reports and watched player joins are posted to as JSON. |
 | `exp_reports.watch_unread_reports` | `false` | Treat players with unread reports as if they were on the watch list. |
+| `exp_reports.announce_to_all_instances` | `true` | Tell admins on every instance when a watched player joins. When off only admins on the instance they joined are told. |
 
-Only new reports and watched player joins are posted. Deleting or reading a report and editing the watch list are not. The JSON webhook gets `{ "type": "report_created", "report": { ... } }` with the report in the same form as `reports.json`, or `{ "type": "watched_player_joined", "player_name", "instance_name", "watch_list_entry", "unread_reports" }`. `watch_list_entry` is left out when the player is only watched for unread reports, and `unread_reports` is empty unless `exp_reports.watch_unread_reports` is set. A webhook that fails is logged as a warning and the report is still made.
+Only new reports and watched player joins are posted. Deleting or reading a report and editing the watch list are not. The JSON webhook gets `{ "type": "report_created", "report": { ... } }` with the report in the same form as `reports.json`, or `{ "type": "watched_player_joined", "player_name", "instance_name", "watch_list_entry", "unread_reports" }`. `watch_list_entry` is left out when the player is only watched for unread reports, and `unread_reports` is empty unless `exp_reports.watch_unread_reports` is set. Unread reports are newest first. The Discord embed lists the three newest and counts the rest in its footer. A webhook that fails is logged as a warning and the report is still made.
 
 ## Permissions
 

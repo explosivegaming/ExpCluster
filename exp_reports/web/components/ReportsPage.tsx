@@ -96,6 +96,7 @@ function ReportsTable(props: { onWatch: (values: WatchListValues) => void }) {
 	const tableState = useTableQueryState<ReportRecord>({
 		namespace: "report",
 		defaultSortKey: "time",
+		defaultSortOrder: "descend",
 		pagination: { defaultPageSize: 50 },
 	});
 	const playerSearch = useColumnSearch<ReportRecord>(tableState, "player", report => report.playerName, "Search players");
@@ -157,7 +158,6 @@ function ReportsTable(props: { onWatch: (values: WatchListValues) => void }) {
 				render: (_, report) => new Date(report.createdAtMs).toLocaleString(),
 				sorter: (a, b) => a.createdAtMs - b.createdAtMs,
 				sortOrder: tableState.sortOrder("time"),
-				defaultSortOrder: "descend",
 			},
 			{
 				title: "Status",
@@ -175,7 +175,7 @@ function ReportsTable(props: { onWatch: (values: WatchListValues) => void }) {
 					</Button>}
 					{canWatch && <Button
 						size="small"
-						disabled={watchList.has(report.playerName)}
+						disabled={watchList.has(report.playerName.toLowerCase())}
 						onClick={() => props.onWatch({ playerName: report.playerName, reason: report.reason })}
 					>
 						Add to watch list
@@ -209,9 +209,12 @@ function WatchListTable() {
 	const tableState = useTableQueryState<WatchListRecord>({
 		namespace: "watch",
 		defaultSortKey: "time",
+		defaultSortOrder: "descend",
 		pagination: { defaultPageSize: 50 },
 	});
-	const playerSearch = useColumnSearch<WatchListRecord>(tableState, "player", entry => entry.playerName, "Search players");
+	const playerSearch = useColumnSearch<WatchListRecord>(
+		tableState, "player", entry => entry.playerName, "Search players",
+	);
 	const reasonSearch = useColumnSearch<WatchListRecord>(tableState, "reason", entry => entry.reason, "Search reasons");
 	const canRemove = account.hasPermission("exp_reports.watch_list.remove");
 
@@ -247,7 +250,6 @@ function WatchListTable() {
 				render: (_, entry) => new Date(entry.createdAtMs).toLocaleString(),
 				sorter: (a, b) => a.createdAtMs - b.createdAtMs,
 				sortOrder: tableState.sortOrder("time"),
-				defaultSortOrder: "descend",
 			},
 			...canRemove ? [{
 				key: "actions",
