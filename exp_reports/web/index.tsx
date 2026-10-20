@@ -7,10 +7,16 @@ import * as messages from "../messages.js";
 import ReportsPage from "./components/ReportsPage";
 
 let reports: lib.MapSubscriber<messages.ReportUpdatedEvent> | undefined;
+let watchList: lib.MapSubscriber<messages.WatchListUpdatedEvent> | undefined;
 
 export function useReports() {
 	const subscribe = useCallback((cb: () => void) => reports!.subscribe(cb), []);
 	return useSyncExternalStore(subscribe, () => reports!.getSnapshot());
+}
+
+export function useWatchList() {
+	const subscribe = useCallback((cb: () => void) => watchList!.subscribe(cb), []);
+	return useSyncExternalStore(subscribe, () => watchList!.getSnapshot());
 }
 
 export default function registerPlugin(context: WebPluginContext) {
@@ -24,4 +30,5 @@ export default function registerPlugin(context: WebPluginContext) {
 	]);
 
 	reports = new lib.MapSubscriber(messages.ReportUpdatedEvent, context.control);
+	watchList = new lib.MapSubscriber(messages.WatchListUpdatedEvent, context.control);
 }

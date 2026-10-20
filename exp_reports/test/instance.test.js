@@ -71,6 +71,7 @@ async function startPlugin(t2, { reports = [report(1, "bob", "alice"), report(2,
 		createIPC: event => ipc.get("exp_reports:create")(event),
 		listIPC: event => ipc.get("exp_reports:list")(event),
 		deleteIPC: event => ipc.get("exp_reports:delete")(event),
+		watchedJoined: event => instance._eventHandlers.get(messages.WatchedPlayerJoinedEvent)(event),
 	};
 }
 
@@ -149,6 +150,17 @@ t.test("instance plugin", t2 => {
 			state.sent.filter(request => request instanceof messages.ReportDeleteRequest).length, 2,
 			"every report is deleted without a reporter",
 		);
+	});
+
+	t2.test("WatchedPlayerJoinedEvent is handed to lua", async t3 => {
+		const { state, watchedJoined } = await startPlugin(t3);
+		const entry = new messages.WatchListRecord("bob", "griefing", "admin", 1000);
+		const event = new messages.WatchedPlayerJoinedEvent("bob", "EXP", entry, [report(1, "bob", "alice")]);
+		await watchedJoined(event);
+
+		const { receiver, payload } = decodeRcon(state.rcons[0]);
+		t3.strictSame(receiver, "receive_watched_joined");
+		t3.strictSame(payload, event.toJSON());
 	});
 
 	t2.test("answers are dropped once the instance has stopped", async t3 => {
