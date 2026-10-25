@@ -55,13 +55,14 @@ export class ControllerPlugin {
 		controller.handle(messages.AssignmentUpdateRequest, plugin.handleAssignmentUpdateRequest.bind(plugin));
 
 		const hooks = controller.hooks;
-		hooks.shutdown.attach(plugin.name, plugin.onShutdown.bind(plugin));
+		hooks.save.attach(plugin.name, plugin.onSave.bind(plugin));
+		hooks.shutdown.attach(plugin.name, plugin.onSave.bind(plugin));
 		hooks.controllerConfigFieldChanged.attach(plugin.name, plugin.onControllerConfigFieldChanged.bind(plugin));
 		hooks.playerEvent.attach(plugin.name, plugin.onPlayerEvent.bind(plugin));
 		return plugin;
 	}
 
-	async onShutdown() {
+	async onSave() {
 		await this.roleMeta.save();
 	}
 

@@ -1,4 +1,6 @@
 import t from "tap";
+import fs from "node:fs/promises";
+import path from "node:path";
 import * as lib from "@clusterio/lib";
 import { Controller } from "@clusterio/controller";
 import entrypoint, { ControllerPlugin } from "../dist/node/controller.js";
@@ -54,7 +56,7 @@ t.test("entrypoint", async t2 => {
 	const controllerConfig = new lib.ControllerConfig("controller", { "controller.database_directory": t2.testdir() });
 	const controller = new Controller(logger, [], controllerConfig);
 	await entrypoint({ controller, logger, plugin: { name: "exp_roles" }, metrics: undefined });
-	for (const hook of ["shutdown", "controllerConfigFieldChanged", "playerEvent"]) {
+	for (const hook of ["save", "shutdown", "controllerConfigFieldChanged", "playerEvent"]) {
 		t2.ok([...controller.hooks[hook].attached].includes("exp_roles"), `attached to ${hook}`);
 	}
 	await controller.hooks.shutdown.invoke();
@@ -206,6 +208,18 @@ t.test("class ControllerPlugin", t2 => {
 			new messages.RoleMetaRecord(5, 2, 0, "Mod"),
 		));
 		t3.strictSame(plugin.roleMeta.get(5).shortHand, "Mod", "the properties are stored");
+	});
+
+	t2.test("role properties are written on the save hook", async t3 => {
+		const { plugin, controller } = await startPlugin(t3, { roles: [role(1, "Player"), role(5, "Moderator")] });
+		await plugin.handleRoleMetaUpdateRequest(new messages.RoleMetaUpdateRequest(
+			new messages.RoleMetaRecord(5, 2, 0, "Mod"),
+		));
+		await controller.hooks.save.invoke();
+
+		const file = path.join(controller.config.get("controller.database_directory"), "exp_roles", "role_meta.json");
+		const stored = JSON.parse(await fs.readFile(file, "utf8"));
+		t3.ok(stored.some(record => record.id === 5 && record.short_hand === "Mod"), "the update is on disk");
 	});
 
 	t2.test(".handleAssignmentListRequest() returns the current assignments", async t3 => {

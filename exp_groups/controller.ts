@@ -80,11 +80,12 @@ export class ControllerPlugin {
         controller.handle(messages.RoleMappingGetRequest, plugin.handleRoleMappingGetRequest.bind(plugin));
         controller.handle(messages.RoleMappingListRequest, plugin.handleRoleMappingListRequest.bind(plugin));
 
-        controller.hooks.shutdown.attach(plugin.name, plugin.onShutdown.bind(plugin));
+        controller.hooks.save.attach(plugin.name, plugin.onSave.bind(plugin));
+        controller.hooks.shutdown.attach(plugin.name, plugin.onSave.bind(plugin));
         return plugin;
     }
 
-    async onShutdown() {
+    async onSave() {
         await Promise.all([
             this.groups.save(),
             this.manualAssignments.save(),

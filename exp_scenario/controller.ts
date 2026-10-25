@@ -239,6 +239,7 @@ export default async function (context: ControllerPluginContext) {
 	});
 
 	controller.hooks.save.attach(plugin.name, async () => {
+		await featureStore.save();
 		await playerStore.save();
 	});
 

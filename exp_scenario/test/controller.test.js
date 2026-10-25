@@ -216,6 +216,17 @@ t.test("controller plugin", t2 => {
 		);
 	});
 
+	t2.test("features are saved on the save hook", async t3 => {
+		const databaseDirectory = t3.testdir();
+		const { updateFeature, save } = await startPlugin(t3, { withPlugins: false, databaseDirectory });
+		await updateFeature(new messages.FeatureUpdateRequest("afk_kick", false, { afk_minutes: 5 }));
+		await save();
+
+		const { listFeatures } = await startPlugin(t3, { withPlugins: false, databaseDirectory });
+		const record = await getFeature(listFeatures, "afk_kick");
+		t3.strictSame([record.enabled, record.values], [false, { afk_minutes: 5 }], "the saved record is loaded");
+	});
+
 	t2.test("stored features are kept across restarts", async t3 => {
 		const databaseDirectory = t3.testdir();
 		const { updateFeature, shutdown } = await startPlugin(t3, { withPlugins: false, databaseDirectory });
