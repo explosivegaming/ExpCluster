@@ -42,6 +42,7 @@ return Framework.suite(function(env)
             by_player_name = by_player_name,
             reason = reason or "griefing",
             instance_name = "test",
+            created_at_ms = 1000,
             updated_at_ms = 1000,
         }
     end

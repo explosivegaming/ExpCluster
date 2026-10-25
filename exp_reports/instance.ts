@@ -94,4 +94,8 @@ export default async function (context: InstancePluginContext) {
 			await luaSend("receive_error", { caller: event.caller, message: err.message });
 		}
 	});
+
+	instance.handle(messages.WatchedPlayerJoinedEvent, async (event: messages.WatchedPlayerJoinedEvent) => {
+		await luaSend("receive_watched_joined", event.toJSON());
+	});
 }

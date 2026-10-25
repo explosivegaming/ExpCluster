@@ -1,7 +1,12 @@
-import type { ControllerPluginContext } from "@clusterio/controller";
+import type { ControllerPluginContext, InstanceRecord } from "@clusterio/controller";
 import * as lib from "@clusterio/lib";
 import * as messages from "./messages.js";
 import * as path from "node:path";
+
+/** Reports saved before the read state was added used updated_at_ms as the creation time. */
+function migrateReports(rawJson: unknown[]) {
+	return rawJson.map((report: any) => ({ created_at_ms: report.updated_at_ms ?? 0, ...report }));
+}
 
 export default async function (context: ControllerPluginContext) {
 	const { controller, logger, plugin } = context;
@@ -10,6 +15,13 @@ export default async function (context: ControllerPluginContext) {
 		...await new lib.JsonIdDatastoreProvider(
 			path.join(databaseDirectory, "exp_reports", "reports.json"),
 			messages.ReportRecord.fromJSON.bind(messages.ReportRecord),
+			migrateReports,
+		).bootstrap()
+	);
+	const watchList = new lib.SubscribableDatastore(
+		...await new lib.JsonIdDatastoreProvider(
+			path.join(databaseDirectory, "exp_reports", "watch_list.json"),
+			messages.WatchListRecord.fromJSON.bind(messages.WatchListRecord),
 		).bootstrap()
 	);
 
@@ -19,15 +31,20 @@ export default async function (context: ControllerPluginContext) {
 		return playerName === undefined ? all : all.filter(report => report.playerName === playerName);
 	}
 
+	/** Name of the user behind a control connection. */
+	function controlUserName(src: lib.Address) {
+		return controller.wsServer.controlConnections.get(src.id)!.user.name;
+	}
+
 	/** Post a new report to the configured webhooks, failures are logged rather than failing the report. */
-	function sendWebhooks(report: messages.ReportRecord) {
+	function sendReportWebhooks(report: messages.ReportRecord) {
 		const discordUrl = controller.config.get("exp_reports.discord_webhook_url");
 		if (discordUrl) {
 			postWebhook(discordUrl, {
 				embeds: [{
 					title: "Player reported",
 					color: 0xffcc00,
-					timestamp: new Date(report.updatedAtMs).toISOString(),
+					timestamp: new Date(report.createdAtMs).toISOString(),
 					fields: [
 						{ name: "Player", value: report.playerName, inline: true },
 						{ name: "By", value: report.byPlayerName, inline: true },
@@ -41,6 +58,37 @@ export default async function (context: ControllerPluginContext) {
 		const jsonUrl = controller.config.get("exp_reports.json_webhook_url");
 		if (jsonUrl) {
 			postWebhook(jsonUrl, { type: "report_created", report: report.toJSON() });
+		}
+	}
+
+	/** Post a watched player joining to the configured webhooks. */
+	function sendJoinWebhooks(event: messages.WatchedPlayerJoinedEvent) {
+		const discordUrl = controller.config.get("exp_reports.discord_webhook_url");
+		if (discordUrl) {
+			const entry = event.watchListEntry;
+			postWebhook(discordUrl, {
+				embeds: [{
+					title: "Watched player joined",
+					color: 0xff6600,
+					timestamp: new Date().toISOString(),
+					fields: [
+						{ name: "Player", value: event.playerName, inline: true },
+						{ name: "Instance", value: event.instanceName, inline: true },
+						...entry ? [{ name: `Watch list, added by ${entry.byPlayerName}`, value: entry.reason }] : [],
+						...event.unreadReports.slice(0, 3).map(report => ({
+							name: `Unread report by ${report.byPlayerName}`, value: report.reason,
+						})),
+					],
+					...event.unreadReports.length > 3 ? {
+						footer: { text: `+${event.unreadReports.length - 3} more unread reports` },
+					} : {},
+				}],
+			});
+		}
+
+		const jsonUrl = controller.config.get("exp_reports.json_webhook_url");
+		if (jsonUrl) {
+			postWebhook(jsonUrl, { type: "watched_player_joined", ...event.toJSON() });
 		}
 	}
 
@@ -59,18 +107,51 @@ export default async function (context: ControllerPluginContext) {
 		}
 	}
 
+	/** Tell the instances and the webhooks when a watched player joins, names are case insensitive. */
+	function playerJoined(instance: InstanceRecord, playerName: string) {
+		const key = playerName.toLowerCase();
+		const watchListEntry = watchList.get(key);
+		const unreadReports = controller.config.get("exp_reports.watch_unread_reports")
+			? [...reports.values()]
+				.filter(report => !report.isRead && report.playerName.toLowerCase() === key)
+				.sort((a, b) => b.createdAtMs - a.createdAtMs)
+			: [];
+		if (!watchListEntry && !unreadReports.length) {
+			return;
+		}
+
+		const event = new messages.WatchedPlayerJoinedEvent(
+			playerName, instance.config.get("instance.name"), watchListEntry, unreadReports,
+		);
+		if (controller.config.get("exp_reports.announce_to_all_instances")) {
+			controller.sendTo("allInstances", event);
+		} else {
+			controller.sendTo({ instanceId: instance.id }, event);
+		}
+		sendJoinWebhooks(event);
+	}
+
 	controller.subscriptions.handle(messages.ReportUpdatedEvent, async request => {
 		const updates = [...reports.values()].filter(report => report.updatedAtMs > request.lastRequestTimeMs);
 		return updates.length ? new messages.ReportUpdatedEvent(updates) : null;
 	});
 
-	// Reports are immutable, so any update which is not a deletion is a new report
+	controller.subscriptions.handle(messages.WatchListUpdatedEvent, async request => {
+		const updates = [...watchList.values()].filter(entry => entry.updatedAtMs > request.lastRequestTimeMs);
+		return updates.length ? new messages.WatchListUpdatedEvent(updates) : null;
+	});
+
 	reports.on("update", updates => {
 		controller.subscriptions.broadcast(new messages.ReportUpdatedEvent(updates));
-		for (const report of updates) {
-			if (!report.isDeleted) {
-				sendWebhooks(report);
-			}
+	});
+
+	watchList.on("update", updates => {
+		controller.subscriptions.broadcast(new messages.WatchListUpdatedEvent(updates));
+	});
+
+	controller.hooks.playerEvent.attach(plugin.name, async (instance, event) => {
+		if (event.type === "join") {
+			playerJoined(instance, event.name);
 		}
 	});
 
@@ -90,7 +171,7 @@ export default async function (context: ControllerPluginContext) {
 		let byPlayerName = request.byPlayerName;
 		let instanceName = "";
 		if (src.type === lib.Address.control) {
-			byPlayerName = controller.wsServer.controlConnections.get(src.id)!.user.name;
+			byPlayerName = controlUserName(src);
 		} else {
 			const instance = controller.instances.get(src.id);
 			instanceName = instance ? instance.config.get("instance.name") : String(src.id);
@@ -111,8 +192,11 @@ export default async function (context: ControllerPluginContext) {
 			id = Math.random() * 2 ** 31 | 0;
 		}
 
-		const report = new messages.ReportRecord(id, request.playerName, byPlayerName, request.reason.trim(), instanceName);
+		const report = new messages.ReportRecord(
+			id, request.playerName, byPlayerName, request.reason.trim(), instanceName, Date.now(),
+		);
 		reports.set(report);
+		sendReportWebhooks(report);
 		return report;
 	});
 
@@ -124,7 +208,43 @@ export default async function (context: ControllerPluginContext) {
 		reports.delete(report);
 	});
 
-	controller.hooks.shutdown.attach(plugin.name, async () => {
+	controller.handle(messages.ReportSetReadRequest, async (request: messages.ReportSetReadRequest) => {
+		const report = reports.getMutable(request.id);
+		if (!report) {
+			throw new lib.RequestError(`Report with ID ${request.id} does not exist`);
+		}
+		report.isRead = request.isRead;
+		reports.set(report);
+	});
+
+	controller.handle(messages.WatchListAddRequest, async (request: messages.WatchListAddRequest, src: lib.Address) => {
+		const playerName = request.playerName.trim();
+		if (!playerName) {
+			throw new lib.RequestError("A player name is required");
+		}
+		if (!request.reason.trim()) {
+			throw new lib.RequestError("A reason is required");
+		}
+		const existing = watchList.get(playerName.toLowerCase());
+		if (existing) {
+			throw new lib.RequestError(`${existing.playerName} is already on the watch list`);
+		}
+
+		const entry = new messages.WatchListRecord(playerName, request.reason.trim(), controlUserName(src), Date.now());
+		watchList.set(entry);
+		return entry;
+	});
+
+	controller.handle(messages.WatchListRemoveRequest, async (request: messages.WatchListRemoveRequest) => {
+		const entry = watchList.getMutable(request.playerName.toLowerCase());
+		if (!entry) {
+			throw new lib.RequestError(`${request.playerName} is not on the watch list`);
+		}
+		watchList.delete(entry);
+	});
+
+	controller.hooks.save.attach(plugin.name, async () => {
 		await reports.save();
+		await watchList.save();
 	});
 }

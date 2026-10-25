@@ -99,4 +99,34 @@ Suite.test("receive_error() prints the refusal to the caller while they are onli
     Suite.eq(env.printed, { { to = "alice", "alice has already reported bob" } }, "the offline player is skipped")
 end)
 
+Suite.test("receive_watched_joined() tells only admins why the player is watched", function(env)
+    env.add_player{ name = "alice", admin = true }
+    env.add_player{ name = "dave", admin = true, connected = false }
+    env.add_player{ name = "carol" }
+    env.Reports.receive_watched_joined{
+        player_name = "bob",
+        instance_name = "EXP 2",
+        watch_list_entry = { player_name = "bob", reason = "griefing", by_player_name = "admin", created_at_ms = 1000 },
+        unread_reports = { env.report("bob", "carol", "spam") },
+    }
+    Suite.eq(env.printed, {
+        { to = "alice", { "exp-reports.watched-joined", "bob", "EXP 2" } },
+        { to = "alice", { "exp-reports.watched-entry", "admin", "griefing" } },
+        { to = "alice", { "exp-reports.watched-report", "carol", "spam" } },
+    }, "the online admin sees the entry and each unread report")
+end)
+
+Suite.test("receive_watched_joined() works with only unread reports", function(env)
+    env.add_player{ name = "alice", admin = true }
+    env.Reports.receive_watched_joined{
+        player_name = "bob",
+        instance_name = "EXP",
+        unread_reports = { env.report("bob", "carol", "spam") },
+    }
+    Suite.eq(env.printed, {
+        { to = "alice", { "exp-reports.watched-joined", "bob", "EXP" } },
+        { to = "alice", { "exp-reports.watched-report", "carol", "spam" } },
+    }, "there is no watch list line")
+end)
+
 return Suite.run()

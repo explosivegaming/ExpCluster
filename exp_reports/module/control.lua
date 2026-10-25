@@ -40,7 +40,15 @@ local ExpReports = {
 --- @field by_player_name string
 --- @field reason string
 --- @field instance_name string
+--- @field created_at_ms number
+--- @field is_read boolean?
 --- @field updated_at_ms number
+
+--- @class ExpReports.WatchListEntry
+--- @field player_name string
+--- @field reason string
+--- @field by_player_name string
+--- @field created_at_ms number
 
 local error_settings = { color = ExpUtil.color.orange_red, sound_path = "utility/wire_pickup" }
 
@@ -192,6 +200,24 @@ function ExpReports.receive_deleted(payload)
         by_player_name = payload.caller,
         count = payload.count,
     })
+end
+
+--- A watched player joined an instance, which may be another one, admins are told why they are watched
+--- @param payload { player_name: string, instance_name: string, watch_list_entry: ExpReports.WatchListEntry?, unread_reports: ExpReports.Report[] }
+function ExpReports.receive_watched_joined(payload)
+    local player_name = format_player_name(payload.player_name)
+    local entry = payload.watch_list_entry
+    for _, player in pairs(game.connected_players) do
+        if player.admin then
+            player.print{ "exp-reports.watched-joined", player_name, payload.instance_name }
+            if entry then
+                player.print{ "exp-reports.watched-entry", format_player_name(entry.by_player_name), entry.reason }
+            end
+            for _, report in ipairs(payload.unread_reports) do
+                player.print{ "exp-reports.watched-report", format_player_name(report.by_player_name), report.reason }
+            end
+        end
+    end
 end
 
 --- The controller refused a request, the message is printed to whoever asked
