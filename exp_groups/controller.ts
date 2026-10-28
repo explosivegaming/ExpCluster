@@ -26,26 +26,20 @@ export class ControllerPlugin {
         const controller = context.controller;
         const databaseDirectory = controller.config.get("controller.database_directory");
 
-        const groups = new lib.SubscribableDatastore(
-            ...await new lib.JsonIdDatastoreProvider(
-                path.join(databaseDirectory, "exp_groups", "groups.json"),
-                messages.GroupRecord.fromJSON.bind(messages.GroupRecord),
-            ).bootstrap()
-        );
+        const groups = await lib.SubscribableDatastore.fromProvider(new lib.JsonIdDatastoreProvider(
+            path.join(databaseDirectory, "exp_groups", "groups.json"),
+            messages.GroupRecord.fromJSON.bind(messages.GroupRecord),
+        ));
 
-        const roleMappings = new lib.SubscribableDatastore(
-            ...await new lib.JsonIdDatastoreProvider(
-                path.join(databaseDirectory, "exp_groups", "role_mappings.json"),
-                messages.RoleMappingRecord.fromJSON.bind(messages.RoleMappingRecord),
-            ).bootstrap()
-        );
+        const roleMappings = await lib.SubscribableDatastore.fromProvider(new lib.JsonIdDatastoreProvider(
+            path.join(databaseDirectory, "exp_groups", "role_mappings.json"),
+            messages.RoleMappingRecord.fromJSON.bind(messages.RoleMappingRecord),
+        ));
 
-        const manualAssignments = new lib.SubscribableDatastore(
-            ...await new lib.JsonIdDatastoreProvider(
-                path.join(databaseDirectory, "exp_groups", "assignments.json"),
-                messages.AssignmentRecord.fromJSON.bind(messages.AssignmentRecord),
-            ).bootstrap()
-        );
+        const manualAssignments = await lib.SubscribableDatastore.fromProvider(new lib.JsonIdDatastoreProvider(
+            path.join(databaseDirectory, "exp_groups", "assignments.json"),
+            messages.AssignmentRecord.fromJSON.bind(messages.AssignmentRecord),
+        ));
 
         const plugin = new ControllerPlugin(
             controller, context.logger, context.plugin.name, groups, roleMappings, manualAssignments,

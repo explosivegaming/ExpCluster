@@ -31,20 +31,20 @@ async function startPlugin(t2, { reports = [report(1, "bob", "alice"), report(2,
 	instanceConfig.set("instance.id", 1);
 	instanceConfig.set("instance.name", "test");
 
-	const instance = new Instance(
-		{ assignGamePort: () => 1 }, new TestConnector(), t2.testdir(), "factorioDir", instanceConfig
-	);
-
 	// Spies which record the messages and commands leaving the instance
 	const state = { sent: [], rcons: [], failNext: null };
 	const ipc = new Map();
-	instance.server = {
+	const server = {
+		on: () => {},
 		handle: (name, handler) => ipc.set(name, handler),
 		sendRcon: async command => {
 			state.rcons.push(command);
 			return "";
 		},
 	};
+	const instance = new Instance(
+		{ assignGamePort: () => 1 }, new TestConnector(), t2.testdir(), instanceConfig, server
+	);
 	instance.sendTo = async (dst, request) => {
 		state.sent.push(request);
 		if (state.failNext) {

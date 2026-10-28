@@ -32,19 +32,19 @@ async function startPlugin(
 	instanceConfig.set("instance.id", 1);
 	instanceConfig.set("instance.name", "test");
 
-	const instance = new Instance(
-		{ assignGamePort: () => 1 }, new TestConnector(), t2.testdir(), "factorioDir", instanceConfig
-	);
-
 	const state = { sent: [], rcons: [] };
 	const ipcHandlers = new Map();
-	instance.server = {
+	const server = {
+		on: () => {},
 		handle: (channel, handler) => ipcHandlers.set(channel, handler),
 		sendRcon: async command => {
 			state.rcons.push(command);
 			return "";
 		},
 	};
+	const instance = new Instance(
+		{ assignGamePort: () => 1 }, new TestConnector(), t2.testdir(), instanceConfig, server
+	);
 	instance.sendTo = async (dst, request) => {
 		state.sent.push(request);
 		if (request instanceof messages.PlayerGetRequest) {

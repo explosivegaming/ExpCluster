@@ -95,12 +95,10 @@ export class ControllerPlugin {
 		const controller = context.controller;
 		const databaseDirectory = controller.config.get("controller.database_directory");
 
-		const accounts = new lib.SubscribableDatastore(
-			...await new lib.JsonIdDatastoreProvider(
-				path.join(databaseDirectory, "exp_discord_auth", "accounts.json"),
-				messages.DiscordAccountRecord.fromJSON.bind(messages.DiscordAccountRecord),
-			).bootstrap()
-		);
+		const accounts = await lib.SubscribableDatastore.fromProvider(new lib.JsonIdDatastoreProvider(
+			path.join(databaseDirectory, "exp_discord_auth", "accounts.json"),
+			messages.DiscordAccountRecord.fromJSON.bind(messages.DiscordAccountRecord),
+		));
 
 		return new ControllerPlugin(controller, context.logger, context.plugin.name, accounts);
 	}

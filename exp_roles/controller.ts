@@ -22,12 +22,10 @@ export class ControllerPlugin {
 		const controller = context.controller;
 		const databaseDirectory = controller.config.get("controller.database_directory");
 
-		const roleMeta = new lib.SubscribableDatastore(
-			...await new lib.JsonIdDatastoreProvider(
-				path.join(databaseDirectory, "exp_roles", "role_meta.json"),
-				messages.RoleMetaRecord.fromJSON.bind(messages.RoleMetaRecord),
-			).bootstrap()
-		);
+		const roleMeta = await lib.SubscribableDatastore.fromProvider(new lib.JsonIdDatastoreProvider(
+			path.join(databaseDirectory, "exp_roles", "role_meta.json"),
+			messages.RoleMetaRecord.fromJSON.bind(messages.RoleMetaRecord),
+		));
 
 		const plugin = new ControllerPlugin(controller, context.logger, context.plugin.name, roleMeta);
 		loaded.set(controller, plugin);

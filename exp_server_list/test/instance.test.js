@@ -35,18 +35,19 @@ async function startPlugin(t2, servers = [server(1), server(2)]) {
 	instanceConfig.set("instance.id", 1);
 	instanceConfig.set("instance.name", "test");
 
-	const instance = new Instance(
-		{ assignGamePort: () => 1 }, new TestConnector(), t2.testdir(), "factorioDir", instanceConfig
-	);
 
 	const state = { sent: [], rcons: [] };
-	instance.server = {
+	const server = {
+		on: () => {},
 		handle: () => {},
 		sendRcon: async command => {
 			state.rcons.push(command);
 			return "";
 		},
 	};
+	const instance = new Instance(
+		{ assignGamePort: () => 1 }, new TestConnector(), t2.testdir(), instanceConfig, server
+	);
 	instance.sendTo = async (dst, request) => {
 		if (request instanceof lib.InstanceStatusChangedEvent) {
 			return undefined;

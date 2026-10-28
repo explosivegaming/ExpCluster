@@ -7,12 +7,10 @@ import * as path from "node:path";
 export default async function (context: ControllerPluginContext) {
 	const { controller, plugin } = context;
 	const databaseDirectory = controller.config.get("controller.database_directory");
-	const players = new lib.SubscribableDatastore(
-		...await new lib.JsonIdDatastoreProvider(
-			path.join(databaseDirectory, "exp_player_statistics", "players.json"),
-			messages.PlayerStatistics.fromJSON.bind(messages.PlayerStatistics),
-		).bootstrap()
-	);
+	const players = await lib.SubscribableDatastore.fromProvider(new lib.JsonIdDatastoreProvider(
+		path.join(databaseDirectory, "exp_player_statistics", "players.json"),
+		messages.PlayerStatistics.fromJSON.bind(messages.PlayerStatistics),
+	));
 
 	function addDeltas(deltas: messages.StatisticsDelta[]) {
 		const changed = new Map<string, messages.PlayerStatistics>();

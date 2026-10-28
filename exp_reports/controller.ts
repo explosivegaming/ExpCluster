@@ -11,19 +11,15 @@ function migrateReports(rawJson: unknown[]) {
 export default async function (context: ControllerPluginContext) {
 	const { controller, logger, plugin } = context;
 	const databaseDirectory = controller.config.get("controller.database_directory");
-	const reports = new lib.SubscribableDatastore(
-		...await new lib.JsonIdDatastoreProvider(
-			path.join(databaseDirectory, "exp_reports", "reports.json"),
-			messages.ReportRecord.fromJSON.bind(messages.ReportRecord),
-			migrateReports,
-		).bootstrap()
-	);
-	const watchList = new lib.SubscribableDatastore(
-		...await new lib.JsonIdDatastoreProvider(
-			path.join(databaseDirectory, "exp_reports", "watch_list.json"),
-			messages.WatchListRecord.fromJSON.bind(messages.WatchListRecord),
-		).bootstrap()
-	);
+	const reports = await lib.SubscribableDatastore.fromProvider(new lib.JsonIdDatastoreProvider(
+		path.join(databaseDirectory, "exp_reports", "reports.json"),
+		messages.ReportRecord.fromJSON.bind(messages.ReportRecord),
+		migrateReports,
+	));
+	const watchList = await lib.SubscribableDatastore.fromProvider(new lib.JsonIdDatastoreProvider(
+		path.join(databaseDirectory, "exp_reports", "watch_list.json"),
+		messages.WatchListRecord.fromJSON.bind(messages.WatchListRecord),
+	));
 
 	/** Every report, or only those against one player. */
 	function listReports(playerName?: string) {

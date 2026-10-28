@@ -12,18 +12,14 @@ import { SeedRole, SeedGroup, seedRoles, seedGroups, flattenSeedPermissions } fr
 export default async function (context: ControllerPluginContext) {
 	const { controller, logger, plugin } = context;
 	const databaseDirectory = controller.config.get("controller.database_directory");
-	const featureStore = new lib.SubscribableDatastore(
-		...await new lib.JsonIdDatastoreProvider(
-			path.join(databaseDirectory, "exp_scenario", "features.json"),
-			messages.FeatureRecord.fromJSON.bind(messages.FeatureRecord),
-		).bootstrap()
-	);
-	const playerStore = new lib.SubscribableDatastore(
-		...await new lib.JsonIdDatastoreProvider(
-			path.join(databaseDirectory, "exp_scenario", "players.json"),
-			messages.PlayerRecord.fromJSON.bind(messages.PlayerRecord),
-		).bootstrap()
-	);
+	const featureStore = await lib.SubscribableDatastore.fromProvider(new lib.JsonIdDatastoreProvider(
+		path.join(databaseDirectory, "exp_scenario", "features.json"),
+		messages.FeatureRecord.fromJSON.bind(messages.FeatureRecord),
+	));
+	const playerStore = await lib.SubscribableDatastore.fromProvider(new lib.JsonIdDatastoreProvider(
+		path.join(databaseDirectory, "exp_scenario", "players.json"),
+		messages.PlayerRecord.fromJSON.bind(messages.PlayerRecord),
+	));
 
 	type PlayerSettings = Pick<messages.PlayerRecord, "joinMessage" | "toolbar">;
 

@@ -29,15 +29,16 @@ async function startPlugin(t2, { status = "running", stats = { Kills: 3 } } = {}
 	instanceConfig.set("instance.id", 1);
 	instanceConfig.set("instance.name", "test");
 
-	const instance = new Instance(
-		{ assignGamePort: () => 1 }, new TestConnector(), t2.testdir(), "factorioDir", instanceConfig
-	);
 
 	const state = { sent: [], rcons: [], warnings: [] };
 	const ipc = new Map();
-	instance.server = {
+	const server = {
+		on: () => {},
 		handle: (name, handler) => ipc.set(name, handler),
 	};
+	const instance = new Instance(
+		{ assignGamePort: () => 1 }, new TestConnector(), t2.testdir(), instanceConfig, server
+	);
 	instance.sendRcon = async command => {
 		state.rcons.push(command);
 		return "";
