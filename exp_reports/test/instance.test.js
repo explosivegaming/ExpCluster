@@ -102,7 +102,7 @@ t.test("instance plugin", t2 => {
 
 	t2.test("exp_reports:create prints a refusal to the reporter", async t3 => {
 		const { state, createIPC } = await startPlugin(t3);
-		state.failNext = new lib.RequestError("dave has already reported bob");
+		state.failNext = new lib.ConflictError("dave has already reported bob");
 		await createIPC({ player_name: "bob", by_player_name: "dave", reason: "griefing" });
 
 		const { receiver, payload } = decodeRcon(state.rcons[0]);
@@ -113,7 +113,7 @@ t.test("instance plugin", t2 => {
 	t2.test("text that closes a long bracket stays inside the json", async t3 => {
 		const { state, createIPC } = await startPlugin(t3);
 		const message = "]=]) game.print(1) --[==[ ]==] ]===]";
-		state.failNext = new lib.RequestError(message);
+		state.failNext = new lib.ConflictError(message);
 		await createIPC({ player_name: "bob", by_player_name: "dave", reason: message });
 
 		const { payload } = decodeRcon(state.rcons[0]);

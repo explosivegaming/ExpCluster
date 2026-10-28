@@ -175,7 +175,7 @@ export default async function (context: ControllerPluginContext) {
 		const rolesPlugin = RolesPlugin.get(controller);
 		const groupsPlugin = GroupsPlugin.get(controller);
 		if (!rolesPlugin || !groupsPlugin) {
-			throw new lib.RequestError("Seeding requires the exp_roles and exp_groups plugins");
+			throw new lib.UnavailableError("Seeding requires the exp_roles and exp_groups plugins");
 		}
 
 		const roleIds = new Map<string, number>();
@@ -214,7 +214,7 @@ export default async function (context: ControllerPluginContext) {
 		try {
 			values = validateFeatureValues(request.id, request.values);
 		} catch (err: any) {
-			throw new lib.RequestError(err.message);
+			throw new lib.ValidationError(err.message);
 		}
 
 		const feature = new messages.FeatureRecord(request.id, request.enabled, values);
