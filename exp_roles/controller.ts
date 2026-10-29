@@ -22,12 +22,10 @@ export class ControllerPlugin {
 		const controller = context.controller;
 		const databaseDirectory = controller.config.get("controller.database_directory");
 
-		const roleMeta = new lib.SubscribableDatastore(
-			...await new lib.JsonIdDatastoreProvider(
-				path.join(databaseDirectory, "exp_roles", "role_meta.json"),
-				messages.RoleMetaRecord.fromJSON.bind(messages.RoleMetaRecord),
-			).bootstrap()
-		);
+		const roleMeta = await lib.SubscribableDatastore.fromProvider(new lib.JsonIdDatastoreProvider(
+			path.join(databaseDirectory, "exp_roles", "role_meta.json"),
+			messages.RoleMetaRecord.fromJSON.bind(messages.RoleMetaRecord),
+		));
 
 		const plugin = new ControllerPlugin(controller, context.logger, context.plugin.name, roleMeta);
 		loaded.set(controller, plugin);
@@ -149,7 +147,7 @@ export class ControllerPlugin {
 	async handleRoleMetaUpdateRequest(request: messages.RoleMetaUpdateRequest) {
 		const meta = request.meta;
 		if (!this.controller.roles.has(meta.id)) {
-			throw new lib.RequestError(`Role with ID ${meta.id} does not exist`);
+			throw new lib.NotFoundError(`Role with ID ${meta.id} does not exist`);
 		}
 
 		this.roleMeta.set(meta);
@@ -250,12 +248,12 @@ export class ControllerPlugin {
 	async handleAssignmentUpdateRequest(request: messages.AssignmentUpdateRequest) {
 		const user = this.controller.users.getByNameMutable(request.name);
 		if (!user) {
-			throw new lib.RequestError(`User '${request.name}' does not exist`);
+			throw new lib.NotFoundError(`User '${request.name}' does not exist`);
 		}
 
 		for (const roleId of [...request.assign, ...request.unassign]) {
 			if (!this.controller.roles.has(roleId)) {
-				throw new lib.RequestError(`Role with ID ${roleId} does not exist`);
+				throw new lib.NotFoundError(`Role with ID ${roleId} does not exist`);
 			}
 		}
 

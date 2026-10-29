@@ -26,26 +26,20 @@ export class ControllerPlugin {
         const controller = context.controller;
         const databaseDirectory = controller.config.get("controller.database_directory");
 
-        const groups = new lib.SubscribableDatastore(
-            ...await new lib.JsonIdDatastoreProvider(
-                path.join(databaseDirectory, "exp_groups", "groups.json"),
-                messages.GroupRecord.fromJSON.bind(messages.GroupRecord),
-            ).bootstrap()
-        );
+        const groups = await lib.SubscribableDatastore.fromProvider(new lib.JsonIdDatastoreProvider(
+            path.join(databaseDirectory, "exp_groups", "groups.json"),
+            messages.GroupRecord.fromJSON.bind(messages.GroupRecord),
+        ));
 
-        const roleMappings = new lib.SubscribableDatastore(
-            ...await new lib.JsonIdDatastoreProvider(
-                path.join(databaseDirectory, "exp_groups", "role_mappings.json"),
-                messages.RoleMappingRecord.fromJSON.bind(messages.RoleMappingRecord),
-            ).bootstrap()
-        );
+        const roleMappings = await lib.SubscribableDatastore.fromProvider(new lib.JsonIdDatastoreProvider(
+            path.join(databaseDirectory, "exp_groups", "role_mappings.json"),
+            messages.RoleMappingRecord.fromJSON.bind(messages.RoleMappingRecord),
+        ));
 
-        const manualAssignments = new lib.SubscribableDatastore(
-            ...await new lib.JsonIdDatastoreProvider(
-                path.join(databaseDirectory, "exp_groups", "assignments.json"),
-                messages.AssignmentRecord.fromJSON.bind(messages.AssignmentRecord),
-            ).bootstrap()
-        );
+        const manualAssignments = await lib.SubscribableDatastore.fromProvider(new lib.JsonIdDatastoreProvider(
+            path.join(databaseDirectory, "exp_groups", "assignments.json"),
+            messages.AssignmentRecord.fromJSON.bind(messages.AssignmentRecord),
+        ));
 
         const plugin = new ControllerPlugin(
             controller, context.logger, context.plugin.name, groups, roleMappings, manualAssignments,
@@ -239,7 +233,7 @@ export class ControllerPlugin {
 
     async handleGroupCreateRequest(request: messages.GroupCreateRequest) {
         if ([...this.groups.values()].some(g => g.name === request.name)) {
-            throw new lib.RequestError(`Group with name '${request.name}' already exists`);
+            throw new lib.ConflictError(`Group with name '${request.name}' already exists`);
         }
 
         let id = Math.random() * 2**31 | 0;
@@ -255,7 +249,7 @@ export class ControllerPlugin {
     async handleGroupUpdateRequest(request: messages.GroupUpdateRequest) {
         const group = request.group;
         if (group.id === undefined || !this.groups.has(group.id)) {
-            throw new lib.RequestError(`Group with ID ${group.id} does not exist`);
+            throw new lib.NotFoundError(`Group with ID ${group.id} does not exist`);
         }
 
         this.groups.set(group);
@@ -266,7 +260,7 @@ export class ControllerPlugin {
 
         const group = this.groups.getMutable(groupId);
         if (!group) {
-            throw new lib.RequestError(`Group with ID ${groupId} does not exist`);
+            throw new lib.NotFoundError(`Group with ID ${groupId} does not exist`);
         }
 
         this.groups.delete(group);
@@ -275,7 +269,7 @@ export class ControllerPlugin {
     async handleGroupGetRequest(request: messages.GroupGetRequest) {
         const group = this.groups.get(request.groupId);
         if (!group) {
-            throw new lib.RequestError(`Group with ID ${request.groupId} does not exist`);
+            throw new lib.NotFoundError(`Group with ID ${request.groupId} does not exist`);
         }
 
         return group;
@@ -292,7 +286,7 @@ export class ControllerPlugin {
     async handleAssignmentCreateRequest(request: messages.AssignmentCreateRequest) {
         const { name, groupId } = request;
         if (this.manualAssignments.has(name)) {
-            throw new lib.RequestError(`Assignment for '${name}' already exists`);
+            throw new lib.ConflictError(`Assignment for '${name}' already exists`);
         }
 
         const assignment = new messages.AssignmentRecord(name, groupId);
@@ -303,7 +297,7 @@ export class ControllerPlugin {
     async handleAssignmentUpdateRequest(request: messages.AssignmentUpdateRequest) {
         const assignment = request.assignment;
         if (!this.manualAssignments.has(assignment.name)) {
-            throw new lib.RequestError(`Assignment for '${assignment.name}' does not exist`);
+            throw new lib.NotFoundError(`Assignment for '${assignment.name}' does not exist`);
         }
 
         this.manualAssignments.set(assignment);
@@ -314,7 +308,7 @@ export class ControllerPlugin {
 
         const assignment = this.manualAssignments.getMutable(name);
         if (!assignment) {
-            throw new lib.RequestError(`Assignment for '${name}' does not exist`);
+            throw new lib.NotFoundError(`Assignment for '${name}' does not exist`);
         }
 
         this.manualAssignments.delete(assignment);
@@ -333,7 +327,7 @@ export class ControllerPlugin {
 
         const assignment = this.manualAssignments.get(request.name);
         if (!assignment) {
-            throw new lib.RequestError(`Assignment for '${request.name}' does not exist`);
+            throw new lib.NotFoundError(`Assignment for '${request.name}' does not exist`);
         }
 
         return assignment;
@@ -370,7 +364,7 @@ export class ControllerPlugin {
     async handleRoleMappingUpdateRequest(request: messages.RoleMappingUpdateRequest) {
         const roleMapping = request.roleMapping;
         if (roleMapping.id === undefined || !this.roleMappings.has(roleMapping.id)) {
-            throw new lib.RequestError(`Role mapping with ID ${roleMapping.id} does not exist`);
+            throw new lib.NotFoundError(`Role mapping with ID ${roleMapping.id} does not exist`);
         }
 
         const existing = new Set(
@@ -392,7 +386,7 @@ export class ControllerPlugin {
 
         const mapping = this.roleMappings.getMutable(id);
         if (!mapping) {
-            throw new lib.RequestError(`Role mapping with ID ${id} does not exist`);
+            throw new lib.NotFoundError(`Role mapping with ID ${id} does not exist`);
         }
 
         this.roleMappings.delete(mapping);
@@ -401,7 +395,7 @@ export class ControllerPlugin {
     async handleRoleMappingGetRequest(request: messages.RoleMappingGetRequest) {
         const mapping = this.roleMappings.get(request.id);
         if (!mapping) {
-            throw new lib.RequestError(`Role mapping with ID ${request.id} does not exist`);
+            throw new lib.NotFoundError(`Role mapping with ID ${request.id} does not exist`);
         }
 
         return mapping;

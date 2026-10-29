@@ -197,7 +197,7 @@ export class AutoRestart {
 		} catch (err: any) {
 			this.pending.delete(host.id);
 			// The host refusing is final for this process, anything else is retried
-			if (!(err instanceof lib.RequestError)) {
+			if (!(err instanceof lib.ClientError)) {
 				this.requested.delete(host.id);
 			}
 			this.logger.error(`Failed to restart host ${host.name}: ${err.message}`);

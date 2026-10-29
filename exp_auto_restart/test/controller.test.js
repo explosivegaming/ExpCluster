@@ -219,7 +219,7 @@ t.test("class AutoRestart", t2 => {
 		addInstance(controller, 10, 1);
 		addSystem(controller, 1);
 
-		controller.sendTo = async () => { throw new lib.RequestError("Cannot restart"); };
+		controller.sendTo = async () => { throw new lib.ConflictError("Cannot restart"); };
 		await plugin.check(now);
 		await plugin.check(now + 10_000);
 		t3.strictSame(logs.filter(([level]) => level === "error").length, 1, "a refusal is logged once");

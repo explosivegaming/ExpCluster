@@ -8,7 +8,7 @@
 	"type": "module",
 	"main": "dist/node/index.js",
 	"scripts": {
-		"prepare": "tsc --build && webpack-cli --env production"
+		"prepare": "tsc --build && vite build"
 	},
 	"engines": {
 		"node": ">=22"
@@ -25,11 +25,10 @@
 	"devDependencies": {
 		"@clusterio/host": "workspace:^",
 		"@clusterio/lib": "workspace:^",
+		"@clusterio/web_ui": "workspace:^",
 		"@types/node": "catalog:",
 		"typescript": "catalog:",
-		"webpack": "catalog:",
-		"webpack-cli": "catalog:",
-		"webpack-merge": "catalog:"
+		"vite": "catalog:"
 	},
 	"dependencies": {
 		"@sinclair/typebox": "catalog:"

@@ -12,18 +12,14 @@ import { SeedRole, SeedGroup, seedRoles, seedGroups, flattenSeedPermissions } fr
 export default async function (context: ControllerPluginContext) {
 	const { controller, logger, plugin } = context;
 	const databaseDirectory = controller.config.get("controller.database_directory");
-	const featureStore = new lib.SubscribableDatastore(
-		...await new lib.JsonIdDatastoreProvider(
-			path.join(databaseDirectory, "exp_scenario", "features.json"),
-			messages.FeatureRecord.fromJSON.bind(messages.FeatureRecord),
-		).bootstrap()
-	);
-	const playerStore = new lib.SubscribableDatastore(
-		...await new lib.JsonIdDatastoreProvider(
-			path.join(databaseDirectory, "exp_scenario", "players.json"),
-			messages.PlayerRecord.fromJSON.bind(messages.PlayerRecord),
-		).bootstrap()
-	);
+	const featureStore = await lib.SubscribableDatastore.fromProvider(new lib.JsonIdDatastoreProvider(
+		path.join(databaseDirectory, "exp_scenario", "features.json"),
+		messages.FeatureRecord.fromJSON.bind(messages.FeatureRecord),
+	));
+	const playerStore = await lib.SubscribableDatastore.fromProvider(new lib.JsonIdDatastoreProvider(
+		path.join(databaseDirectory, "exp_scenario", "players.json"),
+		messages.PlayerRecord.fromJSON.bind(messages.PlayerRecord),
+	));
 
 	type PlayerSettings = Pick<messages.PlayerRecord, "joinMessage" | "toolbar">;
 
@@ -179,7 +175,7 @@ export default async function (context: ControllerPluginContext) {
 		const rolesPlugin = RolesPlugin.get(controller);
 		const groupsPlugin = GroupsPlugin.get(controller);
 		if (!rolesPlugin || !groupsPlugin) {
-			throw new lib.RequestError("Seeding requires the exp_roles and exp_groups plugins");
+			throw new lib.UnavailableError("Seeding requires the exp_roles and exp_groups plugins");
 		}
 
 		const roleIds = new Map<string, number>();
@@ -218,7 +214,7 @@ export default async function (context: ControllerPluginContext) {
 		try {
 			values = validateFeatureValues(request.id, request.values);
 		} catch (err: any) {
-			throw new lib.RequestError(err.message);
+			throw new lib.ValidationError(err.message);
 		}
 
 		const feature = new messages.FeatureRecord(request.id, request.enabled, values);

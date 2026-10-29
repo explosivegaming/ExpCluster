@@ -95,12 +95,10 @@ export class ControllerPlugin {
 		const controller = context.controller;
 		const databaseDirectory = controller.config.get("controller.database_directory");
 
-		const accounts = new lib.SubscribableDatastore(
-			...await new lib.JsonIdDatastoreProvider(
-				path.join(databaseDirectory, "exp_discord_auth", "accounts.json"),
-				messages.DiscordAccountRecord.fromJSON.bind(messages.DiscordAccountRecord),
-			).bootstrap()
-		);
+		const accounts = await lib.SubscribableDatastore.fromProvider(new lib.JsonIdDatastoreProvider(
+			path.join(databaseDirectory, "exp_discord_auth", "accounts.json"),
+			messages.DiscordAccountRecord.fromJSON.bind(messages.DiscordAccountRecord),
+		));
 
 		return new ControllerPlugin(controller, context.logger, context.plugin.name, accounts);
 	}
@@ -387,7 +385,7 @@ export class ControllerPlugin {
 		const entry = this.codes.get(code);
 		const session = entry ? this.sessions.get(entry.sessionId) : undefined;
 		if (!entry || !session || entry.expiresMs < Date.now()) {
-			throw new lib.RequestError(
+			throw new lib.ValidationError(
 				`This code is invalid or has expired, get a new one from ${this.controller.getControllerUrl()}`
 			);
 		}
@@ -405,7 +403,7 @@ export class ControllerPlugin {
 		const alreadyLinked = existing?.factorioNames.some(linked => linked.toLowerCase() === name);
 		const maxAccounts = this.controller.config.get("exp_discord_auth.max_accounts");
 		if (!alreadyLinked && (existing?.factorioNames.length ?? 0) >= maxAccounts) {
-			throw new lib.RequestError(
+			throw new lib.ConflictError(
 				`${discordUser.name} already has ${maxAccounts} Factorio accounts linked, unlink one first`
 			);
 		}

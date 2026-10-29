@@ -40,21 +40,21 @@ async function startPlugin(t2, { syncMode = "bidirectional", roles = sampleRoles
 	instanceConfig.set("instance.name", "test");
 	instanceConfig.set("exp_roles.sync_mode", syncMode);
 
-	const instance = new Instance(
-		{ assignGamePort: () => 1 }, new TestConnector(), t2.testdir(), "factorioDir", instanceConfig
-	);
-
 	// Spies which record the messages and commands leaving the instance
 	const state = { sent: [], rcons: [], warnings: [], failNext: null };
 	const handlers = new Map();
-	instance.handle = (Event, handler) => handlers.set(Event, handler);
-	instance.server = {
+	const server = {
+		on: () => {},
 		handle: (name, handler) => handlers.set(name, handler),
 		sendRcon: async command => {
 			state.rcons.push(command);
 			return "";
 		},
 	};
+	const instance = new Instance(
+		{ assignGamePort: () => 1 }, new TestConnector(), t2.testdir(), instanceConfig, server
+	);
+	instance.handle = (Event, handler) => handlers.set(Event, handler);
 	instance.sendTo = async (dst, request) => {
 		state.sent.push(request);
 		if (state.failNext) {
@@ -96,10 +96,10 @@ t.test("entrypoint", async t2 => {
 	const instanceConfig = new lib.InstanceConfig("host");
 	instanceConfig.set("instance.id", 1);
 	instanceConfig.set("instance.name", "test");
+	const server = { on: () => {}, handle: () => {} };
 	const instance = new Instance(
-		{ assignGamePort: () => 1 }, new TestConnector(), t2.testdir(), "factorioDir", instanceConfig
+		{ assignGamePort: () => 1 }, new TestConnector(), t2.testdir(), instanceConfig, server
 	);
-	instance.server = { handle: () => {} };
 	await entrypoint({ instance, host: {}, logger, plugin: { name: "exp_roles" } });
 	for (const hook of ["instanceConfigFieldChanged", "start"]) {
 		t2.ok([...instance.hooks[hook].attached].includes("exp_roles"), `attached to ${hook}`);

@@ -11,19 +11,15 @@ function migrateReports(rawJson: unknown[]) {
 export default async function (context: ControllerPluginContext) {
 	const { controller, logger, plugin } = context;
 	const databaseDirectory = controller.config.get("controller.database_directory");
-	const reports = new lib.SubscribableDatastore(
-		...await new lib.JsonIdDatastoreProvider(
-			path.join(databaseDirectory, "exp_reports", "reports.json"),
-			messages.ReportRecord.fromJSON.bind(messages.ReportRecord),
-			migrateReports,
-		).bootstrap()
-	);
-	const watchList = new lib.SubscribableDatastore(
-		...await new lib.JsonIdDatastoreProvider(
-			path.join(databaseDirectory, "exp_reports", "watch_list.json"),
-			messages.WatchListRecord.fromJSON.bind(messages.WatchListRecord),
-		).bootstrap()
-	);
+	const reports = await lib.SubscribableDatastore.fromProvider(new lib.JsonIdDatastoreProvider(
+		path.join(databaseDirectory, "exp_reports", "reports.json"),
+		messages.ReportRecord.fromJSON.bind(messages.ReportRecord),
+		migrateReports,
+	));
+	const watchList = await lib.SubscribableDatastore.fromProvider(new lib.JsonIdDatastoreProvider(
+		path.join(databaseDirectory, "exp_reports", "watch_list.json"),
+		messages.WatchListRecord.fromJSON.bind(messages.WatchListRecord),
+	));
 
 	/** Every report, or only those against one player. */
 	function listReports(playerName?: string) {
@@ -162,7 +158,7 @@ export default async function (context: ControllerPluginContext) {
 	controller.handle(messages.ReportGetRequest, async (request: messages.ReportGetRequest) => {
 		const report = reports.get(request.id);
 		if (!report) {
-			throw new lib.RequestError(`Report with ID ${request.id} does not exist`);
+			throw new lib.NotFoundError(`Report with ID ${request.id} does not exist`);
 		}
 		return report;
 	});
@@ -178,13 +174,13 @@ export default async function (context: ControllerPluginContext) {
 		}
 
 		if (!byPlayerName) {
-			throw new lib.RequestError("A report needs the name of the player making it");
+			throw new lib.ValidationError("A report needs the name of the player making it");
 		}
 		if (!request.reason.trim()) {
-			throw new lib.RequestError("A report needs a reason");
+			throw new lib.ValidationError("A report needs a reason");
 		}
 		if (listReports(request.playerName).some(report => report.byPlayerName === byPlayerName)) {
-			throw new lib.RequestError(`${byPlayerName} has already reported ${request.playerName}`);
+			throw new lib.ConflictError(`${byPlayerName} has already reported ${request.playerName}`);
 		}
 
 		let id = Math.random() * 2 ** 31 | 0;
@@ -203,7 +199,7 @@ export default async function (context: ControllerPluginContext) {
 	controller.handle(messages.ReportDeleteRequest, async (request: messages.ReportDeleteRequest) => {
 		const report = reports.getMutable(request.id);
 		if (!report) {
-			throw new lib.RequestError(`Report with ID ${request.id} does not exist`);
+			throw new lib.NotFoundError(`Report with ID ${request.id} does not exist`);
 		}
 		reports.delete(report);
 	});
@@ -211,7 +207,7 @@ export default async function (context: ControllerPluginContext) {
 	controller.handle(messages.ReportSetReadRequest, async (request: messages.ReportSetReadRequest) => {
 		const report = reports.getMutable(request.id);
 		if (!report) {
-			throw new lib.RequestError(`Report with ID ${request.id} does not exist`);
+			throw new lib.NotFoundError(`Report with ID ${request.id} does not exist`);
 		}
 		report.isRead = request.isRead;
 		reports.set(report);
@@ -220,14 +216,14 @@ export default async function (context: ControllerPluginContext) {
 	controller.handle(messages.WatchListAddRequest, async (request: messages.WatchListAddRequest, src: lib.Address) => {
 		const playerName = request.playerName.trim();
 		if (!playerName) {
-			throw new lib.RequestError("A player name is required");
+			throw new lib.ValidationError("A player name is required");
 		}
 		if (!request.reason.trim()) {
-			throw new lib.RequestError("A reason is required");
+			throw new lib.ValidationError("A reason is required");
 		}
 		const existing = watchList.get(playerName.toLowerCase());
 		if (existing) {
-			throw new lib.RequestError(`${existing.playerName} is already on the watch list`);
+			throw new lib.ConflictError(`${existing.playerName} is already on the watch list`);
 		}
 
 		const entry = new messages.WatchListRecord(playerName, request.reason.trim(), controlUserName(src), Date.now());
@@ -238,7 +234,7 @@ export default async function (context: ControllerPluginContext) {
 	controller.handle(messages.WatchListRemoveRequest, async (request: messages.WatchListRemoveRequest) => {
 		const entry = watchList.getMutable(request.playerName.toLowerCase());
 		if (!entry) {
-			throw new lib.RequestError(`${request.playerName} is not on the watch list`);
+			throw new lib.NotFoundError(`${request.playerName} is not on the watch list`);
 		}
 		watchList.delete(entry);
 	});
