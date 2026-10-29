@@ -47,7 +47,7 @@ export default function StatisticsPage() {
 
 	const rows = useMemo(() => [...players.values()].map(player => new PlayerStatistics(
 		player.id,
-		{ ...player.stats, ...userStatistics(users.get(player.id.toLowerCase())) },
+		{ ...player.stats, ...userStatistics(users.get(player.id.toLowerCase()), player.stats) },
 		player.updatedAtMs,
 	)), [players, users]);
 
