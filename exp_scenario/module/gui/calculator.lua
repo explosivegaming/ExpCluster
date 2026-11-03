@@ -323,7 +323,7 @@ end
 
 --- Value change
 function Elements.change(event)
-    event.element.parent.calculator_result_label.caption = event.text == "" and "" or Elements.parse(event.text:lower())
+    event.element.parent["calculator/result_label"].caption = event.text == "" and "" or Elements.parse(event.text:lower())
 end
 
 local e = defines.events
