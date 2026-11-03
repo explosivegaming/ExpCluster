@@ -318,7 +318,7 @@ function Elements.parse(expression)
         return value
     end)
 
-    return ok and format_number(result, false) or (type(result) == "table" and result or {"exp-gui_calculator.error", tostring(result)})
+    return ok and format_number(result, false) or (type(result) == "table" and result or {"", {"exp-gui_calculator.error"}, tostring(result)})
 end
 
 --- Value change
