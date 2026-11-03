@@ -57,7 +57,7 @@ Elements.calculator_input_textfield = Gui.define("calculator/input_textfield")
         style = "console_input_textfield",
     }
     :style{
-        width = 480,
+        width = 400,
     }
 
 --- Output label
