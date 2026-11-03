@@ -4,6 +4,7 @@ Add a calculator to do quick calculation.
 
 local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_roles")
+local format_number = require("util").format_number
 
 --- @class ExpGui_Calculator.elements
 local Elements = {}
@@ -149,6 +150,7 @@ function Elements.parse(expression)
 
         if character == "|" then
             cursor = cursor + 1
+            ---@diagnostic disable-next-line: need-check-nil
             local value = parse_expr(1)
             skip_space()
 
@@ -161,6 +163,7 @@ function Elements.parse(expression)
 
         elseif character == "(" then
             cursor = cursor + 1
+            ---@diagnostic disable-next-line: need-check-nil
             local value = parse_expr(1)
             skip_space()
 
@@ -192,6 +195,7 @@ function Elements.parse(expression)
                 end
 
                 cursor = cursor + 1
+                ---@diagnostic disable-next-line: need-check-nil
                 local argument = parse_expr(1)
                 skip_space()
 
@@ -306,6 +310,7 @@ function Elements.parse(expression)
             end
 
             cursor = cursor + 1
+            ---@diagnostic disable-next-line: need-check-nil
             lhs = entry[2](lhs, parse_expr(entry[1] + 1))
         end
 
@@ -323,7 +328,7 @@ function Elements.parse(expression)
         return value
     end)
 
-    return ok and result or (type(result) == "table" and result or {"exp-gui_calculator.error", tostring(result)})
+    return ok and format_number(result, false) or (type(result) == "table" and result or {"exp-gui_calculator.error", tostring(result)})
 end
 
 --- Value change
