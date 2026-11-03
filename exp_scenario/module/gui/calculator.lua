@@ -97,7 +97,7 @@ Gui.toolbar.create_button{
 end)
 
 --- Parse Value
-function Elements.calculator.parse(expression)
+function Elements.parse(expression)
     local cursor = 1
 
     local function skip_space()
@@ -313,8 +313,8 @@ function Elements.calculator.parse(expression)
 end
 
 --- Value change
-function Elements.calculator.change(event)
-    Elements.calculator_result_label.caption = event.text == "" and "" or main.parse(event.text:lower())
+function Elements.change(event)
+    Elements.calculator_result_label.caption = event.text == "" and "" or Elements.parse(event.text:lower())
 end
 
 local e = defines.events
@@ -322,6 +322,6 @@ local e = defines.events
 return {
     elements = Elements,
     events = {
-        [e.on_gui_text_changed] = Elements.calculator.parse,
+        [e.on_gui_text_changed] = Elements.change,
     },
 }
