@@ -47,7 +47,6 @@ Elements.calculator_function_label = Gui.define("calculator/function_label")
     :draw{
         type = "label",
         caption = {"exp-gui_calculator.tooltip"},
-        name = "calculator_function_label",
         style = "heading_2_label",
     }
     :style{
@@ -58,11 +57,10 @@ Elements.calculator_function_label = Gui.define("calculator/function_label")
 Elements.calculator_input_textfield = Gui.define("calculator/input_textfield")
     :draw{
         type = "textfield",
-        name = "calculator_input_textfield",
         style = "console_input_textfield",
     }
     :style{
-        width = 320,
+        width = 480,
     }
 
 --- Output label
@@ -70,7 +68,6 @@ Elements.calculator_result_label = Gui.define("calculator/result_label")
     :draw{
         type = "label",
         caption = "",
-        name = "calculator_result_label",
         style = "heading_2_label",
     }
     :style{
@@ -82,7 +79,6 @@ Elements.calculator_label_1 = Gui.define("calculator/label_1")
     :draw{
         type = "label",
         caption = "",
-        name = "calculator_label_1",
         style = "heading_2_label",
     }
 
