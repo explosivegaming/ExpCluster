@@ -4,6 +4,7 @@ Add a calculator to do quick calculation.
 
 local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_roles")
+local format_number = require("util").format_number
 
 --- @class ExpGui_Calculator.elements
 local Elements = {}
@@ -323,7 +324,7 @@ function Elements.parse(expression)
         return value
     end)
 
-    return ok and result or (type(result) == "table" and result or {"exp-gui_calculator.error", tostring(result)})
+    return ok and format_number(result, false) or (type(result) == "table" and format_number(result, false) or {"exp-gui_calculator.error", tostring(result)})
 end
 
 --- Value change
