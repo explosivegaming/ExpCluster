@@ -297,6 +297,8 @@ export const features: Feature[] = [
 		description: "A GUI tracking research against target times, the targets live in config/research_data.lua",
 		fields: [
 			str("log_file", "Log file", "Where the milestone times are written within script-output", "log/research.log"),
+			num("milestone_rate", "Milestone Target", "Science Research Rate Target", 0.75, 0, "SPS"),
+			num("milestone_warmup_time", "Warmup time", "Warmup time given before start counting.", 10, 0, "Minutes"),
 		],
 	},
 	{
