@@ -78,7 +78,7 @@ Elements.calculator_label_1 = Gui.define("calculator/label_1")
     }
 
 --- Container added to the screen
-Elements.container = Gui.define("exp-gui_calculatorulator/container")
+Elements.container = Gui.define("calculator/container")
     :draw(function(def, parent)
         local screen_frame = Gui.elements.screen_frame(parent, nil, true)
 
