@@ -49,9 +49,6 @@ Elements.calculator_function_label = Gui.define("calculator/function_label")
         caption = {"exp-gui_calculator.tooltip"},
         style = "heading_2_label",
     }
-    :style{
-        horizontal_align = "center"
-    }
 
 --- Input textfield
 Elements.calculator_input_textfield = Gui.define("calculator/input_textfield")
@@ -69,9 +66,6 @@ Elements.calculator_result_label = Gui.define("calculator/result_label")
         type = "label",
         caption = "",
         style = "heading_2_label",
-    }
-    :style{
-        horizontal_align = "right"
     }
 
 --- Empty new line label
