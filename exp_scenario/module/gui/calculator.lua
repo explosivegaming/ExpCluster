@@ -41,6 +41,18 @@ local calc_number_base = {
     o = {value = 8, digits = "[0-7]"},
 }
 
+--- Function label
+Elements.calculator_function_label = Gui.define("calculator/function_label")
+    :draw{
+        type = "label",
+        caption = {"exp-gui_calculator.tooltip"},
+        name = "calculator_function_label",
+        style = "heading_2_label",
+    }
+    :style{
+        horizontal_align = "right"
+    }
+
 --- Input textfield
 Elements.calculator_input_textfield = Gui.define("calculator/input_textfield")
     :draw{
@@ -56,6 +68,7 @@ Elements.calculator_input_textfield = Gui.define("calculator/input_textfield")
 Elements.calculator_result_label = Gui.define("calculator/result_label")
     :draw{
         type = "label",
+        caption = "",
         name = "calculator_result_label",
         style = "heading_2_label",
     }
@@ -67,6 +80,7 @@ Elements.calculator_result_label = Gui.define("calculator/result_label")
 Elements.calculator_label_1 = Gui.define("calculator/label_1")
     :draw{
         type = "label",
+        caption = "",
         name = "calculator_label_1",
         style = "heading_2_label",
     }
@@ -75,8 +89,8 @@ Elements.calculator_label_1 = Gui.define("calculator/label_1")
 Elements.container = Gui.define("exp-gui_calculatorulator/container")
     :draw(function(def, parent)
         local screen_frame = Gui.elements.screen_frame(parent, nil, true)
-        local button_flow = Gui.elements.screen_frame.get_button_flow(screen_frame)
 
+        Elements.calculator_function_label(screen_frame)
         Elements.calculator_input_textfield(screen_frame)
         Elements.calculator_result_label(screen_frame)
         Elements.calculator_label_1(screen_frame)
