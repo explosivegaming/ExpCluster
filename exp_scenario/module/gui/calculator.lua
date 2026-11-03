@@ -50,7 +50,7 @@ Elements.calculator_function_label = Gui.define("calculator/function_label")
         style = "heading_2_label",
     }
     :style{
-        horizontal_align = "right"
+        horizontal_align = "center"
     }
 
 --- Input textfield
