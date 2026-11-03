@@ -50,8 +50,6 @@ Elements.calculator_function_label = Gui.define("calculator/function_label")
         style = "heading_2_label",
     }
 
-Elements.calculator_function_label.style.horizontal_align = "center"
-
 --- Input textfield
 Elements.calculator_input_textfield = Gui.define("calculator/input_textfield")
     :draw{
@@ -70,8 +68,6 @@ Elements.calculator_result_label = Gui.define("calculator/result_label")
         name = "calculator_result_label",
         style = "heading_2_label",
     }
-
-Elements.calculator_result_label.style.horizontal_align = "right"
 
 --- Empty new line label
 Elements.calculator_label_1 = Gui.define("calculator/label_1")
