@@ -10,7 +10,7 @@ local research_data = require("modules/exp_scenario/config/research_data")
 
 local feature, config = Feature.register("research_milestones", {
     log_file = "log/research.log", -- where the milestone times are written
-    milestone_rate = 0.75, -- Targeted Milestone Science Research Rate, In terms of SPM.
+    milestone_rate = 45, -- Targeted Milestone Science Research Rate, In terms of SPM.
     milestone_warmup_time = 10, -- Warmup time given before start counting. In terms of minutes.
 })
 
