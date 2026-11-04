@@ -69,11 +69,12 @@ Elements.calculator_result_label = Gui.define("calculator/result_label")
         style = "heading_2_label",
     }
 
---- Empty new line label
-Elements.calculator_label_1 = Gui.define("calculator/label_1")
+--- Info label
+Elements.calculator_info_label = Gui.define("calculator/info_label")
     :draw{
         type = "label",
-        caption = "",
+        caption = "[virtual-signal=signal-info]",
+        tooltip = {"exp-gui_calculator.info_tooltip"},
         style = "heading_2_label",
     }
 
@@ -85,7 +86,7 @@ Elements.container = Gui.define("calculator/container")
         Elements.calculator_function_label(screen_frame)
         Elements.calculator_input_textfield(screen_frame)
         Elements.calculator_result_label(screen_frame)
-        Elements.calculator_label_1(screen_frame)
+        Elements.calculator_info_label(screen_frame)
 
         return Gui.elements.screen_frame.get_root_element(screen_frame)
     end)
@@ -94,7 +95,7 @@ Elements.container = Gui.define("calculator/container")
 Gui.toolbar.create_button{
     name = "open_calculator",
     sprite = "entity/arithmetic-combinator",
-    tooltip = { "exp-gui_calculator.tooltip" },
+    tooltip = {"exp-gui_calculator.tooltip"},
     visible = function(player, element)
         return Roles.player_has_permission(player, "exp-gui_calculator")
     end
@@ -319,7 +320,7 @@ function Elements.parse(expression)
         return value
     end)
 
-    return ok and format_number(result, false) or (type(result) == "table" and result or {"", {"exp-gui_calculator.error"}, tostring(result)})
+    return ok and ("= " .. format_number(result, false)) or (type(result) == "table" and result or {"", {"exp-gui_calculator.error"}, tostring(result)})
 end
 
 --- Value change
