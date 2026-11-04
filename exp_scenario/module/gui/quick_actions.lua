@@ -8,13 +8,13 @@ local Feature = require("modules/exp_scenario/features")
 local Roles = require("modules/exp_roles")
 
 local addon_artillery = require("modules/exp_scenario/commands/artillery")
-local addon_trains = require("modules/exp_scenario/commands/trains")--
-local addon_teleport = require("modules/exp_scenario/commands/teleport")--
+local addon_trains = require("modules/exp_scenario/commands/trains")
+local addon_teleport = require("modules/exp_scenario/commands/teleport")
 local addon_waterfill = require("modules/exp_scenario/commands/waterfill")
 local addon_surface = require("modules/exp_scenario/commands/surface")
 local addon_lawnmower = require("modules/exp_scenario/commands/lawnmower")
-local addon_home = require("modules/exp_scenario/commands/home")--
-local addon_vlayer = require("modules/exp_scenario/commands/vlayer")--
+local addon_home = require("modules/exp_scenario/commands/home")
+local addon_vlayer = require("modules/exp_scenario/commands/vlayer")
 local addon_repair = require("modules/exp_scenario/commands/repair")
 
 --- @class ExpGui_QuickActions.elements
