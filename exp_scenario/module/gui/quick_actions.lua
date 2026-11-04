@@ -115,6 +115,7 @@ new_quick_action(addon_vlayer.commands.vlayer, {
     caption = "exp-commands_vlayer.caption",
     tooltip = "exp-commands_vlayer.description"
 })
+
 new_quick_action(addon_repair.commands.repair, {
     caption = "exp-commands_repair.selection-name",
     tooltip = "exp-commands_repair.description"
