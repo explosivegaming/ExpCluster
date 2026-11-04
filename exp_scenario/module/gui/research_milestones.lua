@@ -10,7 +10,7 @@ local research_data = require("modules/exp_scenario/config/research_data")
 
 local feature, config = Feature.register("research_milestones", {
     log_file = "log/research.log", -- where the milestone times are written
-    milestone_rate = 0.75, -- Milestone Science Research Rate Target, In terms of SPS.
+    milestone_rate = 0.75, -- Targeted Milestone Science Research Rate, In terms of SPM.
     milestone_warmup_time = 10, -- Warmup time given before start counting. In terms of minutes.
 })
 
@@ -48,7 +48,7 @@ do --- Calculate the research targets
         if prototypes.technology[name] and (not prototypes.technology[name].hidden) then
             research_targets.index_lookup[name] = research_index
             -- The number is affected by multiplier already
-            total_time = total_time + math.ceil(prototypes.technology[name].research_unit_count / config.milestone_rate)
+            total_time = total_time + math.ceil(prototypes.technology[name].research_unit_count / config.milestone_rate / 60)
 
             research_targets.target_times[research_index] = {
                 name = name,
