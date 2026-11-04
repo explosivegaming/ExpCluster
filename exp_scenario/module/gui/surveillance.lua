@@ -27,6 +27,33 @@ Elements.player_dropdown = Gui.define("surveillance/player_dropdown")
         Elements.camera.set_target_player(camera, target_player)
     end) --[[@as any]]
 
+--- Buttons which move player controller directly
+--- @class ExpGui_Surveillance.elements.move_to_physical_button: ExpElement
+--- @field data table<LuaGuiElement, LuaGuiElement>
+--- @overload fun(parent: LuaGuiElement, camera: LuaGuiElement): LuaGuiElement
+Elements.move_to_physical_button = Gui.define("surveillance/move_to_physical_button")
+    :draw{
+        type = "sprite-button",
+        sprite = "utility/forward_arrow", -- >
+        style = "frame_action_button",
+    }
+    :style{
+        height = 24,
+        width = 24,
+    }
+    :on_click(function(def, player, element)
+        --- @cast def ExpGui_Surveillance.elements.move_to_physical_button
+        local camera = def.data[element]        
+        local surface = game.surfaces[camera.surface_index]
+        local position = camera.position
+
+        player.set_controller{
+            type = defines.controllers.remote,
+            surface = surface,
+            position = position,
+        }
+    end) --[[@as any]]
+
 --- Button which sets the target of a camera to the current location
 --- @class ExpGui_Surveillance.elements.set_location_button: ExpElement
 --- @field data table<LuaGuiElement, LuaGuiElement>
@@ -295,6 +322,7 @@ Elements.container = Gui.define("surveillance/container")
         }
 
         Elements.type_dropdown(button_flow, type_dropdown_data)
+        Elements.move_to_physical_button(button_flow, camera)
         Elements.zoom_out_button(button_flow, camera)
         Elements.zoom_in_button(button_flow, camera)
 
