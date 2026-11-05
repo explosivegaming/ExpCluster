@@ -47,7 +47,7 @@ async function startPlugin(t2, setup = () => {}) {
 }
 
 function addHost(controller, id, publicAddress = "") {
-	controller.hosts.set(new HostRecord(id, `host-${id}`, "2.0.0", new Map(), true, "", publicAddress));
+	controller.hosts.records.set(new HostRecord(id, `host-${id}`, "2.0.0", new Map(), true, "", publicAddress));
 }
 
 function addInstance(controller, id, { hostId = 1, status = "running", gamePort, factorioVersion, fields = {} } = {}) {
