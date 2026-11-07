@@ -24,22 +24,16 @@ local Elements = {}
 local Actions = {}
 
 --- @param command ExpCommand | function (this is needed because of the overload on commands)
+--- @param locale table<string, string>
 --- @param on_click? ExpElement.EventHandler<EventData.on_gui_click>
-local function new_quick_action(command, on_click)
+local function new_quick_action(command, locale, on_click)
     local command_name = command.name
 
     local element = Gui.define("quick_actions/" .. command_name)
         :draw{
             type = "button",
-            caption = { "?", 
-                { "exp-gui_quick-actions.caption-" .. command_name },
-                command_name,
-            },
-            tooltip = { "?",
-                { "exp-gui_quick-actions.tooltip-" .. command_name },
-                command.description,
-                ""
-            },
+            caption = { locale.caption },
+            tooltip = { locale.tooltip },
         }
         :style{
             width = 160,
@@ -55,24 +49,77 @@ local function new_quick_action(command, on_click)
     }
 end
 
-new_quick_action(addon_artillery.commands.artillery)
-new_quick_action(addon_trains.commands.set_trains_to_automatic)
+new_quick_action(addon_artillery.commands.artillery, {
+    caption = "exp-commands_artillery.selection-name",
+    tooltip = "exp-commands_artillery.description"
+})
 
-new_quick_action(addon_teleport.commands.spawn, function(def, player, element, event)
+new_quick_action(addon_trains.commands.set_trains_to_automatic, {
+    caption = "exp-commands_trains.caption",
+    tooltip = "exp-commands_trains.description"
+})
+
+new_quick_action(addon_teleport.commands.spawn, {
+    caption = "exp-commands_teleport.description-spawn",
+    tooltip = "exp-commands_teleport.description-spawn"
+}, function(def, player, element, event)
     addon_teleport.commands.spawn(player, player)
 end)
 
-new_quick_action(addon_waterfill.commands.waterfill)
-new_quick_action(addon_lawnmower.commands.lawnmower)
-new_quick_action(addon_surface.commands.clear_ground_items)
-new_quick_action(addon_surface.commands.clear_blueprints_surface)
-new_quick_action(addon_surface.commands.clear_blueprints)
-new_quick_action(addon_home.commands.home)
-new_quick_action(addon_home.commands.home_return)
-new_quick_action(addon_home.commands.set_home)
-new_quick_action(addon_home.commands.get_home)
-new_quick_action(addon_vlayer.commands.vlayer)
-new_quick_action(addon_repair.commands.repair)
+new_quick_action(addon_waterfill.commands.waterfill, {
+    caption = "exp-commands_waterfill.selection-name",
+    tooltip = "exp-commands_waterfill.description"
+})
+
+new_quick_action(addon_lawnmower.commands.lawnmower, {
+    caption = "exp-commands_lawnmower.selection-name",
+    tooltip = "exp-commands_lawnmower.description"
+})
+
+new_quick_action(addon_surface.commands.clear_ground_items, {
+    caption = "exp-commands_surface.caption-items",
+    tooltip = "exp-commands_surface.description-items"
+})
+
+new_quick_action(addon_surface.commands.clear_blueprints_surface, {
+    caption = "exp-commands_surface.caption-blueprints-surface",
+    tooltip = "exp-commands_surface.description-blueprints-surface"
+})
+
+new_quick_action(addon_surface.commands.clear_blueprints, {
+    caption = "exp-commands_surface.caption-blueprints",
+    tooltip = "exp-commands_surface.description-blueprints"
+})
+
+new_quick_action(addon_home.commands.home, {
+    caption = "exp-commands_home.caption-home",
+    tooltip = "exp-commands_home.description-home"
+})
+
+new_quick_action(addon_home.commands.home_return, {
+    caption = "exp-commands_home.caption-return",
+    tooltip = "exp-commands_home.description-return"
+})
+
+new_quick_action(addon_home.commands.set_home, {
+    caption = "exp-commands_home.caption-set",
+    tooltip = "exp-commands_home.description-set"
+})
+
+new_quick_action(addon_home.commands.get_home, {
+    caption = "exp-commands_home.caption-get",
+    tooltip = "exp-commands_home.description-get"
+})
+
+new_quick_action(addon_vlayer.commands.vlayer, {
+    caption = "exp-commands_vlayer.caption",
+    tooltip = "exp-commands_vlayer.description"
+})
+
+new_quick_action(addon_repair.commands.repair, {
+    caption = "exp-commands_repair.selection-name",
+    tooltip = "exp-commands_repair.description"
+})
 
 --- Container added to the left gui flow
 --- @class ExpGui_QuickActions.elements.container: ExpElement
