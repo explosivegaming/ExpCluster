@@ -114,7 +114,7 @@ export default async function (context: ControllerPluginContext) {
 	});
 
 	// The public address of a host arrives after it connects
-	controller.hosts.on("update", hosts => {
+	controller.hosts.records.on("update", hosts => {
 		const hostIds = new Set(hosts.map(host => host.id));
 		refresh([...controller.instances.values()].filter(instance => {
 			const hostId = instance.config.get("instance.assigned_host");
