@@ -41,7 +41,7 @@ async function startPlugin(t2, { config = {}, canRestart = false } = {}) {
 }
 
 function addHost(controller, id, connected = true) {
-	controller.hosts.set(new HostRecord(id, `host-${id}`, "2.0.0", new Map(), connected));
+	controller.hosts.records.set(new HostRecord(id, `host-${id}`, "2.0.0", new Map(), connected));
 }
 
 function addInstance(controller, id, hostId, status = "running", fields = {}) {
