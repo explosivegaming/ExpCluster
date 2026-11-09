@@ -79,8 +79,7 @@ local mega = 1000000
 --- @field properties ExpScenario_Vlayer.Properties
 --- @field storage ExpScenario_Vlayer.Storage
 
---- @class ExpScenario_Vlayer.Data
---- @field surfaces table<number, ExpScenario_Vlayer.SurfaceData> Surface ID key
+--- @alias ExpScenario_Vlayer.Data ExpScenario_Vlayer.SurfaceData[]
 
 --- @class ExpScenario_Vlayer
 local Vlayer = {
@@ -157,7 +156,6 @@ allowed_items["landfill"] = {
 
 --- @type ExpScenario_Vlayer.Data
 local vlayer_data = {
-    surfaces = {}
 }
 
 Storage.register(vlayer_data, function(tbl)
