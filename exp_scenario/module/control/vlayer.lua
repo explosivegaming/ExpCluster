@@ -103,7 +103,7 @@ end
 local allowed_items = {} --- @type table<string, Vlayer.ItemProperties>
 
 for _, name in pairs(items.allowed_categories["production"]) do
-    local item_in_category = prototypes.get_entity_filtered{filter = "type", type = name}
+    local item_in_category = prototypes.get_entity_filtered{filters = {filter = "type", type = name}}
 
     for _, item in pairs(item_in_category) do
         local item_name = item.name
@@ -124,7 +124,7 @@ for _, name in pairs(items.allowed_categories["production"]) do
 end
 
 for _, name in pairs(items.allowed_categories["storage"]) do
-    local item_in_category = prototypes.get_entity_filtered{filter = "type", type = name}
+    local item_in_category = prototypes.get_entity_filtered{filters = {filter = "type", type = name}}
 
     for _, item in pairs(item_in_category) do
         local item_name = item.name
