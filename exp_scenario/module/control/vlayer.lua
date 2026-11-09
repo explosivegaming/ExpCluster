@@ -159,7 +159,7 @@ allowed_items["landfill"] = {
 local vlayer_data = {
 }
 
-default_surface(game.surfaces["nauvis"].index)
+default_surface(1)
 
 Storage.register(vlayer_data, function(tbl)
     vlayer_data = tbl
