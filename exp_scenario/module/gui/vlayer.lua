@@ -488,6 +488,8 @@ local function update_surface(event)
     end
 end
 
+local e = defines.events
+
 return feature:guard{
     elements = Elements,
     events = {
