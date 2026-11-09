@@ -43,12 +43,12 @@ local research_targets = {
 
 do --- Calculate the research targets
     local research_index = 1
-    local total_time = config.milestone_warmup_time * 60
+    local total_time = config.milestone_warmup_time * 3600
     for _, name in pairs(research_data.milestone[research_data.mod_set]) do
         if prototypes.technology[name] and (not prototypes.technology[name].hidden) then
             research_targets.index_lookup[name] = research_index
             -- The number is affected by multiplier already
-            total_time = total_time + math.ceil(prototypes.technology[name].research_unit_count * 60 / config.milestone_rate)
+            total_time = total_time + math.ceil(prototypes.technology[name].research_unit_count * 3600 / config.milestone_rate)
 
             research_targets.target_times[research_index] = {
                 name = name,
