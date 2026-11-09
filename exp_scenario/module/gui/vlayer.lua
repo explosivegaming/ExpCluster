@@ -32,7 +32,7 @@ end
 --- Statistics shown as progress bars, in display order
 --- @type { name: string, caption: LocalisedString, tooltip: LocalisedString }[]
 local stats = {}
-for _, name in ipairs{ "production", "capacity", "sustained", "surface-area" } do
+for _, name in ipairs{ "sustained", "production", "capacity", "surface-area" } do
     stats[#stats + 1] = {
         name = name,
         caption = { "exp-gui_vlayer.caption-stat-" .. name },
@@ -144,6 +144,10 @@ function Elements.stats_table.calculate_display_data()
     local items = Vlayer.get_items(game.surfaces["nauvis"].index)
     local allocated = Vlayer.get_allocated_items(game.surfaces["nauvis"].index)
     return {
+        sustained = {
+            value = ceil(statistics.energy_sustained) / max(statistics.energy_total_production, 1),
+            caption = format_energy(statistics.energy_sustained, "W") .. " / " .. format_energy(statistics.energy_total_production, "W"),
+        },
         production = {
             value = ceil(statistics.energy_production) / max(ceil(statistics.energy_max), 1),
             caption = format_energy(statistics.energy_production, "W") .. " / " .. format_energy(statistics.energy_max, "W"),
@@ -151,10 +155,6 @@ function Elements.stats_table.calculate_display_data()
         capacity = {
             value = statistics.energy_storage / max(statistics.energy_capacity, 1),
             caption = format_energy(statistics.energy_storage, "J") .. " / " .. format_energy(statistics.energy_capacity, "J"),
-        },
-        sustained = {
-            value = ceil(statistics.energy_sustained) / max(statistics.energy_total_production, 1),
-            caption = format_energy(statistics.energy_sustained, "W") .. " / " .. format_energy(statistics.energy_total_production, "W"),
         },
         ["surface-area"] = {
             value = statistics.total_surface_area / max(statistics.surface_area, 1),
@@ -480,10 +480,21 @@ local function refresh_player_permissions(event)
     Elements.controls.refresh_permissions(Gui.get_player(event))
 end
 
+--- Refresh the dropdown list when surface is updated
+local function update_surface(event)
+    -- global surface will have its data point to the main surface
+    if config.global_surface then
+        return
+    end
+end
+
 return feature:guard{
     elements = Elements,
     events = {
         [Roles.events.on_player_roles_changed] = refresh_player_permissions,
+        [e.on_surface_created] = update_surface
+        [e.on_surface_renamed] = update_surface
+        [e.on_surface_imported] = update_surface
     },
     on_nth_tick = {
         [60] = Elements.stats_table.refresh_online,

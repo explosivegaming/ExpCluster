@@ -700,7 +700,7 @@ end
 
 local function update_surface(event)
     -- global surface will have its data point to the main surface
-    if not config.global_surface then
+    if config.global_surface then
         return
     end
     if not vlayer_data[event.surface_index] then
