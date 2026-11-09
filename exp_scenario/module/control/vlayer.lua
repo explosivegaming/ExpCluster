@@ -159,37 +159,6 @@ allowed_items["landfill"] = {
 local vlayer_data = {
 }
 
-local function default_surface(surface_index)
-    if vlayer_data[surface_index] then
-        return
-    end
-
-    vlayer_data[surface_index] = {
-        interfaces = {
-            energy = {},
-            circuit = {},
-            storage_input = {},
-            storage_output = {},
-        },
-        properties = {
-            total_surface_area = 0,
-            used_surface_area = 0,
-            total_production = 0,
-            production = 0,
-            input_limit = 0,
-            output_limit = 0,
-            capacity = 0,
-        },
-        storage = {
-            items = {},
-            unallocated = {},
-            energy = 0,
-        }
-    }
-end
-
-default_surface(1)
-
 Storage.register(vlayer_data, function(tbl)
     vlayer_data = tbl
 end)
@@ -729,6 +698,35 @@ local function handle_energy_interfaces()
     end
 end
 
+local function default_surface(surface_index)
+    if vlayer_data[surface_index] then
+        return
+    end
+
+    vlayer_data[surface_index] = {
+        interfaces = {
+            energy = {},
+            circuit = {},
+            storage_input = {},
+            storage_output = {},
+        },
+        properties = {
+            total_surface_area = 0,
+            used_surface_area = 0,
+            total_production = 0,
+            production = 0,
+            input_limit = 0,
+            output_limit = 0,
+            capacity = 0,
+        },
+        storage = {
+            items = {},
+            unallocated = {},
+            energy = 0,
+        }
+    }
+end
+
 local function update_surface(event)
     -- global surface will have its data point to the main surface
     if config.global_surface then
@@ -752,7 +750,9 @@ end
 
 local e = defines.events
 
-Vlayer.on_init = update_surface -- The default surface exists before on_surface_created can fire
+Vlayer.on_init = function()
+    default_surface(1)
+end -- The default surface exists before on_surface_created can fire
 Vlayer.events[e.on_surface_created] = update_surface
 Vlayer.events[e.on_surface_renamed] = update_surface
 Vlayer.events[e.on_surface_imported] = update_surface
