@@ -117,6 +117,7 @@ for _, name in pairs(items.allowed_categories["production"]) do
         }
 
         for l, n in pairs(quality_level_to_name) do
+            ---@diagnostic disable-next-line: need-check-nil
             allowed_items[item_name]["production"][l] = item.get_max_energy_production(n) / mega -- W -> MW
         end
     end
@@ -138,8 +139,11 @@ for _, name in pairs(items.allowed_categories["storage"]) do
 
         if item.electric_energy_source_prototype then
             for l, n in pairs(quality_level_to_name) do
+                ---@diagnostic disable-next-line: need-check-nil
                 allowed_items[item_name]["input_limit"][l] = item.electric_energy_source_prototype.get_input_flow_limit(n) / mega -- W -> MW
+                ---@diagnostic disable-next-line: need-check-nil
                 allowed_items[item_name]["output_limit"][l] = item.electric_energy_source_prototype.get_output_flow_limit(n) / mega -- W -> MW
+                ---@diagnostic disable-next-line: need-check-nil
                 allowed_items[item_name]["capacity"][l] = item.electric_energy_source_prototype.buffer_capacity * prototypes.quality[n].accumulator_capacity_multiplier / mega -- J -> MJ
             end
         end
@@ -147,6 +151,7 @@ for _, name in pairs(items.allowed_categories["storage"]) do
 end
 
 allowed_items["landfill"] = {
+    required_area = 0,
     surface_area = config.landfill_area
 }
 
@@ -251,6 +256,7 @@ end
 --- @return number
 local function get_production_multiplier(s_index)
     local surface = game.surfaces[s_index]
+    if not surface then return end
     local multiplier = surface.solar_power_multiplier
     if surface.always_day then
         return multiplier
@@ -283,6 +289,7 @@ end
 --- @return number
 local function get_sustained_multiplier(s_index)
     local surface = game.surfaces[s_index]
+    if not surface then return end
     local multiplier = surface.solar_power_multiplier
     if surface.always_day then
         return multiplier
@@ -619,7 +626,7 @@ local function handle_circuit_interfaces()
         prune_interfaces(interfaces)
         if #interfaces == 0 then return end
 
-        local stats = Vlayer.get_statistics()
+        local stats = Vlayer.get_statistics(s_index)
         for _, interface in ipairs(interfaces) do
             local control = interface.get_or_create_control_behavior() --[[@as LuaConstantCombinatorControlBehavior]]
             if control.sections_count == 0 then
