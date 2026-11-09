@@ -538,7 +538,7 @@ local function apply_personal_battery_recharge(player)
             local energy_to_give = math.min(math.floor(equipment.max_energy - equipment.energy), available_energy, recharge_amount)
             equipment.energy = equipment.energy + energy_to_give
             recharge_amount = recharge_amount - energy_to_give
-            available_energy = Vlayer.energy_changed(-energy_to_give)
+            available_energy = Vlayer.energy_changed(player.physical_surface_index, -energy_to_give)
         end
     end
 end

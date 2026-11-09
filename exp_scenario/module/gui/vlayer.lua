@@ -32,7 +32,7 @@ end
 --- Statistics shown as progress bars, in display order
 --- @type { name: string, caption: LocalisedString, tooltip: LocalisedString }[]
 local stats = {}
-for _, name in ipairs{ "solar", "accumulator", "surface-area", "sustained", "production", "capacity" } do
+for _, name in ipairs{ "production", "capacity", "sustained", "surface-area" } do
     stats[#stats + 1] = {
         name = name,
         caption = { "exp-gui_vlayer.caption-stat-" .. name },
@@ -140,33 +140,25 @@ Elements.stats_table = Gui.define("vlayer/stats_table")
 --- Calculate the display data of every statistic, the same for every player
 --- @return table<string, ExpGui_Vlayer.elements.stat_bar.display_data>
 function Elements.stats_table.calculate_display_data()
-    local statistics = Vlayer.get_statistics()
-    local items = Vlayer.get_items()
-    local allocated = Vlayer.get_allocated_items()
+    local statistics = Vlayer.get_statistics(game.surfaces["nauvis"].index)
+    local items = Vlayer.get_items(game.surfaces["nauvis"].index)
+    local allocated = Vlayer.get_allocated_items(game.surfaces["nauvis"].index)
     return {
-        solar = {
-            value = allocated["solar-panel"] / max(items["solar-panel"], 1),
-            caption = format_number(allocated["solar-panel"], false) .. " / " .. format_number(items["solar-panel"], false),
-        },
-        accumulator = {
-            value = allocated["accumulator"] / max(items["accumulator"], 1),
-            caption = format_number(allocated["accumulator"], false) .. " / " .. format_number(items["accumulator"], false),
-        },
-        ["surface-area"] = {
-            value = statistics.total_surface_area / max(statistics.surface_area, 1),
-            caption = format_number(statistics.remaining_surface_area, false),
-        },
-        sustained = {
-            value = statistics.energy_sustained / max(statistics.energy_total_production, 1),
-            caption = format_energy(statistics.energy_sustained, "W") .. " / " .. format_energy(statistics.energy_total_production, "W"),
-        },
         production = {
-            value = statistics.energy_production / max(statistics.energy_max, 1),
+            value = ceil(statistics.energy_production) / max(ceil(statistics.energy_max), 1),
             caption = format_energy(statistics.energy_production, "W") .. " / " .. format_energy(statistics.energy_max, "W"),
         },
         capacity = {
             value = statistics.energy_storage / max(statistics.energy_capacity, 1),
             caption = format_energy(statistics.energy_storage, "J") .. " / " .. format_energy(statistics.energy_capacity, "J"),
+        },
+        sustained = {
+            value = ceil(statistics.energy_sustained) / max(statistics.energy_total_production, 1),
+            caption = format_energy(statistics.energy_sustained, "W") .. " / " .. format_energy(statistics.energy_total_production, "W"),
+        },
+        ["surface-area"] = {
+            value = statistics.total_surface_area / max(statistics.surface_area, 1),
+            caption = format_number(statistics.remaining_surface_area, false),
         },
     }
 end
@@ -256,26 +248,6 @@ end
 
 --- @class ExpGui_Vlayer.elements.control_button.element_data
 --- @field controls LuaGuiElement
-
---- Button which refreshes the listed interfaces
---- @class ExpGui_Vlayer.elements.refresh_button: ExpElement
---- @field data table<LuaGuiElement, ExpGui_Vlayer.elements.control_button.element_data>
---- @overload fun(parent: LuaGuiElement, controls: LuaGuiElement): LuaGuiElement
-Elements.refresh_button = Gui.define("vlayer/refresh_button")
-    :draw{
-        type = "button",
-        caption = { "exp-gui_vlayer.caption-refresh" },
-    }
-    :style{
-        width = 200,
-    }
-    :element_data{
-        controls = Gui.from_argument(1),
-    }
-    :on_click(function(def, _, refresh_button)
-        --- @cast def ExpGui_Vlayer.elements.refresh_button
-        Elements.controls.refresh_interfaces(def.data[refresh_button].controls)
-    end) --[[@as any]]
 
 --- Button which opens the map at the selected interface
 --- @class ExpGui_Vlayer.elements.view_button: ExpElement
@@ -367,7 +339,6 @@ Elements.controls = Gui.define("vlayer/controls")
 
         local type_dropdown = Elements.type_dropdown(controls, controls)
         local interface_dropdown = Elements.interface_dropdown(controls)
-        Elements.refresh_button(controls, controls)
         Elements.view_button(controls, controls)
         Elements.build_button(controls).visible = can_edit
         Elements.remove_button(controls, controls).visible = can_edit
@@ -393,7 +364,7 @@ end
 function Elements.controls.get_selected_interface(controls)
     local elements = Elements.controls.data[controls]
     local interface_type = Elements.type_dropdown.get_selected(elements.type_dropdown)
-    local interfaces = Vlayer.get_interfaces()[interface_type]
+    local interfaces = Vlayer.get_interfaces(game.surfaces["nauvis"].index)[interface_type]
     return interface_type, Elements.interface_dropdown.get_selected(elements.interface_dropdown, interfaces)
 end
 
@@ -402,7 +373,7 @@ end
 function Elements.controls.refresh_interfaces(controls)
     local elements = Elements.controls.data[controls]
     local interface_type = Elements.type_dropdown.get_selected(elements.type_dropdown)
-    Elements.interface_dropdown.refresh(elements.interface_dropdown, Vlayer.get_interfaces()[interface_type])
+    Elements.interface_dropdown.refresh(elements.interface_dropdown, Vlayer.get_interfaces(game.surfaces["nauvis"].index)[interface_type])
 end
 
 --- Refresh the listed interfaces of every online player, used when an interface is built or removed
@@ -461,18 +432,7 @@ local function on_area_selected(event)
         interface_type = Elements.controls.get_selected_type(controls)
     end
 
-    -- Platforms have no chests, so a combinator marks the spot once the research allows it
-    local marker_name = "steel-chest"
-    if config.power_on_space and surface.platform and interface_type == "energy" then
-        local research = config.power_on_space_research
-        if force.technologies[research.name].level < research.level then
-            player.print({ "exp-gui_vlayer.message-research", research.name, research.level }, Colors.orange_red)
-            return
-        end
-        marker_name = "constant-combinator"
-    end
-
-    local markers = surface.find_entities_filtered{ area = area, name = marker_name, force = force }
+    local markers = surface.find_entities_filtered{ area = area, name = "steel-chest", force = force }
     if #markers == 0 then
         player.print({ "exp-gui_vlayer.message-no-chest" }, Colors.orange_red)
         return
@@ -487,7 +447,7 @@ local function on_area_selected(event)
         return
     end
 
-    if #Vlayer.get_interfaces()[interface_type] >= config.interface_limit[interface_type] then
+    if config.interface_limit[interface_type] >= 0 and #Vlayer.get_interfaces(game.surfaces["nauvis"].index)[interface_type] >= config.interface_limit[interface_type] then
         player.print({ "exp-gui_vlayer.message-limit", type_captions[interface_type] }, Colors.orange_red)
         return
     end
