@@ -198,14 +198,14 @@ circuit_description = table.concat(circuit_description, "\n")
 --- @param s_index number surface index
 --- @return table<string, ExpScenario_Vlayer.ItemCountWithQuality>
 function Vlayer.get_items(s_index)
-    return assert(vlayer_data[s_index].storage.items)
+    return assert(vlayer_data[s_index]).storage.items
 end
 
 --- Get the items waiting for surface area keyed by name
 --- @param s_index number surface index
 --- @return table<string, ExpScenario_Vlayer.ItemCountWithQuality>
 function Vlayer.get_unallocated_items(s_index)
-    return assert(vlayer_data[s_index].storage.unallocated)
+    return assert(vlayer_data[s_index]).storage.unallocated
 end
 
 --- Get the items which contribute to the properties keyed by name
@@ -213,7 +213,7 @@ end
 --- @return table<string, ExpScenario_Vlayer.ItemCountWithQuality>
 function Vlayer.get_allocated_items(s_index)
     local allocated = {}
-    local storage = assert(vlayer_data[s_index].storage)
+    local storage = assert(vlayer_data[s_index]).storage
     local unallocated = storage.unallocated
     for name, qnc in pairs(storage.items) do
         for quality, count in pairs(qnc) do
@@ -227,7 +227,7 @@ end
 --- @param s_index number surface index
 --- @return ExpScenario_Vlayer.Interfaces
 function Vlayer.get_interfaces(s_index)
-    return assert(vlayer_data[s_index].interfaces)
+    return assert(vlayer_data[s_index]).interfaces
 end
 
 --- Get the signal each statistic is sent as on circuit interfaces
@@ -240,9 +240,9 @@ end
 --- @param s_index number surface index
 --- @return number
 local function get_remaining_surface_area(s_index)
-    local properties = assert(vlayer_data[s_index].properties)
+    local properties = assert(vlayer_data[s_index]).properties
     local remaining = properties.total_surface_area - properties.used_surface_area
-    for name, qnc in pairs(assert(vlayer_data[s_index].storage.unallocated)) do
+    for name, qnc in pairs(assert(vlayer_data[s_index]).storage.unallocated) do
         for _, count in pairs(qnc) do
             remaining = remaining - allowed_items[name].required_area * count
         end
@@ -307,7 +307,7 @@ end
 --- @param quality_level number
 local function allocate_item(s_index, name, count, quality_level)
     local item = allowed_items[name]
-    local properties = assert(vlayer_data[s_index].properties)
+    local properties = assert(vlayer_data[s_index]).properties
     if item.production then
         local prod = item.production[quality_level] * count
         properties.production = properties.production + prod
@@ -337,7 +337,7 @@ end
 --- @param quality_level number
 local function count_unallocated_production(s_index, name, count, quality_level)
     local item = allowed_items[name]
-    local properties = assert(vlayer_data[s_index].properties)
+    local properties = assert(vlayer_data[s_index]).properties
     if item.production then
         properties.total_production = properties.total_production + item.production[quality_level] * count
     end
@@ -350,7 +350,7 @@ end
 --- @param quality_level number
 function Vlayer.insert_item(s_index, name, count, quality_level)
     local item = assert(allowed_items[name], "Item not allowed in the vlayer: " .. name)
-    local storage = assert(vlayer_data[s_index].storage)
+    local storage = assert(vlayer_data[s_index]).storage
     storage.items[name][quality_level] = storage.items[name][quality_level] + count
 
     if config.unlimited_surface_area or item.required_area == 0 then
@@ -358,7 +358,7 @@ function Vlayer.insert_item(s_index, name, count, quality_level)
         return
     end
 
-    local properties = assert(vlayer_data[s_index].properties)
+    local properties = assert(vlayer_data[s_index]).properties
     local surplus_area = properties.total_surface_area - properties.used_surface_area
     local allocated = min(count, floor(surplus_area / item.required_area))
     if allocated > 0 then
@@ -378,8 +378,8 @@ end
 --- @return number # The count actually removed
 function Vlayer.remove_item(s_index, name, wanted, quality_level)
     local item = assert(allowed_items[name], "Item not allowed in the vlayer: " .. name)
-    local storage = assert(vlayer_data[s_index].storage)
-    local properties = assert(vlayer_data[s_index].properties)
+    local storage = assert(vlayer_data[s_index]).storage
+    local properties = assert(vlayer_data[s_index]).properties
     local removed = 0
 
     if not config.unlimited_surface_area and item.required_area > 0 then
@@ -412,7 +412,7 @@ end
 --- @param energy number J, negative to take
 --- @return number # J stored afterwards
 function Vlayer.energy_changed(s_index, energy)
-    local storage = assert(vlayer_data[s_index].storage)
+    local storage = assert(vlayer_data[s_index]).storage
     storage.energy = storage.energy + energy
     return storage.energy
 end
@@ -421,7 +421,7 @@ end
 --- @param s_index number surface index
 --- @return ExpScenario_Vlayer.Statistics
 function Vlayer.get_statistics(s_index)
-    local properties = assert(vlayer_data[s_index].properties)
+    local properties = assert(vlayer_data[s_index]).properties
     local production = properties.production * mega
     local production_multiplier = get_production_multiplier(s_index)
     local sustained_multiplier = get_sustained_multiplier(s_index)
@@ -438,7 +438,7 @@ function Vlayer.get_statistics(s_index)
         energy_total_production = properties.total_production * sustained_multiplier * mega,
         energy_sustained = production * sustained_multiplier,
         energy_capacity = properties.capacity * mega,
-        energy_storage = assert(vlayer_data[s_index].storage.energy),
+        energy_storage = assert(vlayer_data[s_index]).storage.energy,
     }
 end
 
@@ -448,7 +448,7 @@ end
 --- @param interface_type ExpScenario_Vlayer.InterfaceType
 --- @param player LuaPlayer?
 local function register_interface(s_index, interface, interface_type, player)
-    local interfaces = assert(vlayer_data[s_index].interfaces[interface_type])
+    local interfaces = assert(vlayer_data[s_index]).interfaces[interface_type]
     interfaces[#interfaces + 1] = interface
     interface.last_user = player
     interface.destructible = false
@@ -516,8 +516,8 @@ end
 --- @return ExpScenario_Vlayer.InterfaceType
 function Vlayer.remove_interface(interface)
     local s_index = interface.surface.index
-    local storage = assert(vlayer_data[s_index].storage)
-    local interfaces = assert(vlayer_data[s_index].interfaces)
+    local storage = assert(vlayer_data[s_index]).storage
+    local interfaces = assert(vlayer_data[s_index]).interfaces
     local interface_type = assert(interface_types[interface.name], "Entity is not a vlayer interface: " .. interface.name)
     if interface_type == "storage_input" or interface_type == "storage_output" then
         ExpUtil.transfer_inventory_to_surface{
