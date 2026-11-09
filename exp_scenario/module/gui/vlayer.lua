@@ -492,9 +492,9 @@ return feature:guard{
     elements = Elements,
     events = {
         [Roles.events.on_player_roles_changed] = refresh_player_permissions,
-        [e.on_surface_created] = update_surface
-        [e.on_surface_renamed] = update_surface
-        [e.on_surface_imported] = update_surface
+        [e.on_surface_created] = update_surface,
+        [e.on_surface_renamed] = update_surface,
+        [e.on_surface_imported] = update_surface,
     },
     on_nth_tick = {
         [60] = Elements.stats_table.refresh_online,
