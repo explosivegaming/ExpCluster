@@ -106,14 +106,12 @@ for _, name in pairs(items.allowed_categories["production"]) do
 
         allowed_items[item_name] = {
             required_area = item.tile_width * item.tile_height,
-            -- production_day = item.solar_panel_performance_at_day or 1,
-            -- production_night = item.solar_panel_performance_at_night or 1,
-            -- Quality affected items
-            production = {},
         }
 
+        -- Quality affected items
+        allowed_items[item_name]["production"] = {}
+
         for l, n in pairs(quality_level_to_name) do
-            ---@diagnostic disable-next-line: need-check-nil
             allowed_items[item_name]["production"][l] = item.get_max_energy_production(n) / mega -- W -> MW
         end
     end
@@ -127,19 +125,17 @@ for _, name in pairs(items.allowed_categories["storage"]) do
 
         allowed_items[item_name] = {
             required_area = item.tile_width * item.tile_height,
-            -- Quality affected items
-            input_limit = {},
-            output_limit = {},
-            capacity = {},
         }
+
+        -- Quality affected items
+        allowed_items[item_name]["input_limit"] = {}
+        allowed_items[item_name]["output_limit"] = {}
+        allowed_items[item_name]["capacity"] = {}
 
         if item.electric_energy_source_prototype then
             for l, n in pairs(quality_level_to_name) do
-                ---@diagnostic disable-next-line: need-check-nil
                 allowed_items[item_name]["input_limit"][l] = item.electric_energy_source_prototype.get_input_flow_limit(n) / mega -- W -> MW
-                ---@diagnostic disable-next-line: need-check-nil
                 allowed_items[item_name]["output_limit"][l] = item.electric_energy_source_prototype.get_output_flow_limit(n) / mega -- W -> MW
-                ---@diagnostic disable-next-line: need-check-nil
                 allowed_items[item_name]["capacity"][l] = item.electric_energy_source_prototype.buffer_capacity * prototypes.quality[n].accumulator_capacity_multiplier / mega -- J -> MJ
             end
         end
