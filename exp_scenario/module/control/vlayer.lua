@@ -243,6 +243,7 @@ function Vlayer.get_allocated_items(s_index)
     local storage = vd.storage
     local unallocated = storage.unallocated
     for name, qnc in pairs(storage.items) do
+        allocated[name] = {}
         for quality, count in pairs(qnc) do
             allocated[name][quality] = count - (unallocated[name] and unallocated[name][quality] or 0)
         end
@@ -397,8 +398,10 @@ function Vlayer.insert_item(s_index, name, count, quality_level)
     end
 
     local unallocated = count - allocated
-    storage.unallocated[name][quality_level] = storage.unallocated[name][quality_level] + unallocated
-    count_unallocated_production(s_index, name, unallocated, quality_level)
+    if unallocated > 0 then
+        storage.unallocated[name][quality_level] = storage.unallocated[name][quality_level] + unallocated
+        count_unallocated_production(s_index, name, unallocated, quality_level)
+    end
 end
 
 --- Take an item out, unallocated items go first and landfill can only go while nothing is using its area
