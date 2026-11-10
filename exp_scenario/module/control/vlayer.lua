@@ -54,7 +54,7 @@ local mega = 1000000
 --- @field capacity number MJ the allocated accumulators can hold
 
 --- @class ExpScenario_Vlayer.ItemCountWithQuality
---- @field quality string
+--- @field quality number
 --- @field count number
 
 --- @class ExpScenario_Vlayer.Storage
@@ -198,14 +198,14 @@ circuit_description = table.concat(circuit_description, "\n")
 --- @param s_index number surface index
 --- @return table<string, ExpScenario_Vlayer.ItemCountWithQuality>
 function Vlayer.get_items(s_index)
-    return assert(vlayer_data[s_index]).storage.items
+    return config.global_surface and vlayer_data[1].storage.items or vlayer_data[s_index].storage.items
 end
 
 --- Get the items waiting for surface area keyed by name
 --- @param s_index number surface index
 --- @return table<string, ExpScenario_Vlayer.ItemCountWithQuality>
 function Vlayer.get_unallocated_items(s_index)
-    return assert(vlayer_data[s_index]).storage.unallocated
+    return config.global_surface and vlayer_data[1].storage.unallocated or vlayer_data[s_index].storage.unallocated
 end
 
 --- Get the items which contribute to the properties keyed by name
@@ -213,7 +213,7 @@ end
 --- @return table<string, ExpScenario_Vlayer.ItemCountWithQuality>
 function Vlayer.get_allocated_items(s_index)
     local allocated = {}
-    local storage = assert(vlayer_data[s_index]).storage
+    local storage = config.global_surface and vlayer_data[1].storage or vlayer_data[s_index].storage
     local unallocated = storage.unallocated
     for name, qnc in pairs(storage.items) do
         for quality, count in pairs(qnc) do
@@ -227,7 +227,7 @@ end
 --- @param s_index number surface index
 --- @return ExpScenario_Vlayer.Interfaces
 function Vlayer.get_interfaces(s_index)
-    return assert(vlayer_data[s_index]).interfaces
+    return config.global_surface and vlayer_data[1].interfaces or vlayer_data[s_index].interfaces
 end
 
 --- Get the signal each statistic is sent as on circuit interfaces
@@ -240,9 +240,9 @@ end
 --- @param s_index number surface index
 --- @return number
 local function get_remaining_surface_area(s_index)
-    local properties = assert(vlayer_data[s_index]).properties
+    local properties = config.global_surface and vlayer_data[1].properties or vlayer_data[s_index].properties
+    local unallocated = config.global_surface and vlayer_data[1].storage.unallocated or vlayer_data[s_index].storage.unallocated
     local remaining = properties.total_surface_area - properties.used_surface_area
-    local unallocated = assert(vlayer_data[s_index]).storage.unallocated
     for name, qnc in pairs(unallocated) do
         for _, count in pairs(qnc) do
             remaining = remaining - allowed_items[name].required_area * count
@@ -256,7 +256,7 @@ end
 --- @return number
 local function get_production_multiplier(s_index)
     local surface = game.surfaces[s_index]
-    if not surface then return end
+    if not surface then return 0 end
     local multiplier = surface.solar_power_multiplier
     if surface.always_day then
         return multiplier
@@ -289,7 +289,7 @@ end
 --- @return number
 local function get_sustained_multiplier(s_index)
     local surface = game.surfaces[s_index]
-    if not surface then return end
+    if not surface then return 0 end
     local multiplier = surface.solar_power_multiplier
     if surface.always_day then
         return multiplier
@@ -308,20 +308,16 @@ end
 --- @param quality_level number
 local function allocate_item(s_index, name, count, quality_level)
     local item = allowed_items[name]
-    local properties = assert(vlayer_data[s_index]).properties
+    local properties = config.global_surface and vlayer_data[1].properties or vlayer_data[s_index].properties
     if item.production then
         local prod = item.production[quality_level] * count
         properties.production = properties.production + prod
         properties.total_production = properties.total_production + prod
     end
-    if item.input_limit then
-        properties.input_limit = properties.input_limit + item.input_limit[quality_level] * count
-    end
-    if item.output_limit then
-        properties.output_limit = properties.output_limit + item.output_limit[quality_level] * count
-    end
-    if item.capacity then
-        properties.capacity = properties.capacity + item.capacity[quality_level] * count
+    for _, v in {'input_limit', 'output_limit', 'capacity'} do
+        if item[v] then
+            properties[v] = properties[v] + item[v][quality_level] * count
+        end
     end
     if item.surface_area then
         properties.total_surface_area = properties.total_surface_area + item.surface_area * count
@@ -338,7 +334,7 @@ end
 --- @param quality_level number
 local function count_unallocated_production(s_index, name, count, quality_level)
     local item = allowed_items[name]
-    local properties = assert(vlayer_data[s_index]).properties
+    local properties = config.global_surface and vlayer_data[1].properties or vlayer_data[s_index].properties
     if item.production then
         properties.total_production = properties.total_production + item.production[quality_level] * count
     end
@@ -351,7 +347,7 @@ end
 --- @param quality_level number
 function Vlayer.insert_item(s_index, name, count, quality_level)
     local item = assert(allowed_items[name], "Item not allowed in the vlayer: " .. name)
-    local storage = assert(vlayer_data[s_index]).storage
+    local storage = config.global_surface and vlayer_data[1].storage or vlayer_data[s_index].storage
     if not storage.items[name] then storage.items[name] = {} end
     storage.items[name][quality_level] = storage.items[name][quality_level] + count
 
@@ -360,7 +356,7 @@ function Vlayer.insert_item(s_index, name, count, quality_level)
         return
     end
 
-    local properties = assert(vlayer_data[s_index]).properties
+    local properties = config.global_surface and vlayer_data[1].properties or vlayer_data[s_index].properties
     local surplus_area = properties.total_surface_area - properties.used_surface_area
     local allocated = min(count, floor(surplus_area / item.required_area))
     if allocated > 0 then
@@ -381,8 +377,7 @@ end
 --- @return number # The count actually removed
 function Vlayer.remove_item(s_index, name, count, quality_level)
     local item = assert(allowed_items[name], "Item not allowed in the vlayer: " .. name)
-    local storage = assert(vlayer_data[s_index]).storage
-    local properties = assert(vlayer_data[s_index]).properties
+    local storage = config.global_surface and vlayer_data[1].storage or vlayer_data[s_index].storage
     local removed = 0
 
     if not config.unlimited_surface_area and item.required_area > 0 then
@@ -396,6 +391,7 @@ function Vlayer.remove_item(s_index, name, count, quality_level)
         end
     end
 
+    local properties = config.global_surface and vlayer_data[1].properties or vlayer_data[s_index].properties
     local deallocate = min(count, storage.items[name][quality_level])
     if item.surface_area and item.surface_area > 0 then
         local surplus_area = properties.total_surface_area - properties.used_surface_area
@@ -415,7 +411,7 @@ end
 --- @param energy number J, negative to take
 --- @return number # J stored afterwards
 function Vlayer.energy_changed(s_index, energy)
-    local storage = assert(vlayer_data[s_index]).storage
+    local storage = config.global_surface and vlayer_data[1].storage or vlayer_data[s_index].storage
     storage.energy = storage.energy + energy
     return storage.energy
 end
@@ -424,7 +420,7 @@ end
 --- @param s_index number surface index
 --- @return ExpScenario_Vlayer.Statistics
 function Vlayer.get_statistics(s_index)
-    local properties = assert(vlayer_data[s_index]).properties
+    local properties = config.global_surface and vlayer_data[1].properties or vlayer_data[s_index].properties
     local production = properties.production * mega
     local production_multiplier = get_production_multiplier(s_index)
     local sustained_multiplier = get_sustained_multiplier(s_index)
@@ -441,7 +437,7 @@ function Vlayer.get_statistics(s_index)
         energy_total_production = properties.total_production * sustained_multiplier * mega,
         energy_sustained = production * sustained_multiplier,
         energy_capacity = properties.capacity * mega,
-        energy_storage = assert(vlayer_data[s_index]).storage.energy,
+        energy_storage = config.global_surface and vlayer_data[1].storage.energy or vlayer_data[s_index].storage.energy,
     }
 end
 
@@ -451,7 +447,7 @@ end
 --- @param interface_type ExpScenario_Vlayer.InterfaceType
 --- @param player LuaPlayer?
 local function register_interface(s_index, interface, interface_type, player)
-    local interfaces = assert(vlayer_data[s_index]).interfaces[interface_type]
+    local interfaces = config.global_surface and vlayer_data[1].interfaces[interface_type] or vlayer_data[s_index].interfaces[interface_type]
     interfaces[#interfaces + 1] = interface
     interface.last_user = player
     interface.destructible = false
@@ -519,8 +515,8 @@ end
 --- @return ExpScenario_Vlayer.InterfaceType
 function Vlayer.remove_interface(interface)
     local s_index = interface.surface.index
-    local storage = assert(vlayer_data[s_index]).storage
-    local interfaces = assert(vlayer_data[s_index]).interfaces
+    local storage = config.global_surface and vlayer_data[1].storage or vlayer_data[s_index].storage
+    local interfaces = config.global_surface and vlayer_data[1].interfaces or vlayer_data[s_index].interfaces
     local interface_type = assert(interface_types[interface.name], "Entity is not a vlayer interface: " .. interface.name)
     if interface_type == "storage_input" or interface_type == "storage_output" then
         ExpUtil.transfer_inventory_to_surface{
@@ -700,12 +696,17 @@ local function handle_energy_interfaces()
     end
 end
 
-local function default_surface(surface_index)
-    if vlayer_data[surface_index] then
+local function update_surface(event)
+    if vlayer_data[event.surface_index] then
         return
     end
 
-    vlayer_data[surface_index] = {
+    -- global surface will have its data point to the main surface
+    if config.global_surface then
+        return
+    end
+
+    vlayer_data[event.surface_index] = {
         interfaces = {
             energy = {},
             circuit = {},
@@ -727,14 +728,6 @@ local function default_surface(surface_index)
             energy = 0,
         }
     }
-end
-
-local function update_surface(event)
-    -- global surface will have its data point to the main surface
-    if config.global_surface then
-        return
-    end
-    default_surface(event.surface_index)
 end
 
 --- Move items between the interfaces and storage
