@@ -594,9 +594,10 @@ local function handle_input_interfaces()
             for _, item in pairs(inventory.get_contents()) do
                 local name = item.name
                 local count = item.count
+                local quality = item.quality
                 if allowed_items[name] then
-                    Vlayer.insert_item(s_index, name, count, quality_name_to_level[item.quality])
-                    inventory.remove{ name = name, count = count, quality = item.quality }
+                    Vlayer.insert_item(s_index, name, count, quality_name_to_level[quality])
+                    inventory.remove{ name = name, count = count, quality = quality }
                 end
             end
         end
@@ -615,7 +616,7 @@ local function handle_output_interfaces()
                     local name = filter.value and filter.value.name
                     local quality = filter.value and filter.value.quality
                     if name and allowed_items[name] then
-                        local quality_level = quality_name_to_level[item.quality]
+                        local quality_level = quality_name_to_level[quality]
                         local wanted = min(assert(filter.min) - inventory.get_item_count(name), prop.storage.items[name][quality_level])
                         if wanted > 0 and inventory.can_insert{ name = name, count = wanted, quality = quality } then
                             local removed = Vlayer.remove_item(s_index, name, wanted, quality_level)
@@ -690,7 +691,7 @@ local function handle_circuit_interfaces()
 
                 for name, qnc in pairs(prop.storage.items) do
                     for quality, count in pairs(qnc) do
-                        if count > 0 and prototypes.item[name] then
+                        if count > 0 then
                             section.set_slot(index, { value = { type = "item", name = name, quality = quality_level_to_name[quality] }, min = count })
                             index = index + 1
                         end
