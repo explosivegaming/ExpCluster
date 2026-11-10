@@ -154,16 +154,12 @@ allowed_items["landfill"] = {
 --- @type ExpScenario_Vlayer.Data
 local vlayer_data = {}
 
---- @param surface_index number?
+--- @param surface_index number
 local function update_surface(surface_index)
-    if vlayer_data[surface_index] then
-        return
-    end
+    if vlayer_data[surface_index] then return end
 
     -- global surface will have its data point to the main surface
-    if config.global_surface then
-        return
-    end
+    if config.global_surface and vlayer_data[1] then return end
 
     vlayer_data[surface_index] = {
         interfaces = {
@@ -610,7 +606,7 @@ end
 --- Fill the requests of the output interfaces from storage
 local function handle_output_interfaces()
     for s_index, prop in pairs(vlayer_data) do
-        local interfaces = prop.storage_output
+        local interfaces = prop.interfaces.storage_output
         prune_interfaces(interfaces)
         for _, interface in ipairs(interfaces) do
             local inventory = assert(interface.get_inventory(defines.inventory.chest))
