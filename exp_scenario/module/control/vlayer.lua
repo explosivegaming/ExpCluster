@@ -137,8 +137,9 @@ for _, name in pairs(items.allowed_categories["storage"]) do
         local i_eesp = item.electric_energy_source_prototype
 
         for l, n in pairs(quality_level_to_name) do
-            allowed_items[item_name]["input_limit"][l] = i_eesp and i_eesp.get_input_flow_limit(n) / mega or 0 -- W -> MW
-            allowed_items[item_name]["output_limit"][l] = i_eesp and i_eesp.get_output_flow_limit(n) / mega or 0  -- W -> MW
+            -- the number is per tick
+            allowed_items[item_name]["input_limit"][l] = i_eesp and i_eesp.get_input_flow_limit(n) * 60 / mega or 0 -- W -> MW
+            allowed_items[item_name]["output_limit"][l] = i_eesp and i_eesp.get_output_flow_limit(n) * 60 / mega or 0  -- W -> MW
             allowed_items[item_name]["capacity"][l] = i_eesp and i_eesp.buffer_capacity * prototypes.quality[n].accumulator_capacity_multiplier / mega or 0  -- J -> MJ
         end
     end
