@@ -89,7 +89,7 @@ Elements.stat_label = Gui.define("vlayer/stat_label")
         style = "heading_2_label",
     }
     :style{
-        width = 250,
+        width = 300,
     } --[[@as any]]
 
 --- Bar showing a statistic as a fraction with the values as its caption
@@ -103,7 +103,7 @@ Elements.stat_bar = Gui.define("vlayer/stat_bar")
         style = "electric_satisfaction_statistics_progressbar",
     }
     :style{
-        width = 250,
+        width = 300,
         font = "heading-2",
     } --[[@as any]]
 
@@ -151,19 +151,19 @@ function Elements.stats_table.calculate_display_data()
     return {
         sustained = {
             value = sustained,
-            caption = format_energy(statistics.energy_sustained, "W") .. " / " .. format_energy(statistics.energy_total_production, "W") .. format_string(" (%.1f)", sustained * 100),
+            caption = format_energy(statistics.energy_sustained, "W") .. " / " .. format_energy(statistics.energy_total_production, "W") .. format_string(" (%.1f %%)", sustained * 100),
         },
         production = {
             value = production,
-            caption = format_energy(statistics.energy_production, "W") .. " / " .. format_energy(statistics.energy_max, "W") .. format_string(" (%.1f)", production * 100),
+            caption = format_energy(statistics.energy_production, "W") .. " / " .. format_energy(statistics.energy_max, "W") .. format_string(" (%.1f %%)", production * 100),
         },
         capacity = {
             value = capacity,
-            caption = format_energy(statistics.energy_storage, "J") .. " / " .. format_energy(statistics.energy_capacity, "J") .. format_string(" (%.1f)", capacity * 100),
+            caption = format_energy(statistics.energy_storage, "J") .. " / " .. format_energy(statistics.energy_capacity, "J") .. format_string(" (%.1f %%)", capacity * 100),
         },
         ["surface-area"] = {
             value = surface_area,
-            caption = format_number(statistics.remaining_surface_area, false) .. format_string(" (%.1f)", surface_area * 100),
+            caption = format_number(statistics.remaining_surface_area, false) .. format_string(" (%.1f %%)", surface_area * 100),
         },
     }
 end
@@ -199,7 +199,7 @@ Elements.type_dropdown = Gui.define("vlayer/type_dropdown")
         selected_index = 1,
     }
     :style{
-        width = 250,
+        width = 300,
     }
     :element_data{
         controls = Gui.from_argument(1),
@@ -224,7 +224,7 @@ Elements.interface_dropdown = Gui.define("vlayer/interface_dropdown")
         type = "drop-down",
     }
     :style{
-        width = 250,
+        width = 300,
     }
     :element_data{
         controls = Gui.from_argument(1),
@@ -275,7 +275,7 @@ Elements.build_button = Gui.define("vlayer/build_button")
         caption = { "exp-gui_vlayer.caption-build" },
     }
     :style{
-        width = 250,
+        width = 300,
     }
     :on_click(function(_, player)
         if SelectArea:stop(player) then
@@ -297,7 +297,7 @@ Elements.remove_button = Gui.define("vlayer/remove_button")
         caption = { "exp-gui_vlayer.caption-remove" },
     }
     :style{
-        width = 250,
+        width = 300,
     }
     :element_data{
         controls = Gui.from_argument(1),
@@ -325,7 +325,7 @@ Elements.controls = Gui.define("vlayer/controls")
     :track_all_elements()
     :draw(function(def, parent)
         --- @cast def ExpGui_Vlayer.elements.controls
-        local controls = Gui.elements.scroll_table(parent, 500, 2, "controls")
+        local controls = Gui.elements.scroll_table(parent, 600, 2, "controls")
         local player = Gui.get_player(parent)
         local can_edit = Roles.player_has_permission(player, "exp_scenario.gui.vlayer_edit")
 
