@@ -213,13 +213,16 @@ end
 
 --- Dropdown listing the interfaces of the selected type by position
 --- @class ExpGui_Vlayer.elements.interface_dropdown: ExpElement
---- @overload fun(parent: LuaGuiElement): LuaGuiElement
+--- @overload fun(parent: LuaGuiElement, controls: LuaGuiElement): LuaGuiElement
 Elements.interface_dropdown = Gui.define("vlayer/interface_dropdown")
     :draw{
         type = "drop-down",
     }
     :style{
         width = 200,
+    }
+    :element_data{
+        controls = Gui.from_argument(1),
     }
     :on_selection_state_changed(function(def, _, interface_dropdown)
         --- @cast def ExpGui_Vlayer.elements.interface_dropdown
@@ -322,7 +325,7 @@ Elements.controls = Gui.define("vlayer/controls")
         local can_edit = Roles.player_has_permission(player, "exp_scenario.gui.vlayer_edit")
 
         local type_dropdown = Elements.type_dropdown(controls, controls)
-        local interface_dropdown = Elements.interface_dropdown(controls)
+        local interface_dropdown = Elements.interface_dropdown(controls, controls)
         Elements.build_button(controls).visible = can_edit
         Elements.remove_button(controls, controls).visible = can_edit
 
