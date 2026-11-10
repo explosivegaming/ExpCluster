@@ -114,7 +114,8 @@ for _, name in pairs(items.allowed_categories["production"]) do
         allowed_items[item_name]["production"] = {}
 
         for l, n in pairs(quality_level_to_name) do
-            allowed_items[item_name]["production"][l] = item.get_max_energy_production(n) / mega or 0 -- W -> MW
+            -- the number is per tick
+            allowed_items[item_name]["production"][l] = item.get_max_energy_production(n) * 60 / mega or 0 -- W -> MW
         end
     end
 end
