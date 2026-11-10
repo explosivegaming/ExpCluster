@@ -743,6 +743,29 @@ local function handle_energy_interfaces()
     end
 end
 
+--- Since landfill value is changed, the vlayer needs to be recalculated, done by reapplying the placement
+Vlayer.recalc_space = function()
+    for s_index, prop in pairs(vlayer_data) do
+        -- Unalloc
+        local allocated_items = Vlayer.get_allocated_items(s_index)
+        local unallocated_items = Vlayer.get_unallocated_items(s_index)
+        for name, qnc in pairs(allocated_items) do
+            for quality, count in pairs(qnc) do
+                unallocated_items[name][quality] = unallocated_items[name][quality] + count
+            end
+        end
+        -- Alloc
+        prop.storage.items = {}
+        prop.storage.unallocated = {}
+        prop.storage.energy = 0
+        for name, qnc in pairs(unallocated_items) do
+            for quality, count in pairs(qnc) do
+                Vlayer.insert_item(s_index, name, count, quality)
+            end
+        end
+    end
+end
+
 --- Move items between the interfaces and storage
 local function update_storage()
     handle_input_interfaces()
@@ -762,6 +785,12 @@ Vlayer.on_init = update_surface -- The default surface exists before on_surface_
 Vlayer.events[e.on_surface_created] = function(event) update_surface(event.surface_index) end
 Vlayer.events[e.on_surface_renamed] = function(event) update_surface(event.surface_index) end
 Vlayer.events[e.on_surface_imported] = function(event) update_surface(event.surface_index) end
+Vlayer.events[Feature.events.on_config_updated] = function(event)
+    if event.feature_name == feature.name and event.path == "landfill_area" then
+        allowed_items["landfill"]["surface_area"] = event.new_value
+        Vlayer.recalc_space()
+    end
+end
 Vlayer.on_nth_tick[update_tick_storage] = update_storage
 Vlayer.on_nth_tick[update_tick_energy] = update_energy
 
