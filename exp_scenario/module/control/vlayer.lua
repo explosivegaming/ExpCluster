@@ -755,9 +755,9 @@ end
 local e = defines.events
 
 Vlayer.on_init = update_surface -- The default surface exists before on_surface_created can fire
-Vlayer.events[e.on_surface_created] = function update_surface(event.surface_index) end
-Vlayer.events[e.on_surface_renamed] = function update_surface(event.surface_index) end
-Vlayer.events[e.on_surface_imported] = function update_surface(event.surface_index) end
+Vlayer.events[e.on_surface_created] = function(event) update_surface(event.surface_index) end
+Vlayer.events[e.on_surface_renamed] = function(event) update_surface(event.surface_index) end
+Vlayer.events[e.on_surface_imported] = function(event) update_surface(event.surface_index) end
 Vlayer.on_nth_tick[update_tick_storage] = update_storage
 Vlayer.on_nth_tick[update_tick_energy] = update_energy
 
