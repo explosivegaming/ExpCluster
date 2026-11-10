@@ -219,7 +219,7 @@ end
 circuit_description = table.concat(circuit_description, "\n")
 
 --- Get every stored item keyed by name, allocated or not
---- @param s_index number surface index
+--- @param s_index number Surface index
 --- @return table<string, table<number, number>>
 function Vlayer.get_items(s_index)
     local vd = assert(config.global_surface and vlayer_data[1] or vlayer_data[s_index])
@@ -227,7 +227,7 @@ function Vlayer.get_items(s_index)
 end
 
 --- Get the items waiting for surface area keyed by name
---- @param s_index number surface index
+--- @param s_index number Surface index
 --- @return table<string, table<number, number>>
 function Vlayer.get_unallocated_items(s_index)
     local vd = assert(config.global_surface and vlayer_data[1] or vlayer_data[s_index])
@@ -235,7 +235,7 @@ function Vlayer.get_unallocated_items(s_index)
 end
 
 --- Get the items which contribute to the properties keyed by name
---- @param s_index number surface index
+--- @param s_index number Surface index
 --- @return table<string, table<number, number>>
 function Vlayer.get_allocated_items(s_index)
     local allocated = {}
@@ -244,14 +244,14 @@ function Vlayer.get_allocated_items(s_index)
     local unallocated = storage.unallocated
     for name, qnc in pairs(storage.items) do
         for quality, count in pairs(qnc) do
-            allocated[name][quality] = count - (unallocated[name][quality] or 0)
+            allocated[name][quality] = count - (unallocated[name] and unallocated[name][quality] or 0)
         end
     end
     return allocated
 end
 
 --- Get the interface entities of each type, do not modify
---- @param s_index number surface index
+--- @param s_index number Surface index
 --- @return ExpScenario_Vlayer.Interfaces
 function Vlayer.get_interfaces(s_index)
     local vd = assert(config.global_surface and vlayer_data[1] or vlayer_data[s_index])
@@ -265,7 +265,7 @@ function Vlayer.get_circuits()
 end
 
 --- Surface area left once the unallocated items have taken what they need
---- @param s_index number surface index
+--- @param s_index number Surface index
 --- @return number
 local function get_remaining_surface_area(s_index)
     local vd = assert(config.global_surface and vlayer_data[1] or vlayer_data[s_index])
@@ -281,7 +281,7 @@ local function get_remaining_surface_area(s_index)
 end
 
 --- Fraction of solar production available right now, from the darkness of a real surface or the config day cycle
---- @param s_index number surface index
+--- @param s_index number Surface index
 --- @return number
 local function get_production_multiplier(s_index)
     local surface = assert(config.global_surface and game.surface[1] or game.surfaces[s_index]) --[[@as LuaSurface]]
@@ -313,7 +313,7 @@ local function get_production_multiplier(s_index)
 end
 
 --- Fraction of solar production averaged over a whole day, sunrise and sunset count for half
---- @param s_index number surface index
+--- @param s_index number Surface index
 --- @return number
 local function get_sustained_multiplier(s_index)
     local surface = assert(config.global_surface and game.surface[1] or game.surfaces[s_index]) --[[@as LuaSurface]]
@@ -329,7 +329,7 @@ local function get_sustained_multiplier(s_index)
 end
 
 --- Apply the properties of an item to the layer, a negative count deallocates
---- @param s_index number surface index
+--- @param s_index number Surface index
 --- @param name string
 --- @param count number
 --- @param quality_level number
@@ -356,7 +356,7 @@ local function allocate_item(s_index, name, count, quality_level)
 end
 
 --- Count the production of items which are stored but not allocated, so the total shows what more surface area would give
---- @param s_index number surface index
+--- @param s_index number Surface index
 --- @param name string
 --- @param count number
 --- @param quality_level number
@@ -370,7 +370,7 @@ local function count_unallocated_production(s_index, name, count, quality_level)
 end
 
 --- Store an item, it is allocated straight away when there is surface area for it
---- @param s_index number surface index
+--- @param s_index number Surface index
 --- @param name string
 --- @param count number
 --- @param quality_level number
@@ -402,7 +402,7 @@ function Vlayer.insert_item(s_index, name, count, quality_level)
 end
 
 --- Take an item out, unallocated items go first and landfill can only go while nothing is using its area
---- @param s_index number surface index
+--- @param s_index number Surface index
 --- @param name string
 --- @param count number
 --- @param quality_level number
@@ -440,7 +440,7 @@ function Vlayer.remove_item(s_index, name, count, quality_level)
 end
 
 --- Add or take energy, used by other modules which spend the stored energy
---- @param s_index number surface index
+--- @param s_index number Surface index
 --- @param energy number J, negative to take
 --- @return number # J stored afterwards
 function Vlayer.energy_changed(s_index, energy)
@@ -451,7 +451,7 @@ function Vlayer.energy_changed(s_index, energy)
 end
 
 --- Get the statistics of the layer
---- @param s_index number surface index
+--- @param s_index number Surface index
 --- @return ExpScenario_Vlayer.Statistics
 function Vlayer.get_statistics(s_index)
     local vd = assert(config.global_surface and vlayer_data[1] or vlayer_data[s_index])
@@ -477,7 +477,7 @@ function Vlayer.get_statistics(s_index)
 end
 
 --- Make an entity into an interface which players can not mine or damage
---- @param s_index number surface index
+--- @param s_index number Surface index
 --- @param interface LuaEntity
 --- @param interface_type ExpScenario_Vlayer.InterfaceType
 --- @param player LuaPlayer?
