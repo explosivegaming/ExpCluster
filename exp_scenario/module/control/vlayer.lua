@@ -342,7 +342,7 @@ local function allocate_item(s_index, name, count, quality_level)
         properties.production = properties.production + prod
         properties.total_production = properties.total_production + prod
     end
-    for _, v in {'input_limit', 'output_limit', 'capacity'} do
+    for _, v in pairs({'input_limit', 'output_limit', 'capacity'}) do
         if item[v] then
             properties[v] = properties[v] + item[v][quality_level] * count
         end
