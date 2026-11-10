@@ -147,6 +147,7 @@ function Elements.stats_table.calculate_display_data()
     local production = ceil(statistics.energy_production) / max(ceil(statistics.energy_max), 1)
     local capacity = statistics.energy_storage / max(statistics.energy_capacity, 1)
     local surface_area = statistics.remaining_surface_area / max(statistics.total_surface_area, 1)
+    local surface_area_bar = surface_area > 0.1 and 1 or surface_area / 0.1
     return {
         sustained = {
             value = sustained,
