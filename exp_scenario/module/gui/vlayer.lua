@@ -151,19 +151,19 @@ function Elements.stats_table.calculate_display_data()
     return {
         sustained = {
             value = sustained,
-            caption = format_energy(statistics.energy_sustained, "W") .. " / " .. format_energy(statistics.energy_total_production, "W") .. format_string(" (%.1f %%)", sustained * 100),
+            caption = format_energy(statistics.energy_sustained, "W") .. " / " .. format_energy(statistics.energy_total_production, "W") .. format_string(", %.1f %%", sustained * 100),
         },
         production = {
             value = production,
-            caption = format_energy(statistics.energy_production, "W") .. " / " .. format_energy(statistics.energy_max, "W") .. format_string(" (%.1f %%)", production * 100),
+            caption = format_energy(statistics.energy_production, "W") .. " / " .. format_energy(statistics.energy_max, "W") .. format_string(", %.1f %%", production * 100),
         },
         capacity = {
             value = capacity,
-            caption = format_energy(statistics.energy_storage, "J") .. " / " .. format_energy(statistics.energy_capacity, "J") .. format_string(" (%.1f %%)", capacity * 100),
+            caption = format_energy(statistics.energy_storage, "J") .. " / " .. format_energy(statistics.energy_capacity, "J") .. format_string(", %.1f %%", capacity * 100),
         },
         ["surface-area"] = {
             value = surface_area,
-            caption = format_number(statistics.remaining_surface_area, false) .. format_string(" (%.1f %%)", surface_area * 100),
+            caption = format_number(statistics.remaining_surface_area, false) .. format_string(", %.1f %%", surface_area * 100),
         },
     }
 end
