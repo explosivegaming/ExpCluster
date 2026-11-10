@@ -112,7 +112,7 @@ for _, name in pairs(items.allowed_categories["production"]) do
         allowed_items[item_name]["production"] = {}
 
         for l, n in pairs(quality_level_to_name) do
-            allowed_items[item_name]["production"][l] = item.get_max_energy_production(n) / mega -- W -> MW
+            allowed_items[item_name]["production"][l] = item.get_max_energy_production(n) / mega or 0 -- W -> MW
         end
     end
 end
@@ -131,13 +131,12 @@ for _, name in pairs(items.allowed_categories["storage"]) do
         allowed_items[item_name]["input_limit"] = {}
         allowed_items[item_name]["output_limit"] = {}
         allowed_items[item_name]["capacity"] = {}
+        local i_eesp = item.electric_energy_source_prototype
 
-        if item.electric_energy_source_prototype then
-            for l, n in pairs(quality_level_to_name) do
-                allowed_items[item_name]["input_limit"][l] = item.electric_energy_source_prototype.get_input_flow_limit(n) / mega -- W -> MW
-                allowed_items[item_name]["output_limit"][l] = item.electric_energy_source_prototype.get_output_flow_limit(n) / mega -- W -> MW
-                allowed_items[item_name]["capacity"][l] = item.electric_energy_source_prototype.buffer_capacity * prototypes.quality[n].accumulator_capacity_multiplier / mega -- J -> MJ
-            end
+        for l, n in pairs(quality_level_to_name) do
+            allowed_items[item_name]["input_limit"][l] = i_eesp and i_eesp.get_input_flow_limit(n) / mega or 0 -- W -> MW
+            allowed_items[item_name]["output_limit"][l] = i_eesp and i_eesp.get_output_flow_limit(n) / mega or 0  -- W -> MW
+            allowed_items[item_name]["capacity"][l] = i_eesp and i_eesp.buffer_capacity * prototypes.quality[n].accumulator_capacity_multiplier / mega or 0  -- J -> MJ
         end
     end
 end
@@ -348,12 +347,11 @@ local function allocate_item(s_index, name, count, quality_level)
             properties[v] = properties[v] + item[v][quality_level] * count
         end
     end
-    if item.surface_area then
-        properties.total_surface_area = properties.total_surface_area + item.surface_area * count
-    end
-    if item.required_area > 0 then
-        properties.used_surface_area = properties.used_surface_area + item.required_area * count
-    end
+    if not item.surface_area then return end
+    local area = item.surface_area * count
+    properties.total_surface_area = properties.total_surface_area + area
+    if item.required_area == 0 then return end
+    properties.used_surface_area = properties.used_surface_area + area
 end
 
 --- Count the production of items which are stored but not allocated, so the total shows what more surface area would give
