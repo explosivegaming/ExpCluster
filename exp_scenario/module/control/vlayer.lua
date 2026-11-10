@@ -242,7 +242,8 @@ end
 local function get_remaining_surface_area(s_index)
     local properties = assert(vlayer_data[s_index]).properties
     local remaining = properties.total_surface_area - properties.used_surface_area
-    for name, qnc in pairs(assert(vlayer_data[s_index]).storage.unallocated) do
+    local unallocated = assert(vlayer_data[s_index]).storage.unallocated
+    for name, qnc in pairs(unallocated) do
         for _, count in pairs(qnc) do
             remaining = remaining - allowed_items[name].required_area * count
         end
@@ -351,6 +352,7 @@ end
 function Vlayer.insert_item(s_index, name, count, quality_level)
     local item = assert(allowed_items[name], "Item not allowed in the vlayer: " .. name)
     local storage = assert(vlayer_data[s_index]).storage
+    if not storage.items[name] then storage.items[name] = {} end
     storage.items[name][quality_level] = storage.items[name][quality_level] + count
 
     if config.unlimited_surface_area or item.required_area == 0 then
@@ -366,6 +368,7 @@ function Vlayer.insert_item(s_index, name, count, quality_level)
     end
 
     local unallocated = count - allocated
+    if not storage.unallocated[name] then storage.unallocated[name] = {} end
     storage.unallocated[name][quality_level] = storage.unallocated[name][quality_level] + unallocated
     count_unallocated_production(s_index, name, unallocated, quality_level)
 end
@@ -376,7 +379,7 @@ end
 --- @param count number
 --- @param quality_level number
 --- @return number # The count actually removed
-function Vlayer.remove_item(s_index, name, wanted, quality_level)
+function Vlayer.remove_item(s_index, name, count, quality_level)
     local item = assert(allowed_items[name], "Item not allowed in the vlayer: " .. name)
     local storage = assert(vlayer_data[s_index]).storage
     local properties = assert(vlayer_data[s_index]).properties
@@ -603,17 +606,17 @@ local function handle_unallocated()
                 unallocated_area = unallocated_area + allowed_items[name].required_area * count
             end
         end
-        if unallocated_area == 0 then return end
-
-        local properties = prop.properties
-        local surplus_area = properties.total_surface_area - properties.used_surface_area
-        for name, qnc in pairs(prop.storage.unallocated) do
-            for quality, count in pairs(qnc) do
-                local allocated = min(count, floor(count * surplus_area / unallocated_area))
-                if allocated > 0 then
-                    prop.storage.unallocated[name][quality] = count - allocated
-                    allocate_item(s_index, name, allocated, quality)
-                    count_unallocated_production(s_index, name, -allocated, quality)
+        if unallocated_area > 0 then
+            local properties = prop.properties
+            local surplus_area = properties.total_surface_area - properties.used_surface_area
+            for name, qnc in pairs(prop.storage.unallocated) do
+                for quality, count in pairs(qnc) do
+                    local allocated = min(count, floor(count * surplus_area / unallocated_area))
+                    if allocated > 0 then
+                        prop.storage.unallocated[name][quality] = count - allocated
+                        allocate_item(s_index, name, allocated, quality)
+                        count_unallocated_production(s_index, name, -allocated, quality)
+                    end
                 end
             end
         end
@@ -625,38 +628,38 @@ local function handle_circuit_interfaces()
     for s_index, prop in pairs(vlayer_data) do
         local interfaces = prop.interfaces.circuit
         prune_interfaces(interfaces)
-        if #interfaces == 0 then return end
-
-        local stats = Vlayer.get_statistics(s_index)
-        for _, interface in ipairs(interfaces) do
-            local control = interface.get_or_create_control_behavior() --[[@as LuaConstantCombinatorControlBehavior]]
-            if control.sections_count == 0 then
-                control.add_section()
-            end
-            local section = assert(control.sections[1])
-
-            -- Slots are cleared first because an item can not be set in two slots at once
-            for index = section.filters_count, 1, -1 do
-                section.clear_slot(index)
-            end
-
-            local index = 1
-            for stat_name, signal_name in pairs(circuit_signals) do
-                local value = stats[stat_name] --[[@as number]]
-                if stat_name:find("energy") then
-                    value = value / mega
-                elseif stat_name == "production_multiplier" then
-                    value = value * 10000
+        if #interfaces > 0 then
+            local stats = Vlayer.get_statistics(s_index)
+            for _, interface in ipairs(interfaces) do
+                local control = interface.get_or_create_control_behavior() --[[@as LuaConstantCombinatorControlBehavior]]
+                if control.sections_count == 0 then
+                    control.add_section()
                 end
-                section.set_slot(index, { value = { type = "virtual", name = signal_name, quality = "normal" }, min = floor(value) })
-                index = index + 1
-            end
+                local section = assert(control.sections[1])
 
-            for name, qnc in pairs(prop.storage.items) do
-                for quality, count in pairs(qnc) do
-                    if count > 0 and prototypes.item[name][quality] then
-                        section.set_slot(index, { value = { type = "item", name = name, quality = quality_level_to_name[quality] }, min = count })
-                        index = index + 1
+                -- Slots are cleared first because an item can not be set in two slots at once
+                for index = section.filters_count, 1, -1 do
+                    section.clear_slot(index)
+                end
+
+                local index = 1
+                for stat_name, signal_name in pairs(circuit_signals) do
+                    local value = stats[stat_name] --[[@as number]]
+                    if stat_name:find("energy") then
+                        value = value / mega
+                    elseif stat_name == "production_multiplier" then
+                        value = value * 10000
+                    end
+                    section.set_slot(index, { value = { type = "virtual", name = signal_name, quality = "normal" }, min = floor(value) })
+                    index = index + 1
+                end
+
+                for name, qnc in pairs(prop.storage.items) do
+                    for quality, count in pairs(qnc) do
+                        if count > 0 and prototypes.item[name][quality] then
+                            section.set_slot(index, { value = { type = "item", name = name, quality = quality_level_to_name[quality] }, min = count })
+                            index = index + 1
+                        end
                     end
                 end
             end
@@ -693,7 +696,6 @@ local function handle_energy_interfaces()
         local capacity = properties.capacity * mega
         if not config.unlimited_capacity and storage.energy > capacity then
             storage.energy = capacity
-            return
         end
     end
 end
@@ -751,7 +753,7 @@ end
 local e = defines.events
 
 Vlayer.on_init = function()
-    default_surface(1)
+    update_surface({surface_index=game.surfaces["nauvis"].index})
 end -- The default surface exists before on_surface_created can fire
 Vlayer.events[e.on_surface_created] = update_surface
 Vlayer.events[e.on_surface_renamed] = update_surface
