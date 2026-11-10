@@ -707,7 +707,8 @@ local function handle_energy_interfaces()
     for s_index, prop in pairs(vlayer_data) do
         local storage = prop.storage
         local properties = prop.properties
-        local min_input = min(properties.input_limit, properties.production * get_production_multiplier(s_index))
+        local production = properties.production
+        local min_input = min(properties.input_limit, production * get_production_multiplier(s_index))
         storage.energy = storage.energy + floor(min_input * mega * update_tick_energy / 60)
 
         local interfaces = prop.interfaces.energy
