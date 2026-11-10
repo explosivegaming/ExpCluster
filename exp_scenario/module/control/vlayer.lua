@@ -90,9 +90,11 @@ local Vlayer = {
 }
 
 local quality_level_to_name = {}
+local quality_name_to_level = {}
 
 for _, q in pairs(prototypes.quality) do
     quality_level_to_name[q.level] = q.name
+    quality_name_to_level[q.name] = q.level
 end
 
 --- The properties of every allowed item
@@ -593,8 +595,7 @@ local function handle_input_interfaces()
                 local name = item.name
                 local count = item.count
                 if allowed_items[name] then
-                    local quality_level = prototypes.quality[item.quality].level
-                    Vlayer.insert_item(s_index, name, count, quality_level)
+                    Vlayer.insert_item(s_index, name, count, quality_name_to_level[item.quality])
                     inventory.remove{ name = name, count = count, quality = item.quality }
                 end
             end
@@ -614,7 +615,7 @@ local function handle_output_interfaces()
                     local name = filter.value and filter.value.name
                     local quality = filter.value and filter.value.quality
                     if name and allowed_items[name] then
-                        local quality_level = prototypes.quality[quality].level
+                        local quality_level = quality_name_to_level[item.quality]
                         local wanted = min(assert(filter.min) - inventory.get_item_count(name), prop.storage.items[name][quality_level])
                         if wanted > 0 and inventory.can_insert{ name = name, count = wanted, quality = quality } then
                             local removed = Vlayer.remove_item(s_index, name, wanted, quality_level)
@@ -632,7 +633,6 @@ end
 --- Allocate waiting items in proportion to the surface area that has become available
 local function handle_unallocated()
     if config.unlimited_surface_area then return end
-
     for s_index, prop in pairs(vlayer_data) do
         local unallocated_area = 0
         for name, qnc in pairs(prop.storage.unallocated) do
