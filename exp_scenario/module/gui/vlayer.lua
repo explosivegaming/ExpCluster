@@ -147,23 +147,23 @@ function Elements.stats_table.calculate_display_data()
     local production = ceil(statistics.energy_production) / max(ceil(statistics.energy_max), 1)
     local capacity = statistics.energy_storage / max(statistics.energy_capacity, 1)
     local surface_area = statistics.remaining_surface_area / max(statistics.total_surface_area, 1)
-    local surface_area_bar = surface_area > 0.1 and 1 or surface_area / 0.1
+    local surface_area_bar = math.min(math.max(surface_area / 0.1, 0), 1)
     return {
         sustained = {
             value = sustained,
-            caption = format_energy(statistics.energy_sustained, "W") .. " / " .. format_energy(statistics.energy_total_production, "W") .. ' (' .. format_number(sustained * 100, false) .. '%)',
+            caption = format_energy(statistics.energy_sustained, "W") .. " / " .. format_energy(statistics.energy_total_production, "W") .. format_string(" (%.1f)", sustained * 100),
         },
         production = {
             value = production,
-            caption = format_energy(statistics.energy_production, "W") .. " / " .. format_energy(statistics.energy_max, "W") .. ' (' .. format_number(production * 100, false) .. '%)',
+            caption = format_energy(statistics.energy_production, "W") .. " / " .. format_energy(statistics.energy_max, "W") .. format_string(" (%.1f)", production * 100),
         },
         capacity = {
             value = capacity,
-            caption = format_energy(statistics.energy_storage, "J") .. " / " .. format_energy(statistics.energy_capacity, "J") .. ' (' .. format_number(capacity * 100, false) .. '%)',
+            caption = format_energy(statistics.energy_storage, "J") .. " / " .. format_energy(statistics.energy_capacity, "J") .. format_string(" (%.1f)", capacity * 100),
         },
         ["surface-area"] = {
             value = surface_area,
-            caption = format_number(statistics.remaining_surface_area, false) .. ' (' .. format_number(surface_area * 100, false) .. '%)',
+            caption = format_number(statistics.remaining_surface_area, false) .. format_string(" (%.1f)", surface_area * 100),
         },
     }
 end
