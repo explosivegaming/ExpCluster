@@ -288,7 +288,7 @@ end
 --- @param s_index number surface index
 --- @return number
 local function get_production_multiplier(s_index)
-    local surface = assert(config.global_surface and game.surface[1] or game.surfaces[s_index])
+    local surface = assert(config.global_surface and game.surface[1] or game.surfaces[s_index]) --[[@as LuaSurface]]
     local multiplier = surface.solar_power_multiplier
     if surface.always_day then
         return multiplier
@@ -304,14 +304,14 @@ local function get_production_multiplier(s_index)
 
     local daytime = (game.tick % surface.ticks_per_day) / surface.ticks_per_day
     surface.daytime = daytime
-    if daytime <= surface.daytime_parameters.dusk then
+    if daytime <= surface.dusk then
         return multiplier
-    elseif daytime <= surface.daytime_parameters.evening then
-        return multiplier * (1 - (daytime - surface.daytime_parameters.dusk) / (surface.daytime_parameters.evening - surface.daytime_parameters.dusk))
-    elseif daytime <= surface.daytime_parameters.morning then
+    elseif daytime <= surface.evening then
+        return multiplier * (1 - (daytime - surface.dusk) / (surface.evening - surface.dusk))
+    elseif daytime <= surface.morning then
         return 0
-    elseif daytime <= surface.daytime_parameters.dawn then
-        return multiplier * (daytime - surface.daytime_parameters.morning) / (surface.daytime_parameters.dawn - surface.daytime_parameters.morning)
+    elseif daytime <= surface.dawn then
+        return multiplier * (daytime - surface.morning) / (surface.dawn - surface.morning)
     end
     return multiplier
 end
@@ -320,15 +320,15 @@ end
 --- @param s_index number surface index
 --- @return number
 local function get_sustained_multiplier(s_index)
-    local surface = assert(config.global_surface and game.surface[1] or game.surfaces[s_index])
+    local surface = assert(config.global_surface and game.surface[1] or game.surfaces[s_index]) --[[@as LuaSurface]]
     local multiplier = surface.solar_power_multiplier
     if surface.always_day then
         return multiplier
     end
 
-    local day_duration = 1 - surface.daytime_parameters.dawn + surface.daytime_parameters.dusk
-    local sunset_duration = surface.daytime_parameters.evening - surface.daytime_parameters.dusk
-    local sunrise_duration = surface.daytime_parameters.dawn - surface.daytime_parameters.morning
+    local day_duration = 1 - surface.dawn + surface.dusk
+    local sunset_duration = surface.evening - surface.dusk
+    local sunrise_duration = surface.dawn - surface.morning
     return multiplier * (day_duration + 0.5 * (sunset_duration + sunrise_duration))
 end
 
@@ -383,6 +383,7 @@ function Vlayer.insert_item(s_index, name, count, quality_level)
     local vd = assert(config.global_surface and vlayer_data[1] or vlayer_data[s_index])
     local storage = vd.storage
     if not storage.items[name] then storage.items[name] = {} end
+    if not storage.items[name][quality_level] then storage.items[name][quality_level] = 0 end
     storage.items[name][quality_level] = storage.items[name][quality_level] + count
 
     if config.unlimited_surface_area or item.required_area == 0 then
@@ -399,6 +400,7 @@ function Vlayer.insert_item(s_index, name, count, quality_level)
 
     local unallocated = count - allocated
     if not storage.unallocated[name] then storage.unallocated[name] = {} end
+    if not storage.unallocated[name][quality_level] then storage.unallocated[name][quality_level] = 0 end
     storage.unallocated[name][quality_level] = storage.unallocated[name][quality_level] + unallocated
     count_unallocated_production(s_index, name, unallocated, quality_level)
 end
