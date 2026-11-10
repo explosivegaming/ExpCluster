@@ -110,6 +110,7 @@ Elements.stat_bar = Gui.define("vlayer/stat_bar")
 --- @class ExpGui_Vlayer.elements.stat_bar.display_data
 --- @field value number Fraction the bar is filled
 --- @field caption string
+--- @field tooltip string
 
 --- Refresh a bar
 --- @param stat_bar LuaGuiElement
