@@ -220,7 +220,15 @@ Elements.interface_dropdown = Gui.define("vlayer/interface_dropdown")
     }
     :style{
         width = 200,
-    } --[[@as any]]
+    }
+    :on_selection_state_changed(function(def, _, interface_dropdown)
+        --- @cast def ExpGui_Vlayer.elements.interface_dropdown
+        local controls = def.data[interface_dropdown].controls
+        local interface_type, interface = Elements.controls.get_selected_interface(controls)
+        if not interface then return end
+        player.set_controller{ type = defines.controllers.remote, position = interface.position, surface = interface.surface }
+        player.print{ "exp-gui_vlayer.message-located", type_captions[interface_type], gps_string(interface.position, interface.surface) }
+    end) --[[@as any]]
 
 --- Refresh the listed interfaces
 --- @param interface_dropdown LuaGuiElement
@@ -248,30 +256,6 @@ end
 
 --- @class ExpGui_Vlayer.elements.control_button.element_data
 --- @field controls LuaGuiElement
-
---- Button which opens the map at the selected interface
---- @class ExpGui_Vlayer.elements.view_button: ExpElement
---- @field data table<LuaGuiElement, ExpGui_Vlayer.elements.control_button.element_data>
---- @overload fun(parent: LuaGuiElement, controls: LuaGuiElement): LuaGuiElement
-Elements.view_button = Gui.define("vlayer/view_button")
-    :draw{
-        type = "button",
-        caption = { "exp-gui_vlayer.caption-view" },
-    }
-    :style{
-        width = 200,
-    }
-    :element_data{
-        controls = Gui.from_argument(1),
-    }
-    :on_click(function(def, player, view_button)
-        --- @cast def ExpGui_Vlayer.elements.view_button
-        local controls = def.data[view_button].controls
-        local interface_type, interface = Elements.controls.get_selected_interface(controls)
-        if not interface then return end
-        player.set_controller{ type = defines.controllers.remote, position = interface.position, surface = interface.surface }
-        player.print{ "exp-gui_vlayer.message-located", type_captions[interface_type], gps_string(interface.position, interface.surface) }
-    end) --[[@as any]]
 
 --- Button which toggles selecting an area to build an interface in
 --- @class ExpGui_Vlayer.elements.build_button: ExpElement
@@ -339,7 +323,6 @@ Elements.controls = Gui.define("vlayer/controls")
 
         local type_dropdown = Elements.type_dropdown(controls, controls)
         local interface_dropdown = Elements.interface_dropdown(controls)
-        Elements.view_button(controls, controls)
         Elements.build_button(controls).visible = can_edit
         Elements.remove_button(controls, controls).visible = can_edit
 
