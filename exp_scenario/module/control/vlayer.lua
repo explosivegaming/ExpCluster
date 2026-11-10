@@ -351,10 +351,10 @@ local function allocate_item(s_index, name, count, quality_level)
             properties[v] = properties[v] + item[v][quality_level] * count
         end
     end
-    if item.surface_area > 0 then
+    if item.surface_area and item.surface_area > 0 then
         properties.total_surface_area = properties.total_surface_area + item.surface_area * count
     end
-    if item.required_area > 0 then
+    if item.required_area and item.required_area > 0 then
         properties.used_surface_area = properties.used_surface_area + item.required_area * count
     end
 end
