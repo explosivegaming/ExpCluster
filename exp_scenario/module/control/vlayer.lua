@@ -351,11 +351,12 @@ local function allocate_item(s_index, name, count, quality_level)
             properties[v] = properties[v] + item[v][quality_level] * count
         end
     end
-    if not item.surface_area then return end
-    local area = item.surface_area * count
-    properties.total_surface_area = properties.total_surface_area + area
-    if item.required_area == 0 then return end
-    properties.used_surface_area = properties.used_surface_area + area
+    if item.surface_area > 0 then
+        properties.total_surface_area = properties.total_surface_area + item.surface_area * count
+    end
+    if item.required_area > 0 then
+        properties.used_surface_area = properties.used_surface_area + item.required_area * count
+    end
 end
 
 --- Count the production of items which are stored but not allocated, so the total shows what more surface area would give
