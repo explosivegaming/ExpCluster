@@ -41,6 +41,9 @@ Elements.move_to_physical_button = Gui.define("surveillance/move_to_physical_but
         height = 24,
         width = 24,
     }
+    :element_data(
+        Gui.from_argument(1)
+    )
     :on_click(function(def, player, element)
         --- @cast def ExpGui_Surveillance.elements.move_to_physical_button
         local camera = def.data[element]        
