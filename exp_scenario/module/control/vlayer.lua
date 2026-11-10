@@ -692,7 +692,7 @@ local function handle_circuit_interfaces()
 
                 for name, qnc in pairs(prop.storage.items) do
                     for quality, count in pairs(qnc) do
-                        if count > 0 and prototypes.item[name][quality] then
+                        if count > 0 and prototypes.item[name] then
                             section.set_slot(index, { value = { type = "item", name = name, quality = quality_level_to_name[quality] }, min = count })
                             index = index + 1
                         end
