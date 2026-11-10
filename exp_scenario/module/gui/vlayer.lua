@@ -233,7 +233,7 @@ Elements.interface_dropdown = Gui.define("vlayer/interface_dropdown")
     :element_data{
         controls = Gui.from_argument(1),
     }
-    :on_selection_state_changed(function(def, _, interface_dropdown)
+    :on_selection_state_changed(function(def, player, interface_dropdown)
         --- @cast def ExpGui_Vlayer.elements.interface_dropdown
         local controls = def.data[interface_dropdown].controls
         local interface_type, interface = Elements.controls.get_selected_interface(controls)
