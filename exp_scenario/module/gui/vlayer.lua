@@ -444,6 +444,7 @@ local function on_area_selected(event)
     if interface_type == "energy" then
         if not Vlayer.create_energy_interface(surface, position, player) then
             player.print({ "exp-gui_vlayer.message-no-space" }, Colors.orange_red)
+            player.insert{ name = "steel-chest", count = 1 }
             return
         end
     elseif interface_type == "circuit" then
