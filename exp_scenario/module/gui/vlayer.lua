@@ -15,7 +15,10 @@ local SelectArea = Selection.connect("ExpGui_Vlayer")
 local floor = math.floor
 local ceil = math.ceil
 local max = math.max
+local min = math.min
 local format_string = string.format
+
+local gui_width = 500
 
 --- @class ExpGui_Vlayer.elements
 local Elements = {}
@@ -32,7 +35,7 @@ end
 --- Statistics shown as progress bars, in display order
 --- @type { name: string, caption: LocalisedString, tooltip: LocalisedString }[]
 local stats = {}
-for _, name in ipairs{ "sustained", "production", "capacity", "surface-area" } do
+for _, name in ipairs{ "sustained", "production", "capacity", "limit", "surface-area" } do
     stats[#stats + 1] = {
         name = name,
         caption = { "exp-gui_vlayer.caption-stat-" .. name },
@@ -89,7 +92,7 @@ Elements.stat_label = Gui.define("vlayer/stat_label")
         style = "heading_2_label",
     }
     :style{
-        width = 250,
+        width = gui_width / 2,
     } --[[@as any]]
 
 --- Bar showing a statistic as a fraction with the values as its caption
@@ -103,7 +106,7 @@ Elements.stat_bar = Gui.define("vlayer/stat_bar")
         style = "electric_satisfaction_statistics_progressbar",
     }
     :style{
-        width = 250,
+        width = gui_width / 2,
         font = "heading-2",
     } --[[@as any]]
 
@@ -129,7 +132,7 @@ Elements.stats_table = Gui.define("vlayer/stats_table")
     :track_all_elements()
     :draw(function(def, parent)
         --- @cast def ExpGui_Vlayer.elements.stats_table
-        local stats_table = Gui.elements.scroll_table(parent, 400, 2, "stats")
+        local stats_table = Gui.elements.scroll_table(parent, gui_width, 2, "stats")
         local stat_bars = {}
         for _, stat in ipairs(stats) do
             Elements.stat_label(stats_table, stat.caption, stat.tooltip)
@@ -140,14 +143,16 @@ Elements.stats_table = Gui.define("vlayer/stats_table")
     end) --[[@as any]]
 
 --- Calculate the display data of every statistic, the same for every player
+--- @param s_index number Surface index
 --- @return table<string, ExpGui_Vlayer.elements.stat_bar.display_data>
-function Elements.stats_table.calculate_display_data()
-    local statistics = Vlayer.get_statistics(game.surfaces["nauvis"].index)
-    local items = Vlayer.get_items(game.surfaces["nauvis"].index)
-    local allocated = Vlayer.get_allocated_items(game.surfaces["nauvis"].index)
+function Elements.stats_table.calculate_display_data(s_index)
+    local statistics = Vlayer.get_statistics(s_index)
+    local items = Vlayer.get_items(s_index)
+    local allocated = Vlayer.get_allocated_items(s_index)
     local sustained = ceil(statistics.energy_sustained) / max(statistics.energy_total_production, 1)
     local production = ceil(statistics.energy_production) / max(ceil(statistics.energy_max), 1)
     local capacity = statistics.energy_storage / max(statistics.energy_capacity, 1)
+    local limit = statistics.energy_input_limit / max(statistics.energy_output_limit, 1)
     local surface_area = statistics.remaining_surface_area / max(statistics.total_surface_area, 1)
     return {
         sustained = {
@@ -165,8 +170,13 @@ function Elements.stats_table.calculate_display_data()
             caption = format_energy(statistics.energy_storage, "J") .. " / " .. format_energy(statistics.energy_capacity, "J"),
             tooltip = format_string("%.1f %%", capacity * 100),
         },
+        limit = {
+            value = min(limit, 1),
+            caption = format_energy(statistics.energy_input_limit, "W") .. " / " .. format_energy(statistics.energy_output_limit, "W"),
+            tooltip = format_string("%.1f %%", limit * 100),
+        },
         ["surface-area"] = {
-            value = math.min(math.max(surface_area / 0.1, 0), 1),
+            value = min(max(surface_area / 0.1, 0), 1),
             caption = format_number(statistics.remaining_surface_area, false),
             tooltip = format_string("%.1f %%", surface_area * 100),
         },
@@ -184,10 +194,42 @@ end
 
 --- Refresh the tables of every online player
 function Elements.stats_table.refresh_online()
-    local display_data = Elements.stats_table.calculate_display_data()
+    local elements = Elements.controls.data[controls]
+    local display_data = Elements.stats_table.calculate_display_data(game.surfaces[elements.surface_dropdown.items[elements.surface_dropdown.selected_index]].index)
     for _, stats_table in Elements.stats_table:online_elements() do
         Elements.stats_table.refresh(stats_table, display_data)
     end
+end
+
+--- Dropdown listing the surfaces available in vlayer
+--- @class ExpGui_Vlayer.elements.surface_dropdown: ExpElement
+--- @overload fun(parent: LuaGuiElement, controls: LuaGuiElement): LuaGuiElement
+Elements.surface_dropdown = Gui.define("vlayer/surface_dropdown")
+    :draw{
+        type = "drop-down",
+    }
+    :style{
+        width = gui_width / 2,
+    }
+    :element_data{
+        controls = Gui.from_argument(1),
+    }
+    :on_selection_state_changed(function(def, _, surface_dropdown)
+        --- @cast def ExpGui_Vlayer.elements.type_dropdown
+        Elements.controls.refresh_interfaces(def.data[surface_dropdown].controls)
+    end) --[[@as any]]
+
+--- Refresh the listed interfaces
+--- @param surface_dropdown LuaGuiElement
+--- @param surfaces LuaSurface[]
+function Elements.surface_dropdown.refresh(surface_dropdown, surfaces)
+    local items = {}
+    local index = 1
+    for _, surface in pairs(surfaces) do
+        items[index] = surface.name
+        index = index + 1
+    end
+    surface_dropdown.items = items
 end
 
 --- @class ExpGui_Vlayer.elements.type_dropdown.element_data
@@ -204,7 +246,7 @@ Elements.type_dropdown = Gui.define("vlayer/type_dropdown")
         selected_index = 1,
     }
     :style{
-        width = 250,
+        width = gui_width / 2,
     }
     :element_data{
         controls = Gui.from_argument(1),
@@ -229,7 +271,7 @@ Elements.interface_dropdown = Gui.define("vlayer/interface_dropdown")
         type = "drop-down",
     }
     :style{
-        width = 250,
+        width = gui_width / 2,
     }
     :element_data{
         controls = Gui.from_argument(1),
@@ -267,6 +309,30 @@ function Elements.interface_dropdown.get_selected(interface_dropdown, interfaces
     return nil
 end
 
+--- Button which opens the map at the selected interface
+--- @class ExpGui_Vlayer.elements.view_button: ExpElement
+--- @field data table<LuaGuiElement, ExpGui_Vlayer.elements.control_button.element_data>
+--- @overload fun(parent: LuaGuiElement, controls: LuaGuiElement): LuaGuiElement
+Elements.view_button = Gui.define("vlayer/view_button")
+    :draw{
+        type = "button",
+        caption = { "exp-gui_vlayer.caption-view" },
+    }
+    :style{
+        width = gui_width / 2,
+    }
+    :element_data{
+        controls = Gui.from_argument(1),
+    }
+    :on_click(function(def, player, view_button)
+        --- @cast def ExpGui_Vlayer.elements.view_button
+        local controls = def.data[view_button].controls
+        local interface_type, interface = Elements.controls.get_selected_interface(controls)
+        if not interface then return end
+        player.set_controller{ type = defines.controllers.remote, position = interface.position, surface = interface.surface }
+        player.print{ "exp-gui_vlayer.message-located", type_captions[interface_type], gps_string(interface.position, interface.surface) }
+    end) --[[@as any]]
+
 --- @class ExpGui_Vlayer.elements.control_button.element_data
 --- @field controls LuaGuiElement
 
@@ -280,7 +346,7 @@ Elements.build_button = Gui.define("vlayer/build_button")
         caption = { "exp-gui_vlayer.caption-build" },
     }
     :style{
-        width = 250,
+        width = gui_width / 2,
     }
     :on_click(function(_, player)
         if SelectArea:stop(player) then
@@ -302,7 +368,7 @@ Elements.remove_button = Gui.define("vlayer/remove_button")
         caption = { "exp-gui_vlayer.caption-remove" },
     }
     :style{
-        width = 250,
+        width = gui_width / 2,
     }
     :element_data{
         controls = Gui.from_argument(1),
@@ -330,16 +396,19 @@ Elements.controls = Gui.define("vlayer/controls")
     :track_all_elements()
     :draw(function(def, parent)
         --- @cast def ExpGui_Vlayer.elements.controls
-        local controls = Gui.elements.scroll_table(parent, 500, 2, "controls")
+        local controls = Gui.elements.scroll_table(parent, gui_width, 2, "controls")
         local player = Gui.get_player(parent)
         local can_edit = Roles.player_has_permission(player, "exp_scenario.gui.vlayer_edit")
 
+        local surface_dropdown = Elements.surface_dropdown(controls, controls)
         local type_dropdown = Elements.type_dropdown(controls, controls)
         local interface_dropdown = Elements.interface_dropdown(controls, controls)
+        Elements.view_button(controls, controls)
         Elements.build_button(controls).visible = can_edit
         Elements.remove_button(controls, controls).visible = can_edit
 
         def.data[controls] = {
+            surface_dropdown = surface_dropdown,
             type_dropdown = type_dropdown,
             interface_dropdown = interface_dropdown,
         }
@@ -360,7 +429,7 @@ end
 function Elements.controls.get_selected_interface(controls)
     local elements = Elements.controls.data[controls]
     local interface_type = Elements.type_dropdown.get_selected(elements.type_dropdown)
-    local interfaces = Vlayer.get_interfaces(game.surfaces["nauvis"].index)[interface_type]
+    local interfaces = Vlayer.get_interfaces(elements.surface_dropdown.items[elements.surface_dropdown.selected_index])[interface_type]
     return interface_type, Elements.interface_dropdown.get_selected(elements.interface_dropdown, interfaces)
 end
 
@@ -369,7 +438,7 @@ end
 function Elements.controls.refresh_interfaces(controls)
     local elements = Elements.controls.data[controls]
     local interface_type = Elements.type_dropdown.get_selected(elements.type_dropdown)
-    Elements.interface_dropdown.refresh(elements.interface_dropdown, Vlayer.get_interfaces(game.surfaces["nauvis"].index)[interface_type])
+    Elements.interface_dropdown.refresh(elements.interface_dropdown, Vlayer.get_interfaces(game.surfaces[elements.surface_dropdown.items[elements.surface_dropdown.selected_index]].index)[interface_type])
 end
 
 --- Refresh the listed interfaces of every online player, used when an interface is built or removed
@@ -396,10 +465,11 @@ end
 --- @overload fun(parent: LuaGuiElement): LuaGuiElement
 Elements.container = Gui.define("vlayer/container")
     :draw(function(_, parent)
-        local container = Gui.elements.container(parent, 400)
+        local container = Gui.elements.container(parent, gui_width)
         local stats_table = Elements.stats_table(container)
-        Elements.stats_table.refresh(stats_table, Elements.stats_table.calculate_display_data())
         Elements.controls(container)
+        local elements = Elements.controls.data[controls]
+        Elements.stats_table.refresh(stats_table, Elements.stats_table.calculate_display_data(game.surfaces[elements.surface_dropdown.items[elements.surface_dropdown.selected_index]].index))
         return Gui.elements.container.get_root_element(container)
     end) --[[@as any]]
 
@@ -443,7 +513,7 @@ local function on_area_selected(event)
         return
     end
 
-    if config.interface_limit[interface_type] >= 0 and #Vlayer.get_interfaces(game.surfaces["nauvis"].index)[interface_type] >= config.interface_limit[interface_type] then
+    if config.interface_limit[interface_type] >= 0 and #Vlayer.get_interfaces(surface.index)[interface_type] >= config.interface_limit[interface_type] then
         player.print({ "exp-gui_vlayer.message-limit", type_captions[interface_type] }, Colors.orange_red)
         return
     end
@@ -478,11 +548,11 @@ local function refresh_player_permissions(event)
 end
 
 --- Refresh the dropdown list when surface is updated
-local function update_surface(event)
+local function update_surface()
     -- global surface will have its data point to the main surface
-    if config.global_surface then
-        return
-    end
+    if config.global_surface then return end
+    local elements = Elements.controls.data[controls]
+    Elements.surface_dropdown.refresh(elements.surface_dropdown, game.surfaces)
 end
 
 local e = defines.events
@@ -494,6 +564,11 @@ return feature:guard{
         [e.on_surface_created] = update_surface,
         [e.on_surface_renamed] = update_surface,
         [e.on_surface_imported] = update_surface,
+        [Feature.events.on_config_updated] = function(event)
+            if event.feature_name == feature.name and event.path == "global_surface" then
+                update_surface()
+            end
+        end,
     },
     on_nth_tick = {
         [60] = Elements.stats_table.refresh_online,
