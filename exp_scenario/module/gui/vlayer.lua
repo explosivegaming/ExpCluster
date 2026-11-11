@@ -195,10 +195,12 @@ end
 
 --- Refresh the tables of every online player
 function Elements.stats_table.refresh_online()
-    local elements = Elements.controls.data[controls]
-    local display_data = Elements.stats_table.calculate_display_data(game.surfaces[elements.surface_dropdown.items[elements.surface_dropdown.selected_index]].index)
-    for _, stats_table in Elements.stats_table:online_elements() do
-        Elements.stats_table.refresh(stats_table, display_data)
+    for _, controls in Elements.controls:online_elements() do
+        local elements = Elements.controls.data[controls]
+        local display_data = Elements.stats_table.calculate_display_data(game.surfaces[elements.surface_dropdown.items[elements.surface_dropdown.selected_index]].index)
+        for _, stats_table in Elements.stats_table:online_elements() do
+            Elements.stats_table.refresh(stats_table, display_data)
+        end
     end
 end
 
@@ -470,8 +472,10 @@ Elements.container = Gui.define("vlayer/container")
         local container = Gui.elements.container(parent, gui_width)
         local stats_table = Elements.stats_table(container)
         Elements.controls(container)
-        local elements = Elements.controls.data[controls]
-        Elements.stats_table.refresh(stats_table, Elements.stats_table.calculate_display_data(game.surfaces[elements.surface_dropdown.items[elements.surface_dropdown.selected_index]].index))
+        for _, controls in Elements.controls:online_elements() do
+            local elements = Elements.controls.data[controls]
+            Elements.stats_table.refresh(stats_table, Elements.stats_table.calculate_display_data(game.surfaces[elements.surface_dropdown.items[elements.surface_dropdown.selected_index]].index))
+        end
         return Gui.elements.container.get_root_element(container)
     end) --[[@as any]]
 
@@ -553,8 +557,10 @@ end
 local function update_surface()
     -- global surface will have its data point to the main surface
     if config.global_surface then return end
-    local elements = Elements.controls.data[controls]
-    Elements.surface_dropdown.refresh(elements.surface_dropdown, game.surfaces)
+    for _, controls in Elements.controls:online_elements() do
+        local elements = Elements.controls.data[controls]
+        Elements.surface_dropdown.refresh(elements.surface_dropdown, game.surfaces)
+    end
 end
 
 local e = defines.events
