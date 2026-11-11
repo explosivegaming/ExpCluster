@@ -6,6 +6,7 @@ local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_roles")
 local Colors = require("modules/exp_util/include/color")
 local Vlayer = require("modules/exp_scenario/control/vlayer")
+local Feature = require("modules/exp_scenario/features")
 local feature, config = Vlayer.feature, Vlayer.config
 local format_number = require("util").format_number
 
@@ -385,6 +386,7 @@ Elements.remove_button = Gui.define("vlayer/remove_button")
     end) --[[@as any]]
 
 --- @class ExpGui_Vlayer.elements.controls.element_data
+--- @field surface_dropdown LuaGuiElement
 --- @field type_dropdown LuaGuiElement
 --- @field interface_dropdown LuaGuiElement
 

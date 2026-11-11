@@ -68,6 +68,8 @@ local mega = 1000000
 --- @field energy_production number W right now
 --- @field energy_total_production number W sustained if every stored solar panel was allocated
 --- @field energy_sustained number W averaged over a day
+--- @field energy_input_limit number W input limit of storage,
+--- @field energy_output_limit number W output limit of storage,
 --- @field energy_capacity number J
 --- @field energy_storage number J
 
