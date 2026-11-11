@@ -184,24 +184,6 @@ function Elements.stats_table.calculate_display_data(s_index)
     }
 end
 
---- Dropdown listing the surfaces available in vlayer
---- @class ExpGui_Vlayer.elements.surface_dropdown: ExpElement
---- @overload fun(parent: LuaGuiElement, controls: LuaGuiElement): LuaGuiElement
-Elements.surface_dropdown = Gui.define("vlayer/surface_dropdown")
-    :draw{
-        type = "drop-down",
-    }
-    :style{
-        width = gui_width / 2,
-    }
-    :element_data{
-        controls = Gui.from_argument(1),
-    }
-    :on_selection_state_changed(function(def, _, surface_dropdown)
-        --- @cast def ExpGui_Vlayer.elements.type_dropdown
-        Elements.controls.refresh_interfaces(def.data[surface_dropdown].controls)
-    end) --[[@as any]]
-
 --- Refresh every bar of a table
 --- @param stats_table LuaGuiElement
 --- @param display_data table<string, ExpGui_Vlayer.elements.stat_bar.display_data>
@@ -221,6 +203,24 @@ function Elements.stats_table.refresh_online()
         end
     end
 end
+
+--- Dropdown listing the surfaces available in vlayer
+--- @class ExpGui_Vlayer.elements.surface_dropdown: ExpElement
+--- @overload fun(parent: LuaGuiElement, controls: LuaGuiElement): LuaGuiElement
+Elements.surface_dropdown = Gui.define("vlayer/surface_dropdown")
+    :draw{
+        type = "drop-down",
+    }
+    :style{
+        width = gui_width / 2,
+    }
+    :element_data{
+        controls = Gui.from_argument(1),
+    }
+    :on_selection_state_changed(function(def, _, surface_dropdown)
+        --- @cast def ExpGui_Vlayer.elements.type_dropdown
+        Elements.controls.refresh_interfaces(def.data[surface_dropdown].controls)
+    end) --[[@as any]]
 
 --- Refresh the listed interfaces
 --- @param surface_dropdown LuaGuiElement
