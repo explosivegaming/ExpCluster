@@ -197,7 +197,8 @@ end
 function Elements.stats_table.refresh_online()
     for _, controls in Elements.controls:online_elements() do
         local elements = Elements.controls.data[controls]
-        local display_data = Elements.stats_table.calculate_display_data(game.surfaces[elements.surface_dropdown.items[elements.surface_dropdown.selected_index]].index)
+        local surface = game.surfaces[elements.surface_dropdown.items[elements.surface_dropdown.selected_index]]
+        local display_data = Elements.stats_table.calculate_display_data(surface.index)
         for _, stats_table in Elements.stats_table:online_elements() do
             Elements.stats_table.refresh(stats_table, display_data)
         end
@@ -442,7 +443,8 @@ end
 function Elements.controls.refresh_interfaces(controls)
     local elements = Elements.controls.data[controls]
     local interface_type = Elements.type_dropdown.get_selected(elements.type_dropdown)
-    Elements.interface_dropdown.refresh(elements.interface_dropdown, Vlayer.get_interfaces(game.surfaces[elements.surface_dropdown.items[elements.surface_dropdown.selected_index]].index)[interface_type])
+    local surface = game.surfaces[elements.surface_dropdown.items[elements.surface_dropdown.selected_index]]
+    Elements.interface_dropdown.refresh(elements.interface_dropdown, Vlayer.get_interfaces(surface.index)[interface_type])
 end
 
 --- Refresh the listed interfaces of every online player, used when an interface is built or removed
