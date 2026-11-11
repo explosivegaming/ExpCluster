@@ -445,7 +445,9 @@ end
 function Elements.controls.refresh_interfaces(controls)
     local elements = Elements.controls.data[controls]
     local interface_type = Elements.type_dropdown.get_selected(elements.type_dropdown)
-    local surface = game.surfaces[elements.surface_dropdown.items[elements.surface_dropdown.selected_index]]
+    local element = elements.surface_dropdown
+    if not element then return end
+    local surface = game.surfaces[element.items[element.selected_index]]
     Elements.interface_dropdown.refresh(elements.interface_dropdown, Vlayer.get_interfaces(surface.index)[interface_type])
 end
 
