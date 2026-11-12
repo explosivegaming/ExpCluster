@@ -167,12 +167,18 @@ function Elements.stats_table.calculate_display_data(s_index)
     return {
         production = {
             value = production,
-            caption = format_string(
-                "%s (%s) / %s",
-                format_energy(energy_production, "W"),
-                format_energy(limit_production, "W"),
-                format_energy(energy_max, "W")
-            ),
+            caption = production < 1
+                and format_string(
+                    "%s (%s) / %s",
+                    format_energy(energy_production, "W"),
+                    format_energy(limit_production, "W"),
+                    format_energy(energy_max, "W")
+                )
+                or format_string(
+                    "%s / %s",
+                    format_energy(energy_production, "W"),
+                    format_energy(energy_max, "W")
+                ),
             tooltip = format_string(
                 "%.1f %%",
                 production * 100
@@ -180,12 +186,18 @@ function Elements.stats_table.calculate_display_data(s_index)
         },
         sustained = {
             value = sustained,
-            caption = format_string(
-                "%s (%s) / %s",
-                format_energy(energy_sustained, "W"),
-                format_energy(limit_sustained, "W"),
-                format_energy(statistics.energy_total_production, "W")
-            ),
+            caption = sustained < 1
+                and format_string(
+                    "%s (%s) / %s",
+                    format_energy(energy_sustained, "W"),
+                    format_energy(limit_sustained, "W"),
+                    format_energy(statistics.energy_total_production, "W")
+                )
+                or format_string(
+                    "%s / %s",
+                    format_energy(energy_sustained, "W"),
+                    format_energy(statistics.energy_total_production, "W")
+                ),
             tooltip = format_string(
                 "%.1f %%",
                 sustained * 100
