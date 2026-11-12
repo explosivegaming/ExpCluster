@@ -167,7 +167,7 @@ function Elements.stats_table.calculate_display_data(s_index)
     return {
         production = {
             value = production,
-            caption = production < 1
+            caption = statistics.energy_input_limit < energy_production
                 and format_string(
                     "%s (%s) / %s",
                     format_energy(energy_production, "W"),
@@ -186,7 +186,7 @@ function Elements.stats_table.calculate_display_data(s_index)
         },
         sustained = {
             value = sustained,
-            caption = sustained < 1
+            caption = statistics.energy_input_limit < energy_sustained
                 and format_string(
                     "%s (%s) / %s",
                     format_energy(energy_sustained, "W"),
