@@ -19,7 +19,12 @@ local max = math.max
 local min = math.min
 local format_string = string.format
 
-local gui_width = 500
+local gui_width = {
+    main = 500,
+    left = 200,
+    right = 300,
+    half = 250
+}
 
 --- @class ExpGui_Vlayer.elements
 local Elements = {}
@@ -93,7 +98,7 @@ Elements.stat_label = Gui.define("vlayer/stat_label")
         style = "heading_2_label",
     }
     :style{
-        width = gui_width / 2,
+        width = gui_width.left,
     } --[[@as any]]
 
 --- Bar showing a statistic as a fraction with the values as its caption
@@ -107,7 +112,7 @@ Elements.stat_bar = Gui.define("vlayer/stat_bar")
         style = "electric_satisfaction_statistics_progressbar",
     }
     :style{
-        width = gui_width / 2,
+        width = gui_width.right,
         font = "heading-2",
     } --[[@as any]]
 
@@ -133,7 +138,7 @@ Elements.stats_table = Gui.define("vlayer/stats_table")
     :track_all_elements()
     :draw(function(def, parent)
         --- @cast def ExpGui_Vlayer.elements.stats_table
-        local stats_table = Gui.elements.scroll_table(parent, gui_width, 2, "stats")
+        local stats_table = Gui.elements.scroll_table(parent, gui_width.main, 2, "stats")
         local stat_bars = {}
         for _, stat in ipairs(stats) do
             Elements.stat_label(stats_table, stat.caption, stat.tooltip)
@@ -222,7 +227,7 @@ Elements.surface_dropdown = Gui.define("vlayer/surface_dropdown")
         type = "drop-down",
     }
     :style{
-        width = gui_width / 2,
+        width = gui_width.half,
     }
     :element_data{
         controls = Gui.from_argument(1),
@@ -259,7 +264,7 @@ Elements.type_dropdown = Gui.define("vlayer/type_dropdown")
         selected_index = 1,
     }
     :style{
-        width = gui_width / 2,
+        width = gui_width.half,
     }
     :element_data{
         controls = Gui.from_argument(1),
@@ -284,7 +289,7 @@ Elements.interface_dropdown = Gui.define("vlayer/interface_dropdown")
         type = "drop-down",
     }
     :style{
-        width = gui_width / 2,
+        width = gui_width.half,
     }
     :element_data{
         controls = Gui.from_argument(1),
@@ -335,7 +340,7 @@ Elements.build_button = Gui.define("vlayer/build_button")
         caption = { "exp-gui_vlayer.caption-build" },
     }
     :style{
-        width = gui_width / 2,
+        width = gui_width.half,
     }
     :on_click(function(_, player)
         if SelectArea:stop(player) then
@@ -357,7 +362,7 @@ Elements.remove_button = Gui.define("vlayer/remove_button")
         caption = { "exp-gui_vlayer.caption-remove" },
     }
     :style{
-        width = gui_width / 2,
+        width = gui_width.half,
     }
     :element_data{
         controls = Gui.from_argument(1),
@@ -386,7 +391,7 @@ Elements.controls = Gui.define("vlayer/controls")
     :track_all_elements()
     :draw(function(def, parent)
         --- @cast def ExpGui_Vlayer.elements.controls
-        local controls = Gui.elements.scroll_table(parent, gui_width, 2, "controls")
+        local controls = Gui.elements.scroll_table(parent, gui_width.main, 2, "controls")
         local player = Gui.get_player(parent)
         local can_edit = Roles.player_has_permission(player, "exp_scenario.gui.vlayer_edit")
 
@@ -470,7 +475,7 @@ end
 --- @overload fun(parent: LuaGuiElement): LuaGuiElement
 Elements.container = Gui.define("vlayer/container")
     :draw(function(_, parent)
-        local container = Gui.elements.container(parent, gui_width)
+        local container = Gui.elements.container(parent, gui_width.main)
         local stats_table = Elements.stats_table(container)
         Elements.controls(container)
         for _, controls in Elements.controls:online_elements() do
