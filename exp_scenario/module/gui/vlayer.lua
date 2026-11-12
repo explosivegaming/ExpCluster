@@ -173,7 +173,7 @@ function Elements.stats_table.calculate_display_data(s_index)
         },
         limit = {
             value = min(limit, 1),
-            caption = format_energy(statistics.energy_input_limit, "W") .. " / " .. format_energy(statistics.energy_output_limit, "W"),
+            caption = format_energy(statistics.energy_input_limit, "W") .. " , " .. format_energy(statistics.energy_output_limit, "W"),
             tooltip = format_string("%.1f %%", limit * 100),
         },
         ["surface-area"] = {
