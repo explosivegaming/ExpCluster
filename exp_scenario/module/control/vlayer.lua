@@ -480,9 +480,9 @@ function Vlayer.get_statistics(s_index)
         energy_max = production,
         energy_production = production * production_multiplier,
         energy_total_production = properties.total_production * sustained_multiplier * mega,
+        energy_sustained = production * sustained_multiplier,
         energy_input_limit = properties.input_limit * mega,
         energy_output_limit = properties.output_limit * mega,
-        energy_sustained = production * sustained_multiplier,
         energy_capacity = properties.capacity * mega,
         energy_storage = vd.storage.energy,
     }

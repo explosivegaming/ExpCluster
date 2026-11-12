@@ -36,7 +36,7 @@ end
 --- Statistics shown as progress bars, in display order
 --- @type { name: string, caption: LocalisedString, tooltip: LocalisedString }[]
 local stats = {}
-for _, name in ipairs{ "sustained", "production", "capacity", "limit", "surface-area" } do
+for _, name in ipairs{ "production", "capacity", "sustained", "limit", "surface-area" } do
     stats[#stats + 1] = {
         name = name,
         caption = { "exp-gui_vlayer.caption-stat-" .. name },
@@ -150,17 +150,14 @@ function Elements.stats_table.calculate_display_data(s_index)
     local statistics = Vlayer.get_statistics(s_index)
     local items = Vlayer.get_items(s_index)
     local allocated = Vlayer.get_allocated_items(s_index)
+    local en_prod = ceil(statistics.energy_production)
     local sustained = ceil(statistics.energy_sustained) / max(statistics.energy_total_production, 1)
-    local production = ceil(statistics.energy_production) / max(ceil(statistics.energy_max), 1)
+    local production = en_prod / max(ceil(statistics.energy_max), 1)
     local capacity = statistics.energy_storage / max(statistics.energy_capacity, 1)
-    local limit = statistics.energy_input_limit / max(statistics.energy_output_limit, 1)
+    local limit_n = min(statistics.energy_input_limit, en_prod)
+    local limit = limit_n / max(en_prod, 1)
     local surface_area = statistics.remaining_surface_area / max(statistics.total_surface_area, 1)
     return {
-        sustained = {
-            value = sustained,
-            caption = format_energy(statistics.energy_sustained, "W") .. " / " .. format_energy(statistics.energy_total_production, "W"),
-            tooltip = format_string("%.1f %%", sustained * 100),
-        },
         production = {
             value = production,
             caption = format_energy(statistics.energy_production, "W") .. " / " .. format_energy(statistics.energy_max, "W"),
@@ -171,9 +168,14 @@ function Elements.stats_table.calculate_display_data(s_index)
             caption = format_energy(statistics.energy_storage, "J") .. " / " .. format_energy(statistics.energy_capacity, "J"),
             tooltip = format_string("%.1f %%", capacity * 100),
         },
+        sustained = {
+            value = sustained,
+            caption = format_energy(statistics.energy_sustained, "W") .. " / " .. format_energy(statistics.energy_total_production, "W"),
+            tooltip = format_string("%.1f %%", sustained * 100),
+        },
         limit = {
-            value = min(limit, 1),
-            caption = format_energy(statistics.energy_input_limit, "W") .. " , " .. format_energy(statistics.energy_output_limit, "W"),
+            value = limit,
+            caption = format_energy(limit_n, "W") .. " / " .. format_energy(statistics.energy_production, "W"),
             tooltip = format_string("%.1f %%", limit * 100),
         },
         ["surface-area"] = {
