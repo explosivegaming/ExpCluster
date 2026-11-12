@@ -198,7 +198,7 @@ function Elements.stats_table.refresh_online()
     for _, controls in Elements.controls:online_elements() do
         local elements = Elements.controls.data[controls]
         local element = elements.surface_dropdown
-        if not element then return end
+        if not element or not element.items or not element.selected_index then return end
         local surface = game.surfaces[element.items[element.selected_index]]
         local display_data = Elements.stats_table.calculate_display_data(surface.index)
         for _, stats_table in Elements.stats_table:online_elements() do
@@ -436,7 +436,8 @@ end
 function Elements.controls.get_selected_interface(controls)
     local elements = Elements.controls.data[controls]
     local interface_type = Elements.type_dropdown.get_selected(elements.type_dropdown)
-    local interfaces = Vlayer.get_interfaces(elements.surface_dropdown.items[elements.surface_dropdown.selected_index])[interface_type]
+    local element = elements.surface_dropdown
+    local interfaces = Vlayer.get_interfaces(element.items[element.selected_index])[interface_type]
     return interface_type, Elements.interface_dropdown.get_selected(elements.interface_dropdown, interfaces)
 end
 
@@ -446,7 +447,7 @@ function Elements.controls.refresh_interfaces(controls)
     local elements = Elements.controls.data[controls]
     local interface_type = Elements.type_dropdown.get_selected(elements.type_dropdown)
     local element = elements.surface_dropdown
-    if not element then return end
+    if not element or not element.items or not element.selected_index then return end
     local surface = game.surfaces[element.items[element.selected_index]]
     Elements.interface_dropdown.refresh(elements.interface_dropdown, Vlayer.get_interfaces(surface.index)[interface_type])
 end
