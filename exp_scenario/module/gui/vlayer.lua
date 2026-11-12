@@ -165,35 +165,50 @@ function Elements.stats_table.calculate_display_data(s_index)
         production = {
             value = production,
             caption = format_string(
-                "%.1f ~ %.1f / %.1f",
+                "%s ~ %s / %s",
                 format_energy(limit, "W"),
                 format_energy(statistics.energy_production, "W"),
                 format_energy(statistics.energy_max, "W")
             ),
-            tooltip = format_string("%.1f %%", production * 100),
+            tooltip = format_string(
+                "%.1f %%",
+                production * 100
+            ),
         },
         capacity = {
             value = capacity,
             caption = format_string(
-                "%.1f / %.1f",
+                "%s / %s",
                 format_energy(statistics.energy_storage, "J"),
                 format_energy(statistics.energy_capacity, "J")
             ),
-            tooltip = format_string("%.1f %%", capacity * 100),
+            tooltip = format_string(
+                "%.1f %%",
+                capacity * 100
+            ),
         },
         sustained = {
             value = sustained,
             caption = format_string(
-                "%.1f / %.1f",
+                "%s / %s",
                 format_energy(statistics.energy_sustained, "W"),
                 format_energy(statistics.energy_total_production, "W")
             ),
-            tooltip = format_string("%.1f %%", sustained * 100),
+            tooltip = format_string(
+                "%.1f %%",
+                sustained * 100
+            ),
         },
         ["surface-area"] = {
             value = min(max(surface_area / 0.1, 0), 1),
-            caption = format_number(statistics.remaining_surface_area, false),
-            tooltip = format_string("%.1f %%", surface_area * 100),
+            caption = format_number(
+                statistics.remaining_surface_area,
+                false
+            ),
+            tooltip = format_string(
+                "%.1f %%",
+                surface_area * 100
+            ),
         },
     }
 end
