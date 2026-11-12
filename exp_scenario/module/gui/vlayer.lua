@@ -320,30 +320,6 @@ function Elements.interface_dropdown.get_selected(interface_dropdown, interfaces
     return nil
 end
 
---- Button which opens the map at the selected interface
---- @class ExpGui_Vlayer.elements.view_button: ExpElement
---- @field data table<LuaGuiElement, ExpGui_Vlayer.elements.control_button.element_data>
---- @overload fun(parent: LuaGuiElement, controls: LuaGuiElement): LuaGuiElement
-Elements.view_button = Gui.define("vlayer/view_button")
-    :draw{
-        type = "button",
-        caption = { "exp-gui_vlayer.caption-view" },
-    }
-    :style{
-        width = gui_width / 2,
-    }
-    :element_data{
-        controls = Gui.from_argument(1),
-    }
-    :on_click(function(def, player, view_button)
-        --- @cast def ExpGui_Vlayer.elements.view_button
-        local controls = def.data[view_button].controls
-        local interface_type, interface = Elements.controls.get_selected_interface(controls)
-        if not interface then return end
-        player.set_controller{ type = defines.controllers.remote, position = interface.position, surface = interface.surface }
-        player.print{ "exp-gui_vlayer.message-located", type_captions[interface_type], gps_string(interface.position, interface.surface) }
-    end) --[[@as any]]
-
 --- @class ExpGui_Vlayer.elements.control_button.element_data
 --- @field controls LuaGuiElement
 
@@ -415,7 +391,6 @@ Elements.controls = Gui.define("vlayer/controls")
         local surface_dropdown = Elements.surface_dropdown(controls, controls)
         local type_dropdown = Elements.type_dropdown(controls, controls)
         local interface_dropdown = Elements.interface_dropdown(controls, controls)
-        Elements.view_button(controls, controls)
         Elements.build_button(controls).visible = can_edit
         Elements.remove_button(controls, controls).visible = can_edit
 
