@@ -259,6 +259,7 @@ function Elements.stats_table.refresh_online()
         if element then
             local surface_name = element.items[element.selected_index]
             if surface_name then
+                ---@diagnostic disable-next-line: undefined-field
                 surface = game.surfaces[surface_name].index
             end
         end
@@ -478,6 +479,7 @@ function Elements.controls.get_selected_interface(controls)
     if element then
         local surface_name = element.items[element.selected_index]
         if surface_name then
+            ---@diagnostic disable-next-line: undefined-field
             surface = game.surfaces[surface_name].index
         end
     end
@@ -495,6 +497,7 @@ function Elements.controls.refresh_interfaces(controls)
     if element then
         local surface_name = element.items[element.selected_index]
         if surface_name then
+            ---@diagnostic disable-next-line: undefined-field
             surface = game.surfaces[surface_name].index
         end
     end

@@ -628,6 +628,7 @@ local function handle_output_interfaces()
                     local quality = filter.value and filter.value.quality
                     if name and allowed_items[name] then
                         local quality_level = quality_name_to_level[quality]
+                        ---@diagnostic disable-next-line: undefined-field
                         local wanted = min(assert(filter.min) - inventory.get_item_count(name), prop.storage.items[name][quality_level])
                         if wanted > 0 and inventory.can_insert{ name = name, count = wanted, quality = quality } then
                             local removed = Vlayer.remove_item(s_index, name, wanted, quality_level)
