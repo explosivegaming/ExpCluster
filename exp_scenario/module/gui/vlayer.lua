@@ -41,11 +41,15 @@ end
 --- Statistics shown as progress bars, in display order
 --- @type { name: string, caption: LocalisedString, tooltip: LocalisedString }[]
 local stats = {}
-for _, name in ipairs{ "production", "sustained", "capacity", "surface-area" } do
+for _, name in ipairs{ "production", "sustained", "capacity", "surface-area", "solar-panel", "accumulator" } do
     stats[#stats + 1] = {
         name = name,
-        caption = { "exp-gui_vlayer.caption-stat-" .. name },
-        tooltip = { "exp-gui_vlayer.tooltip-stat-" .. name },
+        caption = (name == "solar" or name == "accumulator")
+            and { "", "[img=entity/" .. name .. "]", prototypes.entity[name].localised_name }
+            or { "exp-gui_vlayer.caption-stat-" .. name },
+        tooltip = (name == "solar" or name == "accumulator")
+            and nil
+            or { "exp-gui_vlayer.tooltip-stat-" .. name },
     }
 end
 
@@ -164,6 +168,8 @@ function Elements.stats_table.calculate_display_data(s_index)
     local sustained = limit_sustained / max(statistics.energy_total_production, 1)
     local capacity = statistics.energy_storage / max(statistics.energy_capacity, 1)
     local surface_area = statistics.remaining_surface_area / max(statistics.total_surface_area, 1)
+    local solar = allocated["solar-panel"] / max(items["solar-panel"], 1)
+    local accu = allocated["accumulator"] / max(items["accumulator"], 1)
     return {
         production = {
             value = production,
@@ -224,6 +230,30 @@ function Elements.stats_table.calculate_display_data(s_index)
             tooltip = format_string(
                 "%.1f %%",
                 surface_area * 100
+            ),
+        },
+        ["solar-panel"] = {
+            value = solar,
+            caption = format_string(
+                "%s / %s",
+                format_number(allocated["solar-panel"], false),
+                format_number(items["solar-panel"], false)
+            ),
+            tooltip = format_string(
+                "%.1f %%",
+                solar * 100
+            ),
+        },
+        ["accumulator"] = {
+            value = accu,
+            caption = format_string(
+                "%s / %s",
+                format_number(allocated["accumulator"], false),
+                format_number(items["accumulator"], false)
+            ),
+            tooltip = format_string(
+                "%.1f %%",
+                accu * 100
             ),
         },
     }
