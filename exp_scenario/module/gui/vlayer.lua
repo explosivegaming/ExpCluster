@@ -168,8 +168,12 @@ function Elements.stats_table.calculate_display_data(s_index)
     local sustained = limit_sustained / max(statistics.energy_total_production, 1)
     local capacity = statistics.energy_storage / max(statistics.energy_capacity, 1)
     local surface_area = statistics.remaining_surface_area / max(statistics.total_surface_area, 1)
-    local solar = allocated["solar-panel"] / max(items["solar-panel"], 1)
-    local accu = allocated["accumulator"] / max(items["accumulator"], 1)
+    local allocated_solar = allocated["solar-panel"] and allocated["solar-panel"][0] or 0
+    local items_solar = items["solar-panel"] and items["solar-panel"][0] or 0
+    local allocated_accu = allocated["accumulator"] and allocated["accumulator"][0] or 0
+    local items_accu = items["accumulator"] and items["accumulator"][0] or 0
+    local solar = allocated_solar / max(items_solar, 1)
+    local accu = allocated_accu / max(items_accu, 1)
     return {
         production = {
             value = production,
@@ -236,8 +240,8 @@ function Elements.stats_table.calculate_display_data(s_index)
             value = solar,
             caption = format_string(
                 "%s / %s",
-                format_number(allocated["solar-panel"], false),
-                format_number(items["solar-panel"], false)
+                format_number(allocated_solar, false),
+                format_number(items_solar, false)
             ),
             tooltip = format_string(
                 "%.1f %%",
@@ -248,8 +252,8 @@ function Elements.stats_table.calculate_display_data(s_index)
             value = accu,
             caption = format_string(
                 "%s / %s",
-                format_number(allocated["accumulator"], false),
-                format_number(items["accumulator"], false)
+                format_number(allocated_accu, false),
+                format_number(items_accu, false)
             ),
             tooltip = format_string(
                 "%.1f %%",
