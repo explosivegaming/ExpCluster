@@ -292,7 +292,8 @@ end
 --- @param s_index number Surface index
 --- @return number
 local function get_production_multiplier(s_index)
-    local surface = assert(config.global_surface and game.surface[1] or game.surfaces[s_index]) --[[@as LuaSurface]]
+    ---@diagnostic disable-next-line: undefined-field
+    local surface = assert(config.global_surface and game.surface[1] or game.surfaces[s_index])
     local multiplier = surface.solar_power_multiplier
     if surface.always_day then
         return multiplier
@@ -324,7 +325,7 @@ end
 --- @param s_index number Surface index
 --- @return number
 local function get_sustained_multiplier(s_index)
-    local surface = assert(config.global_surface and game.surface[1] or game.surfaces[s_index]) --[[@as LuaSurface]]
+    local surface = assert(config.global_surface and game.surface[1] or game.surfaces[s_index])
     local multiplier = surface.solar_power_multiplier
     if surface.always_day then
         return multiplier
