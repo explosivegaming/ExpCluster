@@ -45,7 +45,7 @@ for _, name in ipairs{ "production", "sustained", "capacity", "surface-area", "s
     stats[#stats + 1] = {
         name = name,
         caption = (name == "solar-panel" or name == "accumulator")
-            and { "", "[img=entity/" .. name .. "]", prototypes.entity[name].localised_name }
+            and { "", "[img=entity/" .. name .. "] ", prototypes.entity[name].localised_name }
             or { "exp-gui_vlayer.caption-stat-" .. name },
         tooltip = (name == "solar-panel" or name == "accumulator")
             and { "", prototypes.entity[name].localised_description}
