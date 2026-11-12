@@ -713,11 +713,12 @@ end
 
 --- Produce energy, share it between the energy interfaces, and burn fuel when storage runs low
 local function handle_energy_interfaces()
+    local update_mega = * mega * update_tick_energy / 60
     for s_index, prop in pairs(vlayer_data) do
         local storage = prop.storage
         local properties = prop.properties
-        local production = properties.production * mega * update_tick_energy / 60
-        storage.energy = storage.energy + floor(min(properties.input_limit, production * get_production_multiplier(s_index))) 
+        local production = properties.production * update_mega
+        storage.energy = storage.energy + floor(min(properties.input_limit * update_mega, production * get_production_multiplier(s_index))) 
 
         local interfaces = prop.interfaces.energy
         prune_interfaces(interfaces)
