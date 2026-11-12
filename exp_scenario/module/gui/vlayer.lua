@@ -442,7 +442,14 @@ function Elements.controls.get_selected_interface(controls)
     local elements = Elements.controls.data[controls]
     local interface_type = Elements.type_dropdown.get_selected(elements.type_dropdown)
     local element = elements.surface_dropdown
-    local interfaces = Vlayer.get_interfaces(element.items[element.selected_index])[interface_type]
+    local surface = 1
+    if element then
+        local surface_name = element.items[element.selected_index]
+        if surface_name then
+            surface = game.surfaces[surface_name].index
+        end
+    end
+    local interfaces = Vlayer.get_interfaces(surface)[interface_type]
     return interface_type, Elements.interface_dropdown.get_selected(elements.interface_dropdown, interfaces)
 end
 
