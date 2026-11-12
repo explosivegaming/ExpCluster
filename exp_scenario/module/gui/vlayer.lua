@@ -123,7 +123,6 @@ Elements.stat_bar = Gui.define("vlayer/stat_bar")
 --- @class ExpGui_Vlayer.elements.stat_bar.display_data
 --- @field value number Fraction the bar is filled
 --- @field caption string
---- @field tooltip string
 
 --- Refresh a bar
 --- @param stat_bar LuaGuiElement
@@ -131,7 +130,6 @@ Elements.stat_bar = Gui.define("vlayer/stat_bar")
 function Elements.stat_bar.refresh(stat_bar, display_data)
     stat_bar.value = display_data.value
     stat_bar.caption = display_data.caption
-    stat_bar.tooltip = display_data.tooltip
 end
 
 --- Table of a label and bar for each statistic
@@ -177,86 +175,66 @@ function Elements.stats_table.calculate_display_data(s_index)
     return {
         production = {
             value = production,
-            caption = statistics.energy_input_limit < energy_production
+            caption = format_string(
+                "%s / %s, %.1f %%",
+                statistics.energy_input_limit < energy_production
                 and format_string(
-                    "%s (%s) / %s",
+                    "%s (%s)",
                     format_energy(energy_production, "W"),
-                    format_energy(limit_production, "W"),
-                    format_energy(energy_max, "W")
+                    format_energy(limit_production, "W")
                 )
-                or format_string(
-                    "%s / %s",
-                    format_energy(energy_production, "W"),
-                    format_energy(energy_max, "W")
-                ),
-            tooltip = format_string(
-                "%.1f %%",
+                or format_energy(energy_production, "W"),
+                format_energy(energy_max, "W"),
                 production * 100
             ),
         },
         sustained = {
             value = sustained,
-            caption = statistics.energy_input_limit < energy_sustained
+            caption = format_string(
+                "%s / %s, %.1f %%",
+                statistics.energy_input_limit < energy_sustained
                 and format_string(
-                    "%s (%s) / %s",
+                    "%s (%s)",
                     format_energy(energy_sustained, "W"),
-                    format_energy(limit_sustained, "W"),
-                    format_energy(statistics.energy_total_production, "W")
+                    format_energy(limit_sustained, "W")
                 )
-                or format_string(
-                    "%s / %s",
-                    format_energy(energy_sustained, "W"),
-                    format_energy(statistics.energy_total_production, "W")
-                ),
-            tooltip = format_string(
-                "%.1f %%",
+                or format_energy(energy_sustained, "W"),
+                format_energy(energy_max, "W"),
                 sustained * 100
             ),
         },
         capacity = {
             value = capacity,
             caption = format_string(
-                "%s / %s",
+                "%s / %s, %.1f %%",
                 format_energy(statistics.energy_storage, "J"),
-                format_energy(statistics.energy_capacity, "J")
-            ),
-            tooltip = format_string(
-                "%.1f %%",
+                format_energy(statistics.energy_capacity, "J"),
                 capacity * 100
             ),
         },
         ["surface-area"] = {
             value = min(max(surface_area / 0.1, 0), 1),
-            caption = format_number(
-                statistics.remaining_surface_area,
-                false
-            ),
-            tooltip = format_string(
-                "%.1f %%",
+            caption = format_string(
+                "%s, %.1f %%",
+                format_number(statistics.remaining_surface_area, false),
                 surface_area * 100
             ),
         },
         ["solar-panel"] = {
             value = solar,
             caption = format_string(
-                "%s / %s",
+                "%s / %s, %.1f %%",
                 format_number(allocated_solar, false),
-                format_number(items_solar, false)
-            ),
-            tooltip = format_string(
-                "%.1f %%",
+                format_number(items_solar, false),
                 solar * 100
             ),
         },
         ["accumulator"] = {
             value = accu,
             caption = format_string(
-                "%s / %s",
+                "%s / %s, %.1f %%",
                 format_number(allocated_accu, false),
-                format_number(items_accu, false)
-            ),
-            tooltip = format_string(
-                "%.1f %%",
+                format_number(items_accu, false),
                 accu * 100
             ),
         },
