@@ -44,11 +44,11 @@ local stats = {}
 for _, name in ipairs{ "production", "sustained", "capacity", "surface-area", "solar-panel", "accumulator" } do
     stats[#stats + 1] = {
         name = name,
-        caption = (name == "solar" or name == "accumulator")
+        caption = (name == "solar-panel" or name == "accumulator")
             and { "", "[img=entity/" .. name .. "]", prototypes.entity[name].localised_name }
             or { "exp-gui_vlayer.caption-stat-" .. name },
-        tooltip = (name == "solar" or name == "accumulator")
-            and nil
+        tooltip = (name == "solar-panel" or name == "accumulator")
+            and { prototypes.entity[name].localised_description }
             or { "exp-gui_vlayer.tooltip-stat-" .. name },
     }
 end
