@@ -447,11 +447,14 @@ function Elements.controls.refresh_interfaces(controls)
     local elements = Elements.controls.data[controls]
     local interface_type = Elements.type_dropdown.get_selected(elements.type_dropdown)
     local element = elements.surface_dropdown
-    if not element then return end
-    local surface_name = element.items[element.selected_index]
-    if not surface_name then return end
-    local surface = game.surfaces[surface_name]
-    Elements.interface_dropdown.refresh(elements.interface_dropdown, Vlayer.get_interfaces(surface.index)[interface_type])
+    local surface = 1
+    if element then
+        local surface_name = element.items[element.selected_index]
+        if surface_name then
+            surface = game.surfaces[surface_name].index
+        end
+    end
+    Elements.interface_dropdown.refresh(elements.interface_dropdown, Vlayer.get_interfaces(surface)[interface_type])
 end
 
 --- Refresh the listed interfaces of every online player, used when an interface is built or removed
@@ -483,7 +486,7 @@ Elements.container = Gui.define("vlayer/container")
         Elements.controls(container)
         for _, controls in Elements.controls:online_elements() do
             local elements = Elements.controls.data[controls]
-            Elements.stats_table.refresh(stats_table, Elements.stats_table.calculate_display_data(game.surfaces[elements.surface_dropdown.items[elements.surface_dropdown.selected_index]].index))
+            Elements.stats_table.refresh(stats_table, Elements.stats_table.calculate_display_data(1))
         end
         return Gui.elements.container.get_root_element(container)
     end) --[[@as any]]
