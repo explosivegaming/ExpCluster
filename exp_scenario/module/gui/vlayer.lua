@@ -41,7 +41,7 @@ end
 --- Statistics shown as progress bars, in display order
 --- @type { name: string, caption: LocalisedString, tooltip: LocalisedString }[]
 local stats = {}
-for _, name in ipairs{ "production", "capacity", "sustained", "surface-area" } do
+for _, name in ipairs{ "production", "sustained", "capacity", "surface-area" } do
     stats[#stats + 1] = {
         name = name,
         caption = { "exp-gui_vlayer.caption-stat-" .. name },
@@ -155,24 +155,40 @@ function Elements.stats_table.calculate_display_data(s_index)
     local statistics = Vlayer.get_statistics(s_index)
     local items = Vlayer.get_items(s_index)
     local allocated = Vlayer.get_allocated_items(s_index)
-    local en_prod = ceil(statistics.energy_production)
-    local sustained = ceil(statistics.energy_sustained) / max(statistics.energy_total_production, 1)
-    local production = en_prod / max(ceil(statistics.energy_max), 1)
+    local energy_production = ceil(statistics.energy_production)
+    local energy_max = ceil(statistics.energy_max)
+    local energy_sustained = ceil(statistics.energy_sustained)
+    local limit_production = min(statistics.energy_input_limit, energy_production)
+    local production = limit_production / max(energy_max, 1)
+    local limit_sustained = min(statistics.energy_input_limit, energy_sustained)
+    local sustained = lim_sus / max(statistics.energy_total_production, 1)
     local capacity = statistics.energy_storage / max(statistics.energy_capacity, 1)
-    local limit = min(statistics.energy_input_limit, en_prod)
     local surface_area = statistics.remaining_surface_area / max(statistics.total_surface_area, 1)
     return {
         production = {
             value = production,
             caption = format_string(
-                "%s ~ %s / %s",
-                format_energy(limit, "W"),
-                format_energy(statistics.energy_production, "W"),
-                format_energy(statistics.energy_max, "W")
+                "%s (%s) / %s",
+                format_energy(energy_production, "W"),
+                format_energy(limit_production, "W"),
+                format_energy(energy_max, "W")
             ),
             tooltip = format_string(
                 "%.1f %%",
                 production * 100
+            ),
+        },
+        sustained = {
+            value = sustained,
+            caption = format_string(
+                "%s (%s) / %s",
+                format_energy(energy_sustained, "W"),
+                format_energy(limit_sustained, "W"),
+                format_energy(statistics.energy_total_production, "W")
+            ),
+            tooltip = format_string(
+                "%.1f %%",
+                sustained * 100
             ),
         },
         capacity = {
@@ -185,18 +201,6 @@ function Elements.stats_table.calculate_display_data(s_index)
             tooltip = format_string(
                 "%.1f %%",
                 capacity * 100
-            ),
-        },
-        sustained = {
-            value = sustained,
-            caption = format_string(
-                "%s / %s",
-                format_energy(statistics.energy_sustained, "W"),
-                format_energy(statistics.energy_total_production, "W")
-            ),
-            tooltip = format_string(
-                "%.1f %%",
-                sustained * 100
             ),
         },
         ["surface-area"] = {
