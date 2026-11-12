@@ -198,9 +198,14 @@ function Elements.stats_table.refresh_online()
     for _, controls in Elements.controls:online_elements() do
         local elements = Elements.controls.data[controls]
         local element = elements.surface_dropdown
-        if not element then return end
-        local surface = game.surfaces[element.items[element.selected_index]]
-        local display_data = Elements.stats_table.calculate_display_data(surface.index)
+        local surface = 1
+        if element then
+            local surface_name = element.items[element.selected_index]
+            if surface_name then
+                surface = game.surfaces[surface_name].index
+            end
+        end
+        local display_data = Elements.stats_table.calculate_display_data(surface)
         for _, stats_table in Elements.stats_table:online_elements() do
             Elements.stats_table.refresh(stats_table, display_data)
         end
