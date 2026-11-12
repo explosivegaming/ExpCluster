@@ -42,6 +42,27 @@ local calc_number_base = {
     o = {value = 8, digits = "[0-7]"},
 }
 
+local function factorial(n)
+    if n < 0 then
+        return error({"", {"exp-gui_calculator.error"}, {"exp-gui_calculator.factorial_neg", n}}, 0)
+
+    elseif n > 170 then
+        return error({"", {"exp-gui_calculator.error"}, {"exp-gui_calculator.factorial_large", n}}, 0)
+    end
+
+    if n ~= math.floor(n) then
+        return error({"", {"exp-gui_calculator.error"}, {"exp-gui_calculator.factorial_int", n}}, 0)
+    end
+
+    local result = 1
+
+    for i = 2, n do
+        result = result * i
+    end
+
+    return result
+end
+
 --- Function label
 Elements.calculator_function_label = Gui.define("calculator/function_label")
     :draw{
@@ -111,27 +132,6 @@ function Elements.parse(expression)
         while expression:sub(cursor, cursor) == " " do
             cursor = cursor + 1
         end
-    end
-
-    local function factorial(n)
-        if n < 0 then
-            return error({"", {"exp-gui_calculator.error"}, {"exp-gui_calculator.factorial_neg", n}}, 0)
-
-        elseif n > 170 then
-            return error({"", {"exp-gui_calculator.error"}, {"exp-gui_calculator.factorial_large", n}}, 0)
-        end
-
-        if n ~= math.floor(n) then
-            return error({"", {"exp-gui_calculator.error"}, {"exp-gui_calculator.factorial_int", n}}, 0)
-        end
-
-        local result = 1
-
-        for i = 2, n do
-            result = result * i
-        end
-
-        return result
     end
 
     local parse_expr
