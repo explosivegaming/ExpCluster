@@ -303,7 +303,7 @@ function Elements.interface_dropdown.refresh(interface_dropdown, interfaces)
     local items = {}
     for index, interface in ipairs(interfaces) do
         local position = interface.position
-        items[index] = format_string("%d X %.1f Y %.1f", index, position.x, position.y)
+        items[index] = format_string("[%d] %.1f, %.1f", index, position.x, position.y)
     end
     interface_dropdown.items = items
 end
