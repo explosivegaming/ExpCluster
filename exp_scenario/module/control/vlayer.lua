@@ -113,12 +113,14 @@ for _, name in pairs(items.allowed_categories["production"]) do
         }
 
         -- Quality affected items
-        allowed_items[item_name]["production"] = {}
+        local production = {}
 
         for l, n in pairs(quality_level_to_name) do
             -- the number is per tick
-            allowed_items[item_name]["production"][l] = item.get_max_energy_production(n) * 60 / mega or 0 -- W -> MW
+            production[l] = item.get_max_energy_production(n) * 60 / mega or 0 -- W -> MW
         end
+
+        allowed_items[item_name]["production"] = production
     end
 end
 
@@ -133,17 +135,21 @@ for _, name in pairs(items.allowed_categories["storage"]) do
         }
 
         -- Quality affected items
-        allowed_items[item_name]["input_limit"] = {}
-        allowed_items[item_name]["output_limit"] = {}
-        allowed_items[item_name]["capacity"] = {}
+        local input_limit = {}
+        local output_limit = {}
+        local capacity = {}
         local i_eesp = item.electric_energy_source_prototype
 
         for l, n in pairs(quality_level_to_name) do
             -- the number is per tick
-            allowed_items[item_name]["input_limit"][l] = i_eesp and i_eesp.get_input_flow_limit(n) * 60 / mega or 0 -- W -> MW
-            allowed_items[item_name]["output_limit"][l] = i_eesp and i_eesp.get_output_flow_limit(n) * 60 / mega or 0  -- W -> MW
-            allowed_items[item_name]["capacity"][l] = i_eesp and i_eesp.buffer_capacity * prototypes.quality[n].accumulator_capacity_multiplier / mega or 0  -- J -> MJ
+            input_limit[l] = i_eesp and i_eesp.get_input_flow_limit(n) * 60 / mega or 0 -- W -> MW
+            output_limit[l] = i_eesp and i_eesp.get_output_flow_limit(n) * 60 / mega or 0  -- W -> MW
+            capacity[l] = i_eesp and i_eesp.buffer_capacity * prototypes.quality[n].accumulator_capacity_multiplier / mega or 0  -- J -> MJ
         end
+
+        allowed_items[item_name]["input_limit"] = input_limit
+        allowed_items[item_name]["output_limit"] = output_limit
+        allowed_items[item_name]["capacity"] = capacity
     end
 end
 
@@ -155,8 +161,10 @@ allowed_items["landfill"] = {
 --- @type ExpScenario_Vlayer.Data
 local vlayer_data = {}
 
---- @param surface_index number
-local function update_surface(surface_index)
+--- @param surface LuaSurface
+local function surface_updated(surface)
+    local surface_index = surface and surface.index or 0
+    if surface_index == 0 then return end
     if vlayer_data[surface_index] then return end
 
     -- global surface will have its data point to the main surface
@@ -186,7 +194,7 @@ local function update_surface(surface_index)
     }
 end
 
-update_surface(1)
+surface_updated(game.surfaces[1])
 
 Storage.register(vlayer_data, function(tbl)
     vlayer_data = tbl
@@ -226,44 +234,46 @@ end
 circuit_description = table.concat(circuit_description, "\n")
 
 --- Get every stored item keyed by name, allocated or not
---- @param s_index number Surface index
+--- @param surface_index number Surface index
 --- @return table<string, table<number, number>>
-function Vlayer.get_items(s_index)
-    local vd = assert(config.global_surface and vlayer_data[1] or vlayer_data[s_index])
-    return vd.storage.items
+function Vlayer.get_items(surface_index)
+    local surface_data = assert(config.global_surface and vlayer_data[1] or vlayer_data[surface_index])
+    return surface_data.storage.items
 end
 
 --- Get the items waiting for surface area keyed by name
---- @param s_index number Surface index
+--- @param surface_index number Surface index
 --- @return table<string, table<number, number>>
-function Vlayer.get_unallocated_items(s_index)
-    local vd = assert(config.global_surface and vlayer_data[1] or vlayer_data[s_index])
-    return vd.storage.unallocated
+function Vlayer.get_unallocated_items(surface_index)
+    local surface_data = assert(config.global_surface and vlayer_data[1] or vlayer_data[surface_index])
+    return surface_data.storage.unallocated
 end
 
 --- Get the items which contribute to the properties keyed by name
---- @param s_index number Surface index
+--- @param surface_index number Surface index
 --- @return table<string, table<number, number>>
-function Vlayer.get_allocated_items(s_index)
+function Vlayer.get_allocated_items(surface_index)
     local allocated = {}
-    local vd = assert(config.global_surface and vlayer_data[1] or vlayer_data[s_index])
-    local storage = vd.storage
+    local surface_data = assert(config.global_surface and vlayer_data[1] or vlayer_data[surface_index])
+    local storage = surface_data.storage
     local unallocated = storage.unallocated
     for name, qnc in pairs(storage.items) do
-        allocated[name] = {}
+        local n = {}
+        local un = unallocated[name]
         for quality, count in pairs(qnc) do
-            allocated[name][quality] = count - (unallocated[name] and unallocated[name][quality] or 0)
+            n[quality] = count - (un and un[quality] or 0)
         end
+        allocated[name] = n
     end
     return allocated
 end
 
 --- Get the interface entities of each type, do not modify
---- @param s_index number Surface index
+--- @param surface_index number Surface index
 --- @return ExpScenario_Vlayer.Interfaces
-function Vlayer.get_interfaces(s_index)
-    local vd = assert(config.global_surface and vlayer_data[1] or vlayer_data[s_index])
-    return vd.interfaces
+function Vlayer.get_interfaces(surface_index)
+    local surface_data = assert(config.global_surface and vlayer_data[1] or vlayer_data[surface_index])
+    return surface_data.interfaces
 end
 
 --- Get the signal each statistic is sent as on circuit interfaces
@@ -273,12 +283,12 @@ function Vlayer.get_circuits()
 end
 
 --- Surface area left once the unallocated items have taken what they need
---- @param s_index number Surface index
+--- @param surface_index number Surface index
 --- @return number
-local function get_remaining_surface_area(s_index)
-    local vd = assert(config.global_surface and vlayer_data[1] or vlayer_data[s_index])
-    local properties = vd.properties
-    local unallocated = vd.storage.unallocated
+local function get_remaining_surface_area(surface_index)
+    local surface_data = assert(config.global_surface and vlayer_data[1] or vlayer_data[surface_index])
+    local properties = surface_data.properties
+    local unallocated = surface_data.storage.unallocated
     local remaining = properties.total_surface_area - properties.used_surface_area
     for name, qnc in pairs(unallocated) do
         for _, count in pairs(qnc) do
@@ -289,11 +299,11 @@ local function get_remaining_surface_area(s_index)
 end
 
 --- Fraction of solar production available right now, from the darkness of a real surface or the config day cycle
---- @param s_index number Surface index
+--- @param surface_index number Surface index
 --- @return number
-local function get_production_multiplier(s_index)
+local function get_production_multiplier(surface_index)
     ---@diagnostic disable-next-line: undefined-field
-    local surface = assert(config.global_surface and game.surface[1] or game.surfaces[s_index]) --[[@as LuaSurface]]
+    local surface = assert(config.global_surface and game.surface[1] or game.surfaces[surface_index]) --[[@as LuaSurface]]
     local multiplier = surface.solar_power_multiplier
     if surface.always_day then
         return multiplier
@@ -322,11 +332,11 @@ local function get_production_multiplier(s_index)
 end
 
 --- Fraction of solar production averaged over a whole day, sunrise and sunset count for half
---- @param s_index number Surface index
+--- @param surface_index number Surface index
 --- @return number
-local function get_sustained_multiplier(s_index)
+local function get_sustained_multiplier(surface_index)
     ---@diagnostic disable-next-line: undefined-field
-    local surface = assert(config.global_surface and game.surface[1] or game.surfaces[s_index]) --[[@as LuaSurface]]
+    local surface = assert(config.global_surface and game.surface[1] or game.surfaces[surface_index]) --[[@as LuaSurface]]
     local multiplier = surface.solar_power_multiplier
     if surface.always_day then
         return multiplier
@@ -339,14 +349,14 @@ local function get_sustained_multiplier(s_index)
 end
 
 --- Apply the properties of an item to the layer, a negative count deallocates
---- @param s_index number Surface index
+--- @param surface_index number Surface index
 --- @param name string
 --- @param count number
 --- @param quality_level number
-local function allocate_item(s_index, name, count, quality_level)
+local function allocate_item(surface_index, name, count, quality_level)
     local item = allowed_items[name]
-    local vd = assert(config.global_surface and vlayer_data[1] or vlayer_data[s_index])
-    local properties = vd.properties
+    local surface_data = assert(config.global_surface and vlayer_data[1] or vlayer_data[surface_index])
+    local properties = surface_data.properties
     if item.production then
         local prod = item.production[quality_level] * count
         properties.production = properties.production + prod
@@ -366,28 +376,28 @@ local function allocate_item(s_index, name, count, quality_level)
 end
 
 --- Count the production of items which are stored but not allocated, so the total shows what more surface area would give
---- @param s_index number Surface index
+--- @param surface_index number Surface index
 --- @param name string
 --- @param count number
 --- @param quality_level number
-local function count_unallocated_production(s_index, name, count, quality_level)
+local function count_unallocated_production(surface_index, name, count, quality_level)
     local item = allowed_items[name]
-    local vd = assert(config.global_surface and vlayer_data[1] or vlayer_data[s_index])
-    local properties = vd.properties
+    local surface_data = assert(config.global_surface and vlayer_data[1] or vlayer_data[surface_index])
+    local properties = surface_data.properties
     if item.production then
         properties.total_production = properties.total_production + item.production[quality_level] * count
     end
 end
 
 --- Store an item, it is allocated straight away when there is surface area for it
---- @param s_index number Surface index
+--- @param surface_index number Surface index
 --- @param name string
 --- @param count number
 --- @param quality_level number
-function Vlayer.insert_item(s_index, name, count, quality_level)
+function Vlayer.insert_item(surface_index, name, count, quality_level)
     local item = assert(allowed_items[name], "Item not allowed in the vlayer: " .. name)
-    local vd = assert(config.global_surface and vlayer_data[1] or vlayer_data[s_index])
-    local storage = vd.storage
+    local surface_data = assert(config.global_surface and vlayer_data[1] or vlayer_data[surface_index])
+    local storage = surface_data.storage
     if not storage.items[name] then storage.items[name] = {} end
     if not storage.items[name][quality_level] then storage.items[name][quality_level] = 0 end
     if not storage.unallocated[name] then storage.unallocated[name] = {} end
@@ -395,48 +405,48 @@ function Vlayer.insert_item(s_index, name, count, quality_level)
     storage.items[name][quality_level] = storage.items[name][quality_level] + count
 
     if config.unlimited_surface_area or item.required_area == 0 then
-        allocate_item(s_index, name, count, quality_level)
+        allocate_item(surface_index, name, count, quality_level)
         return
     end
 
-    local properties = vd.properties
+    local properties = surface_data.properties
     local surplus_area = properties.total_surface_area - properties.used_surface_area
     local allocated = min(count, floor(surplus_area / item.required_area))
     if allocated > 0 then
-        allocate_item(s_index, name, allocated, quality_level)
+        allocate_item(surface_index, name, allocated, quality_level)
     end
 
     local unallocated = count - allocated
     if unallocated > 0 then
         storage.unallocated[name][quality_level] = storage.unallocated[name][quality_level] + unallocated
-        count_unallocated_production(s_index, name, unallocated, quality_level)
+        count_unallocated_production(surface_index, name, unallocated, quality_level)
     end
 end
 
 --- Take an item out, unallocated items go first and landfill can only go while nothing is using its area
---- @param s_index number Surface index
+--- @param surface_index number Surface index
 --- @param name string
 --- @param count number
 --- @param quality_level number
 --- @return number # The count actually removed
-function Vlayer.remove_item(s_index, name, count, quality_level)
+function Vlayer.remove_item(surface_index, name, count, quality_level)
     local item = assert(allowed_items[name], "Item not allowed in the vlayer: " .. name)
-    local vd = assert(config.global_surface and vlayer_data[1] or vlayer_data[s_index])
-    local storage = vd.storage
+    local surface_data = assert(config.global_surface and vlayer_data[1] or vlayer_data[surface_index])
+    local storage = surface_data.storage
     local removed = 0
 
     if not config.unlimited_surface_area and item.required_area > 0 then
         removed = min(count, storage.unallocated[name][quality_level])
         storage.items[name][quality_level] = storage.items[name][quality_level] - removed
         storage.unallocated[name][quality_level] = storage.unallocated[name][quality_level] - removed
-        count_unallocated_production(s_index, name, -removed, quality_level)
+        count_unallocated_production(surface_index, name, -removed, quality_level)
         count = count - removed
         if count == 0 then
             return removed
         end
     end
 
-    local properties = vd.properties
+    local properties = surface_data.properties
     local deallocate = min(count, storage.items[name][quality_level])
     if item.surface_area and item.surface_area > 0 then
         local surplus_area = properties.total_surface_area - properties.used_surface_area
@@ -447,31 +457,31 @@ function Vlayer.remove_item(s_index, name, count, quality_level)
     end
 
     storage.items[name][quality_level] = storage.items[name][quality_level] - deallocate
-    allocate_item(s_index, name, -deallocate, quality_level)
+    allocate_item(surface_index, name, -deallocate, quality_level)
     return removed + deallocate
 end
 
 --- Add or take energy, used by other modules which spend the stored energy
---- @param s_index number Surface index
+--- @param surface_index number Surface index
 --- @param energy number J, negative to take
 --- @return number # J stored afterwards
-function Vlayer.energy_changed(s_index, energy)
-    local vd = assert(config.global_surface and vlayer_data[1] or vlayer_data[s_index])
-    local storage = vd.storage
+function Vlayer.energy_changed(surface_index, energy)
+    local surface_data = assert(config.global_surface and vlayer_data[1] or vlayer_data[surface_index])
+    local storage = surface_data.storage
     storage.energy = storage.energy + energy
     return storage.energy
 end
 
 --- Get the statistics of the layer
---- @param s_index number Surface index
+--- @param surface_index number Surface index
 --- @return ExpScenario_Vlayer.Statistics
-function Vlayer.get_statistics(s_index)
-    local vd = assert(config.global_surface and vlayer_data[1] or vlayer_data[s_index])
-    local properties = vd.properties
+function Vlayer.get_statistics(surface_index)
+    local surface_data = assert(config.global_surface and vlayer_data[1] or vlayer_data[surface_index])
+    local properties = surface_data.properties
     local production = properties.production * mega
-    local production_multiplier = get_production_multiplier(s_index)
-    local sustained_multiplier = get_sustained_multiplier(s_index)
-    local remaining_surface_area = get_remaining_surface_area(s_index)
+    local production_multiplier = get_production_multiplier(surface_index)
+    local sustained_multiplier = get_sustained_multiplier(surface_index)
+    local remaining_surface_area = get_remaining_surface_area(surface_index)
 
     return {
         total_surface_area = properties.total_surface_area,
@@ -486,18 +496,18 @@ function Vlayer.get_statistics(s_index)
         energy_input_limit = properties.input_limit * mega,
         energy_output_limit = properties.output_limit * mega,
         energy_capacity = properties.capacity * mega,
-        energy_storage = vd.storage.energy,
+        energy_storage = surface_data.storage.energy,
     }
 end
 
 --- Make an entity into an interface which players can not mine or damage
---- @param s_index number Surface index
+--- @param surface_index number Surface index
 --- @param interface LuaEntity
 --- @param interface_type ExpScenario_Vlayer.InterfaceType
 --- @param player LuaPlayer?
-local function register_interface(s_index, interface, interface_type, player)
-    local vd = assert(config.global_surface and vlayer_data[1] or vlayer_data[s_index])
-    local interfaces = vd.interfaces[interface_type]
+local function register_interface(surface_index, interface, interface_type, player)
+    local surface_data = assert(config.global_surface and vlayer_data[1] or vlayer_data[surface_index])
+    local interfaces = surface_data.interfaces[interface_type]
     interfaces[#interfaces + 1] = interface
     interface.last_user = player
     interface.destructible = false
@@ -564,10 +574,10 @@ end
 --- @param interface LuaEntity
 --- @return ExpScenario_Vlayer.InterfaceType
 function Vlayer.remove_interface(interface)
-    local s_index = interface.surface.index
-    local vd = assert(config.global_surface and vlayer_data[1] or vlayer_data[s_index])
-    local storage = vd.storage
-    local interfaces = vd.interfaces
+    local surface_index = interface.surface.index
+    local surface_data = assert(config.global_surface and vlayer_data[1] or vlayer_data[surface_index])
+    local storage = surface_data.storage
+    local interfaces = surface_data.interfaces
     local interface_type = assert(interface_types[interface.name], "Entity is not a vlayer interface: " .. interface.name)
     if interface_type == "storage_input" or interface_type == "storage_output" then
         ExpUtil.transfer_inventory_to_surface{
@@ -597,7 +607,7 @@ end
 
 --- Store the contents of the input interfaces
 local function handle_input_interfaces()
-    for s_index, prop in pairs(vlayer_data) do
+    for surface_index, prop in pairs(vlayer_data) do
         local interfaces = prop.interfaces.storage_input
         prune_interfaces(interfaces)
         for _, interface in ipairs(interfaces) do
@@ -607,7 +617,7 @@ local function handle_input_interfaces()
                 local count = item.count
                 local quality = item.quality
                 if allowed_items[name] then
-                    Vlayer.insert_item(s_index, name, count, quality_name_to_level[quality])
+                    Vlayer.insert_item(surface_index, name, count, quality_name_to_level[quality])
                     inventory.remove{ name = name, count = count, quality = quality }
                 end
             end
@@ -617,7 +627,7 @@ end
 
 --- Fill the requests of the output interfaces from storage
 local function handle_output_interfaces()
-    for s_index, prop in pairs(vlayer_data) do
+    for surface_index, prop in pairs(vlayer_data) do
         local interfaces = prop.interfaces.storage_output
         prune_interfaces(interfaces)
         for _, interface in ipairs(interfaces) do
@@ -631,7 +641,7 @@ local function handle_output_interfaces()
                         ---@diagnostic disable-next-line: undefined-field
                         local wanted = min(assert(filter.min) - inventory.get_item_count(name), prop.storage.items[name][quality_level])
                         if wanted > 0 and inventory.can_insert{ name = name, count = wanted, quality = quality } then
-                            local removed = Vlayer.remove_item(s_index, name, wanted, quality_level)
+                            local removed = Vlayer.remove_item(surface_index, name, wanted, quality_level)
                             if removed > 0 then
                                 inventory.insert{ name = name, count = removed, quality = quality }
                             end
@@ -646,7 +656,7 @@ end
 --- Allocate waiting items in proportion to the surface area that has become available
 local function handle_unallocated()
     if config.unlimited_surface_area then return end
-    for s_index, prop in pairs(vlayer_data) do
+    for surface_index, prop in pairs(vlayer_data) do
         local unallocated_area = 0
         for name, qnc in pairs(prop.storage.unallocated) do
             for _, count in pairs(qnc) do
@@ -661,8 +671,8 @@ local function handle_unallocated()
                     local allocated = min(count, floor(count * surplus_area / unallocated_area))
                     if allocated > 0 then
                         prop.storage.unallocated[name][quality] = count - allocated
-                        allocate_item(s_index, name, allocated, quality)
-                        count_unallocated_production(s_index, name, -allocated, quality)
+                        allocate_item(surface_index, name, allocated, quality)
+                        count_unallocated_production(surface_index, name, -allocated, quality)
                     end
                 end
             end
@@ -672,11 +682,11 @@ end
 
 --- Set the signals of the circuit interfaces to the statistics and stored items
 local function handle_circuit_interfaces()
-    for s_index, prop in pairs(vlayer_data) do
+    for surface_index, prop in pairs(vlayer_data) do
         local interfaces = prop.interfaces.circuit
         prune_interfaces(interfaces)
         if #interfaces > 0 then
-            local stats = Vlayer.get_statistics(s_index)
+            local stats = Vlayer.get_statistics(surface_index)
             for _, interface in ipairs(interfaces) do
                 local control = interface.get_or_create_control_behavior() --[[@as LuaConstantCombinatorControlBehavior]]
                 if control.sections_count == 0 then
@@ -717,11 +727,11 @@ end
 --- Produce energy, share it between the energy interfaces, and burn fuel when storage runs low
 local function handle_energy_interfaces()
     local update_mega = mega * update_tick_energy / 60
-    for s_index, prop in pairs(vlayer_data) do
+    for surface_index, prop in pairs(vlayer_data) do
         local storage = prop.storage
         local properties = prop.properties
         local production = properties.production * update_mega
-        storage.energy = storage.energy + floor(min(properties.input_limit * update_mega, production * get_production_multiplier(s_index))) 
+        storage.energy = storage.energy + floor(min(properties.input_limit * update_mega, production * get_production_multiplier(surface_index))) 
 
         local interfaces = prop.interfaces.energy
         prune_interfaces(interfaces)
@@ -749,11 +759,11 @@ local function handle_energy_interfaces()
 end
 
 --- Since landfill value is changed, the vlayer needs to be recalculated, done by reapplying the placement
-Vlayer.recalc_space = function()
-    for s_index, prop in pairs(vlayer_data) do
+function Vlayer.recalc_space()
+    for surface_index, prop in pairs(vlayer_data) do
         -- Unalloc
-        local allocated_items = Vlayer.get_allocated_items(s_index)
-        local unallocated_items = Vlayer.get_unallocated_items(s_index)
+        local allocated_items = Vlayer.get_allocated_items(surface_index)
+        local unallocated_items = Vlayer.get_unallocated_items(surface_index)
         for name, qnc in pairs(allocated_items) do
             for quality, count in pairs(qnc) do
                 unallocated_items[name][quality] = unallocated_items[name][quality] + count
@@ -765,7 +775,7 @@ Vlayer.recalc_space = function()
         prop.storage.energy = 0
         for name, qnc in pairs(unallocated_items) do
             for quality, count in pairs(qnc) do
-                Vlayer.insert_item(s_index, name, count, quality)
+                Vlayer.insert_item(surface_index, name, count, quality)
             end
         end
     end
@@ -786,10 +796,10 @@ end
 
 local e = defines.events
 
-Vlayer.on_init = update_surface -- The default surface exists before on_surface_created can fire
-Vlayer.events[e.on_surface_created] = function(event) update_surface(event.surface_index) end
-Vlayer.events[e.on_surface_renamed] = function(event) update_surface(event.surface_index) end
-Vlayer.events[e.on_surface_imported] = function(event) update_surface(event.surface_index) end
+Vlayer.on_init = surface_updated -- The default surface exists before on_surface_created can fire
+Vlayer.events[e.on_surface_created] = function(event) surface_updated(game.surfaces[event.surface_index]) end
+Vlayer.events[e.on_surface_renamed] = function(event) surface_updated(game.surfaces[event.surface_index]) end
+Vlayer.events[e.on_surface_imported] = function(event) surface_updated(game.surfaces[event.surface_index]) end
 Vlayer.events[Feature.events.on_config_updated] = function(event)
     if event.feature_name == feature.name and event.path == "landfill_area" then
         allowed_items["landfill"]["surface_area"] = event.new_value
