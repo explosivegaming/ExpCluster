@@ -482,7 +482,7 @@ function Elements.controls.get_selected_interface(controls)
     local elements = Elements.controls.data[controls]
     local interface_type = Elements.type_dropdown.get_selected(elements.type_dropdown)
     local surface = surface_index_from_element(controls)
-    if surface == 0 then return end
+    if surface == 0 then return interface_type, nil end
     local interfaces = Vlayer.get_interfaces(surface)[interface_type]
     return interface_type, Elements.interface_dropdown.get_selected(elements.interface_dropdown, interfaces)
 end
