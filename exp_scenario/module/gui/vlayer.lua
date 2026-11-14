@@ -250,19 +250,26 @@ function Elements.stats_table.refresh(stats_table, display_data)
     end
 end
 
+--- @param controls LuaGuiElement
+local function surface_index_from_element(controls)
+    local elements = Elements.controls.data[controls]
+    local element = elements.surface_dropdown
+    local surface = 0
+    if element then
+        local surface_name = element.items[element.selected_index]
+        if surface_name then
+            ---@diagnostic disable-next-line: undefined-field
+            surface = game.surfaces[surface_name].index
+        end
+    end
+    return surface
+end
+
 --- Refresh the tables of every online player
 function Elements.stats_table.refresh_online()
     for _, controls in Elements.controls:online_elements() do
-        local elements = Elements.controls.data[controls]
-        local element = elements.surface_dropdown
-        local surface = 1
-        if element then
-            local surface_name = element.items[element.selected_index]
-            if surface_name then
-                ---@diagnostic disable-next-line: undefined-field
-                surface = game.surfaces[surface_name].index
-            end
-        end
+        local surface = surface_index_from_element()
+        if surface == 0 then return end
         local display_data = Elements.stats_table.calculate_display_data(surface)
         for _, stats_table in Elements.stats_table:online_elements() do
             Elements.stats_table.refresh(stats_table, display_data)
@@ -474,15 +481,8 @@ end
 function Elements.controls.get_selected_interface(controls)
     local elements = Elements.controls.data[controls]
     local interface_type = Elements.type_dropdown.get_selected(elements.type_dropdown)
-    local element = elements.surface_dropdown
-    local surface = 1
-    if element then
-        local surface_name = element.items[element.selected_index]
-        if surface_name then
-            ---@diagnostic disable-next-line: undefined-field
-            surface = game.surfaces[surface_name].index
-        end
-    end
+    local surface = surface_index_from_element()
+    if surface == 0 then return end
     local interfaces = Vlayer.get_interfaces(surface)[interface_type]
     return interface_type, Elements.interface_dropdown.get_selected(elements.interface_dropdown, interfaces)
 end
@@ -493,14 +493,8 @@ function Elements.controls.refresh_interfaces(controls)
     local elements = Elements.controls.data[controls]
     local interface_type = Elements.type_dropdown.get_selected(elements.type_dropdown)
     local element = elements.surface_dropdown
-    local surface = 1
-    if element then
-        local surface_name = element.items[element.selected_index]
-        if surface_name then
-            ---@diagnostic disable-next-line: undefined-field
-            surface = game.surfaces[surface_name].index
-        end
-    end
+    local surface = surface_index_from_element()
+    if surface == 0 then return end
     Elements.interface_dropdown.refresh(elements.interface_dropdown, Vlayer.get_interfaces(surface)[interface_type])
 end
 
@@ -613,7 +607,7 @@ local function refresh_player_permissions(event)
 end
 
 --- Refresh the dropdown list when surface is updated
-local function update_surface()
+local function surface_updated()
     -- global surface will have its data point to the main surface
     if config.global_surface then return end
     for _, controls in Elements.controls:online_elements() do
@@ -628,12 +622,12 @@ return feature:guard{
     elements = Elements,
     events = {
         [Roles.events.on_player_roles_changed] = refresh_player_permissions,
-        [e.on_surface_created] = update_surface,
-        [e.on_surface_renamed] = update_surface,
-        [e.on_surface_imported] = update_surface,
+        [e.on_surface_created] = surface_updated,
+        [e.on_surface_renamed] = surface_updated,
+        [e.on_surface_imported] = surface_updated,
         [Feature.events.on_config_updated] = function(event)
             if event.feature_name == feature.name and event.path == "global_surface" then
-                update_surface()
+                surface_updated()
             end
         end,
     },
