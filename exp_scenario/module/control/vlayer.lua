@@ -399,10 +399,8 @@ function Vlayer.insert_item(surface_index, name, count, quality_level)
     local surface_data = assert(config.global_surface and vlayer_data[1] or vlayer_data[surface_index])
     local storage = surface_data.storage
     if not storage.items[name] then storage.items[name] = {} end
-    if not storage.items[name][quality_level] then storage.items[name][quality_level] = 0 end
     if not storage.unallocated[name] then storage.unallocated[name] = {} end
-    if not storage.unallocated[name][quality_level] then storage.unallocated[name][quality_level] = 0 end
-    storage.items[name][quality_level] = storage.items[name][quality_level] + count
+    storage.items[name][quality_level] = (storage.items[name][quality_level] or 0) + count
 
     if config.unlimited_surface_area or item.required_area == 0 then
         allocate_item(surface_index, name, count, quality_level)
@@ -418,7 +416,7 @@ function Vlayer.insert_item(surface_index, name, count, quality_level)
 
     local unallocated = count - allocated
     if unallocated > 0 then
-        storage.unallocated[name][quality_level] = storage.unallocated[name][quality_level] + unallocated
+        storage.unallocated[name][quality_level] = (storage.unallocated[name][quality_level] or 0) + unallocated
         count_unallocated_production(surface_index, name, unallocated, quality_level)
     end
 end
