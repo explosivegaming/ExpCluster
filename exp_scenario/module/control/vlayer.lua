@@ -163,8 +163,7 @@ local vlayer_data = {}
 
 --- @param surface? LuaSurface
 local function surface_updated(surface)
-    local surface_index = surface and surface.index or 0
-    if surface_index == 0 then return end
+    local surface_index = surface and surface.index or 1
     if vlayer_data[surface_index] then return end
 
     -- global surface will have its data point to the main surface
