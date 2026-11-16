@@ -22,7 +22,10 @@ local order_deconstruction_async =
 
 local game_script_inventory
 
-local function init()
+--- When the first player joins, init
+--- @param event EventData.on_player_created
+local function on_player_created(event)
+    if event.player_index ~= 1 then return end
     game_script_inventory = game.create_inventory(1, "mine_depletion")
     game_script_inventory.insert{ name = "deconstruction-planner", count = 1 }
     game_script_inventory[1].set_entity_filter(1, "depleted-mining-drill-proxy")
@@ -251,9 +254,8 @@ end
 --- @param event EventData.on_resource_depleted
 local function on_resource_depleted(event)
     local resource = event.entity
-    if resource.prototype.infinite_resource then
-        return
-    end
+
+    if resource.prototype.infinite_resource then return end
 
     -- Find all mining drills within the area
     local position = resource.position
@@ -280,8 +282,8 @@ end
 local e = defines.events
 
 return feature:guard{
-    on_init = init,
     events = {
+        [e.on_player_created] = on_player_created,
         [e.on_resource_depleted] = on_resource_depleted,
     },
 }
