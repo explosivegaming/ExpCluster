@@ -257,16 +257,6 @@ local function surface_index_from_element(controls)
     local surface = 0
     if element and game.surfaces[element.selected_index] then
         surface = element.selected_index
-        --[[
-        local surface_name = element.items[element.selected_index]
-        if surface_name then
-            ---@diagnostic disable-next-line: undefined-field
-            local s = game.surfaces[surface_name]
-            if s then
-                surface = s.index
-            end
-        end
-        ]]
     end
     return surface
 end
@@ -306,11 +296,8 @@ Elements.surface_dropdown = Gui.define("vlayer/surface_dropdown")
 --- @param surfaces LuaSurface[]
 function Elements.surface_dropdown.refresh(surface_dropdown, surfaces)
     local items = {}
-    -- local index = 1
     for _, surface in pairs(surfaces) do
-        items[surface.index] = surface.name
-        -- items[index] = surface.name
-        -- index = index + 1
+        items[surface.index] = surface.localised_name
     end
     surface_dropdown.items = items
 end
