@@ -20,9 +20,13 @@ local order_deconstruction_async =
         entity.order_deconstruction(entity.force)
     end)
 
-local game_script_inventory = game.create_inventory(1, "mine_depletion")
-game_script_inventory.insert{ name = "deconstruction-planner", count = 1 }
-game_script_inventory[1].set_entity_filter(1, "depleted-mining-drill-proxy")
+local game_script_inventory
+
+local function init()
+    game_script_inventory = game.create_inventory(1, "mine_depletion")
+    game_script_inventory.insert{ name = "deconstruction-planner", count = 1 }
+    game_script_inventory[1].set_entity_filter(1, "depleted-mining-drill-proxy")
+end
 
 --- Reliability get the drop target of an entity
 --- @param entity LuaEntity
@@ -276,6 +280,7 @@ end
 local e = defines.events
 
 return feature:guard{
+    on_init = init,
     events = {
         [e.on_resource_depleted] = on_resource_depleted,
     },
