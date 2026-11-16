@@ -133,7 +133,7 @@ end
 --- Check if a miner should be deconstructed
 --- @param entity LuaEntity
 local function try_deconstruct_miner(entity)
-    if entity.fluids_count > 1 then
+    if entity.fluids_count > 1 then return end
 
     -- Check if the miner should be deconstructed
     if prevent_deconstruction(entity) then
