@@ -151,7 +151,7 @@ local function try_deconstruct_miner(entity)
     ---@diagnostic disable-next-line: need-check-nil
     game_script_inventory[1].deconstruct_area{
         surface = surface,
-        area = entity.bounding_box,
+        area = { entity.position, entity.position },
         force = entity.force
     }
 
