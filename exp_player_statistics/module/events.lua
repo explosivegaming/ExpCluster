@@ -83,7 +83,7 @@ add(defines.events.on_marked_for_deconstruction, on_removed)
 add(defines.events.on_player_mined_entity, on_removed)
 
 --- Vehicles which credit their driver, or failing that their passenger, with what they hit
-local crewed_vehicles = { car = true, ["spider-vehicle"] = true }
+local crewed_vehicles = { car = true, ["spider-vehicle"] = true, locomotive = true }
 
 --- Get the connected player behind the cause of damage or a death, nil for turrets, trains without a crew and the like
 --- @param cause LuaEntity?
@@ -93,7 +93,10 @@ local function get_cause_player(cause)
 
     local occupant = cause --- @type LuaEntity | LuaPlayer
     if crewed_vehicles[cause.type] then
-        local crew = cause.get_driver() or cause.get_passenger()
+        local crew = cause.get_driver()
+        if not crew and cause.type ~= "locomotive" then
+            crew = cause.get_passenger()
+        end
         if not crew then return nil end
         occupant = crew
     end
