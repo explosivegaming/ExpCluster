@@ -148,6 +148,8 @@ local function try_deconstruct_miner(entity)
     -- Check if there are any resources remaining for the miner
     local surface = entity.surface
     local pos = entity.position
+    game.print(game_script_inventory[1].is_deconstruction_item)
+    game.print(helpers.table_to_json(game_script_inventory[1].entity_filters))
     --- @cast game_script_inventory LuaInventory
     ---@diagnostic disable-next-line: need-check-nil
     game_script_inventory[1].deconstruct_area{
@@ -276,13 +278,11 @@ local function on_resource_depleted(event)
     -- Check which could have reached this resource
     for _, drill in pairs(drills) do
         local radius = drill.prototype.mining_drill_radius
-        game.print(radius)
         local drill_position = drill.position
         local dx = math.abs(drill_position.x - position.x)
         local dy = math.abs(drill_position.y - position.y)
         if dx <= radius and dy <= radius then
             try_deconstruct_miner(drill)
-            game.print(33)
         end
     end
 end
