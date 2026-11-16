@@ -20,6 +20,10 @@ local order_deconstruction_async =
         entity.order_deconstruction(entity.force)
     end)
 
+local game_script_inventory = game.create_inventory(1, "mine_depletion")
+game_script_inventory.insert{ name = "deconstruction-planner", count = 1 }
+game_script_inventory[1].set_entity_filter(1, "depleted-mining-drill-proxy")
+
 --- Reliability get the drop target of an entity
 --- @param entity LuaEntity
 --- @return LuaEntity?
@@ -129,6 +133,8 @@ end
 --- Check if a miner should be deconstructed
 --- @param entity LuaEntity
 local function try_deconstruct_miner(entity)
+    if entity.fluids_count > 1 then
+
     -- Check if the miner should be deconstructed
     if prevent_deconstruction(entity) then
         return
@@ -136,16 +142,13 @@ local function try_deconstruct_miner(entity)
 
     -- Check if there are any resources remaining for the miner
     local surface = entity.surface
-    local resources = surface.find_entities_filtered{
-        type = "resource",
-        area = entity.mining_area,
+    surface.deconstruct_area{
+        area = entity.bounding_box,
+        force = entity.force,
+        item = game_script_inventory[1]
     }
 
-    for _, resource in ipairs(resources) do
-        if resource.amount > 0 then
-            return
-        end
-    end
+    if not entity.to_be_deconstructed() then return end
 
     -- Deconstruct the miner
     order_deconstruction_async:start_after(10, entity)
@@ -161,7 +164,7 @@ local function try_deconstruct_miner(entity)
     end
 
     -- Skip pipe build if not required
-    if not config.fluid or entity.fluids_count > 1 then
+    if not config.fluid then
         return
     end
 
