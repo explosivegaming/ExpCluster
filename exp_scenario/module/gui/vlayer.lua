@@ -526,6 +526,7 @@ Elements.container = Gui.define("vlayer/container")
         local container = Gui.elements.container(parent, gui_width.main)
         local stats_table = Elements.stats_table(container)
         Elements.controls(container)
+        Elements.stats_table.refresh(stats_table, Elements.stats_table.calculate_display_data(1))
         return Gui.elements.container.get_root_element(container)
     end) --[[@as any]]
 
