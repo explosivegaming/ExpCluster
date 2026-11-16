@@ -297,7 +297,12 @@ Elements.surface_dropdown = Gui.define("vlayer/surface_dropdown")
 function Elements.surface_dropdown.refresh(surface_dropdown, surfaces)
     local items = {}
     for _, surface in pairs(surfaces) do
-        items[surface.index] = {surface.localised_name}
+        items[surface.index] = {
+            "?",
+            surface.localised_name,
+            surface.planet and surface.planet.prototype.localised_name or nil,
+            surface.name
+        }
     end
     surface_dropdown.items = items
 end
