@@ -147,11 +147,16 @@ local function try_deconstruct_miner(entity)
 
     -- Check if there are any resources remaining for the miner
     local surface = entity.surface
+    local pos = entity.position
+    local width, height = entity.tile_width, entity.tile_height
     --- @cast game_script_inventory LuaInventory
     ---@diagnostic disable-next-line: need-check-nil
     game_script_inventory[1].deconstruct_area{
         surface = surface,
-        area = { entity.position, entity.position },
+        area = {
+            { x = pos.x - width, y = pos.y - height},
+            { x = pos.x + width, y = pos.y + height}
+        },
         force = entity.force
     }
 
