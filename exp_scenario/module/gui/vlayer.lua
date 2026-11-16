@@ -257,6 +257,7 @@ local function surface_index_from_element(controls)
     local surface = 0
     if element then
         local surface_name = element.items[element.selected_index]
+        ---@diagnostic disable-next-line: undefined-field
         local s = game.surfaces[surface_name]
         if surface_name and s then
             surface = s.index
