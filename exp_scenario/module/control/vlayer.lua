@@ -194,8 +194,6 @@ local function surface_updated(surface)
     }
 end
 
-surface_updated(game.surfaces[1])
-
 Storage.register(vlayer_data, function(tbl)
     vlayer_data = tbl
 end)
@@ -794,7 +792,7 @@ end
 
 local e = defines.events
 
-Vlayer.on_init = surface_updated -- The default surface exists before on_surface_created can fire
+Vlayer.on_init = surface_updated(game.surfaces[1]) -- The default surface exists before on_surface_created can fire
 Vlayer.events[e.on_surface_created] = function(event) surface_updated(game.surfaces[event.surface_index]) end
 Vlayer.events[e.on_surface_renamed] = function(event) surface_updated(game.surfaces[event.surface_index]) end
 Vlayer.events[e.on_surface_imported] = function(event) surface_updated(game.surfaces[event.surface_index]) end
