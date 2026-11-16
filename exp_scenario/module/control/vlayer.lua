@@ -193,6 +193,8 @@ local function surface_updated(surface)
     }
 end
 
+surface_updated()
+
 Storage.register(vlayer_data, function(tbl)
     vlayer_data = tbl
 end)
