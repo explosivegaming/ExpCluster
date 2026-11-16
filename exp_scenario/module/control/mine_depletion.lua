@@ -28,7 +28,13 @@ local function on_player_created(event)
     if event.player_index ~= 1 then return end
     game_script_inventory = game.create_inventory(1, "mine_depletion")
     game_script_inventory.insert{ name = "deconstruction-planner", count = 1 }
-    game_script_inventory[1].entity_filters = {{ name = "depleted-mining-drill-proxy" }}
+    game_script_inventory[1].entity_filters = {
+        {
+            name = "depleted-mining-drill-proxy",
+            quality = "normal",
+            comparator = "="
+        }
+    }
 end
 
 --- Reliability get the drop target of an entity
@@ -147,9 +153,7 @@ local function try_deconstruct_miner(entity)
 
     -- Check if there are any resources remaining for the miner
     local surface = entity.surface
-    local pos = entity.position
-    game.print(game_script_inventory[1].is_deconstruction_item)
-    game.print(helpers.table_to_json(game_script_inventory[1].entity_filters))
+    local pos = entity.drop_position
     --- @cast game_script_inventory LuaInventory
     ---@diagnostic disable-next-line: need-check-nil
     game_script_inventory[1].deconstruct_area{
