@@ -467,6 +467,8 @@ Elements.controls = Gui.define("vlayer/controls")
             type_dropdown = type_dropdown,
             interface_dropdown = interface_dropdown,
         }
+
+        Elements.surface_dropdown.refresh(surface_dropdown, game.surfaces)
         Elements.controls.refresh_interfaces(controls)
         return controls
     end) --[[@as any]]
