@@ -28,7 +28,7 @@ local function on_player_created(event)
     if event.player_index ~= 1 then return end
     game_script_inventory = game.create_inventory(1, "mine_depletion")
     game_script_inventory.insert{ name = "deconstruction-planner", count = 1 }
-    game_script_inventory[1].entity_filters = { name = "depleted-mining-drill-proxy" }
+    game_script_inventory[1].entity_filters = {{ name = "depleted-mining-drill-proxy" }}
 end
 
 --- Reliability get the drop target of an entity
