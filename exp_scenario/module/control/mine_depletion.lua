@@ -147,6 +147,8 @@ local function try_deconstruct_miner(entity)
 
     -- Check if there are any resources remaining for the miner
     local surface = entity.surface
+    --- @cast game_script_inventory LuaInventory
+    ---@diagnostic disable-next-line: need-check-nil
     game_script_inventory[1].deconstruct_area{
         surface = surface,
         area = entity.bounding_box,
