@@ -147,10 +147,10 @@ local function try_deconstruct_miner(entity)
 
     -- Check if there are any resources remaining for the miner
     local surface = entity.surface
-    surface.deconstruct_area{
+    game_script_inventory[1].deconstruct_area{
+        surface = surface,
         area = entity.bounding_box,
-        force = entity.force,
-        item = game_script_inventory[1]
+        force = entity.force
     }
 
     if not entity.to_be_deconstructed() then return end
