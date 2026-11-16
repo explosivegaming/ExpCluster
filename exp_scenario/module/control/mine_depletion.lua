@@ -136,9 +136,7 @@ local function try_deconstruct_miner(entity)
     if entity.fluids_count > 1 then return end
 
     -- Check if the miner should be deconstructed
-    if prevent_deconstruction(entity) then
-        return
-    end
+    if prevent_deconstruction(entity) then return end
 
     -- Check if there are any resources remaining for the miner
     local surface = entity.surface
@@ -164,9 +162,7 @@ local function try_deconstruct_miner(entity)
     end
 
     -- Skip pipe build if not required
-    if not config.fluid then
-        return
-    end
+    if not config.fluid then return end
 
     -- Build pipes if the miner used fluid
     local position = entity.position
