@@ -161,7 +161,7 @@ allowed_items["landfill"] = {
 --- @type ExpScenario_Vlayer.Data
 local vlayer_data = {}
 
---- @param surface LuaSurface
+--- @param surface? LuaSurface
 local function surface_updated(surface)
     local surface_index = surface and surface.index or 0
     if surface_index == 0 then return end
@@ -792,7 +792,7 @@ end
 
 local e = defines.events
 
-Vlayer.on_init = surface_updated(game.surfaces[1]) -- The default surface exists before on_surface_created can fire
+Vlayer.on_init = surface_updated -- The default surface exists before on_surface_created can fire
 Vlayer.events[e.on_surface_created] = function(event) surface_updated(game.surfaces[event.surface_index]) end
 Vlayer.events[e.on_surface_renamed] = function(event) surface_updated(game.surfaces[event.surface_index]) end
 Vlayer.events[e.on_surface_imported] = function(event) surface_updated(game.surfaces[event.surface_index]) end
