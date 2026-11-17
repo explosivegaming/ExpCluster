@@ -312,7 +312,7 @@ function Elements.parse(expression)
         return lhs
     end
 
-    local ok, result = pcall(function()
+    return ok, result = pcall(function()
         local value = parse_expr(1)
         skip_space()
 
@@ -326,13 +326,22 @@ function Elements.parse(expression)
 
         return value
     end)
-
-    return ok and ("= " .. format_number(result, false)) or (type(result) == "table" and result or {"", {"exp-gui_calculator.error"}, tostring(result)})
 end
 
 --- Value change
 function Elements.change(event)
-    event.element.parent.calculator_result_label.caption = event.text == "" and "" or Elements.parse(event.text:lower())
+    local label = event.element.parent.calculator_result_label
+
+    if event.text == "" then
+        label.caption = ""
+        return
+    end
+
+    local ok, result = Elements.parse(event.text:lower())
+    label.font_color = ok and {0, 0, 0} or {1, 0, 0}
+    label.caption = ok
+    and ("= " .. format_number(result, false))
+    or (type(result) == "table" and result or {"", {"exp-gui_calculator.error"}, tostring(result)})
 end
 
 local e = defines.events
