@@ -289,45 +289,45 @@ function Elements.items_table.rows_adjust(items_table, display_data)
     end    
     ]]
 
-    for i=1, min_r do
-        --rows[i][2]
-    end
-
     if min_r < d_len then
+        for name, stat_bar in pairs(Elements.items_table.data[items_table]) do
+            Elements.stat_bar.refresh(stat_bar, display_data[name])
+        end
+
         for i=min_r, d_len do
             for _, v in ipairs(rows[i]) do
                 Gui.destroy_if_valid(v)
             end
         end
-    end
-  
-    for name, vnc in pairs(display_data) do
-        local r = {}
-        r[1] = Elements.stat_label(stats_table, {
-            "?",
-            {
-                "",
+    else        
+        for name, vnc in pairs(display_data) do
+            local r = {}
+            r[1] = Elements.stat_label(stats_table, {
+                "?",
+                {
+                    "",
+                    format_string(
+                        "[img=entity/%s]",
+                        name
+                    ),
+                    prototypes.entity[name].localised_name,
+                    format_string(
+                        " [%s]",
+                        quality
+                    )
+                },
                 format_string(
-                    "[img=entity/%s]",
-                    name
-                ),
-                prototypes.entity[name].localised_name,
-                format_string(
-                    " [%s]",
+                    "%s [%s]",
+                    name,
                     quality
                 )
-            },
-            format_string(
-                "%s [%s]",
-                name,
-                quality
+                }, 
+                ""
             )
-            }, 
-            ""
-        )
-        r[2] = Elements.stat_bar(stats_table)
+            r[2] = Elements.stat_bar(stats_table)
 
-        rows[#rows + 1] = r
+            rows[#rows + 1] = r
+        end
     end
 end
 
