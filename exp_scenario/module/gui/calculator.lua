@@ -127,6 +127,10 @@ end)
 function Elements.parse(expression)
     local cursor = 1
 
+    if #expression > 1000 then
+        return error({"", {"exp-gui_calculator.error"}, {"exp-gui_calculator.input_too_long"}}, 0)
+    end
+
     local function skip_space()
         while expression:sub(cursor, cursor) == " " do
             cursor = cursor + 1
@@ -314,6 +318,10 @@ function Elements.parse(expression)
 
         if cursor <= #expression then
             error({"", {"exp-gui_calculator.error"}, {"exp-gui_calculator.trailing", expression:sub(cursor, expression:len())}}, 0)
+        end
+
+        if result ~= result or result == math.huge or result == -math.huge then
+            error({"", {"exp-gui_calculator.error"}, result}, 0)
         end
 
         return value
