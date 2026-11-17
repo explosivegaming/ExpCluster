@@ -67,10 +67,38 @@ end
 Elements.calculator_info_label = Gui.define("calculator/info_label")
     :draw{
         type = "label",
-        caption = "[virtual-signal=signal-info]",
-        tooltip = {"exp-gui_calculator.info_tooltip"},
-        style = "heading_2_label",
+        caption = {"exp-gui_calculator.info_caption"},
+        name = "calculator_info_label",
     }
+    :style{
+        single_line = false
+    }
+
+--- Container Info
+Elements.container_info = Gui.define("calculator/container_info")
+    :draw{function(def, parent)
+        local screen_frame = Gui.elements.screen_frame(player, nil, true)
+        local header = Gui.elements.header(screen_frame, { caption = { "exp-gui_calculator.info_tooltip" } })
+        Elements.calculator_info_label(screen_frame)
+        return Gui.elements.screen_frame.get_root_element(screen_frame)
+    end}
+
+--- Info button
+--- @overload fun(parent: LuaGuiElement, screen: LuaGuiElement): LuaGuiElement
+Elements.calculator_info_button = Gui.define("calculator/info_button")
+    :draw{
+        type = "sprite-button",
+        sprite = "virtual-signal/signal-info",
+        style = "tool_button",
+        tooltip = {"exp-gui_calculator.info_tooltip"},
+        name = "calculator_info_button",
+    }
+    :element_data(
+        Gui.from_argument(1)
+    )
+    :on_click(function(def, player, element)
+        return Elements.calculator_info_frame
+    end) --[[@as any]]
 
 --- Input textfield
 Elements.calculator_input_textfield = Gui.define("calculator/input_textfield")
@@ -95,11 +123,9 @@ Elements.container = Gui.define("calculator/container")
     :draw(function(def, parent)
         local screen_frame = Gui.elements.screen_frame(parent, nil, true)
         local header = Gui.elements.header(screen_frame, { caption = { "exp-gui_calculator.tooltip" } })
-        Elements.calculator_info_label(header)
-
+        Elements.calculator_info_button(header)
         Elements.calculator_input_textfield(screen_frame)
         Elements.calculator_result_label(screen_frame)
-
         return Gui.elements.screen_frame.get_root_element(screen_frame)
     end)
 
@@ -111,7 +137,8 @@ Gui.toolbar.create_button{
     visible = function(player, element)
         return Roles.player_has_permission(player, "exp-gui_calculator")
     end
-}:on_click(function(def, player, element, event)
+}
+:on_click(function(def, player, element, event)
     Elements.container(player.gui.screen)
 end)
 
