@@ -312,7 +312,7 @@ function Elements.parse(expression)
         return lhs
     end
 
-    return ok, result = pcall(function()
+    local ok, result = pcall(function()
         local value = parse_expr(1)
         skip_space()
 
@@ -326,6 +326,8 @@ function Elements.parse(expression)
 
         return value
     end)
+
+    return ok, result
 end
 
 --- Value change
