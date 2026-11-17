@@ -50,7 +50,11 @@ for _, name in ipairs{ "production", "sustained", "capacity", "surface-area" } d
 end
 
 local energy_suffixes = {
-    { 1e15, "P" }, { 1e12, "T" }, { 1e9, "G" }, { 1e6, "M" }, { 1e3, "k" },
+    { 1e15, "P" },
+    { 1e12, "T" },
+    { 1e9, "G" },
+    { 1e6, "M" },
+    { 1e3, "k" },
 }
 
 --- Format an amount of energy with an SI prefix, util.format_number uses B for giga
@@ -135,53 +139,6 @@ function Elements.stat_bar.refresh(stat_bar, display_data)
     stat_bar.caption = display_data.caption
 end
 
---- Dropdown listing the items available in vlayer
---- @class ExpGui_Vlayer.elements.items_dropdown: ExpElement
---- @overload fun(parent: LuaGuiElement, controls: LuaGuiElement): LuaGuiElement
-Elements.items_dropdown = Gui.define("vlayer/items_dropdown")
-    :draw{
-        type = "drop-down",
-    }
-    :style{
-        width = gui_width.half,
-    }
-    :element_data{
-        controls = Gui.from_argument(1),
-    }
-
---- Refresh the listed interfaces
---- @param items_dropdown LuaGuiElement
---- @param items table
-function Elements.items_dropdown.refresh(items_dropdown, items)
-    local item = {}
-    for name, qnc in pairs(items) do
-        for quality, count in pairs(qnc) do
-            n[quality] = count - (un and un[quality] or 0)
-            item[name .. quality] = {
-                "?",
-                {
-                    "",
-                    format_string(
-                        "[img=entity/%s]",
-                        name
-                    ),
-                    prototypes.entity[name].localised_name,
-                    format_string(
-                        " [%s]",
-                        quality
-                    )
-                },
-                format_string(
-                    "%s [%s]",
-                    name,
-                    quality
-                )
-            }
-        end
-    end
-    items_dropdown.items = item
-end
-
 --- Table of a label and bar for each statistic
 --- @class ExpGui_Vlayer.elements.stats_table: ExpElement
 --- @field data table<LuaGuiElement, table<string, LuaGuiElement>> Bars keyed by statistic name
@@ -212,6 +169,7 @@ Elements.items_table = Gui.define("vlayer/items_table")
         local item_bars = {}
         for s=1, 4 do
             Elements.items_dropdown(items_table, s)
+            Elements.stat_label(stats_table, stat.caption, stat.tooltip)
             item_bars[s] = Elements.stat_bar(items_table)
         end
         def.data[items_table] = item_bars
@@ -284,40 +242,32 @@ function Elements.stats_table.calculate_display_data(s_index)
     }
 end
 
---- Calculate the display data of every statistic, the same for every player
+--- Calculate the display data of every item, the same for every player
 --- @param s_index number Surface index
 --- @return table<string, ExpGui_Vlayer.elements.stat_bar.display_data>
 function Elements.items_table.calculate_display_data(s_index)
-    local item = Vlayer.get_items(s_index)
+    local items = Vlayer.get_items(s_index)
     local allocated = Vlayer.get_allocated_items(s_index)
-    local allocated_solar = allocated["solar-panel"] and allocated["solar-panel"][0] or 0
-    local item_solar = item["solar-panel"] and item["solar-panel"][0] or 0
-    local allocated_accu = allocated["accumulator"] and allocated["accumulator"][0] or 0
-    local item_accu = item["accumulator"] and item["accumulator"][0] or 0
-    local solar = allocated_solar / max(item_solar, 1)
-    local accu = allocated_accu / max(item_accu, 1)
-    Elements.items_dropdown.refresh(items_dropdown, item)
+    local result = {}
 
-    return {
-        ["solar-panel"] = {
-            value = solar,
-            caption = format_string(
-                "%s / %s, %.1f %%",
-                format_number(allocated_solar, false),
-                format_number(item_solar, false),
-                solar * 100
-            ),
-        },
-        ["accumulator"] = {
-            value = accu,
-            caption = format_string(
-                "%s / %s, %.1f %%",
-                format_number(allocated_accu, false),
-                format_number(item_accu, false),
-                accu * 100
-            ),
-        },
-    }
+    for name, qnc in pairs(items) do
+        for quality, count in pairs(qnc) do
+            local alloc = allocated[name] and allocated[name][quality] or 0
+            local value = alloc / max(count, 1)
+
+            result[name .. quality] = {
+                value = value,
+                caption = format_string(
+                    "%s / %s, %.1f %%",
+                    format_number(alloc, false),
+                    format_number(count, false),
+                    value * 100
+                ),
+            }
+        end
+    end
+
+    return result
 end
 
 --- Refresh every bar of a table
@@ -332,10 +282,50 @@ end
 --- Refresh every bar of a table
 --- @param items_table LuaGuiElement
 --- @param display_data table<string, ExpGui_Vlayer.elements.stat_bar.display_data>
-function Elements.items_table.refresh(items_table, display_data)
+function Elements.items_table.rows_adjust(items_table, display_data)
+    local rows = Elements.rate_table.data[items_table]
+
+    for _, v in ipairs(rows) do
+        for _, vv in ipairs(v) do
+            Gui.destroy_if_valid(vv)
+        end
+    end
+  
+    for name, vnc in pairs(display_data) do
+        local r = {}
+        r[1] = Elements.stat_label(stats_table, {
+            "?",
+            {
+                "",
+                format_string(
+                    "[img=entity/%s]",
+                    name
+                ),
+                prototypes.entity[name].localised_name,
+                format_string(
+                    " [%s]",
+                    quality
+                )
+            },
+            format_string(
+                "%s [%s]",
+                name,
+                quality
+            )
+            }, 
+            ""
+        )
+        r[2] = Elements.stat_bar(stats_table)
+
+        rows[#rows + 1] = r
+    end
+
+    --[[
+
     for name, stat_bar in pairs(Elements.items_table.data[items_table]) do
         Elements.stat_bar.refresh(stat_bar, display_data[name])
-    end
+    end    
+    ]]
 end
 
 --- @param controls LuaGuiElement
@@ -363,7 +353,7 @@ function Elements.refresh_online()
         end
 
         for _, items_table in Elements.items_table:online_elements() do
-            Elements.items_table.refresh(items_table, items_data)
+            Elements.items_table.rows_adjust(items_table, items_data)
         end
     end
 end
@@ -624,7 +614,7 @@ Elements.container = Gui.define("vlayer/container")
         local items_table = Elements.items_table(container)
         Elements.controls(container)
         Elements.stats_table.refresh(stats_table, Elements.stats_table.calculate_display_data(1))
-        Elements.items_table.refresh(items_table, Elements.items_table.calculate_display_data(1))
+        Elements.items_table.rows_adjust(items_table, Elements.items_table.calculate_display_data(1))
         return Gui.elements.container.get_root_element(container)
     end) --[[@as any]]
 
