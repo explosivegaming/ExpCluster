@@ -340,7 +340,7 @@ function Elements.change(event)
     end
 
     local ok, result = Elements.parse(event.text:lower())
-    label.font_color = ok and {0, 0, 0} or {1, 0, 0}
+    label.style.font_color = ok and {0, 0, 0} or {1, 0, 0}
     label.caption = ok
     and ("= " .. format_number(result, false))
     or (type(result) == "table" and result or {"", {"exp-gui_calculator.error"}, tostring(result)})
