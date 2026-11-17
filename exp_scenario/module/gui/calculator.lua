@@ -71,10 +71,6 @@ Elements.calculator_info_label = Gui.define("calculator/info_label")
         tooltip = {"exp-gui_calculator.info_tooltip"},
         style = "heading_2_label",
     }
-    :style{
-        size = 32,
-        padding = 0,
-    }
 
 --- Input textfield
 Elements.calculator_input_textfield = Gui.define("calculator/input_textfield")
