@@ -67,7 +67,7 @@ end
 Elements.calculator_info_label = Gui.define("calculator/info_label")
     :draw{
         type = "label",
-        caption = {"exp-gui_calculator.info_caption"},
+        caption = {"exp-gui_calculator.caption"},
         name = "calculator_info_label",
     }
     :style{
