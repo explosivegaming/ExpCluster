@@ -316,12 +316,12 @@ function Elements.parse(expression)
         local value = parse_expr(1)
         skip_space()
 
-        if cursor <= #expression then
-            error({"", {"exp-gui_calculator.error"}, {"exp-gui_calculator.trailing", expression:sub(cursor, expression:len())}}, 0)
+        if value ~= value or value == math.huge or value == -math.huge then
+            error({"", {"exp-gui_calculator.error"}, value}, 0)
         end
 
-        if result ~= result or result == math.huge or result == -math.huge then
-            error({"", {"exp-gui_calculator.error"}, result}, 0)
+        if cursor <= #expression then
+            error({"", {"exp-gui_calculator.error"}, {"exp-gui_calculator.trailing", expression:sub(cursor, expression:len())}}, 0)
         end
 
         return value
