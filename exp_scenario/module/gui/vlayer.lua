@@ -166,13 +166,7 @@ Elements.items_table = Gui.define("vlayer/items_table")
     :draw(function(def, parent)
         --- @cast def ExpGui_Vlayer.elements.items_table
         local items_table = Gui.elements.scroll_table(parent, gui_width.main, 2, "items")
-        local item_bars = {}
-        for s=1, 4 do
-            Elements.items_dropdown(items_table, s)
-            Elements.stat_label(stats_table, stat.caption, stat.tooltip)
-            item_bars[s] = Elements.stat_bar(items_table)
-        end
-        def.data[items_table] = item_bars
+        def.data[items_table] = {}
         return items_table
     end) --[[@as any]]
 
