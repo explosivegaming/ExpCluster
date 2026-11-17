@@ -63,14 +63,6 @@ local function factorial(n)
     return result
 end
 
---- Function label
-Elements.calculator_function_label = Gui.define("calculator/function_label")
-    :draw{
-        type = "label",
-        caption = {"exp-gui_calculator.tooltip"},
-        style = "heading_2_label",
-    }
-
 --- Input textfield
 Elements.calculator_input_textfield = Gui.define("calculator/input_textfield")
     :draw{
@@ -102,8 +94,8 @@ Elements.calculator_info_label = Gui.define("calculator/info_label")
 Elements.container = Gui.define("calculator/container")
     :draw(function(def, parent)
         local screen_frame = Gui.elements.screen_frame(parent, nil, true)
+        Gui.elements.header(screen_frame, { caption = { "exp-gui_calculator.tooltip" } })
 
-        Elements.calculator_function_label(screen_frame)
         Elements.calculator_input_textfield(screen_frame)
         Elements.calculator_result_label(screen_frame)
         Elements.calculator_info_label(screen_frame)
