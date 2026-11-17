@@ -75,7 +75,9 @@ Elements.calculator_function_label = Gui.define("calculator/function_label")
 Elements.calculator_input_textfield = Gui.define("calculator/input_textfield")
     :draw{
         type = "textfield",
-        style = "console_input_textfield",
+        numeric = true,
+        allow_decimal = true,
+        allow_negative = true
     }
     :style{
         width = 400,
