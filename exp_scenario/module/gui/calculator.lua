@@ -74,15 +74,6 @@ Elements.calculator_info_label = Gui.define("calculator/info_label")
         single_line = false
     }
 
---- Container Info
-Elements.container_info = Gui.define("calculator/container_info")
-    :draw{function(def, parent)
-        local screen_frame = Gui.elements.screen_frame(parent, nil, true)
-        Gui.elements.header(screen_frame, { caption = { "exp-gui_calculator.info_tooltip" } })
-        Elements.calculator_info_label(screen_frame)
-        return Gui.elements.screen_frame.get_root_element(screen_frame)
-    end}
-
 --- Info button
 Elements.calculator_info_button = Gui.define("calculator/info_button")
     :draw{
@@ -93,8 +84,10 @@ Elements.calculator_info_button = Gui.define("calculator/info_button")
         name = "calculator_info_button",
     }
     :on_click(function(def, player)
-        Elements.container_info(player.gui.screen)
-    end) --[[@as any]]
+        for _, label in Elements.calculator_info_label:tracked_elements(player) do
+            label.visible = not label.visible
+        end
+    end)
 
 --- Input textfield
 Elements.calculator_input_textfield = Gui.define("calculator/input_textfield")
@@ -122,6 +115,7 @@ Elements.container = Gui.define("calculator/container")
         Elements.calculator_info_button(header)
         Elements.calculator_input_textfield(screen_frame)
         Elements.calculator_result_label(screen_frame)
+        Elements.calculator_info_label(screen_frame).visible = false
         return Gui.elements.screen_frame.get_root_element(screen_frame)
     end)
 
