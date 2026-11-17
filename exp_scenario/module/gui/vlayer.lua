@@ -166,6 +166,7 @@ Elements.items_table = Gui.define("vlayer/items_table")
     :draw(function(def, parent)
         --- @cast def ExpGui_Vlayer.elements.items_table
         local items_table = Gui.elements.scroll_table(parent, gui_width.main, 2, "items")
+        items_table.vertical_scroll_policy = "dont-show-but-allow-scrolling"
         def.data[items_table] = {}
         return items_table
     end) --[[@as any]]
