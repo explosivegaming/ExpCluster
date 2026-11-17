@@ -41,15 +41,11 @@ end
 --- Statistics shown as progress bars, in display order
 --- @type { name: string, caption: LocalisedString, tooltip: LocalisedString }[]
 local stats = {}
-for _, name in ipairs{ "production", "sustained", "capacity", "surface-area", "solar-panel", "accumulator" } do
+for _, name in ipairs{ "production", "sustained", "capacity", "surface-area" } do
     stats[#stats + 1] = {
         name = name,
-        caption = (name == "solar-panel" or name == "accumulator")
-            and { "", "[img=entity/" .. name .. "] ", prototypes.entity[name].localised_name }
-            or { "exp-gui_vlayer.caption-stat-" .. name },
-        tooltip = (name == "solar-panel" or name == "accumulator")
-            and { "", prototypes.entity[name].localised_description}
-            or { "exp-gui_vlayer.tooltip-stat-" .. name },
+        caption = { "exp-gui_vlayer.caption-stat-" .. name },
+        tooltip = { "exp-gui_vlayer.tooltip-stat-" .. name },
     }
 end
 
@@ -78,12 +74,19 @@ end
 --- @return BoundingBox
 local function expand_area(area)
     return {
-        left_top = { x = floor(area.left_top.x), y = floor(area.left_top.y) },
-        right_bottom = { x = ceil(area.right_bottom.x), y = ceil(area.right_bottom.y) },
+        left_top = {
+            x = floor(area.left_top.x),
+            y = floor(area.left_top.y)
+        },
+        right_bottom = {
+            x = ceil(area.right_bottom.x),
+            y = ceil(area.right_bottom.y)
+        },
     }
 end
 
 --- Rich text link to a position
+--- LuaEntity::gps_tag
 --- @param position MapPosition
 --- @param surface LuaSurface
 --- @return string
@@ -132,6 +135,53 @@ function Elements.stat_bar.refresh(stat_bar, display_data)
     stat_bar.caption = display_data.caption
 end
 
+--- Dropdown listing the items available in vlayer
+--- @class ExpGui_Vlayer.elements.items_dropdown: ExpElement
+--- @overload fun(parent: LuaGuiElement, controls: LuaGuiElement): LuaGuiElement
+Elements.items_dropdown = Gui.define("vlayer/items_dropdown")
+    :draw{
+        type = "drop-down",
+    }
+    :style{
+        width = gui_width.half,
+    }
+    :element_data{
+        controls = Gui.from_argument(1),
+    }
+
+--- Refresh the listed interfaces
+--- @param items_dropdown LuaGuiElement
+--- @param items table
+function Elements.items_dropdown.refresh(items_dropdown, items)
+    local item = {}
+    for name, qnc in pairs(items) do
+        for quality, count in pairs(qnc) do
+            n[quality] = count - (un and un[quality] or 0)
+            item[name .. quality] = {
+                "?",
+                {
+                    "",
+                    format_string(
+                        "[img=entity/%s]",
+                        name
+                    ),
+                    prototypes.entity[name].localised_name,
+                    format_string(
+                        " [%s]",
+                        quality
+                    )
+                },
+                format_string(
+                    "%s [%s]",
+                    name,
+                    quality
+                )
+            }
+        end
+    end
+    items_dropdown.items = item
+end
+
 --- Table of a label and bar for each statistic
 --- @class ExpGui_Vlayer.elements.stats_table: ExpElement
 --- @field data table<LuaGuiElement, table<string, LuaGuiElement>> Bars keyed by statistic name
@@ -150,13 +200,29 @@ Elements.stats_table = Gui.define("vlayer/stats_table")
         return stats_table
     end) --[[@as any]]
 
+--- Table of a dropdown and bar for each items
+--- @class ExpGui_Vlayer.elements.items_table: ExpElement
+--- @field data table<LuaGuiElement, table<string, LuaGuiElement>> Bars keyed by statistic name
+--- @overload fun(parent: LuaGuiElement): LuaGuiElement
+Elements.items_table = Gui.define("vlayer/items_table")
+    :track_all_elements()
+    :draw(function(def, parent)
+        --- @cast def ExpGui_Vlayer.elements.items_table
+        local items_table = Gui.elements.scroll_table(parent, gui_width.main, 2, "items")
+        local item_bars = {}
+        for s=1, 4 do
+            Elements.items_dropdown(items_table, s)
+            item_bars[s] = Elements.stat_bar(items_table)
+        end
+        def.data[items_table] = item_bars
+        return items_table
+    end) --[[@as any]]
+
 --- Calculate the display data of every statistic, the same for every player
 --- @param s_index number Surface index
 --- @return table<string, ExpGui_Vlayer.elements.stat_bar.display_data>
 function Elements.stats_table.calculate_display_data(s_index)
     local statistics = Vlayer.get_statistics(s_index)
-    local items = Vlayer.get_items(s_index)
-    local allocated = Vlayer.get_allocated_items(s_index)
     local energy_production = ceil(statistics.energy_production)
     local energy_max = ceil(statistics.energy_max)
     local energy_sustained = ceil(statistics.energy_sustained)
@@ -166,12 +232,7 @@ function Elements.stats_table.calculate_display_data(s_index)
     local sustained = limit_sustained / max(statistics.energy_total_production, 1)
     local capacity = statistics.energy_storage / max(statistics.energy_capacity, 1)
     local surface_area = statistics.remaining_surface_area / max(statistics.total_surface_area, 1)
-    local allocated_solar = allocated["solar-panel"] and allocated["solar-panel"][0] or 0
-    local items_solar = items["solar-panel"] and items["solar-panel"][0] or 0
-    local allocated_accu = allocated["accumulator"] and allocated["accumulator"][0] or 0
-    local items_accu = items["accumulator"] and items["accumulator"][0] or 0
-    local solar = allocated_solar / max(items_solar, 1)
-    local accu = allocated_accu / max(items_accu, 1)
+
     return {
         production = {
             value = production,
@@ -220,12 +281,30 @@ function Elements.stats_table.calculate_display_data(s_index)
                 surface_area * 100
             ),
         },
+    }
+end
+
+--- Calculate the display data of every statistic, the same for every player
+--- @param s_index number Surface index
+--- @return table<string, ExpGui_Vlayer.elements.stat_bar.display_data>
+function Elements.items_table.calculate_display_data(s_index)
+    local item = Vlayer.get_items(s_index)
+    local allocated = Vlayer.get_allocated_items(s_index)
+    local allocated_solar = allocated["solar-panel"] and allocated["solar-panel"][0] or 0
+    local item_solar = item["solar-panel"] and item["solar-panel"][0] or 0
+    local allocated_accu = allocated["accumulator"] and allocated["accumulator"][0] or 0
+    local item_accu = item["accumulator"] and item["accumulator"][0] or 0
+    local solar = allocated_solar / max(item_solar, 1)
+    local accu = allocated_accu / max(item_accu, 1)
+    Elements.items_dropdown.refresh(items_dropdown, item)
+
+    return {
         ["solar-panel"] = {
             value = solar,
             caption = format_string(
                 "%s / %s, %.1f %%",
                 format_number(allocated_solar, false),
-                format_number(items_solar, false),
+                format_number(item_solar, false),
                 solar * 100
             ),
         },
@@ -234,7 +313,7 @@ function Elements.stats_table.calculate_display_data(s_index)
             caption = format_string(
                 "%s / %s, %.1f %%",
                 format_number(allocated_accu, false),
-                format_number(items_accu, false),
+                format_number(item_accu, false),
                 accu * 100
             ),
         },
@@ -246,6 +325,15 @@ end
 --- @param display_data table<string, ExpGui_Vlayer.elements.stat_bar.display_data>
 function Elements.stats_table.refresh(stats_table, display_data)
     for name, stat_bar in pairs(Elements.stats_table.data[stats_table]) do
+        Elements.stat_bar.refresh(stat_bar, display_data[name])
+    end
+end
+
+--- Refresh every bar of a table
+--- @param items_table LuaGuiElement
+--- @param display_data table<string, ExpGui_Vlayer.elements.stat_bar.display_data>
+function Elements.items_table.refresh(items_table, display_data)
+    for name, stat_bar in pairs(Elements.items_table.data[items_table]) do
         Elements.stat_bar.refresh(stat_bar, display_data[name])
     end
 end
@@ -262,13 +350,20 @@ local function surface_index_from_element(controls)
 end
 
 --- Refresh the tables of every online player
-function Elements.stats_table.refresh_online()
+function Elements.refresh_online()
     for _, controls in Elements.controls:online_elements() do
         local surface = surface_index_from_element(controls)
         if surface == 0 then return end
-        local display_data = Elements.stats_table.calculate_display_data(surface)
+
+        local stats_data = Elements.stats_table.calculate_display_data(surface)
+        local items_data = Elements.items_table.calculate_display_data(surface)
+
         for _, stats_table in Elements.stats_table:online_elements() do
-            Elements.stats_table.refresh(stats_table, display_data)
+            Elements.stats_table.refresh(stats_table, stats_data)
+        end
+
+        for _, items_table in Elements.items_table:online_elements() do
+            Elements.items_table.refresh(items_table, items_data)
         end
     end
 end
@@ -455,8 +550,9 @@ Elements.controls = Gui.define("vlayer/controls")
         local surface_dropdown = Elements.surface_dropdown(controls, controls)
         local type_dropdown = Elements.type_dropdown(controls, controls)
         local interface_dropdown = Elements.interface_dropdown(controls, controls)
-        Elements.build_button(controls).visible = can_edit
-        Elements.remove_button(controls, controls).visible = can_edit
+
+        Elements.build_button(controls).enabled = can_edit
+        Elements.remove_button(controls, controls).enabled = can_edit
 
         def.data[controls] = {
             surface_dropdown = surface_dropdown,
@@ -511,10 +607,10 @@ end
 function Elements.controls.refresh_permissions(player)
     local can_edit = Roles.player_has_permission(player, "exp_scenario.gui.vlayer_edit")
     for _, build_button in Elements.build_button:tracked_elements(player) do
-        build_button.visible = can_edit
+        build_button.enabled = can_edit
     end
     for _, remove_button in Elements.remove_button:tracked_elements(player) do
-        remove_button.visible = can_edit
+        remove_button.enabled = can_edit
     end
 end
 
@@ -525,8 +621,10 @@ Elements.container = Gui.define("vlayer/container")
     :draw(function(_, parent)
         local container = Gui.elements.container(parent, gui_width.main)
         local stats_table = Elements.stats_table(container)
+        local items_table = Elements.items_table(container)
         Elements.controls(container)
         Elements.stats_table.refresh(stats_table, Elements.stats_table.calculate_display_data(1))
+        Elements.items_table.refresh(items_table, Elements.items_table.calculate_display_data(1))
         return Gui.elements.container.get_root_element(container)
     end) --[[@as any]]
 
@@ -630,6 +728,6 @@ return feature:guard{
         end,
     },
     on_nth_tick = {
-        [60] = Elements.stats_table.refresh_online,
+        [60] = Elements.refresh_online,
     }
 }
