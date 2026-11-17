@@ -92,7 +92,7 @@ Elements.calculator_info_button = Gui.define("calculator/info_button")
         tooltip = {"exp-gui_calculator.info_tooltip"},
         name = "calculator_info_button",
     }
-    :on_click(function(def, player, element, event)
+    :on_click(function(def, player)
         Elements.container_info(player.gui.screen)
     end) --[[@as any]]
 
