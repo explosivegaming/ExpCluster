@@ -84,7 +84,6 @@ Elements.container_info = Gui.define("calculator/container_info")
     end}
 
 --- Info button
---- @overload fun(parent: LuaGuiElement, screen: LuaGuiElement): LuaGuiElement
 Elements.calculator_info_button = Gui.define("calculator/info_button")
     :draw{
         type = "sprite-button",
@@ -93,11 +92,8 @@ Elements.calculator_info_button = Gui.define("calculator/info_button")
         tooltip = {"exp-gui_calculator.info_tooltip"},
         name = "calculator_info_button",
     }
-    :element_data(
-        Gui.from_argument(1)
-    )
     :on_click(function(def, player, element)
-        Elements.container(player.gui.screen)
+        Elements.container_info(player.gui.screen)
     end) --[[@as any]]
 
 --- Input textfield
