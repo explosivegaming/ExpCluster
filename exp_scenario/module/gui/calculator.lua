@@ -97,7 +97,7 @@ Elements.calculator_info_button = Gui.define("calculator/info_button")
         Gui.from_argument(1)
     )
     :on_click(function(def, player, element)
-        return Elements.calculator_info_frame
+        Elements.container(player.gui.screen)
     end) --[[@as any]]
 
 --- Input textfield
