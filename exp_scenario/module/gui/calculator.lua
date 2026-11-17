@@ -77,8 +77,8 @@ Elements.calculator_info_label = Gui.define("calculator/info_label")
 --- Container Info
 Elements.container_info = Gui.define("calculator/container_info")
     :draw{function(def, parent)
-        local screen_frame = Gui.elements.screen_frame(player, nil, true)
-        local header = Gui.elements.header(screen_frame, { caption = { "exp-gui_calculator.info_tooltip" } })
+        local screen_frame = Gui.elements.screen_frame(parent, nil, true)
+        Gui.elements.header(screen_frame, { caption = { "exp-gui_calculator.info_tooltip" } })
         Elements.calculator_info_label(screen_frame)
         return Gui.elements.screen_frame.get_root_element(screen_frame)
     end}
