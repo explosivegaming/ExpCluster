@@ -278,10 +278,25 @@ end
 --- @param display_data table<string, ExpGui_Vlayer.elements.stat_bar.display_data>
 function Elements.items_table.rows_adjust(items_table, display_data)
     local rows = Elements.rate_table.data[items_table]
+    local i_len = #items_table
+    local d_len = #display_data
+    local min_r = min(i_len, d_len)
 
-    for _, v in ipairs(rows) do
-        for _, vv in ipairs(v) do
-            Gui.destroy_if_valid(vv)
+    --[[
+    for name, stat_bar in pairs(Elements.items_table.data[items_table]) do
+        Elements.stat_bar.refresh(stat_bar, display_data[name])
+    end    
+    ]]
+
+    for i=1, min_r do
+        --rows[i][2]
+    end
+
+    if min_r < d_len then
+        for i=min_r, d_len do
+            for _, v in ipairs(rows[i]) do
+                Gui.destroy_if_valid(v)
+            end
         end
     end
   
@@ -313,13 +328,6 @@ function Elements.items_table.rows_adjust(items_table, display_data)
 
         rows[#rows + 1] = r
     end
-
-    --[[
-
-    for name, stat_bar in pairs(Elements.items_table.data[items_table]) do
-        Elements.stat_bar.refresh(stat_bar, display_data[name])
-    end    
-    ]]
 end
 
 --- @param controls LuaGuiElement
