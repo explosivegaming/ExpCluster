@@ -265,6 +265,7 @@ function Elements.stats_table.refresh(stats_table, display_data)
 
     if s_len == r_len and i_len == 0 then return end
 
+    -- refresh existing
     for i=s_len + 1, (s_len + i_len) < r_len and r_len or s_len + i_len do
         local r = rows[i]
         local disp = display_data.item[i - s_len]
@@ -279,6 +280,7 @@ function Elements.stats_table.refresh(stats_table, display_data)
         )
     end
 
+    -- destroy extra
     if (s_len + i_len) < r_len then
         for i=s_len + i_len + 1, r_len do
             local r = rows[i]
@@ -286,10 +288,11 @@ function Elements.stats_table.refresh(stats_table, display_data)
             Gui.destroy_if_valid(r[2])
         end
 
+    -- build extra
     else
         for i=r_len + 1, s_len + i_len do
             local r = {}
-            local disp = display_data[i - s_len]
+            local disp = display_data.item[i - s_len]
             r[1] = Elements.stat_label(
                 stats_table,
                 {
