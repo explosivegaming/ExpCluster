@@ -263,45 +263,33 @@ function Elements.stats_table.refresh(stats_table, display_data)
         )
     end
 
-    if (s_len + i_len) < r_len then
-        for i=1, i_len do
-            local r = rows[s_len + i]
-            local disp = display_data.item[i]
-            r[1].caption = format_string(
-                "%s [%s]",
-                disp.name,
-                disp.quality
-            )
-            Elements.stat_bar.refresh(
-                r[2],
-                disp
-            )
-        end
+    if s_len == r_len and i_len == 0 then return end
 
+    for i=s_len + 1, (s_len + i_len) < r_len and r_len or s_len + i_len do
+        local r = rows[i]
+        local disp = display_data.item[i - s_len]
+        r[1].caption = format_string(
+            "%s [%s]",
+            disp.name,
+            disp.quality
+        )
+        Elements.stat_bar.refresh(
+            r[2],
+            disp
+        )
+    end
+
+    if (s_len + i_len) < r_len then
         for i=s_len + i_len + 1, r_len do
             local r = rows[i]
             Gui.destroy_if_valid(r[1])
             Gui.destroy_if_valid(r[2])
         end
 
-    else   
-        for i=1, r_len - s_len do
-            local r = rows[s_len + i]
-            local disp = display_data.item[i]
-            r[1].caption = format_string(
-                "%s [%s]",
-                disp.name,
-                disp.quality
-            )
-            Elements.stat_bar.refresh(
-                r[2],
-                disp
-            )
-        end
-
-        for i=r_len - s_len + 1, s_len + i_len do
+    else
+        for i=r_len + 1, s_len + i_len do
             local r = {}
-            local disp = display_data[i]
+            local disp = display_data[i - s_len]
             r[1] = Elements.stat_label(
                 stats_table,
                 {
