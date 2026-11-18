@@ -119,10 +119,18 @@ Elements.stat_bar = Gui.define("vlayer/stat_bar")
     } --[[@as any]]
 
 --- @class ExpGui_Vlayer.elements.stat_bar.display_data
---- @field name string? Name of item
---- @field quality number? Quality level
 --- @field value number Fraction the bar is filled
 --- @field caption string
+
+--- @class ExpGui_Vlayer.elements.stat_bar.item_display_data
+--- @field name string Name of item
+--- @field quality number Quality level
+--- @field value number Fraction the bar is filled
+--- @field caption string
+
+--- @class ExpGui_Vlayer.elements.stats_table.display_data
+--- @field stat table<string, ExpGui_Vlayer.elements.stat_bar.display_data>
+--- @field item table<number, ExpGui_Vlayer.elements.stat_bar.item_display_data>
 
 --- Refresh a bar
 --- @param stat_bar LuaGuiElement
@@ -154,7 +162,7 @@ Elements.stats_table = Gui.define("vlayer/stats_table")
 
 --- Calculate the display data of every statistic, the same for every player
 --- @param surface_index number Surface index
---- @return table<string, table<string, ExpGui_Vlayer.elements.stat_bar.display_data>>
+--- @return ExpGui_Vlayer.elements.stats_table.display_data
 function Elements.stats_table.calculate_display_data(surface_index)
     local statistics = Vlayer.get_statistics(surface_index)
     local energy_production = ceil(statistics.energy_production)
@@ -249,7 +257,7 @@ end
 
 --- Refresh every bar of a table
 --- @param stats_table LuaGuiElement
---- @param display_data table<string, table<string, ExpGui_Vlayer.elements.stat_bar.display_data>>
+--- @param display_data ExpGui_Vlayer.elements.stats_table.display_data
 function Elements.stats_table.refresh(stats_table, display_data)
     local rows = Elements.stats_table.data[stats_table]
     local r_len = #rows
