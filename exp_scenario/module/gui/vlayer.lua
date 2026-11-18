@@ -141,12 +141,14 @@ Elements.stats_table = Gui.define("vlayer/stats_table")
     :draw(function(def, parent)
         --- @cast def ExpGui_Vlayer.elements.stats_table
         local stats_table = Gui.elements.scroll_table(parent, gui_width.main, 2, "stats")
-        local stat_bars = {}
-        for _, stat in ipairs(stats) do
-            Elements.stat_label(stats_table, stat.caption, stat.tooltip)
-            stat_bars[stat.name] = Elements.stat_bar(stats_table)
+        local s = {}
+        for i, stat in ipairs(stats) do
+            s[i] = {
+                [1] = Elements.stat_label(stats_table, stat.caption, stat.tooltip)
+                [2] = Elements.stat_bar(stats_table)
+            }
         end
-        def.data[stats_table] = stat_bars
+        def.data[stats_table] = s
         return stats_table
     end) --[[@as any]]
 
@@ -247,73 +249,88 @@ end
 
 --- Refresh every bar of a table
 --- @param stats_table LuaGuiElement
---- @param display_data table<string, ExpGui_Vlayer.elements.stat_bar.display_data>
+--- @param display_data table<string, table<string, ExpGui_Vlayer.elements.stat_bar.display_data>>
 function Elements.stats_table.refresh(stats_table, display_data)
     local rows = Elements.stats_table.data[stats_table]
+    local r_len = #rows
+    local s_len = #display_data.stat
+    local i_len = #display_data.item
 
-    for name, stat_bar in pairs(rows) do
-        Elements.stat_bar.refresh(stat_bar, display_data[name])
+    for i=1, s_len do
+        Elements.stat_bar.refresh(stat_bar, display_data.stat[stats[i].name])
     end
 
-    local i_len = #rows
-    local d_len = #display_data
-    local min_r = min(i_len, d_len)
-
-    if i_len < d_len then
-        for i=1, min_r do
-            local disp = display_data[i]
-            rows[i][1].caption = format_string(
+    if i_len < r_len then
+        for i=1, i_len do
+            local r = rows[r_len + i]
+            local disp = display_data.item[i]
+            r[1].caption = format_string(
                 "%s [%s]",
                 disp.name,
                 disp.quality
             )
-            Elements.stat_bar.refresh(rows[i][2], disp)
+            Elements.stat_bar.refresh(
+                r[2],
+                disp
+            )
         end
 
-        for i=min_r, d_len do
-            Gui.destroy_if_valid(rows[i][1])
-            Gui.destroy_if_valid(rows[i][2])
+        for i=i_len, r_len do
+            local r = rows[r_len + i]
+            Gui.destroy_if_valid(r[1])
+            Gui.destroy_if_valid(r[2])
         end
 
     else   
-        for i=1, min_r do
-            local disp = display_data[i]
-            rows[i][1].caption = format_string(
+        for i=1, r_len do
+            local r = rows[r_len + i]
+            local disp = display_data.item[i]
+            r[1].caption = format_string(
                 "%s [%s]",
                 disp.name,
                 disp.quality
             )
-            Elements.stat_bar.refresh(rows[i][2], disp)
+            Elements.stat_bar.refresh(
+                r[2],
+                disp
+            )
         end
 
-        for i=min_r, d_len do
+        for i=r_len, i_len do
             local r = {}
             local disp = display_data[i]
-            r[1] = Elements.stat_label(items_table, {
-                "?",
+            r[1] = Elements.stat_label(
+                items_table,
                 {
-                    "",
+                    "?",
+                    {
+                        "",
+                        format_string(
+                            "[img=entity/%s]",
+                            disp.name
+                        ),
+                        prototypes.entity[disp.name].localised_name,
+                        format_string(
+                            " [%s]",
+                            disp.quality
+                        )
+                    },
                     format_string(
-                        "[img=entity/%s]",
-                        disp.name
-                    ),
-                    prototypes.entity[disp.name].localised_name,
-                    format_string(
-                        " [%s]",
+                        "%s [%s]",
+                        disp.name,
                         disp.quality
                     )
-                },
-                format_string(
-                    "%s [%s]",
-                    disp.name,
-                    disp.quality
-                )
                 }, 
                 ""
             )
-            r[2] = Elements.stat_bar(items_table)
-            Elements.stat_bar.refresh(r[2], disp)
-            rows[i] = r
+            r[2] = Elements.stat_bar(
+                items_table
+            )
+            Elements.stat_bar.refresh(
+                r[2],
+                disp
+            )
+            rows[r_len + i] = r
         end
     end
 end
