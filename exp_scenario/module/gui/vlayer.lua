@@ -257,7 +257,10 @@ function Elements.stats_table.refresh(stats_table, display_data)
     local i_len = #display_data.item
 
     for i=1, s_len do
-        Elements.stat_bar.refresh(rows[i][2], display_data.stat[stats[i].name])
+        Elements.stat_bar.refresh(
+            rows[i][2],
+            display_data.stat[stats[i].name]
+        )
     end
 
     if i_len < r_len then
