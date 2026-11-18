@@ -142,7 +142,7 @@ end
 
 --- Table of a label and bar for each statistic
 --- @class ExpGui_Vlayer.elements.stats_table: ExpElement
---- @field data table<LuaGuiElement, table<string, LuaGuiElement>> Bars keyed by statistic name
+--- @field data table<LuaGuiElement, table<number, LuaGuiElement>> Bars keyed by statistic name
 --- @overload fun(parent: LuaGuiElement): LuaGuiElement
 Elements.stats_table = Gui.define("vlayer/stats_table")
     :track_all_elements()
