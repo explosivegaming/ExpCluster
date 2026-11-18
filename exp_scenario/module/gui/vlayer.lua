@@ -278,7 +278,7 @@ function Elements.stats_table.refresh(stats_table, display_data)
             )
         end
 
-        for i=i_len, r_len do
+        for i=i_len + 1, r_len do
             local r = rows[r_len + i]
             Gui.destroy_if_valid(r[1])
             Gui.destroy_if_valid(r[2])
@@ -299,7 +299,7 @@ function Elements.stats_table.refresh(stats_table, display_data)
             )
         end
 
-        for i=r_len, i_len do
+        for i=r_len + 1, i_len do
             local r = {}
             local disp = display_data[i]
             r[1] = Elements.stat_label(
