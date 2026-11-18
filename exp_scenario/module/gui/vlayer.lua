@@ -326,7 +326,7 @@ function Elements.stats_table.refresh(stats_table, display_data)
             [2] = Elements.stat_bar(
                 stats_table
             )
-        }
+        } --[[@as any]]
         Elements.stat_bar.refresh(
             rows[i][2],
             disp
