@@ -244,13 +244,16 @@ function Elements.items_table.calculate_display_data(s_index)
     local items = Vlayer.get_items(s_index)
     local allocated = Vlayer.get_allocated_items(s_index)
     local result = {}
+    local index = 1
 
     for name, qnc in pairs(items) do
         for quality, count in pairs(qnc) do
             local alloc = allocated[name] and allocated[name][quality] or 0
             local value = alloc / max(count, 1)
 
-            result[name .. quality] = {
+            result[index] = {
+                name = name,
+                quality = quality,
                 value = value,
                 caption = format_string(
                     "%s / %s, %.1f %%",
@@ -259,6 +262,8 @@ function Elements.items_table.calculate_display_data(s_index)
                     value * 100
                 ),
             }
+
+            index = index + 1
         end
     end
 
@@ -279,54 +284,64 @@ end
 --- @param display_data table<string, ExpGui_Vlayer.elements.stat_bar.display_data>
 function Elements.items_table.rows_adjust(items_table, display_data)
     local rows = Elements.items_table.data[items_table]
-    local i_len = #items_table
+    local i_len = #rows
     local d_len = #display_data
     local min_r = min(i_len, d_len)
 
-    --[[
-    for name, stat_bar in pairs(Elements.items_table.data[items_table]) do
-        Elements.stat_bar.refresh(stat_bar, display_data[name])
-    end    
-    ]]
-
-    if min_r < d_len then
-        for name, stat_bar in pairs(Elements.items_table.data[items_table]) do
-            Elements.stat_bar.refresh(stat_bar, display_data[name])
+    if i_len < d_len then
+        for i=1, min_r do
+            local disp = display_data[i]
+            rows[i][1].caption = format_string(
+                "%s [%s]",
+                disp.name,
+                disp.quality
+            )
+            Elements.stat_bar.refresh(rows[i][2], disp)
         end
 
         for i=min_r, d_len do
-            for _, v in ipairs(rows[i]) do
-                Gui.destroy_if_valid(v)
-            end
+            Gui.destroy_if_valid(rows[i][1])
+            Gui.destroy_if_valid(rows[i][2])
         end
-    else        
-        for name, vnc in pairs(display_data) do
+
+    else   
+        for i=1, min_r do
+            local disp = display_data[i]
+            rows[i][1].caption = format_string(
+                "%s [%s]",
+                disp.name,
+                disp.quality
+            )
+            Elements.stat_bar.refresh(rows[i][2], disp)
+        end
+
+        for i=min_r, d_len do
             local r = {}
+            local disp = display_data[i]
             r[1] = Elements.stat_label(items_table, {
                 "?",
                 {
                     "",
                     format_string(
                         "[img=entity/%s]",
-                        name
+                        disp.name
                     ),
                     prototypes.entity[name].localised_name,
                     format_string(
                         " [%s]",
-                        quality
+                        disp.quality
                     )
                 },
                 format_string(
                     "%s [%s]",
-                    name,
-                    quality
+                    disp.name,
+                    disp.quality
                 )
                 }, 
                 ""
             )
-            r[2] = Elements.stat_bar(items_table)
-
-            rows[#rows + 1] = r
+            r[2] = Elements.stat_bar(items_table, disp)
+            rows[i] = r
         end
     end
 end
