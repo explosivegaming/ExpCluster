@@ -288,7 +288,7 @@ function Elements.stats_table.refresh(stats_table, display_data)
     end
 
     -- destroy
-    for i=r_len, s_len + i_len do
+    for i=r_len, s_len + i_len + 1, -1 do
         local r = rows[i]
         Gui.destroy_if_valid(r[1])
         Gui.destroy_if_valid(r[2])
@@ -296,7 +296,7 @@ function Elements.stats_table.refresh(stats_table, display_data)
     end
 
     -- build
-    for i=max(s_len + i_len, r_len) + 1, s_len + i_len do
+    for i=r_len + 1, s_len + i_len do
         local disp = display_data.item[i - s_len]
         ---@diagnostic disable-next-line: missing-fields
         rows[i] = {
