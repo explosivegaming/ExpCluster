@@ -267,6 +267,7 @@ function Elements.stats_table.refresh(stats_table, display_data)
     for i=1, s_len do
         Elements.stat_bar.refresh(
             rows[i][2],
+            ---@diagnostic disable-next-line: need-check-nil
             display_data.stat[stats[i].name]
         )
     end
