@@ -298,7 +298,7 @@ function Elements.stats_table.refresh(stats_table, display_data)
     -- build
     for i=max(s_len + i_len, r_len) + 1, s_len + i_len do
         local disp = display_data.item[i - s_len]
-        ---@diagnostic disable-next-line: need-check-nil
+        ---@diagnostic disable-next-line: missing-fields
         rows[i] = {
             [1] = Elements.stat_label(
                 stats_table,
