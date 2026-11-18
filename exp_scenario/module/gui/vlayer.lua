@@ -89,15 +89,6 @@ local function expand_area(area)
     }
 end
 
---- Rich text link to a position
---- LuaEntity::gps_tag
---- @param position MapPosition
---- @param surface LuaSurface
---- @return string
-local function gps_string(position, surface)
-    return format_string("[gps=%.1f,%.1f,%s]", position.x, position.y, surface.name)
-end
-
 --- Label naming a statistic
 --- @class ExpGui_Vlayer.elements.stat_label: ExpElement
 --- @overload fun(parent: LuaGuiElement, caption: LocalisedString, tooltip: LocalisedString): LuaGuiElement
@@ -258,11 +249,12 @@ end
 --- @param stats_table LuaGuiElement
 --- @param display_data table<string, ExpGui_Vlayer.elements.stat_bar.display_data>
 function Elements.stats_table.refresh(stats_table, display_data)
-    for name, stat_bar in pairs(Elements.stats_table.data[stats_table]) do
+    local rows = Elements.stats_table.data[stats_table]
+
+    for name, stat_bar in pairs(rows) do
         Elements.stat_bar.refresh(stat_bar, display_data[name])
     end
 
-    local rows = Elements.stats_table.data[stats_table]
     local i_len = #rows
     local d_len = #display_data
     local min_r = min(i_len, d_len)
@@ -435,7 +427,7 @@ Elements.interface_dropdown = Gui.define("vlayer/interface_dropdown")
         local interface_type, interface = Elements.controls.get_selected_interface(controls)
         if not interface then return end
         player.set_controller{ type = defines.controllers.remote, position = interface.position, surface = interface.surface }
-        player.print{ "exp-gui_vlayer.message-located", type_captions[interface_type], gps_string(interface.position, interface.surface) }
+        player.print{ "exp-gui_vlayer.message-located", type_captions[interface_type], interface.gps_tag }
     end) --[[@as any]]
 
 --- Refresh the listed interfaces
@@ -507,9 +499,9 @@ Elements.remove_button = Gui.define("vlayer/remove_button")
         local controls = def.data[remove_button].controls
         local _, interface = Elements.controls.get_selected_interface(controls)
         if not interface then return end
-        local position, surface = interface.position, interface.surface
+        local gps_tag = interface.gps_tag
         local interface_type = Vlayer.remove_interface(interface)
-        game.print{ "exp-gui_vlayer.message-removed", player.name, type_captions[interface_type], gps_string(position, surface) }
+        game.print{ "exp-gui_vlayer.message-removed", player.name, type_captions[interface_type], gps_tag }
         Elements.controls.refresh_interfaces_online()
     end) --[[@as any]]
 
@@ -655,6 +647,7 @@ local function on_area_selected(event)
     end
 
     local position = marker.position
+    local gps_tag = marker.gps_tag
     marker.destroy()
 
     if interface_type == "energy" then
@@ -671,7 +664,7 @@ local function on_area_selected(event)
         Vlayer.create_output_interface(surface, position, player)
     end
 
-    game.print{ "exp-gui_vlayer.message-built", player.name, type_captions[interface_type], gps_string(position, surface) }
+    game.print{ "exp-gui_vlayer.message-built", player.name, type_captions[interface_type], gps_tag }
     Elements.controls.refresh_interfaces_online()
 end
 
