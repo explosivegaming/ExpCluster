@@ -313,7 +313,7 @@ function Elements.stats_table.refresh(stats_table, display_data)
                     )
                 }, 
                 ""
-            )
+            ),
             [2] = Elements.stat_bar(
                 stats_table
             )
