@@ -172,10 +172,10 @@ Elements.items_table = Gui.define("vlayer/items_table")
     end) --[[@as any]]
 
 --- Calculate the display data of every statistic, the same for every player
---- @param s_index number Surface index
+--- @param surface_index number Surface index
 --- @return table<string, ExpGui_Vlayer.elements.stat_bar.display_data>
-function Elements.stats_table.calculate_display_data(s_index)
-    local statistics = Vlayer.get_statistics(s_index)
+function Elements.stats_table.calculate_display_data(surface_index)
+    local statistics = Vlayer.get_statistics(surface_index)
     local energy_production = ceil(statistics.energy_production)
     local energy_max = ceil(statistics.energy_max)
     local energy_sustained = ceil(statistics.energy_sustained)
@@ -238,11 +238,11 @@ function Elements.stats_table.calculate_display_data(s_index)
 end
 
 --- Calculate the display data of every item, the same for every player
---- @param s_index number Surface index
+--- @param surface_index number Surface index
 --- @return table<string, ExpGui_Vlayer.elements.stat_bar.display_data>
-function Elements.items_table.calculate_display_data(s_index)
-    local items = Vlayer.get_items(s_index)
-    local allocated = Vlayer.get_allocated_items(s_index)
+function Elements.items_table.calculate_display_data(surface_index)
+    local items = Vlayer.get_items(surface_index)
+    local allocated = Vlayer.get_allocated_items(surface_index)
     local result = {}
     local index = 1
 
@@ -326,7 +326,7 @@ function Elements.items_table.rows_adjust(items_table, display_data)
                         "[img=entity/%s]",
                         disp.name
                     ),
-                    prototypes.entity[name].localised_name,
+                    prototypes.entity[disp.name].localised_name,
                     format_string(
                         " [%s]",
                         disp.quality
@@ -340,7 +340,8 @@ function Elements.items_table.rows_adjust(items_table, display_data)
                 }, 
                 ""
             )
-            r[2] = Elements.stat_bar(items_table, disp)
+            r[2] = Elements.stat_bar(items_table)
+            Elements.stat_bar.refresh(r[2], disp)
             rows[i] = r
         end
     end
