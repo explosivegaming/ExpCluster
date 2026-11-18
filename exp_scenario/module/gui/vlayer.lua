@@ -263,10 +263,8 @@ function Elements.stats_table.refresh(stats_table, display_data)
         )
     end
 
-    if s_len == r_len and i_len == 0 then return end
-
     -- refresh existing
-    for i=s_len + 1, (s_len + i_len) < r_len and r_len or s_len + i_len do
+    for i=s_len + 1, min(s_len + i_len, r_len) do
         local r = rows[i]
         local disp = display_data.item[i - s_len]
         r[1].caption = format_string(
@@ -280,20 +278,19 @@ function Elements.stats_table.refresh(stats_table, display_data)
         )
     end
 
-    -- destroy extra
-    if (s_len + i_len) < r_len then
-        for i=s_len + i_len + 1, r_len do
-            local r = rows[i]
-            Gui.destroy_if_valid(r[1])
-            Gui.destroy_if_valid(r[2])
-        end
+    -- destroy
+    for i=r_len, s_len + i_len do
+        local r = rows[i]
+        Gui.destroy_if_valid(r[1])
+        Gui.destroy_if_valid(r[2])
+        rows[i] = nil
+    end
 
-    -- build extra
-    else
-        for i=r_len + 1, s_len + i_len do
-            local r = {}
-            local disp = display_data.item[i - s_len]
-            r[1] = Elements.stat_label(
+    -- build
+    for i=max(s_len + i_len, r_len) + 1, s_len + i_len do
+        local disp = display_data.item[i - s_len]
+        rows[i] = {
+            [1] = Elements.stat_label(
                 stats_table,
                 {
                     "?",
@@ -317,15 +314,14 @@ function Elements.stats_table.refresh(stats_table, display_data)
                 }, 
                 ""
             )
-            r[2] = Elements.stat_bar(
+            [2] = Elements.stat_bar(
                 stats_table
             )
-            Elements.stat_bar.refresh(
-                r[2],
-                disp
-            )
-            rows[i] = r
-        end
+        }
+        Elements.stat_bar.refresh(
+            rows[i][2],
+            disp
+        )
     end
 end
 
