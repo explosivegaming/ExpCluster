@@ -144,7 +144,7 @@ Elements.stats_table = Gui.define("vlayer/stats_table")
         local s = {}
         for i, stat in ipairs(stats) do
             s[i] = {
-                [1] = Elements.stat_label(stats_table, stat.caption, stat.tooltip)
+                [1] = Elements.stat_label(stats_table, stat.caption, stat.tooltip),
                 [2] = Elements.stat_bar(stats_table)
             }
         end
