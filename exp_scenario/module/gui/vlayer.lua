@@ -128,6 +128,8 @@ Elements.stat_bar = Gui.define("vlayer/stat_bar")
     } --[[@as any]]
 
 --- @class ExpGui_Vlayer.elements.stat_bar.display_data
+--- @field name string? Name of item
+--- @field quality number? Quality level
 --- @field value number Fraction the bar is filled
 --- @field caption string
 
@@ -157,23 +159,9 @@ Elements.stats_table = Gui.define("vlayer/stats_table")
         return stats_table
     end) --[[@as any]]
 
---- Table of a dropdown and bar for each items
---- @class ExpGui_Vlayer.elements.items_table: ExpElement
---- @field data table<LuaGuiElement, table<string, LuaGuiElement>> Bars keyed by statistic name
---- @overload fun(parent: LuaGuiElement): LuaGuiElement
-Elements.items_table = Gui.define("vlayer/items_table")
-    :track_all_elements()
-    :draw(function(def, parent)
-        --- @cast def ExpGui_Vlayer.elements.items_table
-        local items_table = Gui.elements.scroll_table(parent, gui_width.main, 2, "items")
-        items_table.vertical_scroll_policy = "dont-show-but-allow-scrolling"
-        def.data[items_table] = {}
-        return items_table
-    end) --[[@as any]]
-
 --- Calculate the display data of every statistic, the same for every player
 --- @param surface_index number Surface index
---- @return table<string, ExpGui_Vlayer.elements.stat_bar.display_data>
+--- @return table<string, table<string, ExpGui_Vlayer.elements.stat_bar.display_data>>
 function Elements.stats_table.calculate_display_data(surface_index)
     local statistics = Vlayer.get_statistics(surface_index)
     local energy_production = ceil(statistics.energy_production)
@@ -186,67 +174,6 @@ function Elements.stats_table.calculate_display_data(surface_index)
     local capacity = statistics.energy_storage / max(statistics.energy_capacity, 1)
     local surface_area = statistics.remaining_surface_area / max(statistics.total_surface_area, 1)
 
-    return {
-        production = {
-            value = production,
-            caption = format_string(
-                "%s / %s, %.1f %%",
-                statistics.energy_input_limit < energy_production
-                and format_string(
-                    "%s (%s)",
-                    format_energy(energy_production, "W"),
-                    format_energy(limit_production, "W")
-                )
-                or format_energy(energy_production, "W"),
-                format_energy(energy_max, "W"),
-                production * 100
-            ),
-        },
-        sustained = {
-            value = sustained,
-            caption = format_string(
-                "%s / %s, %.1f %%",
-                statistics.energy_input_limit < energy_sustained
-                and format_string(
-                    "%s (%s)",
-                    format_energy(energy_sustained, "W"),
-                    format_energy(limit_sustained, "W")
-                )
-                or format_energy(energy_sustained, "W"),
-                format_energy(energy_max, "W"),
-                sustained * 100
-            ),
-        },
-        capacity = {
-            value = capacity,
-            caption = format_string(
-                "%s / %s, %.1f %%",
-                format_energy(statistics.energy_storage, "J"),
-                format_energy(statistics.energy_capacity, "J"),
-                capacity * 100
-            ),
-        },
-        ["surface-area"] = {
-            value = min(max(surface_area / 0.1, 0), 1),
-            caption = format_string(
-                "%s, %.1f %%",
-                format_number(statistics.remaining_surface_area, false),
-                surface_area * 100
-            ),
-        },
-    }
-end
-
---- @class ExpGui_Vlayer.elements.stat_bar.item_data
---- @field name string Name of item
---- @field quality number Quality level
---- @field value number Fraction the bar is filled
---- @field caption string
-
---- Calculate the display data of every item, the same for every player
---- @param surface_index number Surface index
---- @return table<string, ExpGui_Vlayer.elements.stat_bar.item_data>
-function Elements.items_table.calculate_display_data(surface_index)
     local items = Vlayer.get_items(surface_index)
     local allocated = Vlayer.get_allocated_items(surface_index)
     local result = {}
@@ -273,7 +200,58 @@ function Elements.items_table.calculate_display_data(surface_index)
         end
     end
 
-    return result
+    return {
+        stat = {
+            production = {
+                value = production,
+                caption = format_string(
+                    "%s / %s, %.1f %%",
+                    statistics.energy_input_limit < energy_production
+                    and format_string(
+                        "%s (%s)",
+                        format_energy(energy_production, "W"),
+                        format_energy(limit_production, "W")
+                    )
+                    or format_energy(energy_production, "W"),
+                    format_energy(energy_max, "W"),
+                    production * 100
+                ),
+            },
+            sustained = {
+                value = sustained,
+                caption = format_string(
+                    "%s / %s, %.1f %%",
+                    statistics.energy_input_limit < energy_sustained
+                    and format_string(
+                        "%s (%s)",
+                        format_energy(energy_sustained, "W"),
+                        format_energy(limit_sustained, "W")
+                    )
+                    or format_energy(energy_sustained, "W"),
+                    format_energy(energy_max, "W"),
+                    sustained * 100
+                ),
+            },
+            capacity = {
+                value = capacity,
+                caption = format_string(
+                    "%s / %s, %.1f %%",
+                    format_energy(statistics.energy_storage, "J"),
+                    format_energy(statistics.energy_capacity, "J"),
+                    capacity * 100
+                ),
+            },
+            ["surface-area"] = {
+                value = min(max(surface_area / 0.1, 0), 1),
+                caption = format_string(
+                    "%s, %.1f %%",
+                    format_number(statistics.remaining_surface_area, false),
+                    surface_area * 100
+                ),
+            }
+        },
+        item = result
+    }
 end
 
 --- Refresh every bar of a table
@@ -283,13 +261,8 @@ function Elements.stats_table.refresh(stats_table, display_data)
     for name, stat_bar in pairs(Elements.stats_table.data[stats_table]) do
         Elements.stat_bar.refresh(stat_bar, display_data[name])
     end
-end
 
---- Refresh every bar of a table
---- @param items_table LuaGuiElement
---- @param display_data table<string, ExpGui_Vlayer.elements.stat_bar.item_data>
-function Elements.items_table.rows_adjust(items_table, display_data)
-    local rows = Elements.items_table.data[items_table]
+    local rows = Elements.stats_table.data[stats_table]
     local i_len = #rows
     local d_len = #display_data
     local min_r = min(i_len, d_len)
@@ -371,14 +344,9 @@ function Elements.refresh_online()
         if surface == 0 then return end
 
         local stats_data = Elements.stats_table.calculate_display_data(surface)
-        local items_data = Elements.items_table.calculate_display_data(surface)
 
         for _, stats_table in Elements.stats_table:online_elements() do
             Elements.stats_table.refresh(stats_table, stats_data)
-        end
-
-        for _, items_table in Elements.items_table:online_elements() do
-            Elements.items_table.rows_adjust(items_table, items_data)
         end
     end
 end
@@ -636,10 +604,8 @@ Elements.container = Gui.define("vlayer/container")
     :draw(function(_, parent)
         local container = Gui.elements.container(parent, gui_width.main)
         local stats_table = Elements.stats_table(container)
-        local items_table = Elements.items_table(container)
         Elements.controls(container)
         Elements.stats_table.refresh(stats_table, Elements.stats_table.calculate_display_data(1))
-        Elements.items_table.rows_adjust(items_table, Elements.items_table.calculate_display_data(1))
         return Gui.elements.container.get_root_element(container)
     end) --[[@as any]]
 
