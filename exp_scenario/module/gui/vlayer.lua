@@ -237,9 +237,15 @@ function Elements.stats_table.calculate_display_data(surface_index)
     }
 end
 
+--- @class ExpGui_Vlayer.elements.stat_bar.item_data
+--- @field name string Name of item
+--- @field quality number Quality level
+--- @field value number Fraction the bar is filled
+--- @field caption string
+
 --- Calculate the display data of every item, the same for every player
 --- @param surface_index number Surface index
---- @return table<string, ExpGui_Vlayer.elements.stat_bar.display_data>
+--- @return table<string, ExpGui_Vlayer.elements.stat_bar.item_data>
 function Elements.items_table.calculate_display_data(surface_index)
     local items = Vlayer.get_items(surface_index)
     local allocated = Vlayer.get_allocated_items(surface_index)
@@ -281,7 +287,7 @@ end
 
 --- Refresh every bar of a table
 --- @param items_table LuaGuiElement
---- @param display_data table<string, ExpGui_Vlayer.elements.stat_bar.display_data>
+--- @param display_data table<string, ExpGui_Vlayer.elements.stat_bar.item_data>
 function Elements.items_table.rows_adjust(items_table, display_data)
     local rows = Elements.items_table.data[items_table]
     local i_len = #rows
