@@ -278,7 +278,7 @@ end
 --- @param items_table LuaGuiElement
 --- @param display_data table<string, ExpGui_Vlayer.elements.stat_bar.display_data>
 function Elements.items_table.rows_adjust(items_table, display_data)
-    local rows = Elements.rate_table.data[items_table]
+    local rows = Elements.items_table.data[items_table]
     local i_len = #items_table
     local d_len = #display_data
     local min_r = min(i_len, d_len)
@@ -302,7 +302,7 @@ function Elements.items_table.rows_adjust(items_table, display_data)
     else        
         for name, vnc in pairs(display_data) do
             local r = {}
-            r[1] = Elements.stat_label(stats_table, {
+            r[1] = Elements.stat_label(items_table, {
                 "?",
                 {
                     "",
@@ -324,7 +324,7 @@ function Elements.items_table.rows_adjust(items_table, display_data)
                 }, 
                 ""
             )
-            r[2] = Elements.stat_bar(stats_table)
+            r[2] = Elements.stat_bar(items_table)
 
             rows[#rows + 1] = r
         end
