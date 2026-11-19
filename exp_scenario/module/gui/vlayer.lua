@@ -264,6 +264,7 @@ function Elements.stats_table.refresh(stats_table, display_data)
     local rows = Elements.stats_table.data[stats_table]
     local r_len = #rows
     local i_len = #display_data.item
+    local s_i = s_len + i_len
 
     for i=1, s_len do
         Elements.stat_bar.refresh(
@@ -274,7 +275,7 @@ function Elements.stats_table.refresh(stats_table, display_data)
     end
 
     -- refresh existing
-    for i=s_len + 1, min(s_len + i_len, r_len) do
+    for i=s_len + 1, min(s_i, r_len) do
         local r = rows[i]
         local disp = display_data.item[i - s_len]
         r[1].caption = format_string(
@@ -288,53 +289,56 @@ function Elements.stats_table.refresh(stats_table, display_data)
         )
     end
 
-    -- destroy
-    for i=s_len + i_len, r_len + 1, -1 do
-        local r = rows[i]
-        if r then
-            Gui.destroy_if_valid(r[1])
-            Gui.destroy_if_valid(r[2])
-            rows[i] = nil
+    if s_i > r_len then
+        -- destroy
+        for i=s_i, r_len + 1, -1 do
+            local r = rows[i]
+            if r then
+                Gui.destroy_if_valid(r[1])
+                Gui.destroy_if_valid(r[2])
+                rows[i] = nil
+            end
         end
-    end
 
-    -- build
-    for i=max(s_len + i_len, r_len) + 1, s_len + i_len do
-        local disp = display_data.item[i - s_len]
-        ---@diagnostic disable-next-line: missing-fields
-        rows[i] = {
-            [1] = Elements.stat_label(
-                stats_table,
-                {
-                    "?",
+    else
+        -- build
+        for i=r_len + 1, s_i do
+            local disp = display_data.item[i - s_len]
+            ---@diagnostic disable-next-line: missing-fields
+            rows[i] = {
+                [1] = Elements.stat_label(
+                    stats_table,
                     {
-                        "",
+                        "?",
+                        {
+                            "",
+                            format_string(
+                                "[img=entity/%s]",
+                                disp.name
+                            ),
+                            prototypes.entity[disp.name].localised_name,
+                            format_string(
+                                " [%s]",
+                                disp.quality
+                            )
+                        },
                         format_string(
-                            "[img=entity/%s]",
-                            disp.name
-                        ),
-                        prototypes.entity[disp.name].localised_name,
-                        format_string(
-                            " [%s]",
+                            "%s [%s]",
+                            disp.name,
                             disp.quality
                         )
-                    },
-                    format_string(
-                        "%s [%s]",
-                        disp.name,
-                        disp.quality
-                    )
-                }, 
-                ""
-            ),
-            [2] = Elements.stat_bar(
-                stats_table
+                    }, 
+                    ""
+                ),
+                [2] = Elements.stat_bar(
+                    stats_table
+                )
+            }
+            Elements.stat_bar.refresh(
+                rows[i][2],
+                disp
             )
-        }
-        Elements.stat_bar.refresh(
-            rows[i][2],
-            disp
-        )
+        end
     end
 end
 
