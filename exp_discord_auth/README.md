@@ -53,3 +53,21 @@ ExpDiscordAuth.link(player, code)
 ExpDiscordAuth.unlink(player)
 ExpDiscordAuth.get_linked(player) -- Prints the Discord account the player is linked to
 ```
+
+## Other plugins
+
+Controller plugins can read links and react to them. Import the plugin class from the controller entrypoint and look it up with the controller.
+
+```ts
+import { ControllerPlugin as DiscordAuth } from "@expcluster/discord-auth/dist/node/controller.js";
+
+const discordAuth = DiscordAuth.get(controller); // undefined if exp_discord_auth is not loaded
+discordAuth.getLink("Player1"); // { id, name } of the Discord account, or undefined
+discordAuth.getAccount(discordId); // { id, name, playerNames }, or undefined
+discordAuth.getAccounts(); // every linked Discord account
+
+discordAuth.hooks.linked.attach("my_plugin", (playerName, discordUser) => { /* ... */ });
+discordAuth.hooks.unlinked.attach("my_plugin", (playerName, discordUser) => { /* ... */ });
+```
+
+Moving a player to another Discord account calls `unlinked` for the old account and then `linked` for the new one. A Factorio account is linked to at most one Discord account. Add `@expcluster/discord-auth` as a dependency and a `references` entry for its `tsconfig.node.json`.
