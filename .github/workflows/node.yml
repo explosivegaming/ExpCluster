@@ -38,6 +38,8 @@ jobs:
         run: pnpm install --no-frozen-lockfile
       - name: Run tests
         run: pnpm --filter "@expcluster/*" run test
+      - name: Run script tests
+        run: node --test test/*.test.js
       - name: Run reference checks
         run: |
           # pnpm install runs prepare in dependency order, which hides missing

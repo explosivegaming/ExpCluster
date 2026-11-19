@@ -14,6 +14,8 @@ const codeLength = 6;
 const codeLetters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 type DiscordUser = { id: string, name: string };
+/** A Discord account and the players linked to it, as given to other plugins. */
+export type DiscordAccount = DiscordUser & { playerNames: string[] };
 type Session = DiscordUser & { expiresMs: number, code?: string };
 type LinkCode = { sessionId: string, expiresMs: number };
 type WebLink = { playerName: string, expiresMs: number };
@@ -41,7 +43,22 @@ function randomCode() {
 	return code;
 }
 
+export class DiscordAuthHooks extends lib.AsyncHookCollection {
+	/** A player was linked to a Discord account. */
+	readonly linked = this.newHook<[playerName: string, discordUser: DiscordUser]>();
+	/** A player was unlinked from a Discord account, also when the link moves to another account. */
+	readonly unlinked = this.newHook<[playerName: string, discordUser: DiscordUser]>();
+}
+
+const loaded = new WeakMap<Controller, ControllerPlugin>();
+
 export class ControllerPlugin {
+	/** The plugin loaded on a controller, for other plugins to read links from. */
+	static get(controller: Controller) {
+		return loaded.get(controller);
+	}
+
+	hooks: DiscordAuthHooks;
 	/** Logins which have been through Discord, by session id */
 	sessions = new Map<string, Session>();
 	/** Codes waiting to be used in game, by code */
@@ -58,6 +75,7 @@ export class ControllerPlugin {
 		public name: string,
 		public accounts: lib.SubscribableDatastore<messages.DiscordAccountRecord>,
 	) {
+		this.hooks = new DiscordAuthHooks(logger);
 		controller.handle(messages.DiscordLinkRequest, this.handleLinkRequest.bind(this));
 		controller.handle(messages.DiscordUnlinkRequest, this.handleUnlinkRequest.bind(this));
 		controller.handle(messages.DiscordLinkGetRequest, this.handleLinkGetRequest.bind(this));
@@ -100,7 +118,9 @@ export class ControllerPlugin {
 			messages.DiscordAccountRecord.fromJSON.bind(messages.DiscordAccountRecord),
 		));
 
-		return new ControllerPlugin(controller, context.logger, context.plugin.name, accounts);
+		const plugin = new ControllerPlugin(controller, context.logger, context.plugin.name, accounts);
+		loaded.set(controller, plugin);
+		return plugin;
 	}
 
 	async onSave() {
@@ -352,6 +372,23 @@ export class ControllerPlugin {
 		Links
 	*/
 
+	/** The Discord account a player is linked to. */
+	getLink(playerName: string): DiscordUser | undefined {
+		const account = this.findAccount(playerName);
+		return account ? { id: account.id, name: account.name } : undefined;
+	}
+
+	getAccount(discordId: string): DiscordAccount | undefined {
+		const account = this.accounts.get(discordId);
+		return account ? { id: account.id, name: account.name, playerNames: [...account.factorioNames] } : undefined;
+	}
+
+	getAccounts(): DiscordAccount[] {
+		return [...this.accounts.values()].map(
+			account => ({ id: account.id, name: account.name, playerNames: [...account.factorioNames] })
+		);
+	}
+
 	findAccount(playerName: string) {
 		const name = playerName.toLowerCase();
 		for (const account of this.accounts.values()) {
@@ -371,13 +408,16 @@ export class ControllerPlugin {
 
 		const account = this.accounts.getMutable(found.id)!;
 		const name = playerName.toLowerCase();
+		const removed = account.factorioNames.find(linked => linked.toLowerCase() === name)!;
 		account.factorioNames = account.factorioNames.filter(linked => linked.toLowerCase() !== name);
 		if (account.factorioNames.length) {
 			this.accounts.set(account);
 		} else {
 			this.accounts.delete(account);
 		}
-		return { id: account.id, name: account.name };
+		const discordUser = { id: account.id, name: account.name };
+		void this.hooks.unlinked.invoke(removed, { ...discordUser });
+		return discordUser;
 	}
 
 	async handleLinkRequest(request: messages.DiscordLinkRequest) {
@@ -415,6 +455,7 @@ export class ControllerPlugin {
 			account.name = discordUser.name;
 			account.factorioNames = [...account.factorioNames, playerName];
 			this.accounts.set(account);
+			void this.hooks.linked.invoke(playerName, { id: discordUser.id, name: discordUser.name });
 		}
 		return { id: discordUser.id, name: discordUser.name };
 	}
