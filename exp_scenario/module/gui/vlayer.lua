@@ -289,7 +289,7 @@ function Elements.stats_table.refresh(stats_table, display_data)
     end
 
     -- destroy
-    for i=s_len + i_len, r_len, -1 do
+    for i=s_len + i_len, r_len + 1, -1 do
         local r = rows[i]
         Gui.destroy_if_valid(r[1])
         Gui.destroy_if_valid(r[2])
