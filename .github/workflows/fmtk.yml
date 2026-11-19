@@ -90,5 +90,5 @@ jobs:
           elif [[ $(jq '[.[].diagnostics[]] | length' check.json) -gt 0 ]] ; then
             exit 1
           else
-            echo "✅ All checks succeeded!" | tee "$GITHUB_STEP_SUMMARY"
+            echo "✅ All checks succeeded!" | tee -a "$GITHUB_STEP_SUMMARY"
           fi
