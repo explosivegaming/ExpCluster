@@ -262,22 +262,24 @@ end
 --- @param display_data ExpGui_Vlayer.elements.stats_table.display_data
 function Elements.stats_table.refresh(stats_table, display_data)
     local rows = Elements.stats_table.data[stats_table]
+    local disp_stat = display_data.stat
+    local disp_item = display_data.item
     local r_len = #rows
-    local i_len = #display_data.item
+    local i_len = #disp_item
     local s_i = s_len + i_len
 
     for i=1, s_len do
         Elements.stat_bar.refresh(
             rows[i][2],
             ---@diagnostic disable-next-line: need-check-nil
-            display_data.stat[stats[i].name]
+            disp_stat[stats[i].name]
         )
     end
 
     -- refresh existing
     for i=s_len + 1, min(s_i, r_len) do
         local r = rows[i]
-        local disp = display_data.item[i - s_len]
+        local disp = disp_item[i - s_len]
         r[1].caption = format_string(
             "%s [%s]",
             disp.name,
@@ -303,7 +305,7 @@ function Elements.stats_table.refresh(stats_table, display_data)
     elseif s_i < r_len then
         -- build
         for i=r_len + 1, s_i do
-            local disp = display_data.item[i - s_len]
+            local disp = disp_item[i - s_len]
             ---@diagnostic disable-next-line: missing-fields
             rows[i] = {
                 [1] = Elements.stat_label(
