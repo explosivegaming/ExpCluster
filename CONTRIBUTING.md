@@ -9,6 +9,7 @@ For developers wanting to add features please follow these guidelines:
 - Lua is checked with [emmylua](https://github.com/EmmyLuaLs/emmylua-analyzer-rust), configured by `.emmyrc.json`. Install the EmmyLua extension rather than sumnekolua / luals, and use factoriomod-debug to generate the factorio api types. Note that an inline cast must be written `--[[@as T]]`, the spaced form is not parsed.
 - Changes should be made on your own fork and merged into `main` through a pull request.
 - Each pull request should be limited to one feature or a few bug fixes and link to the related issue page.
+- Fill in the Changelog section of the pull request template, or replace its code block with `None.` and a reason. A CI check validates it and the release notes are built from it.
 - Pull requests are automatically linted, then built and tested against the latest clusterio `master`.
 - Pull requests are manually reviewed to maintain code and language quality.
 - New features should have the branch names: `feature/feature-name`
