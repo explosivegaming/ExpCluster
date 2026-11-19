@@ -282,6 +282,77 @@ t.test("linking from the user page", t2 => {
 	t2.end();
 });
 
+t.test("api for other plugins", t2 => {
+	/** Record every linked and unlinked hook call. */
+	function recordHooks(plugin) {
+		const calls = [];
+		plugin.hooks.linked.attach("test", (playerName, discordUser) => {
+			calls.push(["linked", playerName, discordUser]);
+		});
+		plugin.hooks.unlinked.attach("test", (playerName, discordUser) => {
+			calls.push(["unlinked", playerName, discordUser]);
+		});
+		return calls;
+	}
+
+	t2.test("static get() returns the plugin loaded on a controller", async t3 => {
+		const { plugin, controller } = await startPlugin(t3);
+		t3.equal(ControllerPlugin.get(controller), plugin);
+		const other = new Controller(logger, [], new lib.ControllerConfig("controller", {
+			"controller.database_directory": t3.testdir(),
+		}));
+		t3.equal(ControllerPlugin.get(other), undefined);
+	});
+
+	t2.test(".getLink(), .getAccount() and .getAccounts() read links", async t3 => {
+		const { plugin } = await startPlugin(t3);
+		const session = await discordLogin(plugin, alice);
+		await link(plugin, session, "Player1");
+		await link(plugin, session, "Player2");
+		await link(plugin, await discordLogin(plugin, bob), "Player3");
+
+		t3.same(plugin.getLink("player1"), alice);
+		t3.equal(plugin.getLink("Player4"), undefined);
+		t3.same(plugin.getAccount(alice.id), { ...alice, playerNames: ["Player1", "Player2"] });
+		t3.equal(plugin.getAccount("300"), undefined);
+		t3.same(plugin.getAccounts(), [
+			{ ...alice, playerNames: ["Player1", "Player2"] },
+			{ ...bob, playerNames: ["Player3"] },
+		]);
+
+		plugin.getAccount(alice.id).playerNames.push("Player4");
+		t3.same(plugin.getAccount(alice.id).playerNames, ["Player1", "Player2"], "returns copies");
+	});
+
+	t2.test("hooks fire on link, move and unlink", async t3 => {
+		const { plugin } = await startPlugin(t3);
+		const calls = recordHooks(plugin);
+		const aliceSession = await discordLogin(plugin, alice);
+		await link(plugin, aliceSession, "Player1");
+		await link(plugin, aliceSession, "player1");
+		await link(plugin, await discordLogin(plugin, bob), "Player1");
+		await plugin.handleUnlinkRequest(new messages.DiscordUnlinkRequest("player1"));
+		await plugin.handleUnlinkRequest(new messages.DiscordUnlinkRequest("Player1"));
+		t3.same(calls, [
+			["linked", "Player1", alice],
+			["unlinked", "Player1", alice],
+			["linked", "Player1", bob],
+			["unlinked", "Player1", bob],
+		]);
+	});
+
+	t2.test("hooks fire when linking from the user page", async t3 => {
+		const { plugin } = await startPlugin(t3);
+		const calls = recordHooks(plugin);
+		const ticket = await plugin.handleLinkStartRequest(new messages.DiscordLinkStartRequest("Player1"));
+		const state = new URL((await plugin.authorize(ticket)).redirect).searchParams.get("state");
+		plugin.fetchDiscordUser = async () => alice;
+		await plugin.callback({ code: "c", state }, state);
+		t3.same(calls, [["linked", "Player1", alice]]);
+	});
+	t2.end();
+});
+
 t.test("permissions", t2 => {
 	const user = (name, granted = []) => ({
 		name,

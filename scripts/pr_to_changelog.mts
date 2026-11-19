@@ -1,16 +1,26 @@
 import {
+	type Comparison,
 	type Release,
 	type Issue,
 	githubFetchJson,
 	githubFetchJsonPaginated,
+	githubFetchText,
 } from "./github_api.mts";
 
 type Changelog = Record<string, string[]>;
 
+type Statistics = {
+	commits: number,
+	pullRequests: number,
+	filesChanged: number,
+	lineAdditions: number,
+	lineDeletions: number,
+};
+
 const repository = "explosivegaming/ExpCluster";
 const branch = "main";
 
-const changelogSections = [
+export const changelogSections = [
 	"Major Features",
 	"Features",
 	"Fixes",
@@ -69,7 +79,7 @@ function extractPullRequestChangelog(
 {
 	const headerFail = skipToLine(parser, /^###? Changelog *$/);
 	if (headerFail) {
-		return [failure, , "Header not found"];
+		return [failure, , "\"### Changelog\" header not found"];
 	}
 	parser.pos += 1;
 	skipEmptyLines(parser);
@@ -87,10 +97,19 @@ function extractPullRequestChangelog(
 	if (blockEndFail) {
 		return [failure, , "End of code block not found after header"];
 	}
-	return [success, parser.lines.slice(blockStartPos, parser.pos)];
+	const lines = parser.lines.slice(blockStartPos, parser.pos);
+	if (!lines.some(line => line.trim() !== "")) {
+		return [failure, , "Code block is empty, replace it with \"None.\" if nothing applies"];
+	}
+	return [success, lines];
 }
 
-function parseChangelog(parser: ParserState, pr: Issue, issues: Issue[]): [Changelog, string[]] {
+/** Pass no issues to skip the checks that need the GitHub API. */
+function parseChangelog(
+	parser: ParserState,
+	pr?: Issue,
+	issues?: Issue[],
+): [Changelog, string[]] {
 	let section: string | undefined;
 	let changelog: Changelog = Object.create(null);
 	let warnings: string[] = [];
@@ -110,6 +129,10 @@ function parseChangelog(parser: ParserState, pr: Issue, issues: Issue[]): [Chang
 			changelog[section] = changelog[section] ?? [];
 			continue;
 		}
+		if (!section && /^None/i.test(line)) {
+			warnings.push(`"${line}" on line ${parser.pos} must replace the code block, not sit inside it`);
+			continue;
+		}
 		if (!section) {
 			warnings.push(`Unexpected content "${line}" outside of a changelog section on line ${parser.pos}`);
 			continue;
@@ -122,6 +145,9 @@ function parseChangelog(parser: ParserState, pr: Issue, issues: Issue[]): [Chang
 			let hasRef = false
 			for (const ref of entry.matchAll(/#(\d+)/g)) {
 				hasRef = true;
+				if (!issues || !pr) {
+					continue;
+				}
 				const id = Number.parseInt(ref[1], 10);
 				const refIssue = issues.find(issue => issue.number === id);
 				if (!refIssue) {
@@ -147,26 +173,34 @@ function parseChangelog(parser: ParserState, pr: Issue, issues: Issue[]): [Chang
 	return [changelog, warnings];
 }
 
+export function checkPullRequestBody(
+	body: string | null | undefined,
+	pr?: Issue,
+	issues?: Issue[],
+): { changelog: Changelog, error?: string, warnings: string[] } {
+	if (!body) {
+		return { changelog: Object.create(null), error: "Pull request has no body", warnings: [] };
+	}
+	const [
+		changelogFail,
+		changelogLines,
+		changelogFailReason
+	] = extractPullRequestChangelog(createParser(body.split(/\r?\n/)));
+	if (changelogFail) {
+		return { changelog: Object.create(null), error: changelogFailReason, warnings: [] };
+	}
+	const [changelog, warnings] = parseChangelog(createParser(changelogLines), pr, issues);
+	return { changelog, warnings };
+}
+
 function changelogFromPullRequests(pullRequests: Issue[], issues: Issue[]) {
 	const mergedChangelog: Changelog = Object.create(null);
 	for (const pr of pullRequests) {
-		if (!pr.body) {
-			console.error(`Failed to extract changelog in ${pr.html_url}: No body`)
-			console.log(pr.title)
+		const { changelog, error, warnings } = checkPullRequestBody(pr.body, pr, issues);
+		if (error) {
+			console.error(`Failed to extract changelog in ${pr.html_url}: ${error}`)
 			continue;
 		}
-		const [
-			changelogFail,
-			changelogLines,
-			changelogFailReason
-		] = extractPullRequestChangelog(createParser(pr.body!.split(/\r?\n/)));
-		if (changelogFail) {
-			console.error(`Failed to extract changelog in ${pr.html_url}: ${changelogFailReason}`)
-			console.log(pr.title)
-			console.log(pr.body)
-			continue;
-		}
-		const [changelog, warnings] = parseChangelog(createParser(changelogLines), pr, issues);
 		for (const warning of warnings) {
 			console.warn(`Warning in changelog for ${pr.html_url}: ${warning}`)
 		}
@@ -180,7 +214,7 @@ function changelogFromPullRequests(pullRequests: Issue[], issues: Issue[]) {
 async function fetchLastRelease() {
 	// Assumes releases are ordered by their creation or tag time in descending order.
 	const releases = await githubFetchJson<Release[]>(`/repos/${repository}/releases`);
-	const latest = releases[0]
+	const latest = releases.find(r => r.target_commitish === branch);
 	if (!latest) {
 		throw new Error(`Unable to find latest release on ${branch}`);
 	}
@@ -194,10 +228,41 @@ async function fetchIssuesUpdatedSince(since: string) {
 	);
 }
 
+async function fetchStatistics(lastRelease: Release, pullRequests: Issue[]): Promise<Statistics> {
+	const path = `/repos/${repository}/compare/${lastRelease.tag_name}...${branch}`;
+	const comparison = await githubFetchJson<Comparison>(path, { per_page: "1" });
+	// The JSON response lists at most 300 files, the diff has all of them.
+	const diff = await githubFetchText(path, {}, { headers: { "Accept": "application/vnd.github.diff" } });
+	let filesChanged = 0;
+	let lineAdditions = 0;
+	let lineDeletions = 0;
+	let inHunk = false; // Skips the ---/+++ file headers
+	for (const line of diff.split("\n")) {
+		if (line.startsWith("diff --git ")) {
+			filesChanged += 1;
+			inHunk = false;
+		} else if (line.startsWith("@@")) {
+			inHunk = true;
+		} else if (inHunk && line.startsWith("+")) {
+			lineAdditions += 1;
+		} else if (inHunk && line.startsWith("-")) {
+			lineDeletions += 1;
+		}
+	}
+	return {
+		commits: comparison.total_commits,
+		pullRequests: pullRequests.length,
+		filesChanged,
+		lineAdditions,
+		lineDeletions,
+	};
+}
+
 function printMarkdown(
 	changelog: Changelog,
 	issues: Issue[],
 	users: Issue["user"][],
+	statistics: Statistics,
 	refText: (issue: Issue) => string,
 	userText: (user: Issue["user"]) => string,
 ) {
@@ -223,8 +288,19 @@ function printMarkdown(
 		}
 	}
 
+	console.log("### Contributors\n");
 	console.log(`Many thanks to the following for contributing to this release:`);
-	console.log(users.map(userText).join("\n"))
+	console.log(users.map(userText).join(", "));
+
+	const format = (value: number) => value.toLocaleString("en-US");
+	console.log("\n### Statistics\n");
+	console.log([
+		`Commits: ${format(statistics.commits)}`,
+		`Pull Requests: ${format(statistics.pullRequests)}`,
+		`Files Changed: ${format(statistics.filesChanged)}`,
+		`Additions: +${format(statistics.lineAdditions)}`,
+		`Deletions: -${format(statistics.lineDeletions)}`,
+	].join("  "));
 }
 
 async function main() {
@@ -239,17 +315,18 @@ async function main() {
 
 	const changelog = changelogFromPullRequests(pullRequests, issues);
 	const users = [...new Map(pullRequests.map(issue => [issue.user.login, issue.user])).values()]
+	const statistics = await fetchStatistics(lastRelease, pullRequests);
 
 	console.log();
 	console.log("=== Github Release Markdown ===");
-	printMarkdown(changelog, issues, users,
+	printMarkdown(changelog, issues, users, statistics,
 		issue => `${repository}#${issue.number}`,
 		user => `@${user.login}`,
 	);
 
 	console.log();
 	console.log("=== Discord / Changelog Markdown ===");
-	printMarkdown(changelog, issues, users,
+	printMarkdown(changelog, issues, users, statistics,
 		issue => `[#${issue.number}](<${issue.html_url}>)`,
 		user => `[@${user.login}](<${user.html_url}>)`
 	);
