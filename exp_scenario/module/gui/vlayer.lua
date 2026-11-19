@@ -49,6 +49,8 @@ for _, name in ipairs{ "production", "sustained", "capacity", "surface-area" } d
     }
 end
 
+local s_len = #stats
+
 local energy_suffixes = {
     { 1e15, "P" },
     { 1e12, "T" },
@@ -261,7 +263,6 @@ end
 function Elements.stats_table.refresh(stats_table, display_data)
     local rows = Elements.stats_table.data[stats_table]
     local r_len = #rows
-    local s_len = #display_data.stat
     local i_len = #display_data.item
 
     for i=1, s_len do
