@@ -300,7 +300,7 @@ function Elements.stats_table.refresh(stats_table, display_data)
             end
         end
 
-    else
+    elseif s_i < r_len then
         -- build
         for i=r_len + 1, s_i do
             local disp = display_data.item[i - s_len]
