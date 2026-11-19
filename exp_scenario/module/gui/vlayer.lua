@@ -302,7 +302,7 @@ function Elements.stats_table.refresh(stats_table, display_data)
             end
         end
 
-    elseif s_i < r_len then
+    else
         -- build
         for i=r_len + 1, s_i do
             local disp = disp_item[i - s_len]
@@ -311,22 +311,18 @@ function Elements.stats_table.refresh(stats_table, display_data)
                 [1] = Elements.stat_label(
                     stats_table,
                     {
-                        "?",
+                        "",
+                        format_string(
+                            "[img=entity.%s]",
+                            disp.name
+                        ),
                         {
-                            "",
-                            format_string(
-                                "[img=entity/%s]",
-                                disp.name
-                            ),
+                            "?",
                             prototypes.entity[disp.name].localised_name,
-                            format_string(
-                                " [%s]",
-                                disp.quality
-                            )
+                            disp.name,
                         },
                         format_string(
-                            "%s [%s]",
-                            disp.name,
+                            " [%s]",
                             disp.quality
                         )
                     }, 
