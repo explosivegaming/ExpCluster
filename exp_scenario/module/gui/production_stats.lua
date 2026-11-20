@@ -21,6 +21,7 @@ local precision_indexes = {
 local floor = math.floor
 local min = math.min
 local max = math.max
+local format_string = string.format
 
 --- The font colours used for number labels
 local font_color = {
@@ -170,7 +171,7 @@ function Elements.production_table.add_row(production_table)
     local item_selector = Elements.item_selector(production_table, production_table)
     rows[item_selector.index] = {
         item_selector = item_selector,
-        bar = Elements.stat_bar(scroll_table),
+        bar = Elements.stat_bar(production_table),
     }
 end
 
