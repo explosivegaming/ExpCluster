@@ -102,7 +102,20 @@ Elements.item_selector = Gui.define("production_stats/item_selector")
         end
     end) --[[@as any]]
     
-    
+--- Label naming a statistic
+--- @class ExpGui_ProductionStats.elements.stat_label: ExpElement
+--- @overload fun(parent: LuaGuiElement, caption: LocalisedString, tooltip: LocalisedString): LuaGuiElement
+Elements.stat_label = Gui.define("production_stats/stat_label")
+    :draw{
+        type = "label",
+        caption = Gui.from_argument(1),
+        tooltip = Gui.from_argument(2),
+        style = "heading_2_label",
+    }
+    :style{
+        width = 200,
+    } --[[@as any]]
+
 --- @class ExpGui_ProductionStats.elements.stat_bar.display_data
 --- @field value number Fraction the bar is filled
 --- @field caption string
@@ -136,6 +149,8 @@ Elements.production_table = Gui.define("production_stats/production_table")
             precision_dropdown = Elements.precision_dropdown(scroll_table),
             rows = {},
         }
+        
+        Elements.stat_label(scroll_table, {"tooltip-main"})
 
         return scroll_table
     end) --[[@as any]]
