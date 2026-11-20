@@ -170,11 +170,10 @@ function Elements.production_table.calculate_row_data(force, surface, item_name,
     return {
         value = min(ratio, 1),
         caption = format_string(
-            "%s / %s, %s,%.1f %%",
+            "%s / %s, %s",
             format_number(production),
             format_number(consumption),
-            format_number(net),
-            ratio * 100
+            format_number(net)
         ),
     }
 end
