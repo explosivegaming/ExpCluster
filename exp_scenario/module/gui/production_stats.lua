@@ -101,6 +101,7 @@ Elements.item_selector = Gui.define("production_stats/item_selector")
         end
     end) --[[@as any]]
     
+--- @overload fun(parent: LuaGuiElement): LuaGuiElement
 Elements.stat_bar = Gui.define("production_stats/stat_bar")
     :draw{
         type = "progressbar",
