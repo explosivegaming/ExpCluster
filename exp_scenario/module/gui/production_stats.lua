@@ -150,7 +150,7 @@ Elements.production_table = Gui.define("production_stats/production_table")
             rows = {},
         }
         
-        Elements.stat_label(scroll_table, {"tooltip-main"})
+        Elements.stat_label(scroll_table, {"exp-gui_production-stats.tooltip-main"})
 
         return scroll_table
     end) --[[@as any]]
