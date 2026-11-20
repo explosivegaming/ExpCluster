@@ -101,6 +101,13 @@ Elements.item_selector = Gui.define("production_stats/item_selector")
         end
     end) --[[@as any]]
     
+    
+--- @class ExpGui_ProductionStats.elements.stat_bar.display_data
+--- @field value number Fraction the bar is filled
+--- @field caption string
+
+--- Bar showing a statistic as a fraction with the values as its caption
+--- @class ExpGui_ProductionStats.elements.stat_bar: ExpElement
 --- @overload fun(parent: LuaGuiElement): LuaGuiElement
 Elements.stat_bar = Gui.define("production_stats/stat_bar")
     :draw{
@@ -115,21 +122,9 @@ Elements.stat_bar = Gui.define("production_stats/stat_bar")
         font = "heading-2",
     } --[[@as any]]
 
---- @class ExpGui_ProductionStats.elements.production_table.row_elements
---- @field item_selector LuaGuiElement
---- @field production LuaGuiElement
---- @field consumption LuaGuiElement
---- @field net LuaGuiElement
-
---- @class ExpGui_ProductionStats.elements.production_table.row_data
---- @field production LocalisedString
---- @field consumption LocalisedString
---- @field net LocalisedString
---- @field font_color Color
-
 --- A table that allows selecting items 
 --- @class ExpGui_ProductionStats.elements.production_table: ExpElement
---- @field data table<LuaGuiElement, { precision_dropdown: LuaGuiElement, rows: ExpGui_ProductionStats.elements.production_table.row_elements[] }>
+--- @field data table<LuaGuiElement, { precision_dropdown: LuaGuiElement, rows: ExpGui_ProductionStats.elements.stat_bar[] }>
 --- @overload fun(parent: LuaGuiElement): LuaGuiElement
 Elements.production_table = Gui.define("production_stats/production_table")
     :track_all_elements()
@@ -141,8 +136,6 @@ Elements.production_table = Gui.define("production_stats/production_table")
             rows = {},
         }
 
-        Elements.stat_bar(scroll_table)
-
         return scroll_table
     end) --[[@as any]]
 
@@ -151,7 +144,7 @@ Elements.production_table = Gui.define("production_stats/production_table")
 --- @param surface LuaSurface
 --- @param item_name string
 --- @param precision_index defines.flow_precision_index
---- @return ExpGui_ProductionStats.elements.production_table.row_data
+--- @return ExpGui_ProductionStats.elements.stat_bar.display_data
 function Elements.production_table.calculate_row_data(force, surface, item_name, precision_index)
     local get_flow_count = force.get_item_production_statistics(surface).get_flow_count
     local production = floor(get_flow_count{ name = item_name, category = "input", precision_index = precision_index, count = false } / 6) / 10
@@ -207,7 +200,7 @@ end
 --- Refresh the data on a row
 --- @param production_table LuaGuiElement
 --- @param item_selector LuaGuiElement
---- @param row_data ExpGui_ProductionStats.elements.production_table.row_data
+--- @param row_data ExpGui_ProductionStats.elements.stat_bar.display_data
 function Elements.production_table.refresh_row(production_table, item_selector, row_data)
     local rows = Elements.production_table.data[production_table].rows
     local row = assert(rows[item_selector.index])
