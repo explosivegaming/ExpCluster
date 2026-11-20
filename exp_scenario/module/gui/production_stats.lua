@@ -120,6 +120,10 @@ Elements.stat_label = Gui.define("production_stats/stat_label")
 --- @field value number Fraction the bar is filled
 --- @field caption string
 
+--- @class ExpGui_ProductionStats.elements.production_table.row_elements
+--- @field item_selector LuaGuiElement
+--- @field bar LuaGuiElement
+
 --- Bar showing a statistic as a fraction with the values as its caption
 --- @class ExpGui_ProductionStats.elements.stat_bar: ExpElement
 --- @overload fun(parent: LuaGuiElement): LuaGuiElement
@@ -138,7 +142,7 @@ Elements.stat_bar = Gui.define("production_stats/stat_bar")
 
 --- A table that allows selecting items 
 --- @class ExpGui_ProductionStats.elements.production_table: ExpElement
---- @field data table<LuaGuiElement, { precision_dropdown: LuaGuiElement, rows: ExpGui_ProductionStats.elements.stat_bar[] }>
+--- @field data table<LuaGuiElement, { precision_dropdown: LuaGuiElement, rows: ExpGui_ProductionStats.elements.production_table.row_elements[] }>
 --- @overload fun(parent: LuaGuiElement): LuaGuiElement
 Elements.production_table = Gui.define("production_stats/production_table")
     :track_all_elements()
@@ -150,7 +154,7 @@ Elements.production_table = Gui.define("production_stats/production_table")
             rows = {},
         }
         
-        Elements.stat_label(scroll_table, {"exp-gui_production-stats.tooltip-main"})
+        Elements.stat_label(scroll_table, {"exp-gui_production-stats.tooltip-main"}, {"exp-gui_production-stats.tooltip-main"})
 
         return scroll_table
     end) --[[@as any]]
@@ -183,6 +187,7 @@ end
 function Elements.production_table.add_row(production_table)
     local rows = Elements.production_table.data[production_table].rows
     local item_selector = Elements.item_selector(production_table, production_table)
+    ---@diagnostic disable-next-line: missing-fields
     rows[item_selector.index] = {
         item_selector = item_selector,
         bar = Elements.stat_bar(production_table),
