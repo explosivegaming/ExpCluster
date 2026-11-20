@@ -18,6 +18,10 @@ local precision_indexes = {
     defines.flow_precision_index.ten_hours,
 }
 
+local floor = math.floor
+local min = math.min
+local max = math.max
+
 --- The font colours used for number labels
 local font_color = {
     positive = { r = 0.3, g = 1, b = 0.3 },
@@ -97,18 +101,18 @@ Elements.item_selector = Gui.define("production_stats/item_selector")
         end
     end) --[[@as any]]
     
---- Label used for every element in the production table
-Elements.table_label = Gui.define("production_stats/table_label")
+Elements.stat_bar = Gui.define("production_stats/stat_bar")
     :draw{
-        type = "label",
-        caption = Gui.from_argument(1, "0.00"),
-        tooltip = Gui.from_argument(2),
-        style = Gui.from_argument(3),
+        type = "progressbar",
+        caption = "",
+        tooltip = {"exp-gui_production-stats.tooltip-per-second"},
+        value = 0,
+        style = "electric_satisfaction_statistics_progressbar",
     }
     :style{
-        horizontal_align = "right",
-        minimal_width = 60,
-    }
+        width = 250,
+        font = "heading-2",
+    } --[[@as any]]
 
 --- @class ExpGui_ProductionStats.elements.production_table.row_elements
 --- @field item_selector LuaGuiElement
@@ -129,20 +133,14 @@ Elements.table_label = Gui.define("production_stats/table_label")
 Elements.production_table = Gui.define("production_stats/production_table")
     :track_all_elements()
     :draw(function(def, parent)
-        local scroll_table = Gui.elements.scroll_table(parent, 304, 4)
-        local display_alignments = assert(scroll_table.style.column_alignments)
-        for i = 2, 4 do
-            display_alignments[i] = "right"
-        end
+        local scroll_table = Gui.elements.scroll_table(parent, 300, 2)
 
         def.data[scroll_table] = {
             precision_dropdown = Elements.precision_dropdown(scroll_table),
             rows = {},
         }
 
-        Elements.table_label(scroll_table, { "gui-production.production" }, { "exp-gui_production-stats.tooltip-per-second" }, "heading_2_label")
-        Elements.table_label(scroll_table, { "gui-production.consumption" }, { "exp-gui_production-stats.tooltip-per-second" }, "heading_2_label")
-        Elements.table_label(scroll_table, { "exp-gui_production-stats.caption-net" }, { "exp-gui_production-stats.tooltip-per-second" }, "heading_2_label")
+        Elements.stat_bar(scroll_table)
 
         return scroll_table
     end) --[[@as any]]
@@ -155,14 +153,19 @@ Elements.production_table = Gui.define("production_stats/production_table")
 --- @return ExpGui_ProductionStats.elements.production_table.row_data
 function Elements.production_table.calculate_row_data(force, surface, item_name, precision_index)
     local get_flow_count = force.get_item_production_statistics(surface).get_flow_count
-    local production = math.floor(get_flow_count{ name = item_name, category = "input", precision_index = precision_index, count = false } / 6) / 10
-    local consumption = math.floor(get_flow_count{ name = item_name, category = "output", precision_index = precision_index, count = false } / 6) / 10
+    local production = floor(get_flow_count{ name = item_name, category = "input", precision_index = precision_index, count = false } / 6) / 10
+    local consumption = floor(get_flow_count{ name = item_name, category = "output", precision_index = precision_index, count = false } / 6) / 10
     local net = production - consumption
+    local ratio = production / max(consumption, 1)
     return {
-        production = format_number(production),
-        consumption = format_number(consumption),
-        net = format_number(net),
-        font_color = net < 0 and font_color.negative or font_color.positive,
+        value = min(ratio, 1),
+        caption = format_string(
+            "%s / %s, %s,%.1f %%",
+            format_number(production),
+            format_number(consumption),
+            format_number(net),
+            ratio * 100
+        ),
     }
 end
 
@@ -173,9 +176,7 @@ function Elements.production_table.add_row(production_table)
     local item_selector = Elements.item_selector(production_table, production_table)
     rows[item_selector.index] = {
         item_selector = item_selector,
-        production = Elements.table_label(production_table, "0.00"),
-        consumption = Elements.table_label(production_table, "0.00"),
-        net = Elements.table_label(production_table, "0.00"),
+        bar = Elements.stat_bar(scroll_table),
     }
 end
 
@@ -198,10 +199,8 @@ end
 function Elements.production_table.reset_row(production_table, item_selector)
     local rows = Elements.production_table.data[production_table].rows
     local row = assert(rows[item_selector.index])
-    row.production.caption = "0.00"
-    row.consumption.caption = "0.00"
-    row.net.caption = "0.00"
-    row.net.style.font_color = font_color.positive
+    row.bar.value = 0
+    row.bar.caption = ""
 end
 
 --- Refresh the data on a row
@@ -211,10 +210,8 @@ end
 function Elements.production_table.refresh_row(production_table, item_selector, row_data)
     local rows = Elements.production_table.data[production_table].rows
     local row = assert(rows[item_selector.index])
-    row.production.caption = row_data.production
-    row.consumption.caption = row_data.consumption
-    row.net.caption = row_data.net
-    row.net.style.font_color = row_data.font_color
+    row.bar.value = row_data.bar.value
+    row.bar.caption = row_data.bar.caption
 end
 
 --- Refresh all online tables
