@@ -67,7 +67,7 @@ Elements.precision_dropdown = Gui.define("production_stats/precision_dropdown")
         selected_index = 3,
     }
     :style{
-        width = 80,
+        width = 70,
     }
 
 --- Used to select the item to be displayed on a row
@@ -132,7 +132,7 @@ Elements.stat_bar = Gui.define("production_stats/stat_bar")
         style = "electric_satisfaction_statistics_progressbar",
     }
     :style{
-        width = 250,
+        width = 200,
         font = "heading-2",
     } --[[@as any]]
 
