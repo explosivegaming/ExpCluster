@@ -220,8 +220,8 @@ end
 function Elements.production_table.refresh_row(production_table, item_selector, row_data)
     local rows = Elements.production_table.data[production_table].rows
     local row = assert(rows[item_selector.index])
-    row.bar.value = row_data.bar.value
-    row.bar.caption = row_data.bar.caption
+    row.bar.value = row_data.value
+    row.bar.caption = row_data.caption
 end
 
 --- Refresh all online tables
