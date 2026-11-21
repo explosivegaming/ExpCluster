@@ -101,9 +101,9 @@ Elements.circuit_table = Gui.define("circuit_viewer/circuit_table")
 --- @param force LuaForce
 --- @param surface LuaSurface
 --- @param item_name string
---- @param precision_index defines.flow_precision_index
+--- @param network_index number
 --- @return ExpGui_CircuitViewer.elements.circuit_table.row_data
-function Elements.circuit_table.calculate_row_data(force, surface, item_name, precision_index)
+function Elements.circuit_table.calculate_row_data(force, surface, item_name, network_index)
     local get_flow_count = force.get_item_production_statistics(surface).get_flow_count
     local red = math.floor(get_flow_count{ name = item_name, category = "input", precision_index = precision_index, count = false } / 6) / 10
     local green = math.floor(get_flow_count{ name = item_name, category = "output", precision_index = precision_index, count = false } / 6) / 10
