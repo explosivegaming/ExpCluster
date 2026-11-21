@@ -4,45 +4,18 @@ View circuit network remotely
 
 local Gui = require("modules/exp_gui")
 local Roles = require("modules/exp_roles")
+local format_number = require("util").format_number
 
 --- @class ExpGui_CircuitViewer.elements
 local Elements = {}
 
 --- The font colours used for number labels
 local font_color = {
-    positive = { r = 0.3, g = 1, b = 0.3 },
-    negative = { r = 1, g = 0.3, b = 0.3 },
+    r = { r = 1, g = 0.3, b = 0.3 },
+    g = { r = 0.3, g = 1, b = 0.3 },
 }
 
---- Format a number to include commas and a suffix
-local function format_number(amount)
-    if math.abs(amount) < 0.009 then
-        return "0.00"
-    end
-
-    local scaler = 1
-    local suffix = ""
-    local suffix_list = {
-        [" G"] = 1e9,
-        [" M"] = 1e6,
-        [" k"] = 1e3
-    }
-
-    -- Select which suffix and scaler to use
-    for _suffix, _scaler in pairs(suffix_list) do
-        if math.abs(amount) >= _scaler then
-            scaler = _scaler
-            suffix = _suffix
-            break
-        end
-    end
-
-    local formatted = string.format("%.2f%s", amount / scaler, suffix)
-    -- Split into integer and fractional parts
-    local integer_part, fractional_part = formatted:match("^(%-?%d+)%.(%d+)(.*)$")
-    -- Add commas to integer part
-    return string.format("%s.%s%s", (integer_part or formatted):reverse():gsub("(%d%d%d)", "%1,"):reverse():gsub("^,", ""):gsub("-,", "-"), fractional_part or "00", suffix)
-end
+local format_string = string.format
 
 --- Used to select the item to be displayed on a row
 --- @class ExpGui_CircuitViewer.elements.item_selector: ExpElement
@@ -76,13 +49,12 @@ Elements.item_selector = Gui.define("circuit_viewer/item_selector")
         end
     end) --[[@as any]]
     
---- Label used for every element in the production table
+--- Label used for every element in the circuit table
 Elements.table_label = Gui.define("circuit_viewer/table_label")
     :draw{
         type = "label",
         caption = Gui.from_argument(1, "0.00"),
-        tooltip = Gui.from_argument(2),
-        style = Gui.from_argument(3),
+        style = Gui.from_argument(2),
     }
     :style{
         horizontal_align = "right",
@@ -91,19 +63,18 @@ Elements.table_label = Gui.define("circuit_viewer/table_label")
 
 --- @class ExpGui_CircuitViewer.elements.circuit_table.row_elements
 --- @field item_selector LuaGuiElement
---- @field production LuaGuiElement
---- @field consumption LuaGuiElement
---- @field net LuaGuiElement
+--- @field red LuaGuiElement
+--- @field green LuaGuiElement
+--- @field total LuaGuiElement
 
 --- @class ExpGui_CircuitViewer.elements.circuit_table.row_data
---- @field production LocalisedString
---- @field consumption LocalisedString
---- @field net LocalisedString
---- @field font_color Color
+--- @field red LocalisedString
+--- @field green LocalisedString
+--- @field total LocalisedString
 
 --- A table that allows selecting items 
 --- @class ExpGui_CircuitViewer.elements.circuit_table: ExpElement
---- @field data table<LuaGuiElement, { rows: ExpGui_CircuitViewer.elements.circuit_table.row_elements[] }>
+--- @field data table<LuaGuiElement, { network: LuaGuiElement, rows: ExpGui_CircuitViewer.elements.circuit_table.row_elements[] }>
 --- @overload fun(parent: LuaGuiElement): LuaGuiElement
 Elements.circuit_table = Gui.define("circuit_viewer/circuit_table")
     :track_all_elements()
@@ -115,17 +86,18 @@ Elements.circuit_table = Gui.define("circuit_viewer/circuit_table")
         end
 
         def.data[scroll_table] = {
+            network = Elements.table_label(scroll_table, "0", "heading_2_label"),
             rows = {},
         }
 
-        Elements.table_label(scroll_table, { "gui-production.production" }, { "exp-gui_circuit_viewer.tooltip-per-second" }, "heading_2_label")
-        Elements.table_label(scroll_table, { "gui-production.consumption" }, { "exp-gui_circuit_viewer.tooltip-per-second" }, "heading_2_label")
-        Elements.table_label(scroll_table, { "exp-gui_circuit_viewer.caption-net" }, { "exp-gui_circuit_viewer.tooltip-per-second" }, "heading_2_label")
+        Elements.table_label(scroll_table, "[item=red-wire]", "heading_2_label")
+        Elements.table_label(scroll_table, "[item=green-wire]", "heading_2_label")
+        Elements.table_label(scroll_table, "[item=medium-pole]", "heading_2_label")
 
         return scroll_table
     end) --[[@as any]]
 
---- Calculate the row data for a production table
+--- Calculate the row data for a circuit table
 --- @param force LuaForce
 --- @param surface LuaSurface
 --- @param item_name string
@@ -133,31 +105,34 @@ Elements.circuit_table = Gui.define("circuit_viewer/circuit_table")
 --- @return ExpGui_CircuitViewer.elements.circuit_table.row_data
 function Elements.circuit_table.calculate_row_data(force, surface, item_name, precision_index)
     local get_flow_count = force.get_item_production_statistics(surface).get_flow_count
-    local production = math.floor(get_flow_count{ name = item_name, category = "input", precision_index = precision_index, count = false } / 6) / 10
-    local consumption = math.floor(get_flow_count{ name = item_name, category = "output", precision_index = precision_index, count = false } / 6) / 10
-    local net = production - consumption
+    local red = math.floor(get_flow_count{ name = item_name, category = "input", precision_index = precision_index, count = false } / 6) / 10
+    local green = math.floor(get_flow_count{ name = item_name, category = "output", precision_index = precision_index, count = false } / 6) / 10
+    local total = red + green
     return {
-        production = format_number(production),
-        consumption = format_number(consumption),
-        net = format_number(net),
-        font_color = net < 0 and font_color.negative or font_color.positive,
+        red = format_number(red),
+        green = format_number(green),
+        total = format_number(total),
     }
 end
 
---- A single row of a production table, the parent must be a production table
+--- A single row of a circuit table, the parent must be a circuit table
 --- @param circuit_table LuaGuiElement
 function Elements.circuit_table.add_row(circuit_table)
     local rows = Elements.circuit_table.data[circuit_table].rows
     local item_selector = Elements.item_selector(circuit_table, circuit_table)
+    local red = Elements.table_label(circuit_table, "")
+    red.style.font_color = font_color.r
+    local green = Elements.table_label(circuit_table, "")
+    row.green.style.font_color = font_color.g
     rows[item_selector.index] = {
         item_selector = item_selector,
-        production = Elements.table_label(circuit_table, "0.00"),
-        consumption = Elements.table_label(circuit_table, "0.00"),
-        net = Elements.table_label(circuit_table, "0.00"),
+        red = red,
+        green = green,
+        total = Elements.table_label(circuit_table, ""),
     }
 end
 
---- Remove a row from a production table
+--- Remove a row from a circuit table
 --- @param circuit_table LuaGuiElement
 --- @param item_selector LuaGuiElement
 function Elements.circuit_table.remove_row(circuit_table, item_selector)
@@ -170,16 +145,17 @@ function Elements.circuit_table.remove_row(circuit_table, item_selector)
     end
 end
 
---- Reset a row in a production table
+--- Reset a row in a circuit table
 --- @param circuit_table LuaGuiElement
 --- @param item_selector LuaGuiElement
 function Elements.circuit_table.reset_row(circuit_table, item_selector)
     local rows = Elements.circuit_table.data[circuit_table].rows
     local row = assert(rows[item_selector.index])
-    row.production.caption = "0.00"
-    row.consumption.caption = "0.00"
-    row.net.caption = "0.00"
-    row.net.style.font_color = font_color.positive
+    row.red.caption = ""
+    row.red.style.font_color = font_color.r
+    row.green.caption = ""
+    row.green.style.font_color = font_color.g
+    row.total.caption = ""
 end
 
 --- Refresh the data on a row
@@ -189,8 +165,8 @@ end
 function Elements.circuit_table.refresh_row(circuit_table, item_selector, row_data)
     local rows = Elements.circuit_table.data[circuit_table].rows
     local row = assert(rows[item_selector.index])
-    row.production.caption = row_data.production
-    row.consumption.caption = row_data.consumption
+    row.red.caption = row_data.production
+    row.green.caption = row_data.consumption
     row.net.caption = row_data.net
     row.net.style.font_color = row_data.font_color
 end
@@ -199,12 +175,12 @@ end
 function Elements.circuit_table.refresh_online()
     for player, circuit_table in Elements.circuit_table:online_elements() do
         local element_data = Elements.circuit_table.data[circuit_table]
-        local precision_index = precision_indexes[element_data.precision_dropdown.selected_index]
+        local network_index = element_data.network.caption
         for _, row in pairs(element_data.rows) do
             local item_selector = row.item_selector
             local item_name = item_selector.elem_value --[[@as string?]]
             if item_name then
-                local row_data = Elements.circuit_table.calculate_row_data(player.force --[[@as LuaForce]], player.surface, item_name, precision_index)
+                local row_data = Elements.circuit_table.calculate_row_data(player.force --[[@as LuaForce]], player.surface, item_name, network_index)
                 Elements.circuit_table.refresh_row(circuit_table, item_selector, row_data)
             end
         end
@@ -225,7 +201,7 @@ Gui.add_left_element(Elements.container, false)
 Gui.toolbar.create_button{
     name = "toggle_circuit_viewer",
     left_element = Elements.container,
-    sprite = "entity/assembling-machine-3",
+    sprite = "entity/combinator-decider",
     tooltip = { "exp-gui_circuit_viewer.tooltip-main" },
     visible = function(player, element)
         return Roles.player_has_permission(player, "exp_scenario.gui.production")
