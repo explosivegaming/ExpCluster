@@ -61,7 +61,6 @@ Elements.table_label = Gui.define("circuit_viewer/table_label")
 
 --- Button used to display the location of entity
 --- @class ExpGui_CircuitViewer.elements.view_button: ExpElement
---- @field data table<LuaGuiElement, ExpGui_CircuitViewer.elements.view_button.element_data>
 --- @overload fun(parent: LuaGuiElement, controls: LuaGuiElement): LuaGuiElement
 Elements.view_button = Gui.define("circuit_viewer/view_button")
     :draw{
@@ -75,8 +74,9 @@ Elements.view_button = Gui.define("circuit_viewer/view_button")
         controls = Gui.from_argument(1),
     }
     :on_click(function(def, parent, view_button)
-        --- @cast def ExpGui_CircuitViewer.elements.view_button
-        game.players[parent.player_index].print(def.data[view_button].entity.gps_tag)
+        local player = game.players[parent.player_index] --[[@as LuaPlayer]]
+        local entity = def.data[view_button].entity --[[@as LuaEntity]]
+        player.print(entity.gps_tag)
     end) --[[@as any]]
     
 --- Button used to set the entity to reference the network
@@ -95,8 +95,7 @@ Elements.set_button = Gui.define("circuit_viewer/set_button")
         controls = Gui.from_argument(1),
     }
     :on_click(function(def, parent, set_button)
-        --- @cast def ExpGui_CircuitViewer.elements.set_button
-        def.data[set_button].entity = parent.entity
+        def.data[set_button].entity = parent.entity --[[@as LuaEntity]]
     end) --[[@as any]]
 
 --- @class ExpGui_CircuitViewer.elements.circuit_table.row_elements
