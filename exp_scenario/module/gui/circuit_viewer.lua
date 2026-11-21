@@ -112,7 +112,7 @@ Elements.set_button = Gui.define("circuit_viewer/set_button")
 
 --- A relative screen that set the current viewer to the entity 
 --- @class ExpGui_CircuitViewer.elements.circuit_frame: ExpElement
---- @overload fun(parent: LuaGuiElement, relative_gui: defines.relative_gui_type, entity_type: string): LuaGuiElement
+--- @overload fun(parent: LuaGuiElement, controls: LuaGuiElement, relative_gui: defines.relative_gui_type, entity_type: string): LuaGuiElement
 Elements.circuit_frame = Gui.define("circuit_viewer/circuit_frame")
     :draw(function(def, parent)
         local frame = parent.gui.relative.add({
@@ -125,7 +125,7 @@ Elements.circuit_frame = Gui.define("circuit_viewer/circuit_frame")
             }
         })
         Elements.table_label(frame, { "exp-gui_circuit_viewer.tooltip-main" }, "heading_2_label")
-        Elements.set_button(frame)
+        Elements.set_button(frame, controls)
         return frame
     end) --[[@as any]]
 
@@ -145,10 +145,10 @@ Elements.circuit_table = Gui.define("circuit_viewer/circuit_table")
         def.data[scroll_table] = {
             entity = nil,
             anchor = {
-                Elements.circuit_frame(scroll_table, defines.relative_gui_type.arithmetic_combinator_gui, "arithmetic-combinator"),
-                Elements.circuit_frame(scroll_table, defines.relative_gui_type.constant_combinator_gui, "constant-combinator"),
-                Elements.circuit_frame(scroll_table, defines.relative_gui_type.decider_combinator_gui, "decider-combinator"),
-                Elements.circuit_frame(scroll_table, defines.relative_gui_type.display_panel_gui, "display-panel")
+                Elements.circuit_frame(scroll_table, scroll_table, defines.relative_gui_type.arithmetic_combinator_gui, "arithmetic-combinator"),
+                Elements.circuit_frame(scroll_table, scroll_table, defines.relative_gui_type.constant_combinator_gui, "constant-combinator"),
+                Elements.circuit_frame(scroll_table, scroll_table, defines.relative_gui_type.decider_combinator_gui, "decider-combinator"),
+                Elements.circuit_frame(scroll_table, scroll_table, defines.relative_gui_type.display_panel_gui, "display-panel")
             },
             rows = {},
         }
@@ -160,7 +160,7 @@ Elements.circuit_table = Gui.define("circuit_viewer/circuit_table")
 --- @param entity LuaEntity
 --- @param value string
 --- @return ExpGui_CircuitViewer.elements.circuit_table.row_data
-function Elements.circuit_table.calculate_row_data(entity, item_name)
+function Elements.circuit_table.calculate_row_data(entity, value)
     local control = entity.get_control_behavior() --[[@as LuaConstantCombinatorControlBehavior]]
     local red = control.get_circuit_network(defines.wire_connector_id.circuit_red)
     local green = control.get_circuit_network(defines.wire_connector_id.circuit_green)
@@ -182,7 +182,7 @@ function Elements.circuit_table.add_row(circuit_table)
     local red = Elements.table_label(circuit_table, "")
     red.style.font_color = font_color.r
     local green = Elements.table_label(circuit_table, "")
-    row.green.style.font_color = font_color.g
+    green.style.font_color = font_color.g
     rows[item_selector.index] = {
         item_selector = item_selector,
         red = red,
