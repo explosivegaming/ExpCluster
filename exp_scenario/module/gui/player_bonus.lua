@@ -516,7 +516,7 @@ end
 --- Apply periodic bonus to a player
 --- @param player LuaPlayer
 local function apply_personal_battery_recharge(player)
-    local available_energy = Vlayer.get_statistics().energy_storage
+    local available_energy = Vlayer.get_statistics(player.physical_surface_index).energy_storage
     if available_energy <= 0 then
         return -- No power to give
     end
@@ -538,7 +538,7 @@ local function apply_personal_battery_recharge(player)
             local energy_to_give = math.min(math.floor(equipment.max_energy - equipment.energy), available_energy, recharge_amount)
             equipment.energy = equipment.energy + energy_to_give
             recharge_amount = recharge_amount - energy_to_give
-            available_energy = Vlayer.energy_changed(-energy_to_give)
+            available_energy = Vlayer.energy_changed(player.physical_surface_index, -energy_to_give)
         end
     end
 end
