@@ -261,7 +261,7 @@ Gui.add_left_element(Elements.container, false)
 Gui.toolbar.create_button{
     name = "toggle_circuit_viewer",
     left_element = Elements.container,
-    sprite = "entity/combinator-decider",
+    sprite = "entity/decider-combinator",
     tooltip = { "exp-gui_circuit_viewer.tooltip-main" },
     visible = function(player, element)
         return Roles.player_has_permission(player, "exp_scenario.gui.production")
