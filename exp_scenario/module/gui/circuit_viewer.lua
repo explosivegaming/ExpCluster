@@ -147,8 +147,8 @@ Elements.circuit_table = Gui.define("circuit_viewer/circuit_table")
             entity = nil,
             anchor = {
                 Elements.circuit_frame(scroll_table, defines.relative_gui_type.arithmetic_combinator_gui, "arithmetic-combinator"),
-                Elements.circuit_frame(scroll_table, defines.relative_gui_type.constant_combinator_gui, "constant-combinator")
-                Elements.circuit_frame(scroll_table, defines.relative_gui_type.decider_combinator_gui, "decider-combinator")
+                Elements.circuit_frame(scroll_table, defines.relative_gui_type.constant_combinator_gui, "constant-combinator"),
+                Elements.circuit_frame(scroll_table, defines.relative_gui_type.decider_combinator_gui, "decider-combinator"),
                 Elements.circuit_frame(scroll_table, defines.relative_gui_type.display_panel_gui, "display-panel")
             },
             rows = {},
