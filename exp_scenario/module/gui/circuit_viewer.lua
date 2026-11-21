@@ -24,7 +24,7 @@ local format_string = string.format
 Elements.item_selector = Gui.define("circuit_viewer/item_selector")
     :draw{
         type = "choose-elem-button",
-        elem_type = "item",
+        elem_type = "signal",
         style = "slot_button",
     }
     :style{
@@ -125,26 +125,25 @@ Elements.circuit_frame = Gui.define("circuit_viewer/circuit_frame")
                 position = defines.relative_gui_position.right,
                 type = entity_type,
             }})
-        Elements.table_label(frame, { "exp-gui_circuit_viewer.tooltip-main" }, { "exp-gui_circuit_viewer.tooltip-main" })
+        Elements.table_label(frame, { "exp-gui_circuit_viewer.tooltip-main" }, "heading_2_label")
         Elements.set_button(frame)
         return frame
     end) --[[@as any]]
 
 --- A table that allows selecting items 
 --- @class ExpGui_CircuitViewer.elements.circuit_table: ExpElement
---- @field data table<LuaGuiElement, { network: LuaGuiElement, entity: LuaEntity, anchor: LuaGuiElement[], rows: ExpGui_CircuitViewer.elements.circuit_table.row_elements[] }>
+--- @field data table<LuaGuiElement, { entity: LuaEntity, anchor: LuaGuiElement[], rows: ExpGui_CircuitViewer.elements.circuit_table.row_elements[] }>
 --- @overload fun(parent: LuaGuiElement): LuaGuiElement
 Elements.circuit_table = Gui.define("circuit_viewer/circuit_table")
     :track_all_elements()
     :draw(function(def, parent)
-        local scroll_table = Gui.elements.scroll_table(parent, 304, 4)
-        local display_alignments = assert(scroll_table.style.column_alignments)
-        for i = 2, 4 do
-            display_alignments[i] = "right"
-        end
+        local scroll_table = Gui.elements.scroll_table(parent, 300, 4)
+        Elements.view_button(scroll_table, scroll_table)
+        Elements.table_label(scroll_table, "[item=red-wire]", "heading_2_label")
+        Elements.table_label(scroll_table, "[item=green-wire]", "heading_2_label")
+        Elements.table_label(scroll_table, "[item=medium-pole]", "heading_2_label")
 
         def.data[scroll_table] = {
-            network = Elements.view_button(scroll_table, scroll_table),
             entity = nil,
             anchor = {
                 Elements.circuit_frame(scroll_table, defines.relative_gui_type.arithmetic_combinator_gui, "arithmetic-combinator"),
@@ -155,23 +154,19 @@ Elements.circuit_table = Gui.define("circuit_viewer/circuit_table")
             rows = {},
         }
 
-        Elements.table_label(scroll_table, "[item=red-wire]", "heading_2_label")
-        Elements.table_label(scroll_table, "[item=green-wire]", "heading_2_label")
-        Elements.table_label(scroll_table, "[item=medium-pole]", "heading_2_label")
-
         return scroll_table
     end) --[[@as any]]
 
 --- Calculate the row data for a circuit table
---- @param force LuaForce
---- @param surface LuaSurface
---- @param item_name string
---- @param network_index number
+--- @param entity LuaEntity
+--- @param value string
 --- @return ExpGui_CircuitViewer.elements.circuit_table.row_data
-function Elements.circuit_table.calculate_row_data(force, surface, item_name, network_index)
-    local get_flow_count = force.get_item_production_statistics(surface).get_flow_count
-    local red = math.floor(get_flow_count{ name = item_name, category = "input", precision_index = precision_index, count = false } / 6) / 10
-    local green = math.floor(get_flow_count{ name = item_name, category = "output", precision_index = precision_index, count = false } / 6) / 10
+function Elements.circuit_table.calculate_row_data(entity, item_name)
+    local control = entity.get_control_behavior() --[[@as LuaConstantCombinatorControlBehavior]]
+    local red = control.get_circuit_network(defines.wire_connector_id.circuit_red)
+    local green = control.get_circuit_network(defines.wire_connector_id.circuit_green)
+    red = red.get_signal(value)
+    green = green.get_signal(value)
     local total = red + green
     return {
         red = format_number(red),
@@ -242,9 +237,10 @@ function Elements.circuit_table.refresh_online()
         local network_index = element_data.network.caption
         for _, row in pairs(element_data.rows) do
             local item_selector = row.item_selector
-            local item_name = item_selector.elem_value --[[@as string?]]
-            if item_name then
-                local row_data = Elements.circuit_table.calculate_row_data(player.force --[[@as LuaForce]], player.surface, item_name, network_index)
+            local value = item_selector.elem_value --[[@as string?]]
+            local entity = element_data.entity
+            if entity and value then
+                local row_data = Elements.circuit_table.calculate_row_data(element_data.entity, value)
                 Elements.circuit_table.refresh_row(circuit_table, item_selector, row_data)
             end
         end
