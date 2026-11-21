@@ -117,7 +117,7 @@ Elements.set_button = Gui.define("circuit_viewer/set_button")
 --- @overload fun(parent: LuaGuiElement, relative_gui: defines.relative_gui_type, entity_type: string): LuaGuiElement
 Elements.circuit_frame = Gui.define("circuit_viewer/circuit_frame")
     :draw(function(def, parent)
-        local frame = game.players[parent.player_index].gui.relative.add({
+        local frame = parent.gui.relative.add({
             type = "frame",
             name = "circuit_viewer/circuit_frame",
             anchor = {
