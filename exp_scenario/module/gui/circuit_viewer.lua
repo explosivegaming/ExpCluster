@@ -124,7 +124,8 @@ Elements.circuit_frame = Gui.define("circuit_viewer/circuit_frame")
                 gui = relative_gui,
                 position = defines.relative_gui_position.right,
                 type = entity_type,
-            }})
+            }
+        })
         Elements.table_label(frame, { "exp-gui_circuit_viewer.tooltip-main" }, "heading_2_label")
         Elements.set_button(frame)
         return frame
