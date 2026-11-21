@@ -53,13 +53,53 @@ Elements.item_selector = Gui.define("circuit_viewer/item_selector")
 Elements.table_label = Gui.define("circuit_viewer/table_label")
     :draw{
         type = "label",
-        caption = Gui.from_argument(1, "0.00"),
+        caption = Gui.from_argument(1, ""),
         style = Gui.from_argument(2),
     }
     :style{
         horizontal_align = "right",
         minimal_width = 60,
     }
+
+--- Button used to display the location of entity
+--- @class ExpGui_CircuitViewer.elements.view_button: ExpElement
+--- @field data table<LuaGuiElement, ExpGui_CircuitViewer.elements.view_button.element_data>
+--- @overload fun(parent: LuaGuiElement, controls: LuaGuiElement): LuaGuiElement
+Elements.view_button = Gui.define("circuit_viewer/view_button")
+    :draw{
+        type = "button",
+        caption = "",
+    }
+    :style{
+        width = 100,
+    }
+    :element_data{
+        controls = Gui.from_argument(1),
+    }
+    :on_click(function(def, _, view_button)
+        --- @cast def ExpGui_CircuitViewer.elements.view_button
+        Elements.controls.refresh_interfaces(def.data[view_button].controls)
+    end) --[[@as any]]
+    
+--- Button used to set the entity to reference the network
+--- @class ExpGui_CircuitViewer.elements.set_button: ExpElement
+--- @field data table<LuaGuiElement, ExpGui_CircuitViewer.elements.set_button.element_data>
+--- @overload fun(parent: LuaGuiElement, controls: LuaGuiElement): LuaGuiElement
+Elements.set_button = Gui.define("circuit_viewer/set_button")
+    :draw{
+        type = "button",
+        caption = "",
+    }
+    :style{
+        width = 100,
+    }
+    :element_data{
+        controls = Gui.from_argument(1),
+    }
+    :on_click(function(def, _, set_button)
+        --- @cast def ExpGui_CircuitViewer.elements.set_button
+        Elements.controls.refresh_interfaces(def.data[set_button].controls)
+    end) --[[@as any]]
 
 --- @class ExpGui_CircuitViewer.elements.circuit_table.row_elements
 --- @field item_selector LuaGuiElement
@@ -71,6 +111,23 @@ Elements.table_label = Gui.define("circuit_viewer/table_label")
 --- @field red LocalisedString
 --- @field green LocalisedString
 --- @field total LocalisedString
+
+--- A relative screen that set the current viewer to the entity 
+--- @class ExpGui_CircuitViewer.elements.circuit_frame: ExpElement
+--- @overload fun(parent: LuaGuiElement, relative_gui: defines.relative_gui_type, entity_type: string): LuaGuiElement
+Elements.circuit_frame = Gui.define("circuit_viewer/circuit_frame")
+    :draw(function(def, parent)
+        local frame = game.players[parent.player_index].gui.relative.add({
+            type = "frame",
+            name = "circuit_viewer/circuit_frame",
+            anchor = {
+                gui = relative_gui,
+                position = defines.relative_gui_position.right,
+                type = entity_type,
+            }})
+        Elements.set_button(frame)
+        return frame
+    end) --[[@as any]]
 
 --- A table that allows selecting items 
 --- @class ExpGui_CircuitViewer.elements.circuit_table: ExpElement
@@ -87,6 +144,12 @@ Elements.circuit_table = Gui.define("circuit_viewer/circuit_table")
 
         def.data[scroll_table] = {
             network = Elements.table_label(scroll_table, "0", "heading_2_label"),
+            anchor = {
+                Elements.circuit_frame(scroll_table, defines.relative_gui_type.arithmetic_combinator_gui, "arithmetic-combinator"),
+                Elements.circuit_frame(scroll_table, defines.relative_gui_type.constant_combinator_gui, "constant-combinator")
+                Elements.circuit_frame(scroll_table, defines.relative_gui_type.decider_combinator_gui, "decider-combinator")
+                Elements.circuit_frame(scroll_table, defines.relative_gui_type.display_panel_gui, "display-panel")
+            },
             rows = {},
         }
 
