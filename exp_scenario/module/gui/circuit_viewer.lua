@@ -15,8 +15,6 @@ local font_color = {
     g = { r = 0.3, g = 1, b = 0.3 },
 }
 
-local format_string = string.format
-
 --- Used to select the item to be displayed on a row
 --- @class ExpGui_CircuitViewer.elements.item_selector: ExpElement
 --- @field data table<LuaGuiElement, { on_last_row: boolean, circuit_table: LuaGuiElement }>
