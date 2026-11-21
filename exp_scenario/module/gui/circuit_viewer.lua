@@ -165,10 +165,9 @@ end
 function Elements.circuit_table.refresh_row(circuit_table, item_selector, row_data)
     local rows = Elements.circuit_table.data[circuit_table].rows
     local row = assert(rows[item_selector.index])
-    row.red.caption = row_data.production
-    row.green.caption = row_data.consumption
-    row.net.caption = row_data.net
-    row.net.style.font_color = row_data.font_color
+    row.red.caption = row_data.red
+    row.green.caption = row_data.green
+    row.total.caption = row_data.total
 end
 
 --- Refresh all online tables
