@@ -93,7 +93,7 @@ local function get_cause_player(cause)
 
     local occupant = cause --- @type LuaEntity | LuaPlayer
     if crewed_vehicles[cause.type] then
-        local crew = cause.get_driver() or cause.get_passenger()
+        local crew = cause.get_driver()
         if not crew then return nil end
         occupant = crew
     end
