@@ -18,6 +18,11 @@ local precision_indexes = {
     defines.flow_precision_index.ten_hours,
 }
 
+local floor = math.floor
+local min = math.min
+local max = math.max
+local format_string = string.format
+
 --- The font colours used for number labels
 local font_color = {
     positive = { r = 0.3, g = 1, b = 0.3 },
@@ -62,7 +67,7 @@ Elements.precision_dropdown = Gui.define("production_stats/precision_dropdown")
         selected_index = 3,
     }
     :style{
-        width = 80,
+        width = 70,
     }
 
 --- Used to select the item to be displayed on a row
@@ -97,30 +102,43 @@ Elements.item_selector = Gui.define("production_stats/item_selector")
         end
     end) --[[@as any]]
     
---- Label used for every element in the production table
-Elements.table_label = Gui.define("production_stats/table_label")
+--- Label naming a statistic
+--- @class ExpGui_ProductionStats.elements.stat_label: ExpElement
+--- @overload fun(parent: LuaGuiElement, caption: LocalisedString, tooltip: LocalisedString): LuaGuiElement
+Elements.stat_label = Gui.define("production_stats/stat_label")
     :draw{
         type = "label",
-        caption = Gui.from_argument(1, "0.00"),
+        caption = Gui.from_argument(1),
         tooltip = Gui.from_argument(2),
-        style = Gui.from_argument(3),
+        style = "heading_2_label",
     }
     :style{
-        horizontal_align = "right",
-        minimal_width = 60,
-    }
+        width = 200,
+    } --[[@as any]]
+
+--- @class ExpGui_ProductionStats.elements.stat_bar.display_data
+--- @field value number Fraction the bar is filled
+--- @field caption string
 
 --- @class ExpGui_ProductionStats.elements.production_table.row_elements
 --- @field item_selector LuaGuiElement
---- @field production LuaGuiElement
---- @field consumption LuaGuiElement
---- @field net LuaGuiElement
+--- @field bar LuaGuiElement
 
---- @class ExpGui_ProductionStats.elements.production_table.row_data
---- @field production LocalisedString
---- @field consumption LocalisedString
---- @field net LocalisedString
---- @field font_color Color
+--- Bar showing a statistic as a fraction with the values as its caption
+--- @class ExpGui_ProductionStats.elements.stat_bar: ExpElement
+--- @overload fun(parent: LuaGuiElement): LuaGuiElement
+Elements.stat_bar = Gui.define("production_stats/stat_bar")
+    :draw{
+        type = "progressbar",
+        caption = "",
+        tooltip = {"exp-gui_production-stats.tooltip-per-second"},
+        value = 0,
+        style = "electric_satisfaction_statistics_progressbar",
+    }
+    :style{
+        width = 200,
+        font = "heading-2",
+    } --[[@as any]]
 
 --- A table that allows selecting items 
 --- @class ExpGui_ProductionStats.elements.production_table: ExpElement
@@ -129,20 +147,14 @@ Elements.table_label = Gui.define("production_stats/table_label")
 Elements.production_table = Gui.define("production_stats/production_table")
     :track_all_elements()
     :draw(function(def, parent)
-        local scroll_table = Gui.elements.scroll_table(parent, 304, 4)
-        local display_alignments = assert(scroll_table.style.column_alignments)
-        for i = 2, 4 do
-            display_alignments[i] = "right"
-        end
+        local scroll_table = Gui.elements.scroll_table(parent, 300, 2)
 
         def.data[scroll_table] = {
             precision_dropdown = Elements.precision_dropdown(scroll_table),
             rows = {},
         }
-
-        Elements.table_label(scroll_table, { "gui-production.production" }, { "exp-gui_production-stats.tooltip-per-second" }, "heading_2_label")
-        Elements.table_label(scroll_table, { "gui-production.consumption" }, { "exp-gui_production-stats.tooltip-per-second" }, "heading_2_label")
-        Elements.table_label(scroll_table, { "exp-gui_production-stats.caption-net" }, { "exp-gui_production-stats.tooltip-per-second" }, "heading_2_label")
+        
+        Elements.stat_label(scroll_table, {"exp-gui_production-stats.tooltip-main"}, {"exp-gui_production-stats.tooltip-main"})
 
         return scroll_table
     end) --[[@as any]]
@@ -152,17 +164,21 @@ Elements.production_table = Gui.define("production_stats/production_table")
 --- @param surface LuaSurface
 --- @param item_name string
 --- @param precision_index defines.flow_precision_index
---- @return ExpGui_ProductionStats.elements.production_table.row_data
+--- @return ExpGui_ProductionStats.elements.stat_bar.display_data
 function Elements.production_table.calculate_row_data(force, surface, item_name, precision_index)
     local get_flow_count = force.get_item_production_statistics(surface).get_flow_count
-    local production = math.floor(get_flow_count{ name = item_name, category = "input", precision_index = precision_index, count = false } / 6) / 10
-    local consumption = math.floor(get_flow_count{ name = item_name, category = "output", precision_index = precision_index, count = false } / 6) / 10
+    local production = floor(get_flow_count{ name = item_name, category = "input", precision_index = precision_index, count = false } / 6) / 10
+    local consumption = floor(get_flow_count{ name = item_name, category = "output", precision_index = precision_index, count = false } / 6) / 10
     local net = production - consumption
+    local ratio = production / max(consumption, 1)
     return {
-        production = format_number(production),
-        consumption = format_number(consumption),
-        net = format_number(net),
-        font_color = net < 0 and font_color.negative or font_color.positive,
+        value = min(ratio, 1),
+        caption = format_string(
+            "%s / %s, %s",
+            format_number(production),
+            format_number(consumption),
+            format_number(net)
+        ),
     }
 end
 
@@ -171,11 +187,10 @@ end
 function Elements.production_table.add_row(production_table)
     local rows = Elements.production_table.data[production_table].rows
     local item_selector = Elements.item_selector(production_table, production_table)
+    ---@diagnostic disable-next-line: missing-fields
     rows[item_selector.index] = {
         item_selector = item_selector,
-        production = Elements.table_label(production_table, "0.00"),
-        consumption = Elements.table_label(production_table, "0.00"),
-        net = Elements.table_label(production_table, "0.00"),
+        bar = Elements.stat_bar(production_table),
     }
 end
 
@@ -198,23 +213,19 @@ end
 function Elements.production_table.reset_row(production_table, item_selector)
     local rows = Elements.production_table.data[production_table].rows
     local row = assert(rows[item_selector.index])
-    row.production.caption = "0.00"
-    row.consumption.caption = "0.00"
-    row.net.caption = "0.00"
-    row.net.style.font_color = font_color.positive
+    row.bar.value = 0
+    row.bar.caption = ""
 end
 
 --- Refresh the data on a row
 --- @param production_table LuaGuiElement
 --- @param item_selector LuaGuiElement
---- @param row_data ExpGui_ProductionStats.elements.production_table.row_data
+--- @param row_data ExpGui_ProductionStats.elements.stat_bar.display_data
 function Elements.production_table.refresh_row(production_table, item_selector, row_data)
     local rows = Elements.production_table.data[production_table].rows
     local row = assert(rows[item_selector.index])
-    row.production.caption = row_data.production
-    row.consumption.caption = row_data.consumption
-    row.net.caption = row_data.net
-    row.net.style.font_color = row_data.font_color
+    row.bar.value = row_data.value
+    row.bar.caption = row_data.caption
 end
 
 --- Refresh all online tables
