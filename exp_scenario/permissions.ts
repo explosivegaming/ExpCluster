@@ -91,6 +91,7 @@ const definitions = [
 	["exp_scenario.decon.fast_trees", "Fast tree deconstruction", "Trees and rocks marked for deconstruction are removed instantly, when enabled from the toolbar."],
 	["exp_scenario.decon.standard", "Standard deconstruction", "Mark entities placed by other players for deconstruction."],
 	["exp_scenario.gui.autofill", "Autofill", "Open the autofill GUI, which fills placed entities from your inventory.", true],
+	["exp_scenario.gui.calculator", "Calculator", "Add a calculator to do quick calculation.", true],
 	["exp_scenario.gui.bonus", "Bonus", "Open the bonus GUI to adjust your personal bonuses."],
 	["exp_scenario.gui.module", "Module inserter", "Open the module inserter GUI.", true],
 	["exp_scenario.gui.player_list", "Player list", "Open the player list GUI.", true],
