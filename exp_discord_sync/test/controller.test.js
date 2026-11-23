@@ -1,7 +1,7 @@
 import t from "tap";
+import { fileURLToPath } from "node:url";
 import * as lib from "@clusterio/lib";
 import { Controller } from "@clusterio/controller";
-import { ControllerPlugin as DiscordAuth } from "@expcluster/discord-auth/dist/node/controller.js";
 import { plugin as discordAuthDeclaration } from "@expcluster/discord-auth/dist/node/index.js";
 import entrypoint, { ControllerPlugin } from "../dist/node/controller.js";
 import * as messages from "../dist/node/messages.js";
@@ -19,6 +19,14 @@ const logger = {
 	warn: msg => warnings.push(msg),
 };
 
+/** Plugin infos as the controller has them, sync is listed before auth */
+const packagePath = relative => fileURLToPath(new URL(relative, import.meta.url));
+const pluginInfos = [
+	{ ...pluginDeclaration, packagePath: packagePath("../package.json") },
+	{ ...discordAuthDeclaration, packagePath: packagePath("../../exp_discord_auth/package.json") },
+];
+const noPlugins = { waitFor: async () => undefined, checkInstalled: () => false, checkEnabled: () => false };
+
 lib.logger.silent = true;
 t.after(() => {
 	lib.logger.silent = false;
@@ -32,7 +40,7 @@ const role = (id, name) => new lib.Role(id, name, "", new Set());
 /**
  * exp_discord_sync and exp_discord_auth on a real controller, talking to a fake Discord.
  *
- * Sync loads before auth to cover auth being looked up late.
+ * Loaded the way the controller loads them, with sync listed before auth.
  */
 const defaultMappings = { 5: [discordRoles.moderator], 6: [discordRoles.trusted] };
 async function startPlugin(t2, { fakeOptions, mappings = defaultMappings } = {}) {
@@ -57,9 +65,15 @@ async function startPlugin(t2, { fakeOptions, mappings = defaultMappings } = {})
 		controller.users.createUser(name);
 	}
 
-	const plugin = await ControllerPlugin.fromContext({ plugin: { name: "exp_discord_sync" }, controller, logger });
+	const { loaded } = await lib.PluginLoader.load({
+		type: "controller",
+		context: { controller, metrics: undefined },
+		logger,
+		installed: pluginInfos,
+		load: pluginInfos,
+	});
+	const [plugin, auth] = loaded.values();
 	t2.teardown(() => plugin.disconnect());
-	const auth = await DiscordAuth.fromContext({ plugin: { name: "exp_discord_auth" }, controller, logger });
 	t2.teardown(() => clearInterval(auth.cleanupInterval));
 	for (const [roleId, ids] of Object.entries(mappings)) {
 		plugin.mappings.set(new messages.RoleMappingRecord(Number(roleId), ids));
@@ -86,7 +100,9 @@ async function settled(plugin) {
 t.test("entrypoint", async t2 => {
 	const controllerConfig = new lib.ControllerConfig("controller", { "controller.database_directory": t2.testdir() });
 	const controller = new Controller(logger, [], controllerConfig);
-	await entrypoint({ controller, logger, plugin: { name: "exp_discord_sync" }, metrics: undefined });
+	await entrypoint({
+		controller, logger, plugin: { name: "exp_discord_sync" }, metrics: undefined, plugins: noPlugins,
+	});
 	for (const hook of ["save", "shutdown", "controllerConfigFieldChanged"]) {
 		t2.ok([...controller.hooks[hook].attached].includes("exp_discord_sync"), `attached to ${hook}`);
 	}
@@ -208,6 +224,26 @@ t.test("syncing", t2 => {
 		t3.same(fake.requests, []);
 		t3.ok(await plugin.handleGuildRoleListRequest().catch(err => err) instanceof lib.UnavailableError);
 	});
+
+	t2.test("nothing is synced without exp_discord_auth", async t3 => {
+		const controller = new Controller(logger, [], new lib.ControllerConfig("controller", {
+			"controller.database_directory": t3.testdir(),
+		}));
+		controller.config.set("exp_discord_sync.bot_token", "token");
+		controller.config.set("exp_discord_sync.guild_id", guildId);
+		warnings.length = 0;
+		const { loaded } = await lib.PluginLoader.load({
+			type: "controller",
+			context: { controller, metrics: undefined },
+			logger,
+			installed: pluginInfos,
+			load: [pluginInfos[0]],
+		});
+		const [plugin] = loaded.values();
+		t3.equal(plugin.discordAuth, undefined);
+		t3.equal(plugin.gateway, undefined, "does not connect");
+		t3.ok(warnings.some(msg => /exp_discord_auth is not loaded/.test(msg)));
+	});
 	t2.end();
 });
 
@@ -263,7 +299,7 @@ t.test("role mappings", t2 => {
 		restarted.roles.set(role(5, "Moderator"));
 		restarted.roles.set(role(6, "Trusted"));
 		const reloaded = await ControllerPlugin.fromContext({
-			plugin: { name: "exp_discord_sync" }, controller: restarted, logger,
+			plugin: { name: "exp_discord_sync" }, controller: restarted, logger, plugins: noPlugins,
 		});
 		t3.same([...reloaded.mappings.values()].map(m => [m.id, m.discordRoleIds]), [
 			[5, [discordRoles.moderator]],

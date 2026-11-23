@@ -1,7 +1,7 @@
 import type { Controller, ControllerPluginContext } from "@clusterio/controller";
 import * as lib from "@clusterio/lib";
 import * as path from "node:path";
-import { ControllerPlugin as DiscordAuth } from "@expcluster/discord-auth/dist/node/controller.js";
+import type { ControllerPlugin as DiscordAuth } from "@expcluster/discord-auth/dist/node/controller.js";
 import * as messages from "./messages.js";
 import {
 	DiscordApiError, DiscordGateway, DiscordRest, GuildMember, discordApi, discordGateway, gatewayIntents,
@@ -29,13 +29,14 @@ export class ControllerPlugin {
 	draining?: Promise<void>;
 	/** Roles of each user as last seen, so updates which don't touch roles are ignored */
 	userRoles = new Map<string, string>();
-	authAttached = false;
 
 	private constructor(
 		public controller: Controller,
 		public logger: lib.Logger,
 		public name: string,
 		public mappings: lib.SubscribableDatastore<messages.RoleMappingRecord>,
+		/** Undefined if exp_discord_auth did not load, nothing is synced then */
+		public discordAuth: DiscordAuth | undefined,
 	) {}
 
 	static async fromContext(context: ControllerPluginContext) {
@@ -47,7 +48,8 @@ export class ControllerPlugin {
 			messages.RoleMappingRecord.fromJSON.bind(messages.RoleMappingRecord),
 		));
 
-		const plugin = new ControllerPlugin(controller, context.logger, context.plugin.name, mappings);
+		const discordAuth = await context.plugins.waitFor<DiscordAuth>("exp_discord_auth");
+		const plugin = new ControllerPlugin(controller, context.logger, context.plugin.name, mappings, discordAuth);
 		plugin.sweepMappings();
 		for (const user of controller.users.values()) {
 			plugin.userRoles.set(user.id, roleKey(user.roleIds));
@@ -67,6 +69,8 @@ export class ControllerPlugin {
 		hooks.save.attach(plugin.name, plugin.onSave.bind(plugin));
 		hooks.shutdown.attach(plugin.name, plugin.onShutdown.bind(plugin));
 		hooks.controllerConfigFieldChanged.attach(plugin.name, plugin.onControllerConfigFieldChanged.bind(plugin));
+		discordAuth?.hooks.linked.attach(plugin.name, (_playerName, discordUser) => plugin.queue(discordUser.id));
+		discordAuth?.hooks.unlinked.attach(plugin.name, (_playerName, discordUser) => plugin.queue(discordUser.id));
 
 		plugin.connect();
 		return plugin;
@@ -96,6 +100,10 @@ export class ControllerPlugin {
 		const token = this.controller.config.get("exp_discord_sync.bot_token");
 		const guildId = this.controller.config.get("exp_discord_sync.guild_id");
 		if (!token || !guildId) {
+			return;
+		}
+		if (!this.discordAuth) {
+			this.logger.error("exp_discord_auth is not loaded, Discord roles can not be synced");
 			return;
 		}
 
@@ -136,17 +144,6 @@ export class ControllerPlugin {
 		Syncing
 	*/
 
-	/** exp_discord_auth may load after this plugin, so it is looked up when first needed. */
-	getDiscordAuth() {
-		const discordAuth = DiscordAuth.get(this.controller);
-		if (discordAuth && !this.authAttached) {
-			this.authAttached = true;
-			discordAuth.hooks.linked.attach(this.name, (_playerName, discordUser) => this.queue(discordUser.id));
-			discordAuth.hooks.unlinked.attach(this.name, (_playerName, discordUser) => this.queue(discordUser.id));
-		}
-		return discordAuth;
-	}
-
 	queue(discordId: string) {
 		if (!this.rest) {
 			return;
@@ -170,16 +167,9 @@ export class ControllerPlugin {
 
 	private async processQueue() {
 		while (this.syncAll || this.pending.size) {
-			const discordAuth = this.getDiscordAuth();
-			if (!discordAuth) {
-				this.logger.error("exp_discord_auth is not loaded, Discord roles can not be synced");
-				this.pending.clear();
-				this.syncAll = false;
-				return;
-			}
 			if (this.syncAll) {
 				this.syncAll = false;
-				for (const account of discordAuth.getAccounts()) {
+				for (const account of this.discordAuth?.getAccounts() ?? []) {
 					this.pending.add(account.id);
 				}
 			}
@@ -217,7 +207,7 @@ export class ControllerPlugin {
 	/** The mapped Discord roles for the clusterio roles of every player linked to the account. */
 	wantedRoleIds(discordId: string) {
 		const wanted = new Set<string>();
-		const account = this.getDiscordAuth()?.getAccount(discordId);
+		const account = this.discordAuth?.getAccount(discordId);
 		for (const playerName of account?.playerNames ?? []) {
 			const user = this.controller.users.getByName(playerName);
 			for (const roleId of user?.roleIds ?? []) {
@@ -266,7 +256,7 @@ export class ControllerPlugin {
 			} else {
 				this.userRoles.set(user.id, key);
 			}
-			const link = this.rest ? this.getDiscordAuth()?.getLink(user.name) : undefined;
+			const link = this.rest ? this.discordAuth?.getLink(user.name) : undefined;
 			if (link) {
 				this.queue(link.id);
 			}
