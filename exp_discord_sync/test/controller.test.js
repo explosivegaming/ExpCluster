@@ -79,11 +79,11 @@ async function startPlugin(t2, { fakeOptions, mappings = defaultMappings } = {})
 		plugin.mappings.set(new messages.RoleMappingRecord(Number(roleId), ids));
 	}
 
-	plugin.apiBase = fake.apiBase;
-	plugin.gatewayUrl = fake.gatewayUrl;
+	plugin.rest.baseUrl = fake.apiBase;
+	plugin.gateway.url = fake.gatewayUrl;
 	controller.config.set("exp_discord_sync.bot_token", "token");
 	controller.config.set("exp_discord_sync.guild_id", guildId);
-	if (!plugin.gateway) {
+	if (plugin.gateway.state === "stopped") {
 		plugin.connect();
 	}
 	return { plugin, auth, controller, fake };
@@ -206,7 +206,7 @@ t.test("syncing", t2 => {
 		setRoles(controller, "Player1", [5]);
 		auth.linkAccount(alice, "Player1");
 		await until(() => rolesOf(fake, alice.id).length === 1);
-		t3.ok(plugin.rest, "rest is kept");
+		t3.equal(plugin.gateway.state, "stopped", "gateway gave up, REST carries on");
 		t3.ok(warnings.some(msg => /missing the Server Members intent/.test(msg)));
 	});
 
@@ -241,7 +241,7 @@ t.test("syncing", t2 => {
 		});
 		const [plugin] = loaded.values();
 		t3.equal(plugin.discordAuth, undefined);
-		t3.equal(plugin.gateway, undefined, "does not connect");
+		t3.equal(plugin.gateway.state, "stopped", "does not connect");
 		t3.ok(warnings.some(msg => /exp_discord_auth is not loaded/.test(msg)));
 	});
 	t2.end();

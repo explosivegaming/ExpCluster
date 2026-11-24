@@ -4,7 +4,7 @@ import * as path from "node:path";
 import type { ControllerPlugin as DiscordAuth } from "@expcluster/discord-auth/dist/node/controller.js";
 import * as messages from "./messages.js";
 import {
-	DiscordApiError, DiscordGateway, DiscordRest, GuildMember, discordApi, discordGateway, gatewayIntents,
+	DiscordApiError, DiscordGateway, DiscordRest, GuildMember, gatewayIntents,
 } from "./discord.js";
 
 const snowflake = /^\d{17,20}$/;
@@ -14,14 +14,6 @@ function roleKey(roleIds: Iterable<number>) {
 }
 
 export class ControllerPlugin {
-	/** Overridden by tests to point at a fake Discord */
-	apiBase = discordApi;
-	gatewayUrl = discordGateway;
-
-	rest?: DiscordRest;
-	gateway?: DiscordGateway;
-	guildId?: string;
-
 	/** Discord accounts waiting to be synced */
 	pending = new Set<string>();
 	syncAll = false;
@@ -37,6 +29,8 @@ export class ControllerPlugin {
 		public mappings: lib.SubscribableDatastore<messages.RoleMappingRecord>,
 		/** Undefined if exp_discord_auth did not load, nothing is synced then */
 		public discordAuth: DiscordAuth | undefined,
+		public rest: DiscordRest,
+		public gateway: DiscordGateway,
 	) {}
 
 	static async fromContext(context: ControllerPluginContext) {
@@ -49,7 +43,12 @@ export class ControllerPlugin {
 		));
 
 		const discordAuth = await context.plugins.waitFor<DiscordAuth>("exp_discord_auth");
-		const plugin = new ControllerPlugin(controller, context.logger, context.plugin.name, mappings, discordAuth);
+		const token = () => controller.config.get("exp_discord_sync.bot_token") ?? "";
+		const rest = new DiscordRest(token);
+		const gateway = new DiscordGateway(token, gatewayIntents.GUILD_MEMBERS, context.logger);
+		const plugin = new ControllerPlugin(
+			controller, context.logger, context.plugin.name, mappings, discordAuth, rest, gateway,
+		);
 		plugin.sweepMappings();
 		for (const user of controller.users.values()) {
 			plugin.userRoles.set(user.id, roleKey(user.roleIds));
@@ -62,15 +61,19 @@ export class ControllerPlugin {
 		controller.handle(messages.GuildRoleListRequest, plugin.handleGuildRoleListRequest.bind(plugin));
 
 		mappings.on("update", plugin.mappingsUpdated.bind(plugin));
-		controller.roles.on("update", () => plugin.sweepMappings());
+		controller.roles.on("update", plugin.sweepMappings.bind(plugin));
 		controller.users.records.on("update", plugin.usersUpdated.bind(plugin));
 
 		const hooks = controller.hooks;
 		hooks.save.attach(plugin.name, plugin.onSave.bind(plugin));
 		hooks.shutdown.attach(plugin.name, plugin.onShutdown.bind(plugin));
 		hooks.controllerConfigFieldChanged.attach(plugin.name, plugin.onControllerConfigFieldChanged.bind(plugin));
-		discordAuth?.hooks.linked.attach(plugin.name, (_playerName, discordUser) => plugin.queue(discordUser.id));
-		discordAuth?.hooks.unlinked.attach(plugin.name, (_playerName, discordUser) => plugin.queue(discordUser.id));
+		discordAuth?.hooks.linked.attach(plugin.name, plugin.onLinkChanged.bind(plugin));
+		discordAuth?.hooks.unlinked.attach(plugin.name, plugin.onLinkChanged.bind(plugin));
+
+		gateway.on("ready", plugin.onGatewayReady.bind(plugin));
+		gateway.on("dispatch", plugin.onGatewayDispatch.bind(plugin));
+		gateway.on("fatalClose", plugin.onGatewayFatalClose.bind(plugin));
 
 		plugin.connect();
 		return plugin;
@@ -96,6 +99,13 @@ export class ControllerPlugin {
 		Discord connection
 	*/
 
+	/** The configured guild, or undefined if the bot is not configured or can't sync */
+	get guildId() {
+		const token = this.controller.config.get("exp_discord_sync.bot_token");
+		const guildId = this.controller.config.get("exp_discord_sync.guild_id");
+		return token && guildId && this.discordAuth ? guildId : undefined;
+	}
+
 	connect() {
 		const token = this.controller.config.get("exp_discord_sync.bot_token");
 		const guildId = this.controller.config.get("exp_discord_sync.guild_id");
@@ -106,38 +116,39 @@ export class ControllerPlugin {
 			this.logger.error("exp_discord_auth is not loaded, Discord roles can not be synced");
 			return;
 		}
-
-		this.guildId = guildId;
-		this.rest = new DiscordRest(token, this.apiBase);
-		this.gateway = new DiscordGateway(token, gatewayIntents.GUILD_MEMBERS, this.logger, {
-			// Joins are missed while disconnected, so every (re)connect syncs everyone
-			onReady: () => this.queueAll(),
-			onDispatch: (type, data) => {
-				if (type === "GUILD_MEMBER_ADD" && data.guild_id === this.guildId) {
-					this.queue(data.user.id);
-				}
-			},
-			onFatalClose: (code, reason) => {
-				if (code === 4014) {
-					this.logger.warn(
-						"The Discord bot is missing the Server Members intent, joining the server does not give roles"
-					);
-					this.queueAll();
-				} else {
-					this.logger.error(`Discord gateway refused the bot with ${code}: ${reason}`);
-				}
-			},
-		}, this.gatewayUrl);
 		this.gateway.start();
 	}
 
 	disconnect() {
-		this.gateway?.stop();
-		this.gateway = undefined;
-		this.rest = undefined;
-		this.guildId = undefined;
+		this.gateway.stop();
 		this.pending.clear();
 		this.syncAll = false;
+	}
+
+	// Joins are missed while disconnected, so every (re)connect syncs everyone
+	onGatewayReady() {
+		this.queueAll();
+	}
+
+	onGatewayDispatch(type: string, data: any) {
+		if (type === "GUILD_MEMBER_ADD" && data.guild_id === this.guildId) {
+			this.queue(data.user.id);
+		}
+	}
+
+	onGatewayFatalClose(code: number, reason: string) {
+		if (code === 4014) {
+			this.logger.warn(
+				"The Discord bot is missing the Server Members intent, joining the server does not give roles"
+			);
+			this.queueAll();
+		} else {
+			this.logger.error(`Discord gateway refused the bot with ${code}: ${reason}`);
+		}
+	}
+
+	onLinkChanged(_playerName: string, discordUser: { id: string }) {
+		this.queue(discordUser.id);
 	}
 
 	/*
@@ -145,7 +156,7 @@ export class ControllerPlugin {
 	*/
 
 	queue(discordId: string) {
-		if (!this.rest) {
+		if (!this.guildId) {
 			return;
 		}
 		this.pending.add(discordId);
@@ -153,7 +164,7 @@ export class ControllerPlugin {
 	}
 
 	queueAll() {
-		if (!this.rest) {
+		if (!this.guildId) {
 			return;
 		}
 		this.syncAll = true;
@@ -161,11 +172,11 @@ export class ControllerPlugin {
 	}
 
 	drain() {
-		this.draining ??= this.processQueue().finally(() => { this.draining = undefined; });
+		this.draining ??= this._processQueue().finally(() => { this.draining = undefined; });
 		return this.draining;
 	}
 
-	private async processQueue() {
+	private async _processQueue() {
 		while (this.syncAll || this.pending.size) {
 			if (this.syncAll) {
 				this.syncAll = false;
@@ -221,11 +232,11 @@ export class ControllerPlugin {
 
 	async syncAccount(discordId: string) {
 		const managed = this.managedRoleIds();
-		if (!this.rest || !this.guildId || !managed.size) {
+		const guildId = this.guildId;
+		if (!guildId || !managed.size) {
 			return;
 		}
 		const rest = this.rest;
-		const guildId = this.guildId;
 		const member: GuildMember | undefined = await rest.getGuildMember(guildId, discordId);
 		if (!member) {
 			return;
@@ -256,7 +267,7 @@ export class ControllerPlugin {
 			} else {
 				this.userRoles.set(user.id, key);
 			}
-			const link = this.rest ? this.discordAuth?.getLink(user.name) : undefined;
+			const link = this.guildId ? this.discordAuth?.getLink(user.name) : undefined;
 			if (link) {
 				this.queue(link.id);
 			}
@@ -306,10 +317,10 @@ export class ControllerPlugin {
 	}
 
 	async handleGuildRoleListRequest() {
-		if (!this.rest || !this.guildId) {
+		const guildId = this.guildId;
+		if (!guildId) {
 			throw new lib.UnavailableError("The Discord bot is not configured");
 		}
-		const guildId = this.guildId;
 		const roles = await this.rest.getGuildRoles(guildId);
 		return roles
 			// @everyone has the guild id, and integration roles can't be given by bots

@@ -1,4 +1,5 @@
 import * as lib from "@clusterio/lib";
+import { EventEmitter } from "node:events";
 import { setTimeout as sleep } from "node:timers/promises";
 
 export const discordApi = "https://discord.com/api/v10";
@@ -22,20 +23,21 @@ export class DiscordApiError extends Error {
 export class DiscordRest {
 	/** Requests wait until this time when Discord says a rate limit is used up */
 	waitUntilMs = 0;
-	private queue: Promise<unknown> = Promise.resolve();
+	private _queue: Promise<unknown> = Promise.resolve();
 
 	constructor(
-		private token: string,
+		/** Read on every request so a new token applies right away */
+		private _token: () => string,
 		public baseUrl = discordApi,
 	) {}
 
 	request(method: string, route: string): Promise<unknown> {
-		const result = this.queue.then(() => this.send(method, route));
-		this.queue = result.catch(() => {});
+		const result = this._queue.then(() => this._send(method, route));
+		this._queue = result.catch(() => {});
 		return result;
 	}
 
-	private async send(method: string, route: string) {
+	private async _send(method: string, route: string) {
 		for (let attempt = 0; ; attempt++) {
 			const waitMs = this.waitUntilMs - Date.now();
 			if (waitMs > 0) {
@@ -44,7 +46,7 @@ export class DiscordRest {
 
 			const response = await fetch(`${this.baseUrl}${route}`, {
 				method,
-				headers: { "Authorization": `Bot ${this.token}`, "User-Agent": userAgent },
+				headers: { "Authorization": `Bot ${this._token()}`, "User-Agent": userAgent },
 			});
 			if (response.headers.get("x-ratelimit-remaining") === "0") {
 				const resetAfter = Number(response.headers.get("x-ratelimit-reset-after")) || 0;
@@ -98,126 +100,166 @@ export const fatalCloseCodes = new Set([4004, 4010, 4011, 4012, 4013, 4014]);
 type GatewayPayload = { op: number, d: any, s: number | null, t: string | null };
 
 /**
+ * stopped: not started, stopped, or closed with a fatal code.
+ * connecting: socket open, waiting for Hello.
+ * identifying: identify sent, waiting for READY.
+ * ready: receiving dispatches.
+ * waiting: closed, reconnecting after a backoff.
+ */
+export type GatewayState = "stopped" | "connecting" | "identifying" | "ready" | "waiting";
+
+const gatewayTransitions: Record<GatewayState, GatewayState[]> = {
+	stopped: ["connecting"],
+	connecting: ["identifying", "waiting", "stopped"],
+	identifying: ["ready", "waiting", "stopped"],
+	ready: ["waiting", "stopped"],
+	waiting: ["connecting", "stopped"],
+};
+
+export type GatewayEvents = {
+	ready: [],
+	dispatch: [type: string, data: any],
+	fatalClose: [code: number, reason: string],
+};
+
+/**
  * Minimal Discord gateway connection which only receives dispatch events.
  *
  * It identifies again on every reconnect instead of resuming, so events sent
- * while disconnected are missed. onReady is the place to catch up on them.
+ * while disconnected are missed. The ready event is the place to catch up on them.
  */
-export class DiscordGateway {
-	ws?: WebSocket;
-	private heartbeatTimer?: ReturnType<typeof setTimeout>;
-	private reconnectTimer?: ReturnType<typeof setTimeout>;
-	private sequence: number | null = null;
-	private acked = true;
-	private stopped = false;
+export class DiscordGateway extends EventEmitter<GatewayEvents> {
+	state: GatewayState = "stopped";
 	backoff = new lib.ExponentialBackoff({ base: 2, max: 60 });
+	private _ws?: WebSocket;
+	private _heartbeatTimer?: ReturnType<typeof setTimeout>;
+	private _reconnectTimer?: ReturnType<typeof setTimeout>;
+	private _sequence: number | null = null;
+	private _acked = true;
 
 	constructor(
-		private token: string,
-		private intents: number,
-		private logger: lib.Logger,
-		public handlers: {
-			onReady?: () => void,
-			onDispatch?: (type: string, data: any) => void,
-			onFatalClose?: (code: number, reason: string) => void,
-		},
+		/** Read on every identify so a new token applies on the next start */
+		private _token: () => string,
+		private _intents: number,
+		private _logger: lib.Logger,
 		public url = discordGateway,
-	) {}
+	) {
+		super();
+	}
 
 	start() {
-		this.stopped = false;
-		this.connect();
+		this._connect();
 	}
 
 	stop() {
-		this.stopped = true;
-		clearTimeout(this.reconnectTimer);
-		this.close(1000);
+		if (this.state === "stopped") {
+			return;
+		}
+		this._setState("stopped");
+		clearTimeout(this._reconnectTimer);
+		this._close(1000);
 	}
 
-	private connect() {
+	private _setState(next: GatewayState) {
+		if (!gatewayTransitions[this.state].includes(next)) {
+			throw new Error(`Invalid Discord gateway transition from ${this.state} to ${next}`);
+		}
+		this.state = next;
+	}
+
+	private _connect() {
+		this._setState("connecting");
 		const ws = new WebSocket(this.url);
-		this.ws = ws;
-		this.acked = true;
-		ws.addEventListener("message", event => this.receive(JSON.parse(String(event.data))));
-		ws.addEventListener("close", event => this.closed(ws, event.code, event.reason));
+		this._ws = ws;
+		this._acked = true;
+		ws.addEventListener("message", event => {
+			try {
+				this._receive(JSON.parse(String(event.data)));
+			} catch (err: any) {
+				this._logger.error(`Discord gateway failed to handle a message:\n${err.stack}`);
+			}
+		});
+		ws.addEventListener("close", event => this._closed(ws, event.code, event.reason));
 		ws.addEventListener("error", () => {});
 	}
 
-	private close(code: number) {
-		clearTimeout(this.heartbeatTimer);
-		if (this.ws && this.ws.readyState <= WebSocket.OPEN) {
-			this.ws.close(code);
+	private _close(code: number) {
+		clearTimeout(this._heartbeatTimer);
+		if (this._ws && this._ws.readyState <= WebSocket.OPEN) {
+			this._ws.close(code);
 		}
 	}
 
-	private send(op: number, d: unknown) {
-		this.ws?.send(JSON.stringify({ op, d }));
+	private _send(op: number, d: unknown) {
+		this._ws?.send(JSON.stringify({ op, d }));
 	}
 
-	private heartbeat(intervalMs: number) {
-		if (!this.acked) {
-			this.logger.warn("Discord gateway stopped answering heartbeats, reconnecting");
-			this.close(4000);
+	private _heartbeat(intervalMs: number) {
+		if (!this._acked) {
+			this._logger.warn("Discord gateway stopped answering heartbeats, reconnecting");
+			this._close(4000);
 			return;
 		}
-		this.acked = false;
-		this.send(1, this.sequence);
-		this.heartbeatTimer = setTimeout(() => this.heartbeat(intervalMs), intervalMs);
+		this._acked = false;
+		this._send(1, this._sequence);
+		this._heartbeatTimer = setTimeout(() => this._heartbeat(intervalMs), intervalMs);
 	}
 
-	private receive(payload: GatewayPayload) {
+	private _receive(payload: GatewayPayload) {
 		if (payload.s !== null && payload.s !== undefined) {
-			this.sequence = payload.s;
+			this._sequence = payload.s;
 		}
 		switch (payload.op) {
 			case 10: { // Hello
+				this._setState("identifying");
 				const intervalMs = payload.d.heartbeat_interval;
-				this.heartbeatTimer = setTimeout(() => this.heartbeat(intervalMs), intervalMs * Math.random());
-				this.send(2, {
-					token: this.token,
-					intents: this.intents,
+				this._heartbeatTimer = setTimeout(() => this._heartbeat(intervalMs), intervalMs * Math.random());
+				this._send(2, {
+					token: this._token(),
+					intents: this._intents,
 					properties: { os: process.platform, browser: "exp_discord_sync", device: "exp_discord_sync" },
 				});
 				break;
 			}
 			case 11: // Heartbeat ACK
-				this.acked = true;
+				this._acked = true;
 				break;
 			case 1: // Heartbeat request
-				this.send(1, this.sequence);
+				this._send(1, this._sequence);
 				break;
 			case 7: // Reconnect
 			case 9: // Invalid session
-				this.close(4000);
+				this._close(4000);
 				break;
 			case 0: // Dispatch
 				if (payload.t === "READY") {
-					this.handlers.onReady?.();
+					this._setState("ready");
+					this.emit("ready");
 				} else {
-					this.handlers.onDispatch?.(payload.t!, payload.d);
+					this.emit("dispatch", payload.t!, payload.d);
 				}
 				break;
 			default:
 		}
 	}
 
-	private closed(ws: WebSocket, code: number, reason: string) {
-		if (ws !== this.ws) {
+	private _closed(ws: WebSocket, code: number, reason: string) {
+		if (ws !== this._ws) {
 			return;
 		}
-		clearTimeout(this.heartbeatTimer);
-		this.sequence = null;
-		if (this.stopped) {
+		clearTimeout(this._heartbeatTimer);
+		this._sequence = null;
+		if (this.state === "stopped") {
 			return;
 		}
 		if (fatalCloseCodes.has(code)) {
-			this.stopped = true;
-			this.handlers.onFatalClose?.(code, reason);
+			this._setState("stopped");
+			this.emit("fatalClose", code, reason);
 			return;
 		}
+		this._setState("waiting");
 		const delayMs = this.backoff.delay();
-		this.logger.verbose(`Discord gateway closed with ${code}, reconnecting in ${Math.round(delayMs / 1e3)}s`);
-		this.reconnectTimer = setTimeout(() => this.connect(), delayMs);
+		this._logger.verbose(`Discord gateway closed with ${code}, reconnecting in ${Math.round(delayMs / 1e3)}s`);
+		this._reconnectTimer = setTimeout(() => this._connect(), delayMs);
 	}
 }
