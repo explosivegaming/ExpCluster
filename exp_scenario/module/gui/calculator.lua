@@ -91,7 +91,7 @@ Elements.calculator_input_textfield = Gui.define("calculator/input_textfield")
         name = "calculator_input_textfield",
         text = "",
     }
-    :draw{
+    :style{
         width = 400
     }
 
