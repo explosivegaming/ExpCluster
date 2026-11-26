@@ -89,6 +89,7 @@ Elements.calculator_input_textfield = Gui.define("calculator/input_textfield")
     :draw{
         type = "textfield",
         name = "calculator_input_textfield",
+        text = "",
     }
     :draw{
         width = 400
@@ -108,7 +109,8 @@ Elements.calculator_output_textfield = Gui.define("calculator/output_textfield")
     :draw{
         type = "textfield",
         name = "calculator_output_textfield",
-        enabled = false
+        enabled = false,
+        text = "",
     }
 
 --- Container added to the screen
