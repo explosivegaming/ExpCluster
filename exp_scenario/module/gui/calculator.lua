@@ -119,9 +119,7 @@ Elements.container = Gui.define("calculator/container")
         local header = Elements.calculator_caption_label(button_flow, {"exp-gui_calculator.tooltip"})
         header.style = "frame_title"
         local main_table = Gui.elements.scroll_table(screen_frame, 400, 2)
-        main_table.draw_horizontal_lines = true
         local left_table = Gui.elements.scroll_table(main_table, 400, 1)
-        left_table.vertical_centering = false
         local right_table = Gui.elements.scroll_table(main_table, 400, 1)
         Elements.calculator_caption_label(left_table, {"exp-gui_calculator.expression"})
         Elements.calculator_input_textfield(left_table)
