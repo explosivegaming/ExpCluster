@@ -99,6 +99,13 @@ Elements.calculator_result_label = Gui.define("calculator/result_label")
         style = "heading_2_label",
     }
 
+--- Output textfield
+Elements.calculator_output_textfield = Gui.define("calculator/output_textfield")
+    :draw{
+        type = "textfield",
+        enabled = false
+    }
+
 --- Container added to the screen
 Elements.container = Gui.define("calculator/container")
     :draw(function(def, parent)
@@ -115,6 +122,7 @@ Elements.container = Gui.define("calculator/container")
         Elements.calculator_input_textfield(left_table)
         Elements.calculator_caption_label(left_table, {"exp-gui_calculator.result"})
         Elements.calculator_result_label(left_table)
+        Elements.calculator_output_textfield(left_table)
         Elements.calculator_caption_label(right_table, {"exp-gui_calculator.reference"})
         Elements.calculator_info_label(right_table)
         return Gui.elements.screen_frame.get_root_element(screen_frame)
@@ -345,17 +353,24 @@ end
 --- Value change
 function Elements.change(event)
     local label = event.element.parent.calculator_result_label
+    local textfield = event.element.parent.calculator_output_textfield
 
     if event.text == "" then
         label.caption = ""
+        textfield.text = ""
         return
     end
 
     local ok, result = Elements.parse(event.text:lower())
     label.style.font_color = ok and {1, 1, 1} or {1, 0, 0}
-    label.caption = ok
-    and ("= " .. format_number(result, false))
-    or (type(result) == "table" and result or {"", {"exp-gui_calculator.error"}, tostring(result)})
+
+    if ok then
+        label.caption = "= " .. format_number(result, false)
+        textfield.text = result
+    else
+        label.caption = type(result) == "table" and result or {"", {"exp-gui_calculator.error"}, tostring(result)}
+        textfield.text = ""
+    end
 end
 
 local e = defines.events
