@@ -83,14 +83,13 @@ Elements.calculator_input_textfield = Gui.define("calculator/input_textfield")
         width = 400,
     }
 
---- Output text box
-Elements.calculator_result_text_box = Gui.define("calculator/result_text_box")
+--- Output label
+Elements.calculator_result_label = Gui.define("calculator/result_label")
     :draw{
-        type = "text-box",
+        type = "label",
         caption = "",
-        text = "",
-        read_only = true,
-        name = "calculator_result_text_box",
+        name = "calculator_result_label",
+        style = "heading_2_label",
     }
 
 --- Container added to the screen
@@ -99,7 +98,7 @@ Elements.container = Gui.define("calculator/container")
         local screen_frame = Gui.elements.screen_frame(parent, nil, true)
         local header = Gui.elements.header(screen_frame, { caption = { "exp-gui_calculator.tooltip" } })
         Elements.calculator_input_textfield(screen_frame)
-        Elements.calculator_result_text_box(screen_frame)
+        Elements.calculator_result_label(screen_frame)
         Elements.calculator_info_label(screen_frame)
         return Gui.elements.screen_frame.get_root_element(screen_frame)
     end)
@@ -328,22 +327,18 @@ end
 
 --- Value change
 function Elements.change(event)
-    local label = event.element.parent.calculator_result_text_box
+    local label = event.element.parent.calculator_result_label
 
     if event.text == "" then
         label.caption = ""
-        label.text = ""
         return
     end
 
     local ok, result = Elements.parse(event.text:lower())
     label.style.font_color = ok and {1, 1, 1} or {1, 0, 0}
-
-    if ok then
-        label.text = "= " .. format_number(result, false)
-    else
-        label.caption = type(result) == "table" and result or {"", {"exp-gui_calculator.error"}, tostring(result)}
-    end
+    label.caption = ok
+    and ("= " .. format_number(result, false))
+    or (type(result) == "table" and result or {"", {"exp-gui_calculator.error"}, tostring(result)})
 end
 
 local e = defines.events
