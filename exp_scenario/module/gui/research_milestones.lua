@@ -10,8 +10,8 @@ local research_data = require("modules/exp_scenario/config/research_data")
 
 local feature, config = Feature.register("research_milestones", {
     log_file = "log/research.log", -- where the milestone times are written
-    milestone_rate = 45, -- Targeted Milestone Science Research Rate, In terms of SPM.
-    milestone_warmup_time = 10, -- Warmup time given before start counting. In terms of minutes.
+    milestone_rate = 30, -- Targeted Milestone Science Research Rate, In terms of SPM.
+    milestone_warmup_time = 30, -- Warmup time given for each new research unit ingredient. In terms of minutes.
 })
 
 local table_to_json = helpers.table_to_json
@@ -31,6 +31,8 @@ local font_color = {
     negative = { r = 1, g = 0.3, b = 0.3 },
 }
 
+local ing_used = {}
+
 --- @class ExpGui_ResearchMilestones.research_targets
 --- @field index_lookup table<string, number>
 --- @field target_times table<number, { name: string, target: number, label: LocalisedString }>
@@ -43,12 +45,25 @@ local research_targets = {
 
 do --- Calculate the research targets
     local research_index = 1
-    local total_time = config.milestone_warmup_time * 3600
+    local total_time = 0
     for _, name in pairs(research_data.milestone[research_data.mod_set]) do
-        if prototypes.technology[name] and (not prototypes.technology[name].hidden) then
+        local proto = prototypes.technology[name]
+        if proto and (not proto.hidden) then
             research_targets.index_lookup[name] = research_index
+
+            local r_ing = proto.research_unit_ingredients
+            if r_ing then
+                -- each new ingredient add warmup time once
+                for _, i in pairs(r_ing) do
+                    if not ing_used[i.name] then
+                        ing_used[i.name] = true
+                        total_time = total_time + config.milestone_warmup_time * 3600
+                    end
+                end
+            end
+
             -- The number is affected by multiplier already
-            total_time = total_time + math.ceil(prototypes.technology[name].research_unit_count * 3600 / config.milestone_rate)
+            total_time = total_time + math.ceil(proto.research_unit_count * 3600 / config.milestone_rate)
 
             research_targets.target_times[research_index] = {
                 name = name,
