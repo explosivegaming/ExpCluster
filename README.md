@@ -51,6 +51,7 @@ Each plugin has a readme in its folder with its config, permissions and API.
 | [Reports (@expcluster/reports)](exp_reports/README.md) | Lets players report each other in game or from the web interface, with optional Discord and JSON webhooks. |
 | [Server List (@expcluster/server-list)](exp_server_list/README.md) | Shares the details of every instance with the others, for the server list in game. |
 | [Discord Auth (@expcluster/discord-auth)](exp_discord_auth/README.md) | Log in to the web interface with Discord, and link Factorio accounts to a Discord account. |
+| [Discord Sync (@expcluster/discord-sync)](exp_discord_sync/README.md) | Gives linked players the Discord roles mapped to their clusterio roles. |
 | [Auto Restart (@expcluster/auto-restart)](exp_auto_restart/README.md) | Restarts hosts, and optionally the controller, that need a restart once nobody is playing on them. |
 | [Server UPS (@expcluster/server-ups)](exp_server_ups/README.md) | Shows the UPS the server is running at, toggled with `/server-ups`. |
 | [Commands (@expcluster/lib_commands)](exp_commands/README.md) | Lua library for commands with typed arguments, aliases and permission checks. |
