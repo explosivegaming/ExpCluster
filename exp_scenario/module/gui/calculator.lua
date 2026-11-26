@@ -90,7 +90,7 @@ Elements.calculator_input_textfield = Gui.define("calculator/input_textfield")
         type = "textfield",
     }
     :style{
-        width = 400,
+        width = 300,
     }
 
 --- Output label
@@ -107,9 +107,10 @@ Elements.container = Gui.define("calculator/container")
     :draw(function(def, parent)
         local screen_frame = Gui.elements.screen_frame(parent, nil, true)
         local button_flow = Gui.elements.screen_frame.get_button_flow(screen_frame)
-        Elements.calculator_caption_label(button_flow, {"exp-gui_calculator.tooltip"})
-        local main_table = Gui.elements.scroll_table(screen_frame, 600, 2)
-        local left_table = Gui.elements.scroll_table(main_table, 400, 1)
+        local header = Elements.calculator_caption_label(button_flow, {"exp-gui_calculator.tooltip"})
+        header.style = "frame_title"
+        local main_table = Gui.elements.scroll_table(screen_frame, 500, 2)
+        local left_table = Gui.elements.scroll_table(main_table, 300, 1)
         local right_table = Gui.elements.scroll_table(main_table, 200, 1)
         Elements.calculator_caption_label(left_table, {"exp-gui_calculator.expression"})
         Elements.calculator_input_textfield(left_table)
