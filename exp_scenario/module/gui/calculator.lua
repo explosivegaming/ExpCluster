@@ -368,7 +368,7 @@ function Elements.change(event)
 
     if ok then
         label.caption = "= " .. format_number(result, false)
-        textfield.text = result
+        textfield.text = tostring(result)
     else
         label.caption = type(result) == "table" and result or {"", {"exp-gui_calculator.error"}, tostring(result)}
         textfield.text = ""
