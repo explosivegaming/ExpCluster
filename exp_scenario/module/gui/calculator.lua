@@ -90,6 +90,9 @@ Elements.calculator_input_textfield = Gui.define("calculator/input_textfield")
         type = "textfield",
         name = "calculator_input_textfield",
     }
+    :draw{
+        width = 400
+    }
 
 --- Output label
 Elements.calculator_result_label = Gui.define("calculator/result_label")
@@ -115,11 +118,11 @@ Elements.container = Gui.define("calculator/container")
         local button_flow = Gui.elements.screen_frame.get_button_flow(screen_frame)
         local header = Elements.calculator_caption_label(button_flow, {"exp-gui_calculator.tooltip"})
         header.style = "frame_title"
-        local main_table = Gui.elements.scroll_table(screen_frame, 600, 2)
+        local main_table = Gui.elements.scroll_table(screen_frame, 400, 2)
         main_table.draw_horizontal_lines = true
         local left_table = Gui.elements.scroll_table(main_table, 400, 1)
         left_table.vertical_centering = false
-        local right_table = Gui.elements.scroll_table(main_table, 200, 1)
+        local right_table = Gui.elements.scroll_table(main_table, 400, 1)
         Elements.calculator_caption_label(left_table, {"exp-gui_calculator.expression"})
         Elements.calculator_input_textfield(left_table)
         Elements.calculator_caption_label(left_table, {"exp-gui_calculator.result"})
