@@ -295,15 +295,6 @@ t.test("api for other plugins", t2 => {
 		return calls;
 	}
 
-	t2.test("static get() returns the plugin loaded on a controller", async t3 => {
-		const { plugin, controller } = await startPlugin(t3);
-		t3.equal(ControllerPlugin.get(controller), plugin);
-		const other = new Controller(logger, [], new lib.ControllerConfig("controller", {
-			"controller.database_directory": t3.testdir(),
-		}));
-		t3.equal(ControllerPlugin.get(other), undefined);
-	});
-
 	t2.test(".getLink(), .getAccount() and .getAccounts() read links", async t3 => {
 		const { plugin } = await startPlugin(t3);
 		const session = await discordLogin(plugin, alice);

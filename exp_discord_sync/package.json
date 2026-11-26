@@ -1,0 +1,54 @@
+{
+	"name": "@expcluster/discord-sync",
+	"version": "7.0.5",
+	"description": "Clusterio plugin giving players linked with exp_discord_auth the Discord roles mapped to their clusterio roles",
+	"author": "Cooldude2606 <https://github.com/Cooldude2606>",
+	"license": "MIT",
+	"repository": "explosivegaming/ExpCluster",
+	"type": "module",
+	"main": "dist/node/index.js",
+	"scripts": {
+		"prepare": "tsc --build && vite build",
+		"test": "tap --type-strip-only --disable-coverage --allow-empty-coverage test/*.test.js",
+		"coverage": "tap --coverage-report=text test/*.test.js"
+	},
+	"engines": {
+		"node": ">=22"
+	},
+	"peerDependencies": {
+		"@clusterio/controller": "workspace:^",
+		"@clusterio/lib": "workspace:^"
+	},
+	"peerDependenciesMeta": {
+		"@clusterio/controller": {
+			"optional": true
+		}
+	},
+	"devDependencies": {
+		"@clusterio/controller": "workspace:^",
+		"@clusterio/lib": "workspace:^",
+		"@clusterio/web_ui": "workspace:^",
+		"@types/node": "catalog:",
+		"@types/react": "catalog:",
+		"antd": "catalog:",
+		"react": "catalog:",
+		"react-dom": "catalog:",
+		"react-router-dom": "catalog:",
+		"tap": "^21.1.0",
+		"typescript": "catalog:",
+		"vite": "catalog:",
+		"ws": "catalog:"
+	},
+	"dependencies": {
+		"@sinclair/typebox": "catalog:",
+		"@expcluster/discord-auth": "workspace:^"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"keywords": [
+		"clusterio",
+		"clusterio-plugin",
+		"factorio"
+	]
+}

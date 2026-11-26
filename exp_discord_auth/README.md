@@ -56,12 +56,12 @@ ExpDiscordAuth.get_linked(player) -- Prints the Discord account the player is li
 
 ## Other plugins
 
-Controller plugins can read links and react to them. Import the plugin class from the controller entrypoint and look it up with the controller.
+Controller plugins can read links and react to them. Wait for the plugin from your entrypoint, the class is only needed for its type.
 
 ```ts
-import { ControllerPlugin as DiscordAuth } from "@expcluster/discord-auth/dist/node/controller.js";
+import type { ControllerPlugin as DiscordAuth } from "@expcluster/discord-auth/dist/node/controller.js";
 
-const discordAuth = DiscordAuth.get(controller); // undefined if exp_discord_auth is not loaded
+const discordAuth = await plugins.waitFor<DiscordAuth>("exp_discord_auth"); // undefined if exp_discord_auth is not loaded
 discordAuth.getLink("Player1"); // { id, name } of the Discord account, or undefined
 discordAuth.getAccount(discordId); // { id, name, playerNames }, or undefined
 discordAuth.getAccounts(); // every linked Discord account
