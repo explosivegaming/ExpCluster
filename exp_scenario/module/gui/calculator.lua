@@ -85,7 +85,7 @@ Elements.calculator_result_caption_label = Gui.define("calculator/result_caption
 Elements.calculator_info_label = Gui.define("calculator/info_label")
     :draw{
         type = "label",
-        caption = {"exp-gui_calculator.caption"},
+        caption = {"exp-gui_calculator.reference"},
         name = "calculator_info_label",
     }
     :style{
@@ -114,7 +114,8 @@ Elements.calculator_result_label = Gui.define("calculator/result_label")
 Elements.container = Gui.define("calculator/container")
     :draw(function(def, parent)
         local screen_frame = Gui.elements.screen_frame(parent, nil, true)
-        local header = Gui.elements.header(screen_frame, { caption = { "exp-gui_calculator.tooltip" } })
+        local button_flow = Gui.elements.screen_frame.get_button_flow(screen_frame)
+        local header = Gui.elements.header(button_flow, { caption = { "exp-gui_calculator.tooltip" } })
         Elements.calculator_expression_caption_label(screen_frame)
         Elements.calculator_input_textfield(screen_frame)
         Elements.calculator_result_caption_label(screen_frame)
