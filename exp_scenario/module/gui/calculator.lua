@@ -63,21 +63,14 @@ local function factorial(n)
     return result
 end
 
---- Expression caption label
-Elements.calculator_expression_caption_label = Gui.define("calculator/expression_caption_label")
+--- Caption label
+--- @class ExpGui_Calculator.calculator_caption_label: ExpElement
+--- @overload fun(parent: LuaGuiElement, caption: LocalisedString): LuaGuiElement
+Elements.calculator_caption_label = Gui.define("calculator/caption_label")
     :draw{
         type = "label",
-        caption = {"exp-gui_calculator.expression"},
-        name = "calculator_expression_caption_label",
-        style = "heading_2_label",
-    }
-
---- Result caption label
-Elements.calculator_result_caption_label = Gui.define("calculator/result_caption_label")
-    :draw{
-        type = "label",
-        caption = {"exp-gui_calculator.expression"},
-        name = "calculator_result_caption_label",
+        caption = Gui.from_argument(1),
+        name = "calculator_header_label",
         style = "heading_2_label",
     }
     
@@ -85,7 +78,7 @@ Elements.calculator_result_caption_label = Gui.define("calculator/result_caption
 Elements.calculator_info_label = Gui.define("calculator/info_label")
     :draw{
         type = "label",
-        caption = {"exp-gui_calculator.reference"},
+        caption = {"exp-gui_calculator.info"},
         name = "calculator_info_label",
     }
     :style{
@@ -115,11 +108,12 @@ Elements.container = Gui.define("calculator/container")
     :draw(function(def, parent)
         local screen_frame = Gui.elements.screen_frame(parent, nil, true)
         local button_flow = Gui.elements.screen_frame.get_button_flow(screen_frame)
-        local header = Gui.elements.header(button_flow, { caption = { "exp-gui_calculator.tooltip" } })
-        Elements.calculator_expression_caption_label(screen_frame)
+        Elements.calculator_caption_label(button_flow, {"exp-gui_calculator.tooltip"})
+        Elements.calculator_caption_label(screen_frame, {"exp-gui_calculator.expression"})
         Elements.calculator_input_textfield(screen_frame)
-        Elements.calculator_result_caption_label(screen_frame)
+        Elements.calculator_caption_label(screen_frame, {"exp-gui_calculator.result"})
         Elements.calculator_result_label(screen_frame)
+        Elements.calculator_caption_label(screen_frame, {"exp-gui_calculator.reference"})
         Elements.calculator_info_label(screen_frame)
         return Gui.elements.screen_frame.get_root_element(screen_frame)
     end)
