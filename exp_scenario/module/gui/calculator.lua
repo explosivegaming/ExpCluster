@@ -88,6 +88,7 @@ Elements.calculator_info_label = Gui.define("calculator/info_label")
 Elements.calculator_input_textfield = Gui.define("calculator/input_textfield")
     :draw{
         type = "textfield",
+        name = "calculator_input_textfield",
     }
 
 --- Output label
@@ -103,6 +104,7 @@ Elements.calculator_result_label = Gui.define("calculator/result_label")
 Elements.calculator_output_textfield = Gui.define("calculator/output_textfield")
     :draw{
         type = "textfield",
+        name = "calculator_output_textfield",
         enabled = false
     }
 
