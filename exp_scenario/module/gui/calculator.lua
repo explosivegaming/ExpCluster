@@ -355,6 +355,8 @@ end
 
 --- Value change
 function Elements.change(event)
+    if event.element.name ~= event.element.parent.calculator_input_textfield.name then return end
+
     local label = event.element.parent.calculator_result_label
     local textfield = event.element.parent.calculator_output_textfield
 
