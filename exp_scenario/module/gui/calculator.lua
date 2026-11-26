@@ -87,6 +87,7 @@ Elements.calculator_input_textfield = Gui.define("calculator/input_textfield")
 Elements.calculator_result_text_box = Gui.define("calculator/result_text_box")
     :draw{
         type = "text-box",
+        caption = "",
         text = "",
         read_only = true,
         name = "calculator_result_text_box",
@@ -330,15 +331,19 @@ function Elements.change(event)
     local label = event.element.parent.calculator_result_text_box
 
     if event.text == "" then
+        label.caption = ""
         label.text = ""
         return
     end
 
     local ok, result = Elements.parse(event.text:lower())
     label.style.font_color = ok and {1, 1, 1} or {1, 0, 0}
-    label.text = ok
-    and ("= " .. format_number(result, false))
-    or (type(result) == "table" and result or {"", {"exp-gui_calculator.error"}, tostring(result)})
+
+    if ok then
+        label.text = "= " .. format_number(result, false)
+    else
+        label.caption = type(result) == "table" and result or {"", {"exp-gui_calculator.error"}, tostring(result)}
+    end
 end
 
 local e = defines.events
