@@ -72,7 +72,7 @@ Elements.calculator_caption_label = Gui.define("calculator/caption_label")
         caption = Gui.from_argument(1),
         style = "heading_2_label",
     }
-    
+
 --- Info label
 Elements.calculator_info_label = Gui.define("calculator/info_label")
     :draw{
