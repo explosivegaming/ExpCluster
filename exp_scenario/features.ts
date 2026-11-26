@@ -322,7 +322,6 @@ export const features: Feature[] = [
 		title: "Science Production",
 		description: "A GUI with the production of each science pack",
 		fields: [
-			bool("show_eta", "Show ETA", "Show the estimated time until the current research completes", true),
 			num("color_flux", "Colour threshold", "How much production may fluctuate before the icon changes colour", 0.1, 0),
 		],
 	},

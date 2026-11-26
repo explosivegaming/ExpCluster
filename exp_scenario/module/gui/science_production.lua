@@ -29,10 +29,7 @@ local science_packs = {
 }
 local _format_number = require("util").format_number
 
-local clock_time_format = ExpUtil.format_time_factory_locale{ format = "clock", hours = true, minutes = true, seconds = true }
 local long_time_format = ExpUtil.format_time_factory_locale{ format = "long", hours = true, minutes = true, seconds = true }
-
-local clock_time_format_nil = { "exp-gui_science-production.caption-eta-time", clock_time_format(nil) }
 local long_time_format_nil = long_time_format(nil)
 
 --- Remove invalid science packs, this can result from a certain mod not being loaded
@@ -349,7 +346,8 @@ function Elements.science_table.refresh_row(science_table, row_data)
     Elements.production_label.refresh(row.used, row_data.used)
 end
 
-do local _row_data = {} --- @type table<string, table<number, ExpGui_ScienceProduction.elements.science_table.row_data>>
+do
+    local _row_data = {} --- @type table<string, table<number, ExpGui_ScienceProduction.elements.science_table.row_data>>
     --- Refresh the production tables for all online players
     function Elements.science_table.refresh_online()
         -- Refresh the row data for online forces
@@ -371,62 +369,6 @@ do local _row_data = {} --- @type table<string, table<number, ExpGui_ScienceProd
             end
         end
     end
-end
-
---- Displays the eta until research completion
---- @class ExpGui_ScienceProduction.elements.eta_label: ExpElement
---- @overload fun(parent: LuaGuiElement): LuaGuiElement
-Elements.eta_label = Gui.define("science_production/eta_label")
-    :track_all_elements()
-    :draw{
-        type = "label",
-        caption = clock_time_format_nil,
-        tooltip = long_time_format_nil,
-        style = "frame_title",
-    } --[[@as any]]
-
---- @class Elements.eta_label.display_data
---- @field caption LocalisedString
---- @field tooltip LocalisedString
-
---- Avoid creating new tables for nil time
---- @type Elements.eta_label.display_data
-local _nil_eta_strings = {
-    caption = clock_time_format_nil,
-    tooltip = long_time_format_nil,
-}
-
---- Calculate the eta time for a force to complete a research
---- @param force LuaForce
---- @return Elements.eta_label.display_data
-function Elements.eta_label.calculate_display_data(force)
-    -- If there is no current research then return no research
-    local research = force.current_research
-    if not research then
-        return _nil_eta_strings
-    end
-
-    local limit = 0
-    local progress = force.research_progress
-    local remaining = research.research_unit_count * (1 - progress)
-
-    -- Check for the limiting science pack
-    local force_data = Elements.container.get_production_data(force)
-    for _, ingredient in pairs(research.research_unit_ingredients) do
-        local pack_name = ingredient.name
-        local required = ingredient.amount * remaining
-        local production = force_data[pack_name].one_minute
-        local time = production.used == 0 and -1 or 3600 * required / production.used
-        if limit < time then
-            limit = time
-        end
-    end
-
-    -- Return the caption and tooltip
-    return limit == 0 and _nil_eta_strings or {
-        caption = { "exp-gui_science-production.caption-eta-time", clock_time_format(limit) },
-        tooltip = long_time_format(limit),
-    }
 end
 
 --- Container added to the left gui flow
@@ -460,7 +402,8 @@ local _fp_one_hour = defines.flow_precision_index.one_hour
 --- @field ten_minutes ExpGui_ScienceProduction._item_data
 --- @field one_hour ExpGui_ScienceProduction._item_data
 
-do local _production_data = {} --- @type table<string, { [string]: ExpGui_ScienceProduction.item_production_data }>
+do
+    local _production_data = {} --- @type table<string, { [string]: ExpGui_ScienceProduction.item_production_data }>
 
     --- Get the production stats for a force
     --- @param flow_stats any
