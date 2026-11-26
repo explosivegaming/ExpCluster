@@ -298,7 +298,7 @@ export const features: Feature[] = [
 		fields: [
 			str("log_file", "Log file", "Where the milestone times are written within script-output", "log/research.log"),
 			num("milestone_rate", "Target rate", "Targeted Milestone Science Research Rate", 30, 5, "SPM"),
-			num("milestone_warmup_time", "Warmup time", "Warmup time given before start counting.", 30, 0, "minutes"),
+			num("milestone_warmup_time", "Warmup time", "Warmup time given for each new research unit ingredient.", 30, 0, "minutes"),
 		],
 	},
 	{
