@@ -50,14 +50,7 @@ export class DiscordAuthHooks extends lib.AsyncHookCollection {
 	readonly unlinked = this.newHook<[playerName: string, discordUser: DiscordUser]>();
 }
 
-const loaded = new WeakMap<Controller, ControllerPlugin>();
-
 export class ControllerPlugin {
-	/** The plugin loaded on a controller, for other plugins to read links from. */
-	static get(controller: Controller) {
-		return loaded.get(controller);
-	}
-
 	hooks: DiscordAuthHooks;
 	/** Logins which have been through Discord, by session id */
 	sessions = new Map<string, Session>();
@@ -118,9 +111,7 @@ export class ControllerPlugin {
 			messages.DiscordAccountRecord.fromJSON.bind(messages.DiscordAccountRecord),
 		));
 
-		const plugin = new ControllerPlugin(controller, context.logger, context.plugin.name, accounts);
-		loaded.set(controller, plugin);
-		return plugin;
+		return new ControllerPlugin(controller, context.logger, context.plugin.name, accounts);
 	}
 
 	async onSave() {
