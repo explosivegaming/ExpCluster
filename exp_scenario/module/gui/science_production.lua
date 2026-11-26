@@ -9,7 +9,6 @@ local Roles = require("modules/exp_roles")
 local Feature = require("modules/exp_scenario/features")
 
 local feature, config = Feature.register("science_production", {
-    show_eta = true, -- the eta for research completion
     color_flux = 0.1, -- the fluctuation allowed in production before the icon changes color
 })
 
@@ -430,36 +429,6 @@ function Elements.eta_label.calculate_display_data(force)
     }
 end
 
---- Refresh an eta label
---- @param eta_label LuaGuiElement
-function Elements.eta_label.refresh(eta_label)
-    local force = Gui.get_player(eta_label).force --[[@as LuaForce]]
-    local display_data = Elements.eta_label.calculate_display_data(force)
-    eta_label.caption = display_data.caption
-    eta_label.tooltip = display_data.tooltip
-end
-
-do local _display_data = {} --- @type table<string, Elements.eta_label.display_data>
-    --- Refresh the eta label for all online players
-    function Elements.eta_label.refresh_online()
-        -- Refresh the row data for online forces
-        for _, force in pairs(game.forces) do
-            if next(force.connected_players) then
-                _display_data[force.name] = Elements.eta_label.calculate_display_data(force)
-            end
-        end
-
-        -- Update the eta labels
-        for player, eta_label in Elements.eta_label:online_elements() do
-            local display_data = _display_data[player.force.name]
-            if display_data then
-                eta_label.caption = display_data.caption
-                eta_label.tooltip = display_data.tooltip
-            end
-        end
-    end
-end
-
 --- Container added to the left gui flow
 --- @class ExpGui_ScienceProduction.elements.container: ExpElement
 Elements.container = Gui.define("science_production/container")
@@ -473,16 +442,6 @@ Elements.container = Gui.define("science_production/container")
             --- @cast science_pack any
             local row_data = Elements.science_table.calculate_row_data(force, science_pack)
             Elements.science_table.add_row(science_table, row_data)
-        end
-
-        if config.show_eta then
-            local footer = Gui.elements.footer(container, {
-                caption = { "exp-gui_science-production.caption-eta" },
-                tooltip = { "exp-gui_science-production.tooltip-eta" },
-            })
-
-            local eta_label = Elements.eta_label(footer)
-            Elements.eta_label.refresh(eta_label)
         end
 
         return Gui.elements.container.get_root_element(container)
@@ -599,7 +558,6 @@ Gui.toolbar.create_button{
 --- Updates the gui every 1 second
 local function update_gui()
     Elements.container.refresh_online()
-    Elements.eta_label.refresh_online()
     Elements.science_table.refresh_online()
     Elements.no_production_label.refresh_online()
 end
