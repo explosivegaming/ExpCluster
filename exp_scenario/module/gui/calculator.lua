@@ -112,6 +112,9 @@ Elements.calculator_output_textfield = Gui.define("calculator/output_textfield")
         enabled = false,
         text = "",
     }
+    :style{
+        width = 400
+    }
 
 --- Container added to the screen
 Elements.container = Gui.define("calculator/container")
