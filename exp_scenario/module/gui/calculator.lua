@@ -63,6 +63,24 @@ local function factorial(n)
     return result
 end
 
+--- Expression caption label
+Elements.calculator_expression_caption_label = Gui.define("calculator/expression_caption_label")
+    :draw{
+        type = "label",
+        caption = {"exp-gui_calculator.expression"},
+        name = "calculator_expression_caption_label",
+        style = "heading_2_label",
+    }
+
+--- Result caption label
+Elements.calculator_result_caption_label = Gui.define("calculator/result_caption_label")
+    :draw{
+        type = "label",
+        caption = {"exp-gui_calculator.expression"},
+        name = "calculator_result_caption_label",
+        style = "heading_2_label",
+    }
+    
 --- Info label
 Elements.calculator_info_label = Gui.define("calculator/info_label")
     :draw{
@@ -97,7 +115,9 @@ Elements.container = Gui.define("calculator/container")
     :draw(function(def, parent)
         local screen_frame = Gui.elements.screen_frame(parent, nil, true)
         local header = Gui.elements.header(screen_frame, { caption = { "exp-gui_calculator.tooltip" } })
+        Elements.calculator_expression_caption_label(screen_frame)
         Elements.calculator_input_textfield(screen_frame)
+        Elements.calculator_result_caption_label(screen_frame)
         Elements.calculator_result_label(screen_frame)
         Elements.calculator_info_label(screen_frame)
         return Gui.elements.screen_frame.get_root_element(screen_frame)
