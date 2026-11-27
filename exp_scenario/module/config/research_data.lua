@@ -191,7 +191,6 @@ local data = {
             "stronger-explosives-5",
             "stronger-explosives-6",
             "stronger-explosives-7",
-            "stronger-explosives-8",
             "quantum-processor",
             "railgun",
             "fusion-reactor",
